@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrendamiento de bienes muebles e inmuebles</title>
+<style>
+:root{
+  --canvas:#FFFFFF;
+  --navy:#003580;
+  --c1-strip:#1A5C38;
+  --c2-strip:#005F73;
+  --c1-bg:#EBF5EF;
+  --c2-bg:#E6F3F4;
+  --text:#0D0D0D;
+  --text-mid:#2C2C2C;
+  --border:#9E9E9E;
+  --border-light:#C8C8C8;
+  --overlay-bg:rgba(0,0,0,.72);
+  --amber-txt:#7A4100;
+  --fs:16px;
+  --ff:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --radius:6px;
+  --shadow:0 4px 18px rgba(0,0,0,.13);
+  --shadow-deep:0 8px 32px rgba(0,0,0,.24);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#EEF1F5;font-family:var(--ff);
+  display:flex;justify-content:center;align-items:flex-start;
+  min-height:100vh;padding:28px 16px;
+}
+#canvas{
+  width:100%;max-width:1200px;background:var(--canvas);
+  border-radius:10px;box-shadow:var(--shadow-deep);
+  overflow:hidden;display:flex;flex-direction:column;
+}
+header{
+  background:var(--navy);padding:28px 32px 24px;
+  position:relative;overflow:hidden;
+}
+header::before{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
+header::after{content:'';position:absolute;right:80px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04)}
+header h1{font-size:22pt;font-weight:800;color:#FFFFFF;letter-spacing:.5px;position:relative}
+header .subtitle{margin-top:6px;font-size:10.5pt;color:rgba(255,255,255,.78);font-weight:400;position:relative}
+main{padding:28px 28px 32px;display:flex;flex-direction:column;gap:28px}
+.intro{max-width:860px;margin:0 auto;text-align:center}
+.intro p{font-size:var(--fs);color:var(--text);line-height:1.7}
+.instruccion{
+  display:inline-flex;align-items:center;gap:8px;margin-top:14px;
+  background:#FFF8E1;border-left:4px solid var(--amber-txt);
+  padding:9px 16px;border-radius:0 var(--radius) var(--radius) 0;
+  font-size:14px;color:var(--amber-txt);font-weight:600;
+}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card{
+  background:var(--canvas);border:1.5px solid var(--border-light);
+  border-radius:var(--radius);cursor:pointer;display:flex;
+  align-items:stretch;min-height:130px;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  transition:transform .18s,box-shadow .18s;
+}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.card:focus-visible{outline:3px solid var(--amber-txt);outline-offset:2px}
+.card-strip{width:7px;flex-shrink:0}
+.card:nth-child(1) .card-strip{background:var(--c1-strip)}
+.card:nth-child(2) .card-strip{background:var(--c2-strip)}
+.card-inner{flex:1;padding:22px 18px;display:flex;align-items:center;gap:16px}
+.card-icon{
+  width:52px;height:52px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.card:nth-child(1) .card-icon{background:var(--c1-bg)}
+.card:nth-child(2) .card-icon{background:var(--c2-bg)}
+.card-icon svg{width:28px;height:28px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card:nth-child(1) .card-icon svg{stroke:var(--c1-strip)}
+.card:nth-child(2) .card-icon svg{stroke:var(--c2-strip)}
+.card-body{flex:1}
+.card-num{font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.card:nth-child(1) .card-num{color:var(--c1-strip)}
+.card:nth-child(2) .card-num{color:var(--c2-strip)}
+.card-text{font-size:var(--fs);color:var(--text);line-height:1.45;font-weight:600}
+.card-arrow{margin-left:auto;font-size:20px;flex-shrink:0;opacity:.4;transition:opacity .15s,transform .15s}
+.card:hover .card-arrow{opacity:1;transform:translateX(4px)}
+
+.section{display:none;flex-direction:column;gap:22px;animation:fadeUp .22s ease}
+.section.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.section-header{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:16px;padding-bottom:14px;border-bottom:3px solid var(--border-light);
+}
+.section-title{display:flex;align-items:center;gap:12px}
+.section-badge{
+  width:48px;height:48px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+#section1 .section-badge{background:var(--c1-bg)}
+#section2 .section-badge{background:var(--c2-bg)}
+.section-badge svg{width:26px;height:26px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#section1 .section-badge svg{stroke:var(--c1-strip)}
+#section2 .section-badge svg{stroke:var(--c2-strip)}
+.section-header h2{font-size:15pt;color:var(--text);line-height:1.35;font-weight:700}
+.back-btn{
+  flex-shrink:0;border:2px solid var(--navy);background:var(--canvas);
+  color:var(--navy);padding:9px 20px;cursor:pointer;
+  font-size:11.5pt;font-family:var(--ff);font-weight:600;
+  border-radius:var(--radius);transition:background .15s,color .15s;
+  display:flex;align-items:center;gap:6px;
+}
+.back-btn:hover{background:var(--navy);color:#FFFFFF}
+.back-btn:focus-visible{outline:3px solid var(--amber-txt);outline-offset:2px}
+
+.content-blocks{display:flex;flex-direction:column;gap:14px}
+.content-block{
+  border:1.5px solid var(--border-light);border-radius:var(--radius);
+  overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.07);
+}
+.block-header{
+  display:flex;align-items:center;gap:12px;padding:14px 18px;
+  cursor:pointer;transition:background .15s;background:var(--canvas);
+  border:none;width:100%;text-align:left;font-family:var(--ff);
+}
+.block-header:hover{background:#F5F7FA}
+.block-header:focus-visible{outline:3px solid var(--amber-txt);outline-offset:-2px}
+.block-pip{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+#section1 .block-pip{background:var(--c1-strip)}
+#section2 .block-pip{background:var(--c2-strip)}
+.block-title{font-size:var(--fs);font-weight:700;color:var(--text);flex:1;line-height:1.35}
+.block-chv{font-size:14px;transition:transform .2s;opacity:.5;flex-shrink:0}
+.block-header[aria-expanded="true"] .block-chv{transform:rotate(180deg)}
+.block-body{
+  display:none;padding:16px 18px 20px 42px;
+  border-top:1.5px solid var(--border-light);background:#FAFCFF;
+}
+.block-body.open{display:block}
+.block-body ol{padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.block-body ol li{font-size:var(--fs);color:var(--text);line-height:1.65}
+.block-body ul{padding-left:20px;display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.block-body ul li{font-size:var(--fs);color:var(--text);line-height:1.65}
+.block-body p{font-size:var(--fs);color:var(--text);line-height:1.7;margin-bottom:10px}
+.block-body p:last-child{margin-bottom:0}
+.block-quote{
+  background:#F0F4F8;padding:12px 16px;
+  border-radius:0 var(--radius) var(--radius) 0;
+  margin:10px 0;font-size:var(--fs);color:var(--text-mid);
+  line-height:1.7;font-style:italic;
+}
+#section1 .block-quote{border-left:4px solid var(--c1-strip)}
+#section2 .block-quote{border-left:4px solid var(--c2-strip)}
+
+.modal-overlay{
+  position:fixed;inset:0;background:var(--overlay-bg);
+  display:none;justify-content:center;align-items:center;
+  padding:24px 16px;z-index:900;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--canvas);max-width:760px;width:100%;
+  border-radius:10px;padding:0;position:relative;
+  box-shadow:var(--shadow-deep);overflow:hidden;animation:popIn .2s ease;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(-10px)}to{opacity:1;transform:none}}
+.modal-bar{height:6px;background:var(--navy)}
+.modal-content{padding:28px 28px 26px}
+.modal p{font-size:var(--fs);color:var(--text);line-height:1.7}
+.close{
+  position:absolute;top:14px;right:14px;width:32px;height:32px;
+  border-radius:50%;border:2px solid var(--border-light);background:var(--canvas);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;color:var(--text);transition:background .15s;
+}
+.close:hover{background:#FFE0B2}
+.close:focus-visible{outline:3px solid var(--amber-txt);outline-offset:2px}
+.canvas-footer{
+  border-top:2px solid var(--border-light);padding:12px 28px;
+  font-size:10pt;color:var(--text-mid);background:#F7F8FA;
+}
+@media(max-width:768px){
+  header{padding:20px 18px 18px}
+  header h1{font-size:17pt}
+  main{padding:18px 14px 24px}
+  .grid{grid-template-columns:1fr}
+  .section-header{flex-direction:column;align-items:flex-start}
+  .block-body{padding-left:18px}
+}
+</style>
+</head>
+<body>
+<div id="canvas">
+
+  <header>
+    <h1>ARRENDAMIENTO DE BIENES MUEBLES E INMUEBLES</h1>
+
+  </header>
+
+  <main>
+    <div id="home">
+      <div class="intro">
+        <p>Explore las disposiciones y procedimientos aplicables al arrendamiento de bienes inmuebles y muebles dentro del Sistema Nacional de Contratación Pública, así como las condiciones que regulan su ejecución.</p>
+        <div class="instruccion"><span>&#9432;</span><span>Haga clic en los temas para visualizar la información</span></div>
+      </div>
+      <div class="grid">
+
+        <div class="card" tabindex="0" onclick="openSection(1)" onkeydown="if(event.key==='Enter'||event.key===' ')openSection(1)" aria-label="Arrendamiento de bienes inmuebles">
+          <div class="card-strip"></div>
+          <div class="card-inner">
+            <div class="card-icon">
+              <svg viewBox="0 0 28 28"><rect x="3" y="10" width="22" height="16" rx="1"/><polyline points="1,10 14,2 27,10"/><rect x="10" y="18" width="8" height="8"/><line x1="7" y1="14" x2="9" y2="14"/><line x1="19" y1="14" x2="21" y2="14"/></svg>
+            </div>
+            <div class="card-body">
+              <div class="card-num">Tema 1</div>
+              <div class="card-text">Arrendamiento de bienes inmuebles</div>
+            </div>
+            <span class="card-arrow" aria-hidden="true">›</span>
+          </div>
+        </div>
+
+        <div class="card" tabindex="0" onclick="openSection(2)" onkeydown="if(event.key==='Enter'||event.key===' ')openSection(2)" aria-label="Arrendamiento de bienes muebles">
+          <div class="card-strip"></div>
+          <div class="card-inner">
+            <div class="card-icon">
+              <svg viewBox="0 0 28 28"><rect x="1" y="8" width="18" height="13" rx="1"/><polyline points="19,12 27,12 27,21 19,21"/><line x1="19" y1="12" x2="23" y2="8"/><circle cx="6" cy="22" r="2.5"/><circle cx="22" cy="22" r="2.5"/></svg>
+            </div>
+            <div class="card-body">
+              <div class="card-num">Tema 2</div>
+              <div class="card-text">Arrendamiento de bienes muebles</div>
+            </div>
+            <span class="card-arrow" aria-hidden="true">›</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <div id="section1" class="section" role="region" aria-labelledby="h1">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-badge">
+            <svg viewBox="0 0 28 28"><rect x="3" y="10" width="22" height="16" rx="1"/><polyline points="1,10 14,2 27,10"/><rect x="10" y="18" width="8" height="8"/><line x1="7" y1="14" x2="9" y2="14"/><line x1="19" y1="14" x2="21" y2="14"/></svg>
+          </div>
+          <h2 id="h1">Arrendamiento de bienes inmuebles</h2>
+        </div>
+        <button class="back-btn" onclick="goHome()">← Volver</button>
+      </div>
+      <div class="content-blocks">
+
+        <div class="content-block">
+          <button class="block-header" aria-expanded="false" onclick="toggleBlock(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleBlock(this)">
+            <div class="block-pip"></div>
+            <div class="block-title">Procedimiento en caso de que la entidad contratante sea arrendataria</div>
+            <span class="block-chv" aria-hidden="true">▼</span>
+          </button>
+          <div class="block-body">
+            <p>El Art. 320 del RLOSNCP establece que se seguirá el siguiente procedimiento y condiciones:</p>
+            <ol>
+              <li>Se publicará en el Portal de Contratación Pública el pliego en el que constará las condiciones mínimas del inmueble requerido</li>
+              <li>Se adjudicará a la mejor oferta tomando en consideración el cumplimiento de las condiciones previstas en el pliego y el precio del canon arrendaticio;</li>
+              <li>El canon de arrendamiento será determinado sobre la base de los valores de mercado vigentes en el lugar en el que se encuentre el inmueble;</li>
+              <li>El contrato se celebrará por el plazo necesario, de acuerdo al uso y destino que se le dará</li>
+              <li>El adjudicatario no requiere estar inscrito en el RUP.</li>
+              <li>Se podrá renovar, el contrato por una sola vez, por un plazo igual o inferior al del contrato renovado.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="content-block">
+          <button class="block-header" aria-expanded="false" onclick="toggleBlock(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleBlock(this)">
+            <div class="block-pip"></div>
+            <div class="block-title">Ínfima cuantía en arrendamiento</div>
+            <span class="block-chv" aria-hidden="true">▼</span>
+          </button>
+          <div class="block-body">
+            <p>El Art. 321 del RLOSNCP establece:</p>
+            <div class="block-quote">"En el caso de que la entidad contratante sea arrendataria, si la cuantía del objeto de contratación es igual o menor a diez mil dólares (USD 10.000), la entidad contratante podrá optar por aplicar el procedimiento de ínfima cuantía." (Reglamento de la Ley Orgánica del Sistema Nacional de Contratación Pública, 2025, p.177)</div>
+          </div>
+        </div>
+
+        <div class="content-block">
+          <button class="block-header" aria-expanded="false" onclick="toggleBlock(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleBlock(this)">
+            <div class="block-pip"></div>
+            <div class="block-title">Procedimiento en caso de que la entidad contratante sea arrendadora</div>
+            <span class="block-chv" aria-hidden="true">▼</span>
+          </button>
+          <div class="block-body">
+            <p>De acuerdo con el Art. 322R, se deberá seguir el siguiente procedimiento:</p>
+            <ul>
+              <li>Se publicará en el Portal de Contratación Pública, el pliego en el que se establecerá las condiciones en las que se dará el arrendamiento</li>
+              <li>La recepción de ofertas se realizará en el día y hora señalados en el pliego, luego de lo cual la máxima autoridad o su delegado, adjudicará el arrendamiento al mejor postor;</li>
+              <li>La oferta que cumpliendo lo solicitado en el pliego ofrezca el mayor precio se entenderá como la oferta</li>
+              <li>Para la suscripción del contrato no requiere estar inscrito en el RUP.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="content-block">
+          <button class="block-header" aria-expanded="false" onclick="toggleBlock(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleBlock(this)">
+            <div class="block-pip"></div>
+            <div class="block-title">Normas supletorias</div>
+            <span class="block-chv" aria-hidden="true">▼</span>
+          </button>
+          <div class="block-body">
+            <p>El Art. 324 del RLOSNCP establece lo siguiente:</p>
+            <ul>
+              <li>Se podrá usar los modelos de pliegos que emita el SERCOP, y las normas establecidas en el Código Civil, Ley de Inquilinato y el Código de Comercio.</li>
+              <li>La ejecución contractual actuará siguiendo la normativa de la Ley de Inquilinato o el Código de Comercio.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div id="section2" class="section" role="region" aria-labelledby="h2">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="section-badge">
+            <svg viewBox="0 0 28 28"><rect x="1" y="8" width="18" height="13" rx="1"/><polyline points="19,12 27,12 27,21 19,21"/><line x1="19" y1="12" x2="23" y2="8"/><circle cx="6" cy="22" r="2.5"/><circle cx="22" cy="22" r="2.5"/></svg>
+          </div>
+          <h2 id="h2">Arrendamiento de bienes muebles</h2>
+        </div>
+        <button class="back-btn" onclick="goHome()">← Volver</button>
+      </div>
+      <div class="content-blocks">
+
+        <div class="content-block">
+          <button class="block-header" aria-expanded="false" onclick="toggleBlock(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleBlock(this)">
+            <div class="block-pip"></div>
+            <div class="block-title">Naturaleza del arrendamiento de bienes muebles</div>
+            <span class="block-chv" aria-hidden="true">▼</span>
+          </button>
+          <div class="block-body">
+            <p>El Art. 325 del RLOSNCP establece:</p>
+            <div class="block-quote">"El arrendamiento de bienes muebles será considerado como un servicio en el que toda entidad contratante está obligada a utilizar el procedimiento de subasta inversa electrónica. Respecto de la naturaleza del bien a arrendar, la entidad contratante deberá hacer constar en el pliego respectivo sus especificaciones y características técnicas; respecto de las condiciones del servicio, se establecerá en el pliego la duración del servicio, y las condiciones específicas de la prestación del mismo."</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <div class="canvas-footer">
+    Reglamento de la Ley Orgánica del Sistema Nacional de Contratación Pública. (2025). Artículos 320, 321, 322R, 324 y 325.
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="modal">
+    <div class="modal-bar"></div>
+    <div class="modal-content">
+      <button class="close" aria-label="Cerrar" onclick="closeModal()">✕</button>
+      <p id="modalText"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+var _pf=null;
+function openSection(n){
+  _pf=document.activeElement;
+  document.getElementById("home").style.display="none";
+  document.querySelectorAll(".section").forEach(function(s){s.classList.remove("active")});
+  document.getElementById("section"+n).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function goHome(){
+  document.getElementById("home").style.display="";
+  document.querySelectorAll(".section").forEach(function(s){s.classList.remove("active")});
+  document.querySelectorAll(".block-body.open").forEach(function(b){
+    b.classList.remove("open");
+    b.previousElementSibling.setAttribute("aria-expanded","false");
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function toggleBlock(hdr){
+  var body=hdr.nextElementSibling;
+  var isOpen=body.classList.contains("open");
+  hdr.closest(".content-blocks").querySelectorAll(".block-body.open").forEach(function(b){
+    b.classList.remove("open");
+    b.previousElementSibling.setAttribute("aria-expanded","false");
+  });
+  if(!isOpen){body.classList.add("open");hdr.setAttribute("aria-expanded","true")}
+}
+function closeModal(){
+  document.getElementById("modal").classList.remove("open");
+  document.removeEventListener("keydown",esc);
+  if(_pf)_pf.focus();
+}
+function esc(e){if(e.key==="Escape")closeModal()}
+document.getElementById("modal").addEventListener("click",function(e){if(e.target===this)closeModal()});
+</script>
+</body>
+</html>
