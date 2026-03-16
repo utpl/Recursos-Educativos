@@ -1,705 +1,885 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Determinación de contrataciones</title>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Determinación de contrataciones</title>
+    <style>
+        /* ── VARIABLES ─────────────────────────────────────────── */
+        :root {
+            /* Canvas always white */
+            --canvas: #FFFFFF;
 
-/* ── VARIABLES ─────────────────────────────────────────── */
-:root{
-  /* Canvas always white */
-  --canvas:      #FFFFFF;
+            /* Accent palette — all tested ≥7:1 on white (#FFFFFF) */
+            --navy: #003580;
+            /* 10.5:1 */
+            --teal: #005F73;
+            /* 8.6:1  */
+            --crimson: #9B1D20;
+            /* 8.1:1  */
+            --forest: #1A5C38;
+            /* 8.4:1  */
+            --amber: #7A4100;
+            /* 8.9:1  */
 
-  /* Accent palette — all tested ≥7:1 on white (#FFFFFF) */
-  --navy:        #003580;   /* 10.5:1 */
-  --teal:        #005F73;   /* 8.6:1  */
-  --crimson:     #9B1D20;   /* 8.1:1  */
-  --forest:      #1A5C38;   /* 8.4:1  */
-  --amber:       #7A4100;   /* 8.9:1  */
+            /* Card accent strips (decorative, not carrying text) */
+            --c1-strip: #1565C0;
+            --c2-strip: #00695C;
+            --c3-strip: #558B2F;
+            --c4-strip: #6A1F10;
 
-  /* Card accent strips (decorative, not carrying text) */
-  --c1-strip:    #1565C0;
-  --c2-strip:    #00695C;
-  --c3-strip:    #558B2F;
-  --c4-strip:    #6A1F10;
+            /* Card bg tints (extremely light — text remains black on them) */
+            --c1-bg: #EBF1FB;
+            --c2-bg: #E6F3F1;
+            --c3-bg: #EDF5E6;
+            --c4-bg: #FBF0EE;
 
-  /* Card bg tints (extremely light — text remains black on them) */
-  --c1-bg:       #EBF1FB;
-  --c2-bg:       #E6F3F1;
-  --c3-bg:       #EDF5E6;
-  --c4-bg:       #FBF0EE;
+            /* Item strip per section */
+            --i1: #1565C0;
+            --i2: #00695C;
+            --i3: #558B2F;
+            --i4: #6A1F10;
 
-  /* Item strip per section */
-  --i1:          #1565C0;
-  --i2:          #00695C;
-  --i3:          #558B2F;
-  --i4:          #6A1F10;
+            --black: #000000;
+            --text: #0D0D0D;
+            /* ≈20:1 */
+            --text-mid: #2C2C2C;
+            /* ≈15:1 */
+            --border: #9E9E9E;
+            --border-light: #C8C8C8;
+            --overlay-bg: rgba(0, 0, 0, .72);
 
-  --black:       #000000;
-  --text:        #0D0D0D;   /* ≈20:1 */
-  --text-mid:    #2C2C2C;   /* ≈15:1 */
-  --border:      #9E9E9E;
-  --border-light:#C8C8C8;
-  --overlay-bg:  rgba(0,0,0,.72);
+            --fs: 12pt;
+            --ff: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            --radius: 6px;
+            --shadow: 0 4px 18px rgba(0, 0, 0, .13);
+            --shadow-deep: 0 8px 32px rgba(0, 0, 0, .24);
+        }
 
-  --fs:          12pt;
-  --ff:          "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --radius:      6px;
-  --shadow:      0 4px 18px rgba(0,0,0,.13);
-  --shadow-deep: 0 8px 32px rgba(0,0,0,.24);
-}
+        /* ── RESET ─────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
 
-/* ── RESET ─────────────────────────────────────────────── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:#F0F2F5;
-  font-family:var(--ff);
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  min-height:100vh;
-  padding:28px 16px;
-}
+        body {
+            background: #F0F2F5;
+            font-family: var(--ff);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 28px 16px;
+        }
 
-/* ── CANVAS ─────────────────────────────────────────────── */
-#canvas{
-  width:100%;
-  max-width:1200px;
-  background:var(--canvas);
-  border-radius:10px;
-  box-shadow:var(--shadow-deep);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
+        /* ── CANVAS ─────────────────────────────────────────────── */
+        #canvas {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--canvas);
+            border-radius: 10px;
+            box-shadow: var(--shadow-deep);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-/* ── HEADER ─────────────────────────────────────────────── */
-header{
-  background:var(--navy);
-  padding:28px 32px 24px;
-  position:relative;
-  overflow:hidden;
-}
-/* decorative geometric shapes */
-header::before{
-  content:'';
-  position:absolute;
-  right:-60px;top:-60px;
-  width:220px;height:220px;
-  border-radius:50%;
-  background:rgba(255,255,255,.06);
-}
-header::after{
-  content:'';
-  position:absolute;
-  right:80px;bottom:-40px;
-  width:140px;height:140px;
-  border-radius:50%;
-  background:rgba(255,255,255,.04);
-}
-header h1{
-  font-size:22pt;
-  font-weight:800;
-  color:#FFFFFF;     /* white on navy — contrast infinite-like */
-  letter-spacing:.5px;
-  position:relative;
-}
-header .subtitle{
-  margin-top:6px;
-  font-size:10.5pt;
-  color:rgba(255,255,255,.78);
-  font-weight:400;
-  position:relative;
-}
+        /* ── HEADER ─────────────────────────────────────────────── */
+        header {
+            background: var(--navy);
+            padding: 28px 32px 24px;
+            position: relative;
+            overflow: hidden;
+        }
 
-/* ── MAIN ────────────────────────────────────────────────── */
-main{
-  padding:28px 28px 32px;
-  display:flex;
-  flex-direction:column;
-  gap:28px;
-}
+        /* decorative geometric shapes */
+        header::before {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .06);
+        }
 
-/* ── INTRO ───────────────────────────────────────────────── */
-.intro{
-  max-width:860px;
-  margin:0 auto;
-  text-align:center;
-}
-.intro p{
-  font-size:var(--fs);
-  color:var(--text);
-  line-height:1.7;
-}
-.instruccion{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  margin-top:14px;
-  background:#FFF8E1;
-  border-left:4px solid #7A4100;
-  padding:9px 16px;
-  border-radius:0 var(--radius) var(--radius) 0;
-  font-size:11pt;
-  color:#7A4100;
-  font-weight:600;
-}
+        header::after {
+            content: '';
+            position: absolute;
+            right: 80px;
+            bottom: -40px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .04);
+        }
 
-/* ── GRID DE TARJETAS ────────────────────────────────────── */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:18px;
-}
+        header h1 {
+            font-size: 22pt;
+            font-weight: 800;
+            color: #FFFFFF;
+            /* white on navy — contrast infinite-like */
+            letter-spacing: .5px;
+            position: relative;
+        }
 
-.card{
-  background:var(--canvas);
-  border:1.5px solid var(--border-light);
-  border-radius:var(--radius);
-  cursor:pointer;
-  display:flex;
-  align-items:stretch;
-  min-height:110px;
-  overflow:hidden;
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
-  transition:transform .18s, box-shadow .18s;
-}
-.card:hover{
-  transform:translateY(-3px);
-  box-shadow:var(--shadow);
-}
-.card:focus-visible{
-  outline:3px solid var(--amber);
-  outline-offset:2px;
-}
+        header .subtitle {
+            margin-top: 6px;
+            font-size: 10.5pt;
+            color: rgba(255, 255, 255, .78);
+            font-weight: 400;
+            position: relative;
+        }
 
-.card-strip{
-  width:7px;
-  flex-shrink:0;
-}
-.card:nth-child(1) .card-strip{background:var(--c1-strip)}
-.card:nth-child(2) .card-strip{background:var(--c2-strip)}
-.card:nth-child(3) .card-strip{background:var(--c3-strip)}
-.card:nth-child(4) .card-strip{background:var(--c4-strip)}
+        /* ── MAIN ────────────────────────────────────────────────── */
+        main {
+            padding: 28px 28px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
 
-.card-inner{
-  flex:1;
-  padding:18px 16px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
+        /* ── INTRO ───────────────────────────────────────────────── */
+        .intro {
+            max-width: 860px;
+            margin: 0 auto;
+            text-align: center;
+        }
 
-.card-num{
-  font-size:28pt;
-  font-weight:800;
-  line-height:1;
-  flex-shrink:0;
-}
-.card:nth-child(1) .card-num{color:var(--c1-strip)}
-.card:nth-child(2) .card-num{color:var(--c2-strip)}
-.card:nth-child(3) .card-num{color:var(--c3-strip)}
-.card:nth-child(4) .card-num{color:var(--c4-strip)}
+        .intro p {
+            font-size: var(--fs);
+            color: var(--text);
+            line-height: 1.7;
+        }
 
-.card-text{
-  font-size:var(--fs);
-  color:var(--text);
-  line-height:1.45;
-  font-weight:600;
-}
+        .instruccion {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            background: #FFF8E1;
+            border-left: 4px solid #7A4100;
+            padding: 9px 16px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            font-size: 11pt;
+            color: #7A4100;
+            font-weight: 600;
+        }
 
-.card-arrow{
-  margin-left:auto;
-  font-size:20px;
-  flex-shrink:0;
-  opacity:.45;
-  transition:opacity .15s, transform .15s;
-}
-.card:hover .card-arrow{opacity:1;transform:translateX(4px)}
+        /* ── GRID DE TARJETAS ────────────────────────────────────── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
 
-/* ── SECCIÓN ─────────────────────────────────────────────── */
-.section{
-  display:none;
-  flex-direction:column;
-  gap:20px;
-  animation:fadeUp .22s ease;
-}
-.section.active{display:flex}
+        .card {
+            background: var(--canvas);
+            border: 1.5px solid var(--border-light);
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: stretch;
+            min-height: 110px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+            transition: transform .18s, box-shadow .18s;
+        }
 
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(10px)}
-  to  {opacity:1;transform:none}
-}
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
 
-.section-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-  padding-bottom:14px;
-  border-bottom:3px solid var(--border-light);
-}
+        .card:focus-visible {
+            outline: 3px solid var(--amber);
+            outline-offset: 2px;
+        }
 
-.section-title{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-.section-num{
-  font-size:32pt;
-  font-weight:800;
-  line-height:1;
-}
-#section1 .section-num{color:var(--c1-strip)}
-#section2 .section-num{color:var(--c2-strip)}
-#section3 .section-num{color:var(--c3-strip)}
-#section4 .section-num{color:var(--c4-strip)}
+        .card-strip {
+            width: 7px;
+            flex-shrink: 0;
+        }
 
-.section-header h2{
-  font-size:14pt;
-  color:var(--text);
-  line-height:1.35;
-  font-weight:700;
-}
+        .card:nth-child(1) .card-strip {
+            background: var(--c1-strip)
+        }
 
-.section-intro{
-  font-size:var(--fs);
-  color:var(--text-mid);
-  line-height:1.65;
-  padding:12px 16px;
-  background:#F7F8FA;
-  border-left:4px solid var(--border);
-  border-radius:0 var(--radius) var(--radius) 0;
-}
-#section1 .section-intro{border-color:var(--c1-strip)}
-#section2 .section-intro{border-color:var(--c2-strip)}
-#section3 .section-intro{border-color:var(--c3-strip)}
-#section4 .section-intro{border-color:var(--c4-strip)}
+        .card:nth-child(2) .card-strip {
+            background: var(--c2-strip)
+        }
 
-.back-btn{
-  flex-shrink:0;
-  border:2px solid var(--navy);
-  background:var(--canvas);
-  color:var(--navy);
-  padding:9px 20px;
-  cursor:pointer;
-  font-size:11.5pt;
-  font-family:var(--ff);
-  font-weight:600;
-  border-radius:var(--radius);
-  transition:background .15s,color .15s;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.back-btn:hover{background:var(--navy);color:#FFFFFF}
-.back-btn:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+        .card:nth-child(3) .card-strip {
+            background: var(--c3-strip)
+        }
 
-/* ── LISTA ───────────────────────────────────────────────── */
-.list{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-}
+        .card:nth-child(4) .card-strip {
+            background: var(--c4-strip)
+        }
 
-.list-item{
-  background:var(--canvas);
-  border:1.5px solid var(--border-light);
-  border-radius:var(--radius);
-  padding:0;
-  cursor:pointer;
-  display:flex;
-  align-items:stretch;
-  overflow:hidden;
-  box-shadow:0 1px 5px rgba(0,0,0,.07);
-  transition:transform .15s, box-shadow .15s;
-}
-.list-item:hover{
-  transform:translateY(-2px);
-  box-shadow:0 4px 14px rgba(0,0,0,.13);
-}
-.list-item:focus-visible{
-  outline:3px solid var(--amber);
-  outline-offset:2px;
-}
+        .card-inner {
+            flex: 1;
+            padding: 18px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
 
-.item-strip{
-  width:5px;
-  flex-shrink:0;
-}
-#section1 .item-strip{background:var(--i1)}
-#section2 .item-strip{background:var(--i2)}
-#section3 .item-strip{background:var(--i3)}
-#section4 .item-strip{background:var(--i4)}
+        .card-num {
+            font-size: 28pt;
+            font-weight: 800;
+            line-height: 1;
+            flex-shrink: 0;
+        }
 
-.item-inner{
-  padding:13px 14px;
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-}
+        .card:nth-child(1) .card-num {
+            color: var(--c1-strip)
+        }
 
-.number{
-  font-weight:800;
-  font-size:var(--fs);
-  line-height:1.4;
-  flex-shrink:0;
-  min-width:22px;
-}
-#section1 .number{color:var(--i1)}
-#section2 .number{color:var(--i2)}
-#section3 .number{color:var(--i3)}
-#section4 .number{color:var(--i4)}
+        .card:nth-child(2) .card-num {
+            color: var(--c2-strip)
+        }
 
-.text{
-  font-size:var(--fs);
-  color:var(--text);
-  line-height:1.5;
-}
+        .card:nth-child(3) .card-num {
+            color: var(--c3-strip)
+        }
 
-/* ── MODAL ───────────────────────────────────────────────── */
-.modal-overlay{
-  position:fixed;
-  inset:0;
-  background:var(--overlay-bg);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  padding:24px 16px;
-  z-index:900;
-}
-.modal-overlay.open{
-  display:flex;
-}
+        .card:nth-child(4) .card-num {
+            color: var(--c4-strip)
+        }
 
-.modal{
-  background:var(--canvas);
-  max-width:760px;
-  width:100%;
-  border-radius:10px;
-  padding:0;
-  position:relative;
-  box-shadow:var(--shadow-deep);
-  overflow:hidden;
-  animation:popIn .2s ease;
-}
-@keyframes popIn{
-  from{opacity:0;transform:scale(.96) translateY(-10px)}
-  to  {opacity:1;transform:none}
-}
+        .card-text {
+            font-size: var(--fs);
+            color: var(--text);
+            line-height: 1.45;
+            font-weight: 600;
+        }
 
-.modal-bar{
-  height:6px;
-}
-#modal .modal-bar{background:var(--navy)}
+        .card-arrow {
+            margin-left: auto;
+            font-size: 20px;
+            flex-shrink: 0;
+            opacity: .45;
+            transition: opacity .15s, transform .15s;
+        }
 
-.modal-content{
-  padding:28px 28px 26px;
-}
+        .card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(4px)
+        }
 
-.modal p{
-  font-size:var(--fs);
-  color:var(--text);
-  line-height:1.7;
-}
+        /* ── SECCIÓN ─────────────────────────────────────────────── */
+        .section {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeUp .22s ease;
+        }
 
-.close{
-  position:absolute;
-  top:14px;
-  right:14px;
-  width:32px;height:32px;
-  border-radius:50%;
-  border:2px solid var(--border-light);
-  background:var(--canvas);
-  font-size:16px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--text);
-  transition:background .15s;
-  line-height:1;
-}
-.close:hover{background:#FFE0B2}
-.close:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+        .section.active {
+            display: flex
+        }
 
-/* ── FOOTER ──────────────────────────────────────────────── */
-.canvas-footer{
-  border-top:2px solid var(--border-light);
-  padding:12px 28px;
-  font-size:10pt;
-  color:var(--text-mid);
-  background:#F7F8FA;
-}
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px)
+            }
 
-/* ── RESPONSIVE ──────────────────────────────────────────── */
-@media(max-width:768px){
-  header{padding:20px 18px 18px}
-  header h1{font-size:17pt}
-  main{padding:18px 14px 24px}
-  .grid,.list{grid-template-columns:1fr}
-  .section-header{flex-direction:column;align-items:flex-start}
-  .modal-content{padding:20px 16px 18px}
-}
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
 
-</style>
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 14px;
+            border-bottom: 3px solid var(--border-light);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-num {
+            font-size: 32pt;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        #section1 .section-num {
+            color: var(--c1-strip)
+        }
+
+        #section2 .section-num {
+            color: var(--c2-strip)
+        }
+
+        #section3 .section-num {
+            color: var(--c3-strip)
+        }
+
+        #section4 .section-num {
+            color: var(--c4-strip)
+        }
+
+        .section-header h2 {
+            font-size: 14pt;
+            color: var(--text);
+            line-height: 1.35;
+            font-weight: 700;
+        }
+
+        .section-intro {
+            font-size: var(--fs);
+            color: var(--text-mid);
+            line-height: 1.65;
+            padding: 12px 16px;
+            background: #F7F8FA;
+            border-left: 4px solid var(--border);
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+
+        #section1 .section-intro {
+            border-color: var(--c1-strip)
+        }
+
+        #section2 .section-intro {
+            border-color: var(--c2-strip)
+        }
+
+        #section3 .section-intro {
+            border-color: var(--c3-strip)
+        }
+
+        #section4 .section-intro {
+            border-color: var(--c4-strip)
+        }
+
+        .back-btn {
+            flex-shrink: 0;
+            border: 2px solid var(--navy);
+            background: var(--canvas);
+            color: var(--navy);
+            padding: 9px 20px;
+            cursor: pointer;
+            font-size: 11.5pt;
+            font-family: var(--ff);
+            font-weight: 600;
+            border-radius: var(--radius);
+            transition: background .15s, color .15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: var(--navy);
+            color: #FFFFFF
+        }
+
+        .back-btn:focus-visible {
+            outline: 3px solid var(--amber);
+            outline-offset: 2px
+        }
+
+        /* ── LISTA ───────────────────────────────────────────────── */
+        .list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .list-item {
+            background: var(--canvas);
+            border: 1.5px solid var(--border-light);
+            border-radius: var(--radius);
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: stretch;
+            overflow: hidden;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, .07);
+            transition: transform .15s, box-shadow .15s;
+        }
+
+        .list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .13);
+        }
+
+        .list-item:focus-visible {
+            outline: 3px solid var(--amber);
+            outline-offset: 2px;
+        }
+
+        .item-strip {
+            width: 5px;
+            flex-shrink: 0;
+        }
+
+        #section1 .item-strip {
+            background: var(--i1)
+        }
+
+        #section2 .item-strip {
+            background: var(--i2)
+        }
+
+        #section3 .item-strip {
+            background: var(--i3)
+        }
+
+        #section4 .item-strip {
+            background: var(--i4)
+        }
+
+        .item-inner {
+            padding: 13px 14px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .number {
+            font-weight: 800;
+            font-size: var(--fs);
+            line-height: 1.4;
+            flex-shrink: 0;
+            min-width: 22px;
+        }
+
+        #section1 .number {
+            color: var(--i1)
+        }
+
+        #section2 .number {
+            color: var(--i2)
+        }
+
+        #section3 .number {
+            color: var(--i3)
+        }
+
+        #section4 .number {
+            color: var(--i4)
+        }
+
+        .text {
+            font-size: var(--fs);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* ── MODAL ───────────────────────────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--overlay-bg);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+            z-index: 900;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--canvas);
+            max-width: 760px;
+            width: 100%;
+            border-radius: 10px;
+            padding: 0;
+            position: relative;
+            box-shadow: var(--shadow-deep);
+            overflow: hidden;
+            animation: popIn .2s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(.96) translateY(-10px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .modal-bar {
+            height: 6px;
+        }
+
+        #modal .modal-bar {
+            background: var(--navy)
+        }
+
+        .modal-content {
+            padding: 28px 28px 26px;
+        }
+
+        .modal p {
+            font-size: var(--fs);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--border-light);
+            background: var(--canvas);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            transition: background .15s;
+            line-height: 1;
+        }
+
+        .close:hover {
+            background: #FFE0B2
+        }
+
+        .close:focus-visible {
+            outline: 3px solid var(--amber);
+            outline-offset: 2px
+        }
+
+        /* ── FOOTER ──────────────────────────────────────────────── */
+        .canvas-footer {
+            border-top: 2px solid var(--border-light);
+            padding: 12px 28px;
+            font-size: 10pt;
+            color: var(--text-mid);
+            background: #F7F8FA;
+        }
+
+        /* ── RESPONSIVE ──────────────────────────────────────────── */
+        @media(max-width:768px) {
+            header {
+                padding: 20px 18px 18px
+            }
+
+            header h1 {
+                font-size: 17pt
+            }
+
+            main {
+                padding: 18px 14px 24px
+            }
+
+            .grid,
+            .list {
+                grid-template-columns: 1fr
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start
+            }
+
+            .modal-content {
+                padding: 20px 16px 18px
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="canvas">
+    <div id="canvas">
 
-  <!-- HEADER -->
-  <header>
-    <h1>DETERMINACIÓN DE CONTRATACIONES</h1>
+        <!-- HEADER -->
+        <header>
+            <h1>DETERMINACIÓN DE CONTRATACIONES</h1>
 
-  </header>
+        </header>
 
-  <main>
+        <main>
 
-    <!-- HOME -->
-    <div id="home">
+            <!-- HOME -->
+            <div id="home">
 
-      <div class="intro">
-        <p>Conozca las diferentes contrataciones que pueden realizarse en materia de defensa nacional, seguridad del Estado, protección de autoridades, orden público y rehabilitación social, así como los bienes, servicios y obras necesarios para el cumplimiento de estas funciones estratégicas.</p>
-        <div class="instruccion">
-          <span>&#9432;</span>
-          <span>Haga clic en los temas para visualizar la información</span>
+                <div class="intro">
+                    <p>Conozca las diferentes contrataciones que pueden realizarse en materia de defensa nacional,
+                        seguridad del Estado, protección de autoridades, orden público y rehabilitación social, así como
+                        los bienes, servicios y obras necesarios para el cumplimiento de estas funciones estratégicas.
+                    </p>
+                    <div class="instruccion">
+                        <span>&#9432;</span>
+                        <span>Haga clic en los temas para visualizar la información</span>
+                    </div>
+                </div>
+
+                <div class="grid">
+
+                    <div class="card" tabindex="0" onclick="openSection(1)"
+                        onkeydown="if(event.key==='Enter'||event.key===' ')openSection(1)"
+                        aria-label="Contrataciones para la defensa nacional y seguridad externa del Estado">
+                        <div class="card-strip"></div>
+                        <div class="card-inner">
+                            <div class="card-num">1</div>
+                            <div class="card-text">Contrataciones para la defensa nacional y seguridad externa del
+                                Estado</div>
+                            <span class="card-arrow" aria-hidden="true">›</span>
+                        </div>
+                    </div>
+
+                    <div class="card" tabindex="0" onclick="openSection(2)"
+                        onkeydown="if(event.key==='Enter'||event.key===' ')openSection(2)"
+                        aria-label="Contrataciones de la Casa Militar Presidencial para protección y seguridad de autoridades">
+                        <div class="card-strip"></div>
+                        <div class="card-inner">
+                            <div class="card-num">2</div>
+                            <div class="card-text">Contrataciones de la Casa Militar Presidencial para protección y
+                                seguridad de autoridades</div>
+                            <span class="card-arrow" aria-hidden="true">›</span>
+                        </div>
+                    </div>
+
+                    <div class="card" tabindex="0" onclick="openSection(3)"
+                        onkeydown="if(event.key==='Enter'||event.key===' ')openSection(3)"
+                        aria-label="Contrataciones para el orden público, protección interna y seguridad ciudadana">
+                        <div class="card-strip"></div>
+                        <div class="card-inner">
+                            <div class="card-num">3</div>
+                            <div class="card-text">Contrataciones para el orden público, protección interna y seguridad
+                                ciudadana</div>
+                            <span class="card-arrow" aria-hidden="true">›</span>
+                        </div>
+                    </div>
+
+                    <div class="card" tabindex="0" onclick="openSection(4)"
+                        onkeydown="if(event.key==='Enter'||event.key===' ')openSection(4)"
+                        aria-label="Contrataciones para el sistema de rehabilitación social">
+                        <div class="card-strip"></div>
+                        <div class="card-inner">
+                            <div class="card-num">4</div>
+                            <div class="card-text">Contrataciones para el sistema de rehabilitación social</div>
+                            <span class="card-arrow" aria-hidden="true">›</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SECTION 1 -->
+            <div id="section1" class="section" role="region" aria-labelledby="h1">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-num">1</div>
+                        <h2 id="h1">Contrataciones para la defensa nacional y seguridad externa del Estado</h2>
+                    </div>
+                    <button class="back-btn" onclick="goHome()">← Volver</button>
+                </div>
+                <p class="section-intro">En el caso de defensa nacional y seguridad externa del Estado:</p>
+                <div class="list" id="list1"></div>
+            </div>
+
+            <!-- SECTION 2 -->
+            <div id="section2" class="section" role="region" aria-labelledby="h2">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-num">2</div>
+                        <h2 id="h2">Contrataciones de la Casa Militar Presidencial para protección y seguridad de
+                            autoridades</h2>
+                    </div>
+                    <button class="back-btn" onclick="goHome()">← Volver</button>
+                </div>
+                <p class="section-intro">A efecto de cumplir sus atribuciones, la Casa Militar Presidencial, podrá
+                    efectuar las contrataciones detalladas en el numeral precedente, con énfasis en brindar protección,
+                    transporte y seguridad a las principales autoridades del país, dentro y fuera del territorio
+                    nacional; y, además:</p>
+                <div class="list" id="list2"></div>
+            </div>
+
+            <!-- SECTION 3 -->
+            <div id="section3" class="section" role="region" aria-labelledby="h3">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-num">3</div>
+                        <h2 id="h3">Contrataciones para el orden público, protección interna y seguridad ciudadana</h2>
+                    </div>
+                    <button class="back-btn" onclick="goHome()">← Volver</button>
+                </div>
+                <p class="section-intro">En el caso de orden público, protección interna, seguridad ciudadana y
+                    seguridad interna del Estado:</p>
+                <div class="list" id="list3"></div>
+            </div>
+
+            <!-- SECTION 4 -->
+            <div id="section4" class="section" role="region" aria-labelledby="h4">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="section-num">4</div>
+                        <h2 id="h4">Contrataciones para el sistema de rehabilitación social</h2>
+                    </div>
+                    <button class="back-btn" onclick="goHome()">← Volver</button>
+                </div>
+                <p class="section-intro">En el caso de rehabilitación social:</p>
+                <div class="list" id="list4"></div>
+            </div>
+
+        </main>
+
+        <div class="canvas-footer">
+            Reglamento General a la Ley Orgánica del Sistema Nacional de Contratación Pública del Ecuador. Artículos
+            327–330 y disposiciones concordantes.
         </div>
-      </div>
 
-      <div class="grid">
-
-        <div class="card" tabindex="0" onclick="openSection(1)" onkeydown="if(event.key==='Enter'||event.key===' ')openSection(1)"
-             aria-label="Contrataciones para la defensa nacional y seguridad externa del Estado">
-          <div class="card-strip"></div>
-          <div class="card-inner">
-            <div class="card-num">1</div>
-            <div class="card-text">Contrataciones para la defensa nacional y seguridad externa del Estado</div>
-            <span class="card-arrow" aria-hidden="true">›</span>
-          </div>
-        </div>
-
-        <div class="card" tabindex="0" onclick="openSection(2)" onkeydown="if(event.key==='Enter'||event.key===' ')openSection(2)"
-             aria-label="Contrataciones de la Casa Militar Presidencial para protección y seguridad de autoridades">
-          <div class="card-strip"></div>
-          <div class="card-inner">
-            <div class="card-num">2</div>
-            <div class="card-text">Contrataciones de la Casa Militar Presidencial para protección y seguridad de autoridades</div>
-            <span class="card-arrow" aria-hidden="true">›</span>
-          </div>
-        </div>
-
-        <div class="card" tabindex="0" onclick="openSection(3)" onkeydown="if(event.key==='Enter'||event.key===' ')openSection(3)"
-             aria-label="Contrataciones para el orden público, protección interna y seguridad ciudadana">
-          <div class="card-strip"></div>
-          <div class="card-inner">
-            <div class="card-num">3</div>
-            <div class="card-text">Contrataciones para el orden público, protección interna y seguridad ciudadana</div>
-            <span class="card-arrow" aria-hidden="true">›</span>
-          </div>
-        </div>
-
-        <div class="card" tabindex="0" onclick="openSection(4)" onkeydown="if(event.key==='Enter'||event.key===' ')openSection(4)"
-             aria-label="Contrataciones para el sistema de rehabilitación social">
-          <div class="card-strip"></div>
-          <div class="card-inner">
-            <div class="card-num">4</div>
-            <div class="card-text">Contrataciones para el sistema de rehabilitación social</div>
-            <span class="card-arrow" aria-hidden="true">›</span>
-          </div>
-        </div>
-
-      </div>
     </div>
 
-    <!-- SECTION 1 -->
-    <div id="section1" class="section" role="region" aria-labelledby="h1">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="section-num">1</div>
-          <h2 id="h1">Contrataciones para la defensa nacional y seguridad externa del Estado</h2>
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalText" tabindex="-1">
+        <div class="modal">
+            <div class="modal-bar"></div>
+            <div class="modal-content">
+                <button class="close" aria-label="Cerrar" onclick="closeModal()">✕</button>
+                <p id="modalText"></p>
+            </div>
         </div>
-        <button class="back-btn" onclick="goHome()">← Volver</button>
-      </div>
-      <p class="section-intro">En el caso de defensa nacional y seguridad externa del Estado:</p>
-      <div class="list" id="list1"></div>
     </div>
 
-    <!-- SECTION 2 -->
-    <div id="section2" class="section" role="region" aria-labelledby="h2">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="section-num">2</div>
-          <h2 id="h2">Contrataciones de la Casa Militar Presidencial para protección y seguridad de autoridades</h2>
-        </div>
-        <button class="back-btn" onclick="goHome()">← Volver</button>
-      </div>
-      <p class="section-intro">A efecto de cumplir sus atribuciones, la Casa Militar Presidencial, podrá efectuar las contrataciones detalladas en el numeral precedente, con énfasis en brindar protección, transporte y seguridad a las principales autoridades del país, dentro y fuera del territorio nacional; y, además:</p>
-      <div class="list" id="list2"></div>
-    </div>
+    <script>
+        const data = {
+            1: [
+                "1. Adquisición, modernización, repotenciación y mantenimiento de armamento; y, su equipo y accesorios especiales relacionados;",
+                "2. Adquisición y mantenimiento de equipo de intendencia, equipamiento y protección personal, material de guerra y equipo especial para seguridad y defensa;",
+                "3. Adquisición, modernización y repotenciación de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa;",
+                "4. Recuperación, mantenimiento y sostenimiento logístico integral de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa;",
+                "5. Adquisición de bienes y servicios para la infraestructura tecnológica, comunicaciones, informática, ciberseguridad, ciber defensa, ingenios y aplicaciones espaciales, equipos para uso de la fuerza y seguridad de la información;",
+                "6. Adquisición de licencias de software propietario y acceso a segmento satelital para inteligencia y operaciones de seguridad y defensa;",
+                "7. Contratación de servicio de transporte internacional de equipos, partes y repuestos para la seguridad y defensa;",
+                "8. Contratación de servicios especializados en el exterior necesarios para la seguridad y defensa;",
+                "9. Adquisición de raciones de combate;",
+                "10. Contratación de servicios de instrucción, adoctrinamiento y capacitación especializada en defensa y seguridad;",
+                "11. Adquisición de animales para su adiestramiento y su equipo de protección cuyo uso sea para la seguridad y defensa;",
+                "12. La contratación de obras o consultorías para construcción de infraestructura para seguridad y defensa;",
+                "13. Servicios de consultoría necesarios para seguridad y defensa;",
+                "14. Bienes y servicios utilizados en materia electoral a cargo de las Fuerzas Armadas.",
+                "15. Las contrataciones de seguros de los bienes de las Fuerzas Armadas. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.",
+                "16. Adquisición o suscripción a manuales técnicos y operacionales de unidades navales, terrestres, aéreas y equipos especiales para seguridad y defensa."
+            ],
+            2: [
+                "1. Servicio de limpieza en instalaciones e infraestructura del Complejo Presidencial incluidas las de la Casa Militar Presidencial;",
+                "2. Arrendamiento de inmuebles; y,",
+                "3. Blindaje de vehículos e inmuebles."
+            ],
+            3: [
+                "1. Las contrataciones que sean necesarias para la adquisición, modernización, repotenciación, dotación, equipamiento y mantenimiento de armamento y accesorios especiales del personal policial o militar, según corresponda;",
+                "2. Las contrataciones relacionadas a bienes y servicios, incluidos los estudios especializados de carácter estratégicos y/o especiales, incluyéndose su mantenimiento y operación; que sean necesarios para prevenir y disuadir potenciales amenazas o riesgos de seguridad interna;",
+                "3. Las contrataciones relacionadas con la adquisición, desarrollo, mantenimiento, operación de licencias (software) y hardware; y, las contrataciones relacionadas con la compra de licencias y equipamiento tecnológico en general, comunicaciones, ciberseguridad y aplicaciones especiales;",
+                "4. Las contrataciones relacionadas con la administración y control de sustancias catalogadas sujetas a fiscalización, incluido su depósito, destrucción y logística.",
+                "5. Las contrataciones de seguros de los bienes de la Policía Nacional. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General; y,",
+                "6. Bienes y servicios relacionados con el apoyo institucional de Policía Nacional en período electoral."
+            ],
+            4: [
+                "1. Las contrataciones de obra relacionadas a la infraestructura carcelaria, incluido su mantenimiento y repotenciación;",
+                "2. Las contrataciones necesarias para cumplir con el artículo 12 del Código Orgánico Integral Penal; y,",
+                "3. Las contrataciones de seguros necesarias para el Sistema Nacional de Rehabilitación Social. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General."
+            ]
+        };
 
-    <!-- SECTION 3 -->
-    <div id="section3" class="section" role="region" aria-labelledby="h3">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="section-num">3</div>
-          <h2 id="h3">Contrataciones para el orden público, protección interna y seguridad ciudadana</h2>
-        </div>
-        <button class="back-btn" onclick="goHome()">← Volver</button>
-      </div>
-      <p class="section-intro">En el caso de orden público, protección interna, seguridad ciudadana y seguridad interna del Estado:</p>
-      <div class="list" id="list3"></div>
-    </div>
+        var _prevFocus = null;
 
-    <!-- SECTION 4 -->
-    <div id="section4" class="section" role="region" aria-labelledby="h4">
-      <div class="section-header">
-        <div class="section-title">
-          <div class="section-num">4</div>
-          <h2 id="h4">Contrataciones para el sistema de rehabilitación social</h2>
-        </div>
-        <button class="back-btn" onclick="goHome()">← Volver</button>
-      </div>
-      <p class="section-intro">En el caso de rehabilitación social:</p>
-      <div class="list" id="list4"></div>
-    </div>
+        function buildLists() {
+            for (var i = 1; i <= 4; i++) {
+                var container = document.getElementById("list" + i);
+                data[i].forEach(function (text) {
+                    var numPart = text.split(".")[0] + ".";
+                    var bodyPart = text.slice(numPart.length).trim();
 
-  </main>
+                    var item = document.createElement("div");
+                    item.className = "list-item";
+                    item.tabIndex = 0;
+                    item.setAttribute("role", "button");
+                    item.setAttribute("aria-label", text);
 
-  <div class="canvas-footer">
-    Reglamento General a la Ley Orgánica del Sistema Nacional de Contratación Pública del Ecuador. Artículos 327–330 y disposiciones concordantes.
-  </div>
+                    var strip = document.createElement("div");
+                    strip.className = "item-strip";
 
-</div>
+                    var inner = document.createElement("div");
+                    inner.className = "item-inner";
+                    inner.innerHTML =
+                        '<div class="number">' + numPart + '</div>' +
+                        '<div class="text">' + bodyPart + '</div>';
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalText" tabindex="-1">
-  <div class="modal">
-    <div class="modal-bar"></div>
-    <div class="modal-content">
-      <button class="close" aria-label="Cerrar" onclick="closeModal()">✕</button>
-      <p id="modalText"></p>
-    </div>
-  </div>
-</div>
+                    item.appendChild(strip);
+                    item.appendChild(inner);
 
-<script>
-const data = {
-  1:[
-    "1. Adquisición, modernización, repotenciación y mantenimiento de armamento; y, su equipo y accesorios especiales relacionados;",
-    "2. Adquisición y mantenimiento de equipo de intendencia, equipamiento y protección personal, material de guerra y equipo especial para seguridad y defensa;",
-    "3. Adquisición, modernización y repotenciación de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa;",
-    "4. Recuperación, mantenimiento y sostenimiento logístico integral de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa;",
-    "5. Adquisición de bienes y servicios para la infraestructura tecnológica, comunicaciones, informática, ciberseguridad, ciber defensa, ingenios y aplicaciones espaciales, equipos para uso de la fuerza y seguridad de la información;",
-    "6. Adquisición de licencias de software propietario y acceso a segmento satelital para inteligencia y operaciones de seguridad y defensa;",
-    "7. Contratación de servicio de transporte internacional de equipos, partes y repuestos para la seguridad y defensa;",
-    "8. Contratación de servicios especializados en el exterior necesarios para la seguridad y defensa;",
-    "9. Adquisición de raciones de combate;",
-    "10. Contratación de servicios de instrucción, adoctrinamiento y capacitación especializada en defensa y seguridad;",
-    "11. Adquisición de animales para su adiestramiento y su equipo de protección cuyo uso sea para la seguridad y defensa;",
-    "12. La contratación de obras o consultorías para construcción de infraestructura para seguridad y defensa;",
-    "13. Servicios de consultoría necesarios para seguridad y defensa;",
-    "14. Bienes y servicios utilizados en materia electoral a cargo de las Fuerzas Armadas.",
-    "15. Las contrataciones de seguros de los bienes de las Fuerzas Armadas. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.",
-    "16. Adquisición o suscripción a manuales técnicos y operacionales de unidades navales, terrestres, aéreas y equipos especiales para seguridad y defensa."
-  ],
-  2:[
-    "1. Servicio de limpieza en instalaciones e infraestructura del Complejo Presidencial incluidas las de la Casa Militar Presidencial;",
-    "2. Arrendamiento de inmuebles; y,",
-    "3. Blindaje de vehículos e inmuebles."
-  ],
-  3:[
-    "1. Las contrataciones que sean necesarias para la adquisición, modernización, repotenciación, dotación, equipamiento y mantenimiento de armamento y accesorios especiales del personal policial o militar, según corresponda;",
-    "2. Las contrataciones relacionadas a bienes y servicios, incluidos los estudios especializados de carácter estratégicos y/o especiales, incluyéndose su mantenimiento y operación; que sean necesarios para prevenir y disuadir potenciales amenazas o riesgos de seguridad interna;",
-    "3. Las contrataciones relacionadas con la adquisición, desarrollo, mantenimiento, operación de licencias (software) y hardware; y, las contrataciones relacionadas con la compra de licencias y equipamiento tecnológico en general, comunicaciones, ciberseguridad y aplicaciones especiales;",
-    "4. Las contrataciones relacionadas con la administración y control de sustancias catalogadas sujetas a fiscalización, incluido su depósito, destrucción y logística.",
-    "5. Las contrataciones de seguros de los bienes de la Policía Nacional. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General; y,",
-    "6. Bienes y servicios relacionados con el apoyo institucional de Policía Nacional en período electoral."
-  ],
-  4:[
-    "1. Las contrataciones de obra relacionadas a la infraestructura carcelaria, incluido su mantenimiento y repotenciación;",
-    "2. Las contrataciones necesarias para cumplir con el artículo 12 del Código Orgánico Integral Penal; y,",
-    "3. Las contrataciones de seguros necesarias para el Sistema Nacional de Rehabilitación Social. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General."
-  ]
-};
+                    var captured = text;
+                    item.onclick = function () { openModal(captured); };
+                    item.onkeydown = function (e) {
+                        if (e.key === 'Enter' || e.key === ' ') openModal(captured);
+                    };
+                    container.appendChild(item);
+                });
+            }
+        }
 
-var _prevFocus = null;
+        function openSection(n) {
+            _prevFocus = document.activeElement;
+            document.getElementById("home").style.display = "none";
+            document.querySelectorAll(".section").forEach(function (s) { s.classList.remove("active"); });
+            document.getElementById("section" + n).classList.add("active");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-function buildLists(){
-  for(var i=1;i<=4;i++){
-    var container = document.getElementById("list"+i);
-    data[i].forEach(function(text){
-      var numPart = text.split(".")[0] + ".";
-      var bodyPart = text.slice(numPart.length).trim();
+        function goHome() {
+            document.getElementById("home").style.display = "";
+            document.querySelectorAll(".section").forEach(function (s) { s.classList.remove("active"); });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-      var item = document.createElement("div");
-      item.className = "list-item";
-      item.tabIndex = 0;
-      item.setAttribute("role","button");
-      item.setAttribute("aria-label", text);
+        function openModal(text) {
+            _prevFocus = document.activeElement;
+            document.getElementById("modalText").textContent = text;
+            var ov = document.getElementById("modal");
+            ov.classList.add("open");
+            ov.focus();
+            document.addEventListener("keydown", escListener);
+        }
 
-      var strip = document.createElement("div");
-      strip.className = "item-strip";
+        function closeModal() {
+            document.getElementById("modal").classList.remove("open");
+            document.removeEventListener("keydown", escListener);
+            if (_prevFocus) _prevFocus.focus();
+        }
 
-      var inner = document.createElement("div");
-      inner.className = "item-inner";
-      inner.innerHTML =
-        '<div class="number">'+numPart+'</div>'+
-        '<div class="text">'+bodyPart+'</div>';
+        function escListener(e) {
+            if (e.key === "Escape") closeModal();
+        }
 
-      item.appendChild(strip);
-      item.appendChild(inner);
+        document.getElementById("modal").addEventListener("click", function (e) {
+            if (e.target === this) closeModal();
+        });
 
-      var captured = text;
-      item.onclick = function(){ openModal(captured); };
-      item.onkeydown = function(e){
-        if(e.key==='Enter'||e.key===' ') openModal(captured);
-      };
-      container.appendChild(item);
-    });
-  }
-}
-
-function openSection(n){
-  _prevFocus = document.activeElement;
-  document.getElementById("home").style.display = "none";
-  document.querySelectorAll(".section").forEach(function(s){ s.classList.remove("active"); });
-  document.getElementById("section"+n).classList.add("active");
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function goHome(){
-  document.getElementById("home").style.display = "";
-  document.querySelectorAll(".section").forEach(function(s){ s.classList.remove("active"); });
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function openModal(text){
-  _prevFocus = document.activeElement;
-  document.getElementById("modalText").textContent = text;
-  var ov = document.getElementById("modal");
-  ov.classList.add("open");
-  ov.focus();
-  document.addEventListener("keydown", escListener);
-}
-
-function closeModal(){
-  document.getElementById("modal").classList.remove("open");
-  document.removeEventListener("keydown", escListener);
-  if(_prevFocus) _prevFocus.focus();
-}
-
-function escListener(e){
-  if(e.key==="Escape") closeModal();
-}
-
-document.getElementById("modal").addEventListener("click", function(e){
-  if(e.target === this) closeModal();
-});
-
-buildLists();
-</script>
+        buildLists();
+    </script>
 
 </body>
+
 </html>
