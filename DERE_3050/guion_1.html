@@ -33,20 +33,23 @@
   --shadow:0 4px 20px rgba(0,0,0,.13);
   --shadow2:0 8px 32px rgba(0,0,0,.18);
 }
-html,body{width:100%;height:100%;overflow:hidden;background:#ffffff;font-family:var(--font-main);color:var(--text)}
+html{width:100%;overflow-x:hidden;overflow-y:hidden;background:#ffffff;}
+body{width:100%;margin:0;padding:0;overflow:hidden;background:#ffffff;font-family:var(--font-main);color:var(--text)}
 
 /* ── CANVAS WRAPPER ── */
 #cw{
-  width:100%;height:100%;
+  width:100%;
   display:block;
   overflow:hidden;
   background:#ffffff;
 }
 
-/* Canvas fijo 1280x720, se escala con JS */
+/* Canvas fijo 1280x720 — JS lo escala con zoom */
 #cv{
-  width:1280px;height:720px;
-  position:relative;overflow:hidden;
+  width:1280px;
+  height:720px;
+  position:relative;
+  overflow:hidden;
   background:#ffffff;
   transform-origin:top left;
   display:block;
@@ -157,14 +160,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#ffffff;font-family:
 .dot{width:7px;height:7px;border-radius:50%;background:rgba(26,107,138,.25);cursor:pointer;transition:all .3s}
 .dot.active{background:var(--teal);width:20px;border-radius:99px}
 
-/* ── RESPONSIVE ── */
-@media(max-width:900px){
-  #cv{width:100%!important;height:auto!important;overflow-y:auto;transform:none!important}
-  .slide{position:relative;min-height:720px}
-  .circles-wrap{flex-wrap:wrap}
-  .circ-card{width:160px}
-  .lg-2,.lg-3,.lg-4{grid-template-columns:1fr 1fr}
-}
+/* Responsive manejado 100% por JS scale — no media queries que rompan el transform */
 </style>
 </head>
 <body>
@@ -497,59 +493,47 @@ document.getElementById('mo').addEventListener('click',function(e){if(e.target==
 </script>
 
 <script>
-/* ── RESPONSIVE SCALE con postMessage para Canvas LMS ── */
 (function(){
   var CV_W = 1280, CV_H = 720;
-  var cv = document.getElementById('cv');
-  var cw = document.getElementById('cw');
+  var cv  = document.getElementById('cv');
+  var cw  = document.getElementById('cw');
 
-  function scale(){
-    /* Ancho disponible = ancho real de la ventana del iframe */
-    var w = window.innerWidth || document.documentElement.clientWidth;
+  function applyScale(){
+    /* Ancho real disponible en el viewport */
+    var availW = document.documentElement.clientWidth || window.innerWidth;
 
-    /* Escalar solo por ancho (el alto se ajusta proporcionalmente) */
-    var s = w / CV_W;
-    if(s > 1) s = 1; /* nunca agrandar más del tamaño original */
+    /* Factor de escala: nunca mayor a 1 */
+    var s = Math.min(availW / CV_W, 1);
 
+    /* Alto que ocupará el canvas después de escalar */
     var scaledH = Math.round(CV_H * s);
 
-    /* Aplicar escala al canvas */
-    cv.style.transform        = 'scale(' + s + ')';
-    cv.style.transformOrigin  = 'top left';
+    /* 1. Escalar el canvas visualmente */
+    cv.style.transform       = 'scale(' + s + ')';
+    cv.style.transformOrigin = 'top left';
 
-    /* El wrapper toma exactamente el alto escalado → sin espacio blanco */
+    /* 2. El wrapper solo ocupa el alto real escalado
+          → esto elimina el espacio blanco debajo */
+    cw.style.width     = '100%';
     cw.style.height    = scaledH + 'px';
-    cw.style.minHeight = scaledH + 'px';
-    document.body.style.height    = scaledH + 'px';
-    document.body.style.minHeight = scaledH + 'px';
-    document.documentElement.style.height    = scaledH + 'px';
-    document.documentElement.style.minHeight = scaledH + 'px';
-    document.documentElement.style.overflow  = 'hidden';
+    cw.style.overflow  = 'hidden';
 
-    /* 
-      postMessage para Canvas LMS: le dice al iframe padre
-      exactamente cuánto alto necesita → elimina el espacio blanco
-      y el scroll innecesario dentro del acordeón de Canvas.
-    */
-    var msg = JSON.stringify({
-      subject:  'lti.frameResize',   /* protocolo estándar LTI / Canvas */
-      height:   scaledH
-    });
-    try { window.parent.postMessage(msg, '*'); } catch(e){}
+    /* 3. Body/html al mismo alto → sin scroll ni espacio extra */
+    document.body.style.height           = scaledH + 'px';
+    document.body.style.overflow         = 'hidden';
+    document.documentElement.style.height   = scaledH + 'px';
+    document.documentElement.style.overflow = 'hidden';
 
-    /* También intenta el formato antiguo de Canvas */
-    try {
-      window.parent.postMessage({ type: 'resize', height: scaledH }, '*');
-    } catch(e){}
+    /* 4. postMessage para Canvas LMS accordion height */
+    var msg = JSON.stringify({ subject: 'lti.frameResize', height: scaledH });
+    try{ window.parent.postMessage(msg, '*'); }catch(e){}
+    try{ window.parent.postMessage({ type:'resize', height: scaledH }, '*'); }catch(e){}
   }
 
-  /* Ejecutar al cargar y en cada cambio de tamaño */
-  scale();
-  window.addEventListener('resize', scale);
-
-  /* Pequeño retraso extra para cuando Canvas termina de renderizar */
-  setTimeout(scale, 300);
-  setTimeout(scale, 800);
+  applyScale();
+  window.addEventListener('resize', applyScale);
+  setTimeout(applyScale, 200);
+  setTimeout(applyScale, 600);
 })();
 </script>
 </body>
