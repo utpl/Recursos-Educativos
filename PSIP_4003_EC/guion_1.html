@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adultez Emergente vs. Adultez Temprana</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F4F7F2;
+    --surface: #FFFFFF;
+    --primary: #1A5C38;
+    --primary-light: #2E7D50;
+    --accent: #D4670A;
+    --accent-light: #F08030;
+    --emerald-col: #1A5C38;
+    --early-col: #7B2D8B;
+    --emerald-bg: #E6F2EC;
+    --early-bg: #F3E8F7;
+    --text-main: #0F1E14;
+    --text-sub: #2D4A37;
+    --text-muted: #4A6355;
+    --border: #C2D9CC;
+    --shadow: 0 4px 20px rgba(26,92,56,0.13);
+    --radius: 14px;
+    --slide-w: 1280px;
+    --slide-h: 720px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  #scale-root {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--slide-w);
+    height: var(--slide-h);
+    transform-origin: top left;
+    overflow: hidden;
+  }
+
+  /* ── SLIDES ── */
+  .slide {
+    position: absolute;
+    inset: 0;
+    width: var(--slide-w);
+    height: var(--slide-h);
+    background: var(--bg);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 44px;
+    height: 60px;
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+  .topbar-brand {
+    font-size: 13px; font-weight: 600;
+    color: #B9F0D0; letter-spacing: .4px;
+  }
+  .topbar-title {
+    font-size: 14px; font-weight: 700;
+    color: #FFFFFF; text-align: center;
+  }
+  .topbar-meta {
+    font-size: 12px; font-weight: 500;
+    color: #B9F0D0; text-align: right; line-height: 1.5;
+  }
+
+  /* ── SLIDE BODY ── */
+  .slide-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 44px 20px;
+    overflow: hidden;
+    gap: 18px;
+  }
+
+  /* ── SECTION HEADING ── */
+  .sec-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .sec-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sec-icon i { font-size: 20px; color: #fff; }
+  .sec-title {
+    font-size: 26px; font-weight: 800;
+    color: var(--text-main);
+    line-height: 1.1;
+  }
+  .sec-divider {
+    height: 3px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--primary) 0%, transparent 100%);
+    margin-top: 4px;
+  }
+
+  /* ── TWO-COL LAYOUT ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .col-card {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .col-card.emerald {
+    background: var(--emerald-bg);
+    border: 2px solid #94D4B4;
+  }
+  .col-card.early {
+    background: var(--early-bg);
+    border: 2px solid #C89FD8;
+  }
+
+  .col-header {
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid;
+  }
+  .col-card.emerald .col-header { border-color: var(--emerald-col); }
+  .col-card.early .col-header { border-color: var(--early-col); }
+
+  .col-badge {
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 13px; font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .emerald .col-badge { background: var(--emerald-col); }
+  .early .col-badge { background: var(--early-col); }
+
+  .col-age {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .col-list {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 6px;
+    overflow: hidden;
+  }
+  .col-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13px; line-height: 1.45;
+    color: var(--text-main);
+  }
+  .col-list li::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .emerald .col-list li::before { background: var(--emerald-col); }
+  .early .col-list li::before { background: var(--early-col); }
+
+  /* ── EXAMPLE BAR ── */
+  .example-bar {
+    border-radius: 10px;
+    background: #FFFBF5;
+    border: 1.5px solid #F0C890;
+    padding: 10px 16px;
+    display: flex; gap: 20px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  .ex-label {
+    font-size: 11px; font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+  .ex-items {
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+  .ex-item {
+    font-size: 12px; color: var(--text-main); line-height: 1.4;
+  }
+  .ex-item strong { color: var(--accent); }
+
+  /* ── NAVIGATION ── */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 44px 14px;
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer;
+    transition: all .2s;
+    background: var(--primary); color: #fff;
+  }
+  .nav-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+  .nav-btn:disabled { background: #BDD4C6; color: #7A9E8C; cursor: default; transform: none; }
+
+  .dots {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #BDD4C6;
+    cursor: pointer;
+    transition: all .2s;
+    border: none;
+  }
+  .dot.active { background: var(--primary); transform: scale(1.3); }
+  .dot:hover:not(.active) { background: var(--primary-light); }
+
+  /* ── SLIDE 0: PORTADA ── */
+  #slide-0 {
+    background: linear-gradient(135deg, #0D3D22 0%, #1A5C38 50%, #0F4A2C 100%);
+  }
+  .cover-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0 60px 0 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 2;
+  }
+  .cover-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.25);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px; font-weight: 600; color: #B9F0D0;
+    width: fit-content;
+  }
+  .cover-h1 {
+    font-size: 44px; font-weight: 800;
+    color: #fff; line-height: 1.08;
+  }
+  .cover-h1 span { color: #7DDBA8; }
+  .cover-subtitle {
+    font-size: 15px; color: #B9F0D0;
+    line-height: 1.6; max-width: 460px;
+  }
+  .cover-instruction {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,.1);
+    border-left: 4px solid #7DDBA8;
+    border-radius: 0 10px 10px 0;
+    padding: 12px 16px;
+    font-size: 13px; color: #E0F5EB;
+    max-width: 460px;
+  }
+  .cover-instruction i { color: #7DDBA8; font-size: 16px; flex-shrink: 0; }
+
+  .cover-right {
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 2;
+  }
+  .topic-card {
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+  }
+  .topic-card:hover {
+    background: rgba(255,255,255,.2);
+    border-color: rgba(255,255,255,.4);
+    transform: translateX(6px);
+  }
+  .topic-card:focus-visible {
+    outline: 3px solid #7DDBA8;
+    outline-offset: 2px;
+  }
+  .topic-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+  .topic-text { flex: 1; }
+  .topic-name {
+    font-size: 14px; font-weight: 700; color: #fff;
+  }
+  .topic-num {
+    font-size: 11px; color: #B9F0D0; font-weight: 500;
+  }
+  .topic-arrow { color: #7DDBA8; font-size: 14px; }
+
+  .cover-deco {
+    position: absolute;
+    right: -60px; top: 50%;
+    transform: translateY(-50%);
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,.04);
+    z-index: 1;
+  }
+  .cover-deco2 {
+    position: absolute;
+    right: 40px; top: 30px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 30px solid rgba(255,255,255,.05);
+    z-index: 1;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn .2s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 30px 24px;
+    max-width: 680px;
+    width: 90%;
+    max-height: 82%;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    position: relative;
+    animation: slideUp .25s ease;
+  }
+  .modal-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none; cursor: pointer;
+    background: #F0F0F0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #333;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: #E0E0E0; }
+  .modal-close:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .modal-title {
+    font-size: 20px; font-weight: 800; color: var(--text-main);
+  }
+  .modal-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-bottom: 16px;
+  }
+  .modal-col {
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .modal-col.emerald { background: var(--emerald-bg); border: 1.5px solid #94D4B4; }
+  .modal-col.early { background: var(--early-bg); border: 1.5px solid #C89FD8; }
+  .modal-col-title {
+    font-size: 13px; font-weight: 700;
+    margin-bottom: 8px;
+    padding-bottom: 6px; border-bottom: 2px solid;
+  }
+  .modal-col.emerald .modal-col-title { color: var(--emerald-col); border-color: var(--emerald-col); }
+  .modal-col.early .modal-col-title { color: var(--early-col); border-color: var(--early-col); }
+  .modal-col ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .modal-col ul li {
+    font-size: 13px; line-height: 1.5; color: var(--text-main);
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .modal-col ul li::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 6px;
+  }
+  .modal-col.emerald ul li::before { background: var(--emerald-col); }
+  .modal-col.early ul li::before { background: var(--early-col); }
+  .modal-examples {
+    background: #FFFBF5;
+    border: 1.5px solid #F0C890;
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+  .modal-examples-label {
+    font-size: 12px; font-weight: 700;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 8px; letter-spacing: .4px;
+  }
+  .modal-examples p {
+    font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 6px;
+  }
+  .modal-examples p:last-child { margin-bottom: 0; }
+  .modal-examples strong { color: var(--accent); }
+
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes slideUp { from { opacity:0; transform: translateY(20px) } to { opacity:1; transform: translateY(0) } }
+
+  /* ── SLIDE 1: INDEX ── */
+  .index-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 16px;
+    flex: 1;
+  }
+  .idx-card {
+    border-radius: 14px;
+    padding: 22px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    box-shadow: var(--shadow);
+  }
+  .idx-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    transform: translate(30%, 30%);
+  }
+  .idx-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+  .idx-card:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .idx-num {
+    font-size: 28px; font-weight: 800;
+    opacity: .25; line-height: 1;
+    color: #fff;
+    position: absolute; top: 14px; right: 18px;
+  }
+  .idx-icon { font-size: 28px; }
+  .idx-name { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; z-index: 1; }
+  .idx-sub { font-size: 12px; color: rgba(255,255,255,.75); z-index: 1; }
+
+  .idx-card:nth-child(1) { background: linear-gradient(135deg, #1A5C38, #2E7D50); }
+  .idx-card:nth-child(2) { background: linear-gradient(135deg, #7B2D8B, #A044B8); }
+  .idx-card:nth-child(3) { background: linear-gradient(135deg, #0E6B8A, #1590B8); }
+  .idx-card:nth-child(4) { background: linear-gradient(135deg, #C04A14, #E06030); }
+  .idx-card:nth-child(5) { background: linear-gradient(135deg, #5A4A00, #8A7200); }
+  .idx-card:nth-child(6) { background: linear-gradient(135deg, #2D1B6E, #4C3AA0); }
+
+  /* ── REFERENCE SLIDE ── */
+  .ref-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 32px 40px;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 720px;
+    margin: auto;
+  }
+  .ref-icon { font-size: 36px; color: var(--primary); }
+  .ref-title { font-size: 22px; font-weight: 800; color: var(--text-main); }
+  .ref-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+  .ref-citation {
+    font-size: 15px; color: var(--text-main); line-height: 1.7;
+    background: #F4F7F2;
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    border-radius: 0 10px 10px 0;
+  }
+
+  /* ── SLIDE INNER LAYOUT ── */
+  .slide-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    gap: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div id="scale-root">
+
+  <!-- ═══════════════════════════════════════ SLIDE 0: PORTADA -->
+  <div class="slide active" id="slide-0">
+    <div class="topbar">
+  
+      <div class="topbar-title">Prácticum 4.1 · Examen Complexivo</div>
+     
+    </div>
+    <div class="cover-body">
+      <div class="cover-deco"></div>
+      <div class="cover-deco2"></div>
+      <div class="cover-left">
+        <div class="cover-tag"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3.33 1.67 8.67 1.67 12 0v-5"/></svg> Desarrollo Humano · Adultez</div>
+        <h1 class="cover-h1">Adultez Emergente<br><span>vs.</span> Adultez Temprana</h1>
+        <p class="cover-subtitle">Conozca las principales características que diferencian la adultez emergente y la adultez temprana, analizando cómo se manifiestan los cambios físicos, cognitivos, psicosociales y en la vida cotidiana durante estas etapas del desarrollo.</p>
+        <div class="cover-instruction">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V6a2 2 0 0 1 4 0v5"/><path d="M13 11V9a2 2 0 0 1 4 0v6a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-1a2 2 0 0 1 4 0"/></svg>
+          Haga clic en los temas para visualizar la información
+        </div>
+      </div>
+      <div class="cover-right">
+        <button class="topic-card" onclick="goSlide(1)" aria-label="Ir al índice de temas">
+          <div class="topic-icon" style="background:rgba(255,255,255,.15)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+          <div class="topic-text"><div class="topic-name">Ver todos los temas</div><div class="topic-num">Índice completo</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="topic-card" onclick="goSlide(2)" aria-label="Ir a Desarrollo físico">
+          <div class="topic-icon" style="background:rgba(255,255,255,.15)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 6.5h11M6.5 17.5h11M4 8.5v7M20 8.5v7M2 10v4M22 10v4"/></svg></div>
+          <div class="topic-text"><div class="topic-name">Desarrollo físico</div><div class="topic-num">Tema 1</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="topic-card" onclick="goSlide(3)" aria-label="Ir a Desarrollo cognitivo">
+          <div class="topic-icon" style="background:rgba(255,255,255,.15)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.7-3.71 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.5-4.75z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.7-3.71 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.5-4.75z"/></svg></div>
+          <div class="topic-text"><div class="topic-name">Desarrollo cognitivo</div><div class="topic-num">Tema 2</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="topic-card" onclick="goSlide(4)" aria-label="Ir a Desarrollo psicosocial">
+          <div class="topic-icon" style="background:rgba(255,255,255,.15)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="topic-text"><div class="topic-name">Desarrollo psicosocial</div><div class="topic-num">Tema 3</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(0)" disabled aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-0"></div>
+      <button class="nav-btn" onclick="goSlide(1)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 1: ÍNDICE -->
+  <div class="slide" id="slide-1">
+    <div class="topbar">
+     
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+     
+    </div>
+    <div class="slide-body">
+      <div class="sec-heading">
+        <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div>
+          <div class="sec-title">Índice de contenidos</div>
+          <div class="sec-divider" style="width:200px"></div>
+        </div>
+      </div>
+      <div class="index-grid">
+        <button class="idx-card" onclick="goSlide(2)" aria-label="Ir a Desarrollo físico">
+          <span class="idx-num">01</span>
+          <span class="idx-icon">💪</span>
+          <span class="idx-name">Desarrollo físico</span>
+          <span class="idx-sub">Condición física, hábitos y salud</span>
+        </button>
+        <button class="idx-card" onclick="goSlide(3)" aria-label="Ir a Desarrollo cognitivo">
+          <span class="idx-num">02</span>
+          <span class="idx-icon">🧠</span>
+          <span class="idx-name">Desarrollo cognitivo</span>
+          <span class="idx-sub">Pensamiento postformal y razonamiento</span>
+        </button>
+        <button class="idx-card" onclick="goSlide(4)" aria-label="Ir a Desarrollo psicosocial">
+          <span class="idx-num">03</span>
+          <span class="idx-icon">🤝</span>
+          <span class="idx-name">Desarrollo psicosocial</span>
+          <span class="idx-sub">Identidad, independencia y roles</span>
+        </button>
+        <button class="idx-card" onclick="goSlide(5)" aria-label="Ir a Sexualidad y reproducción">
+          <span class="idx-num">04</span>
+          <span class="idx-icon">❤️</span>
+          <span class="idx-name">Sexualidad y reproducción</span>
+          <span class="idx-sub">Conductas, riesgos y decisiones</span>
+        </button>
+        <button class="idx-card" onclick="goSlide(6)" aria-label="Ir a Trabajo, educación y estilo de vida">
+          <span class="idx-num">05</span>
+          <span class="idx-icon">🎓</span>
+          <span class="idx-name">Trabajo, educación y estilo de vida</span>
+          <span class="idx-sub">Vocación, carrera y hábitos</span>
+        </button>
+        <button class="idx-card" onclick="goSlide(7)" aria-label="Ir a Relaciones e intimidad">
+          <span class="idx-num">06</span>
+          <span class="idx-icon">💞</span>
+          <span class="idx-name">Relaciones e intimidad</span>
+          <span class="idx-sub">Vínculos afectivos y compromisos</span>
+        </button>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(0)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-1"></div>
+      <button class="nav-btn" onclick="goSlide(2)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 2: DESARROLLO FÍSICO -->
+  <div class="slide" id="slide-2">
+    <div class="topbar">
+     
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+      <div class="topbar-meta">Tema 1 / 6</div>
+    </div>
+    <div class="slide-body">
+      <div class="sec-heading">
+        <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 6.5h11M6.5 17.5h11M4 8.5v7M20 8.5v7M2 10v4M22 10v4"/></svg></div>
+        <div>
+          <div class="sec-title">Desarrollo físico</div>
+          <div class="sec-divider" style="width:240px"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="col-card emerald">
+          <div class="col-header">
+            <span class="col-badge">Adultez emergente</span>
+            <span class="col-age">18–25 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Pico de fuerza, agilidad y resistencia.</li>
+            <li>Supuesta salud óptima, pero con conductas de riesgo (desvelos, dietas inadecuadas, alcohol).</li>
+            <li>Inicio de hábitos saludables o poco saludables que repercutirán en el futuro.</li>
+            <li>ITS y embarazo no planificado como riesgos frecuentes.</li>
+            <li>Trastornos menstruales y fertilidad como preocupación.</li>
+          </ul>
+        </div>
+        <div class="col-card early">
+          <div class="col-header">
+            <span class="col-badge">Adultez temprana</span>
+            <span class="col-age">25–40 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Comienza un leve declive físico si no hay autocuidado.</li>
+            <li>Consolidación de hábitos alimentarios, ejercicio y sueño.</li>
+            <li>Aparición de riesgos crónicos si hay estilos de vida inadecuados (sedentarismo, estrés).</li>
+            <li>ITS y problemas reproductivos pueden requerir intervención médica.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="example-bar">
+        <span class="ex-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Ejemplos aplicados</span>
+        <div class="ex-items">
+          <div class="ex-item"><strong>Emergente:</strong> un joven universitario duerme poco, tiene buena condición física, pero descuida su nutrición.</div>
+          <div class="ex-item"><strong>Temprana:</strong> un trabajador de 35 años ejerce con estabilidad, pero desarrolla hipertensión por estrés.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(1)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-2"></div>
+      <button class="nav-btn" onclick="goSlide(3)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 3: DESARROLLO COGNITIVO -->
+  <div class="slide" id="slide-3">
+    <div class="topbar">
+     
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+      <div class="topbar-meta">Tema 2 / 6</div>
+    </div>
+    <div class="slide-body">
+      <div class="sec-heading">
+        <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.7-3.71 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.5-4.75z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.7-3.71 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.5-4.75z"/></svg></div>
+        <div>
+          <div class="sec-title">Desarrollo cognitivo</div>
+          <div class="sec-divider" style="width:260px"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="col-card emerald">
+          <div class="col-header">
+            <span class="col-badge">Adultez emergente</span>
+            <span class="col-age">18–25 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Inicio del pensamiento postformal: pensamiento flexible, uso combinado de lógica, intuición y emoción.</li>
+            <li>Capacidad creciente para razonamiento complejo y toma de decisiones.</li>
+            <li>Formación profesional, aprendizaje académico y adaptación al trabajo.</li>
+          </ul>
+        </div>
+        <div class="col-card early">
+          <div class="col-header">
+            <span class="col-badge">Adultez temprana</span>
+            <span class="col-age">25–40 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Pensamiento reflexivo consolidado: planificación, análisis a largo plazo y resolución de problemas complejos.</li>
+            <li>Desarrollo de competencias profesionales y especialización laboral.</li>
+            <li>Experiencia influye en el razonamiento moral, sin diferencias marcadas entre hombres y mujeres.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="example-bar">
+        <span class="ex-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Ejemplos aplicados</span>
+        <div class="ex-items">
+          <div class="ex-item"><strong>Emergente:</strong> decide su carrera combinando intuición y razonamiento.</div>
+          <div class="ex-item"><strong>Temprana:</strong> evalúa opciones laborales a largo plazo considerando estabilidad para su familia.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(2)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-3"></div>
+      <button class="nav-btn" onclick="goSlide(4)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 4: DESARROLLO PSICOSOCIAL -->
+  <div class="slide" id="slide-4">
+    <div class="topbar">
+
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+      <div class="topbar-meta">Tema 3 / 6</div>
+    </div>
+    <div class="slide-body">
+      <div class="sec-heading">
+        <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div>
+          <div class="sec-title">Desarrollo psicosocial</div>
+          <div class="sec-divider" style="width:280px"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="col-card emerald">
+          <div class="col-header">
+            <span class="col-badge">Adultez emergente</span>
+            <span class="col-age">18–25 años</span>
+          </div>
+          <ul class="col-list">
+            <li><strong>Exploración identitaria:</strong> "moratoria" antes de asumir roles adultos formales.</li>
+            <li>Importancia de amigos, relaciones románticas, experimentación.</li>
+            <li><strong>Factores:</strong> género, etnia, recursos económicos, educación.</li>
+            <li>Nivel variable de independencia económica y emocional.</li>
+          </ul>
+        </div>
+        <div class="col-card early">
+          <div class="col-header">
+            <span class="col-badge">Adultez temprana</span>
+            <span class="col-age">25–40 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Consolidación de identidad personal y profesional.</li>
+            <li>Construcción de relaciones duraderas, matrimonio o cohabitación.</li>
+            <li>Responsabilidad laboral, social y familiar.</li>
+            <li>Afrontamiento de problemas emocionales ligados al rol adulto.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="example-bar">
+        <span class="ex-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Ejemplos aplicados</span>
+        <div class="ex-items">
+          <div class="ex-item"><strong>Emergente:</strong> vive un periodo de experimentación con amistades y pareja.</div>
+          <div class="ex-item"><strong>Temprana:</strong> busca balance emocional entre trabajo, pareja y responsabilidades.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(3)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-4"></div>
+      <button class="nav-btn" onclick="goSlide(5)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 5: SEXUALIDAD Y REPRODUCCIÓN -->
+  <div class="slide" id="slide-5">
+    <div class="topbar">
+    
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+      <div class="topbar-meta">Tema 4 / 6</div>
+    </div>
+    <div class="slide-body">
+      <div class="sec-heading">
+        <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <div>
+          <div class="sec-title">Sexualidad y reproducción</div>
+          <div class="sec-divider" style="width:300px"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="col-card emerald">
+          <div class="col-header">
+            <span class="col-badge">Adultez emergente</span>
+            <span class="col-age">18–25 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Conductas sexuales exploratorias.</li>
+            <li>Alto riesgo de ITS y embarazo no planificado.</li>
+            <li>Decisiones reproductivas aún inestables.</li>
+            <li>Preocupación: trastornos menstruales, infertilidad, sexualidad inestable.</li>
+          </ul>
+        </div>
+        <div class="col-card early">
+          <div class="col-header">
+            <span class="col-badge">Adultez temprana</span>
+            <span class="col-age">25–40 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Mayor estabilidad sexual y reproductiva.</li>
+            <li>Decisiones sobre maternidad/paternidad, elección de pareja o permanencia sin pareja.</li>
+            <li>Posibles tensiones entre carrera y crianza.</li>
+            <li>Ajustes en la intimidad, compromiso y pasión (Sternberg).</li>
+          </ul>
+        </div>
+      </div>
+      <div class="example-bar">
+        <span class="ex-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Ejemplos aplicados</span>
+        <div class="ex-items">
+          <div class="ex-item"><strong>Emergente:</strong> riesgo de ITS por desconocimiento.</div>
+          <div class="ex-item"><strong>Temprana:</strong> decisión consciente sobre maternidad/paternidad.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(4)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-5"></div>
+      <button class="nav-btn" onclick="goSlide(6)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 6: TRABAJO, EDUCACIÓN Y ESTILO DE VIDA -->
+  <div class="slide" id="slide-6">
+    <div class="topbar">
+    
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+      <div class="topbar-meta">Tema 5 / 6</div>
+    </div>
+    <div class="slide-body">
+      <div class="sec-heading">
+        <div class="sec-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3.33 1.67 8.67 1.67 12 0v-5"/></svg></div>
+        <div>
+          <div class="sec-title">Trabajo, educación y estilo de vida</div>
+          <div class="sec-divider" style="width:360px"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="col-card emerald">
+          <div class="col-header">
+            <span class="col-badge">Adultez emergente</span>
+            <span class="col-age">18–25 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Transición hacia educación superior/capacitación.</li>
+            <li>Experimentación laboral, búsqueda de vocación.</li>
+            <li>Hábitos de vida muchas veces irregulares.</li>
+            <li>Estrés por incertidumbre educativa y económica.</li>
+          </ul>
+        </div>
+        <div class="col-card early">
+          <div class="col-header">
+            <span class="col-badge">Adultez temprana</span>
+            <span class="col-age">25–40 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Estabilidad laboral y consolidación de carrera.</li>
+            <li>Responsabilidad económica y toma de decisiones.</li>
+            <li>Impacto de estilos de vida saludables vs. sedentarismo.</li>
+            <li>Manejo del estrés, relaciones y redes de apoyo.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="example-bar">
+        <span class="ex-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Ejemplos aplicados</span>
+        <div class="ex-items">
+          <div class="ex-item"><strong>Emergente:</strong> un estudiante universitario trabaja medio tiempo, duerme poco y tiene una dieta irregular, lo que afecta su rendimiento académico.</div>
+          <div class="ex-item"><strong>Temprana:</strong> una profesional consolida su carrera y decide hacer una maestría para ascender en su trabajo.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(5)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-6"></div>
+      <button class="nav-btn" onclick="goSlide(7)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 7: RELACIONES E INTIMIDAD -->
+  <div class="slide" id="slide-7">
+    <div class="topbar">
+      
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+      <div class="topbar-meta">Tema 6 / 6</div>
+    </div>
+    <div class="slide-body">
+      <div class="sec-heading">
+        <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><polyline points="8 14 10 11 12 14 14 10 16 13"/></svg></div>
+        <div>
+          <div class="sec-title">Relaciones e intimidad</div>
+          <div class="sec-divider" style="width:280px"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="col-card emerald">
+          <div class="col-header">
+            <span class="col-badge">Adultez emergente</span>
+            <span class="col-age">18–25 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Búsqueda de intimidad con libertad de explorar roles y estilos.</li>
+            <li>Identidad influye en la calidad de las relaciones.</li>
+            <li>Relaciones afectivas aún no permanentes.</li>
+          </ul>
+        </div>
+        <div class="col-card early">
+          <div class="col-header">
+            <span class="col-badge">Adultez temprana</span>
+            <span class="col-age">25–40 años</span>
+          </div>
+          <ul class="col-list">
+            <li>Establecimiento de compromisos afectivos duraderos.</li>
+            <li>Formación de familia, matrimonio o separación.</li>
+            <li>Intimidad basada en autorrevelación, apoyo y compromiso.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="example-bar">
+        <span class="ex-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Ejemplos aplicados</span>
+        <div class="ex-items">
+          <div class="ex-item"><strong>Emergente:</strong> Las relaciones pueden terminar fácilmente por cambios de identidad, metas o experiencias de maduración.</div>
+          <div class="ex-item"><strong>Temprana:</strong> un matrimonio decide tener hijos y debe equilibrar intimidad, trabajo y responsabilidades de crianza.</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(6)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-7"></div>
+      <button class="nav-btn" onclick="goSlide(8)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ SLIDE 8: REFERENCIA -->
+  <div class="slide" id="slide-8">
+    <div class="topbar">
+    
+      <div class="topbar-title">Adultez Emergente vs. Adultez Temprana</div>
+      <div class="topbar-meta">Referencias</div>
+    </div>
+    <div class="slide-body" style="justify-content:center;align-items:center;">
+      <div class="ref-card">
+        <div class="ref-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <div class="ref-title">Referencia bibliográfica</div>
+        <div>
+          <div class="ref-label">Fuente principal · Formato APA 7</div>
+          <div class="ref-citation">
+            Papalia, D. E., &amp; Martorelli, G. (2017). <em>Desarrollo humano</em> (13.ª ed.). McGraw-Hill.
+          </div>
+        </div>
+        <button class="nav-btn" onclick="goSlide(0)" style="margin-top:10px;width:fit-content" aria-label="Volver al inicio">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Volver al inicio
+        </button>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" onclick="goSlide(7)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+      <div class="dots" id="dots-8"></div>
+      <button class="nav-btn" disabled aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+</div><!-- end scale-root -->
+
+<script>
+  const TOTAL = 9;
+  let current = 0;
+
+  function goSlide(n) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    current = n;
+    document.getElementById('slide-' + current).classList.add('active');
+    renderDots();
+  }
+
+  function renderDots() {
+    for (let s = 0; s < TOTAL; s++) {
+      const el = document.getElementById('dots-' + s);
+      if (!el) continue;
+      el.innerHTML = '';
+      for (let i = 0; i < TOTAL; i++) {
+        const b = document.createElement('button');
+        b.className = 'dot' + (i === current ? ' active' : '');
+        b.setAttribute('aria-label', 'Ir a diapositiva ' + (i + 1));
+        b.onclick = (function(idx){ return function(){ goSlide(idx); }; })(i);
+        el.appendChild(b);
+      }
+    }
+  }
+
+  // ── Scaling
+  function scaleCanvas() {
+    const root = document.getElementById('scale-root');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const scaleX = vw / 1280;
+    const scaleY = vh / 720;
+    const scale = Math.min(scaleX, scaleY);
+    const offsetX = (vw - 1280 * scale) / 2;
+    const offsetY = (vh - 720 * scale) / 2;
+    root.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+  }
+
+  window.addEventListener('resize', scaleCanvas);
+  scaleCanvas();
+  renderDots();
+
+  // ── Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      if (current < TOTAL - 1) goSlide(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      if (current > 0) goSlide(current - 1);
+    } else if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+</script>
+</body>
+</html>
