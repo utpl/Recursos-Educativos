@@ -3,260 +3,487 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Determinación de Contrataciones</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>Determinación de Contrataciones – Contratación Pública</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Barlow+Condensed:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Nunito',sans-serif;background:#f0f5fa;height:100vh;display:flex;justify-content:center;align-items:center;}
-.container{width:1280px;height:720px;background:#fff;border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,.2);overflow:hidden;position:relative;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1A6B8A;
+  --teal2:#2596BE;
+  --teal-l:#E6F4F9;
+  --green:#1E8A6E;
+  --green2:#27AE8A;
+  --green-l:#E6F5F1;
+  --gold:#C48B12;
+  --gold2:#E5A820;
+  --gold-l:#FEF5E0;
+  --navy:#1B3A5C;
+  --navy2:#2756A0;
+  --navy-l:#E8EEFA;
+  --white:#FFFFFF;
+  --bg: white;
+  --text:#1A2332;
+  --muted:#4A6080;
+  --radius:14px;
+  --shadow:0 4px 20px rgba(0,0,0,.13);
+  --shadow2:0 8px 32px rgba(0,0,0,.18);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-family:'Nunito',sans-serif;color:var(--text)}
 
-/* slides */
-.slide{width:100%;height:100%;padding:30px 40px;display:none;flex-direction:column;overflow-y:auto;}
-.slide.active{display:flex;}
+/* ── CANVAS (tamaño fijo) ── */
+#cw{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#cv{width:1280px;height:720px;position:relative;overflow:hidden;background:var(--bg);border-radius:24px;box-shadow:var(--shadow2)}
 
-/* header */
-.header{display:flex;align-items:center;gap:15px;margin-bottom:20px;flex-wrap:wrap;}
-.icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;}
-.title{font-size:22px;font-weight:800;text-transform:uppercase;}
-.badge{padding:5px 15px;border-radius:30px;font-size:12px;font-weight:700;margin-left:auto;}
+/* ── BG DECO ── */
+#cv::before{content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 700px 500px at -5% 50%,rgba(26,107,138,.12) 0%,transparent 70%),
+    radial-gradient(ellipse 500px 400px at 105% 50%,rgba(30,138,110,.10) 0%,transparent 70%),
+    radial-gradient(ellipse 400px 300px at 50% -5%,rgba(196,139,18,.07) 0%,transparent 70%);
+  pointer-events:none;z-index:0}
 
-/* grid */
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;}
-.item{background:#fff;border-radius:10px;padding:12px;cursor:pointer;border-left:4px solid #2596BE;box-shadow:0 2px 8px rgba(0,0,0,.1);transition:.2s;font-size:13px;font-weight:600;}
-.item:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,0,0,.15);}
+/* ── SLIDES ── */
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:28px 44px 64px;z-index:1;animation:fsIn .45s cubic-bezier(.4,0,.2,1) both}
+.slide.active{display:flex}
+@keyframes fsIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-/* home */
-.home{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.badge-top{background:#e6f4f9;color:#1a6b8a;padding:5px 20px;border-radius:30px;margin-bottom:20px;}
-.home h1{font-size:48px;font-weight:800;color:#1b3a5c;margin-bottom:10px;}
-.home h1 span{color:#1a6b8a;}
-.desc{max-width:700px;text-align:center;color:#4a6080;margin-bottom:30px;}
-.cards{display:flex;gap:15px;}
-.card{width:200px;padding:25px 15px;border-radius:20px;text-align:center;cursor:pointer;transition:.2s;}
-.card:hover{transform:translateY(-5px);box-shadow:0 10px 25px rgba(0,0,0,.15);}
-.card .card-icon{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;color:#fff;}
-.card .num{font-size:12px;font-weight:700;margin-bottom:5px;opacity:.7;}
-.card .label{font-size:13px;font-weight:800;}
+/* ── HEADER ── */
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-shrink:0}
+.sh-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sh-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;line-height:1.1;text-transform:uppercase;letter-spacing:.02em}
+.sh-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:600}
+.sh-badge{margin-left:auto;padding:4px 14px;border-radius:99px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;flex-shrink:0}
+.hint{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-shrink:0;font-weight:600}
+.hint i{color:var(--teal2)}
 
-/* modal */
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);align-items:center;justify-content:center;}
-.modal.active{display:flex;}
-.modal-content{background:#fff;border-radius:20px;max-width:600px;width:90%;padding:25px;position:relative;}
-.close{position:absolute;top:15px;right:20px;font-size:24px;cursor:pointer;border:none;background:none;}
+/* ── LITERAL GRID ── */
+.lit-grid{display:grid;gap:10px;flex:1;align-content:start}
+.lg-2{grid-template-columns:1fr 1fr}
+.lg-3{grid-template-columns:1fr 1fr 1fr}
+.lg-4{grid-template-columns:1fr 1fr 1fr 1fr}
 
-/* nav */
-.nav{position:absolute;bottom:15px;left:0;right:0;display:flex;gap:10px;justify-content:center;}
-.nav-btn{width:35px;height:35px;border-radius:50%;border:2px solid #1a6b8a33;background:#fff;color:#1a6b8a;cursor:pointer;}
-.nav-dot{width:8px;height:8px;border-radius:50%;background:#1a6b8a33;cursor:pointer;}
-.nav-dot.active{width:20px;background:#1a6b8a;border-radius:10px;}
+.lit-btn{
+  background:var(--white);border:2px solid transparent;
+  border-radius:12px;padding:12px 14px;cursor:pointer;
+  display:flex;align-items:flex-start;gap:10px;
+  text-align:left;font-family:'Nunito',sans-serif;
+  transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.08);
+  position:relative;overflow:hidden;
+}
+.lit-btn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
+.lit-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+.lit-key{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;line-height:1;flex-shrink:0;min-width:22px}
+.lit-text{font-size:11.5px;font-weight:700;line-height:1.35;color:var(--text)}
+.lit-arrow{position:absolute;bottom:8px;right:10px;font-size:10px;opacity:.5}
 
-.colors{display:flex;gap:10px;margin-top:5px;}
-.color-item{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;}
-.color-item.active{border-color:#000;}
+/* color variants */
+.v-teal .lit-btn::before{background:var(--teal2)}
+.v-teal .lit-btn:hover{border-color:var(--teal2);background:var(--teal-l)}
+.v-teal .lit-key{color:var(--teal)}
+.v-green .lit-btn::before{background:var(--green2)}
+.v-green .lit-btn:hover{border-color:var(--green2);background:var(--green-l)}
+.v-green .lit-key{color:var(--green)}
+.v-gold .lit-btn::before{background:var(--gold2)}
+.v-gold .lit-btn:hover{border-color:var(--gold2);background:var(--gold-l)}
+.v-gold .lit-key{color:var(--gold)}
+.v-navy .lit-btn::before{background:var(--navy2)}
+.v-navy .lit-btn:hover{border-color:var(--navy2);background:var(--navy-l)}
+.v-navy .lit-key{color:var(--navy)}
 
-/* responsive */
+/* ── CARD ── */
+.card{background:var(--white);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.card-top{height:4px;position:absolute;top:0;left:0;right:0;border-radius:4px 4px 0 0}
+
+/* ── PORTADA ── */
+#slide-0{align-items:center;justify-content:center;padding:24px 60px 64px}
+.port-course{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--teal);background:var(--teal-l);padding:5px 16px;border-radius:99px;margin-bottom:14px;display:inline-block}
+.port-title{font-family:'Barlow Condensed',sans-serif;font-size:54px;font-weight:800;text-transform:uppercase;line-height:1;text-align:center;color:var(--navy);margin-bottom:8px;letter-spacing:.01em}
+.port-title span{color:var(--teal)}
+.port-desc{font-size:13.5px;color:var(--muted);text-align:center;max-width:700px;line-height:1.65;margin-bottom:28px;font-weight:600}
+.port-hint{font-size:12px;color:var(--muted);text-align:center;margin-bottom:20px;font-weight:700;display:flex;align-items:center;gap:7px;justify-content:center}
+.port-hint i{color:var(--teal2);font-size:13px}
+
+/* circle cards */
+.circles-wrap{display:flex;gap:20px;justify-content:center;align-items:stretch}
+.circ-card{
+  width:220px;border-radius:20px;padding:22px 16px;text-align:center;
+  cursor:pointer;transition:all .25s;display:flex;flex-direction:column;align-items:center;
+  border:2px solid transparent;box-shadow:var(--shadow);
+}
+.circ-card:hover{transform:translateY(-5px);box-shadow:var(--shadow2)}
+.circ-icon{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.circ-num{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;opacity:.7}
+.circ-label{font-size:12.5px;font-weight:800;line-height:1.35;color:var(--text)}
+.cc-1{background:linear-gradient(145deg,#E8F3F9,#C8E4F0);border-color:var(--teal2)}
+.cc-1 .circ-icon{background:var(--teal);color:#fff}
+.cc-2{background:linear-gradient(145deg,#FDF2E2,#F5E2B8);border-color:var(--gold2)}
+.cc-2 .circ-icon{background:var(--gold);color:#fff}
+.cc-3{background:linear-gradient(145deg,#E2F5F1,#BAE8DB);border-color:var(--green2)}
+.cc-3 .circ-icon{background:var(--green);color:#fff}
+.cc-4{background:linear-gradient(145deg,#E8EDF8,#C4D4EE);border-color:var(--navy2)}
+.cc-4 .circ-icon{background:var(--navy);color:#fff}
+
+/* ── MODAL ── */
+#mo{display:none;position:absolute;inset:0;background:rgba(10,25,45,.72);backdrop-filter:blur(5px);z-index:200;align-items:center;justify-content:center;padding:40px}
+#mo.open{display:flex;animation:fadeIn .25s both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.mbox{background:var(--white);border-radius:20px;width:100%;max-width:680px;max-height:600px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:scIn .3s cubic-bezier(.34,1.56,.64,1) both;overflow:hidden}
+@keyframes scIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.mhead{padding:20px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.mhead-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mhead-key{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800}
+.mhead-title{font-size:15px;font-weight:800;line-height:1.3;flex:1}
+.mclose{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;background:#F1F5F9;color:#64748B;transition:background .2s;flex-shrink:0}
+.mclose:hover{background:#FEE2E2;color:#DC2626}
+.mbody{padding:16px 24px 24px;overflow-y:auto;font-size:13.5px;line-height:1.75;color:var(--muted);flex:1}
+.mbody p{margin-bottom:8px}
+
+/* ── NAV ── */
+#nav{position:absolute;bottom:16px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:10px;z-index:50}
+.nbtn{width:36px;height:36px;border-radius:50%;border:2px solid rgba(26,107,138,.25);background:var(--white);color:var(--teal);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.nbtn:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+.nbtn:disabled{opacity:.3;cursor:not-allowed}
+.dots{display:flex;gap:6px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(26,107,138,.25);cursor:pointer;transition:all .3s}
+.dot.active{background:var(--teal);width:20px;border-radius:99px}
+
+/* ── CORNER ── */
+#corner{position:absolute;top:14px;right:20px;z-index:50;display:flex;align-items:center;gap:8px}
+.corner-logo{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);background:var(--white);padding:3px 10px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* ── RESPONSIVE ── */
 @media(max-width:900px){
-  .container{width:100%;height:auto;min-height:100vh;border-radius:0;}
-  .grid{grid-template-columns:repeat(2,1fr);}
-  .cards{flex-wrap:wrap;justify-content:center;}
+  #cv{width:100%!important;height:auto!important;overflow-y:auto;transform:none!important}
+  .slide{position:relative;min-height:720px}
+  .circles-wrap{flex-wrap:wrap}
+  .circ-card{width:160px}
+  .lg-2,.lg-3,.lg-4{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
-<div class="container" id="app">
+<div id="cw"><div id="cv">
 
-  <!-- PORTADA -->
-  <div class="slide active" id="slide0">
-    <div class="home">
-      <div class="badge-top">Semana 4 · Jorge Alfredo Guerrero García</div>
-      <h1>Determinación de<br><span>Contrataciones</span></h1>
-      <div class="desc">Conozca las diferentes contrataciones que pueden realizarse en materia de defensa nacional, seguridad del Estado, protección de autoridades, orden público y rehabilitación social.</div>
-      <div style="margin-bottom:20px;color:#4a6080;"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los temas</div>
-      <div class="cards">
-        <div class="card" style="background:#e8f3f9;border:2px solid #2596be;" onclick="goTo(1)">
-          <div class="card-icon" style="background:#1a6b8a;"><i class="fa-solid fa-shield-halved"></i></div>
-          <div class="num">01</div>
-          <div class="label">Defensa Nacional</div>
-        </div>
-        <div class="card" style="background:#fdf2e2;border:2px solid #e5a820;" onclick="goTo(2)">
-          <div class="card-icon" style="background:#c48b12;"><i class="fa-solid fa-star"></i></div>
-          <div class="num">02</div>
-          <div class="label">Casa Militar</div>
-        </div>
-        <div class="card" style="background:#e2f5f1;border:2px solid #27ae8a;" onclick="goTo(3)">
-          <div class="card-icon" style="background:#1e8a6e;"><i class="fa-solid fa-scale-balanced"></i></div>
-          <div class="num">03</div>
-          <div class="label">Orden Público</div>
-        </div>
-        <div class="card" style="background:#e8edf8;border:2px solid #2756a0;" onclick="goTo(4)">
-          <div class="card-icon" style="background:#1b3a5c;"><i class="fa-solid fa-building-columns"></i></div>
-          <div class="num">04</div>
-          <div class="label">Rehabilitación</div>
+<!-- SLIDE 0 — PORTADA -->
+<div class="slide active" id="slide-0">
+
+  <div class="port-title">Determinación de<br><span>Contrataciones</span></div>
+  <div class="port-desc">Conozca las diferentes contrataciones que pueden realizarse en materia de defensa nacional, seguridad del Estado, protección de autoridades, orden público y rehabilitación social, así como los bienes, servicios y obras necesarios para el cumplimiento de estas funciones estratégicas.</div>
+  <div class="port-hint"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los temas para visualizar la información</div>
+  <div class="circles-wrap">
+    <div class="circ-card cc-1" onclick="goTo(1)">
+      <div class="circ-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="circ-num">01</div>
+      <div class="circ-label">Defensa Nacional y Seguridad Externa del Estado</div>
+    </div>
+    <div class="circ-card cc-2" onclick="goTo(2)">
+      <div class="circ-icon"><i class="fa-solid fa-star"></i></div>
+      <div class="circ-num">02</div>
+      <div class="circ-label">Casa Militar Presidencial – Protección de Autoridades</div>
+    </div>
+    <div class="circ-card cc-3" onclick="goTo(3)">
+      <div class="circ-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="circ-num">03</div>
+      <div class="circ-label">Orden Público, Protección Interna y Seguridad Ciudadana</div>
+    </div>
+    <div class="circ-card cc-4" onclick="goTo(4)">
+      <div class="circ-icon"><i class="fa-solid fa-building-columns"></i></div>
+      <div class="circ-num">04</div>
+      <div class="circ-label">Sistema de Rehabilitación Social</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 1 — DEFENSA NACIONAL -->
+<div class="slide" id="slide-1">
+  <div class="sh">
+    <div class="sh-icon" style="background:#E8F3F9;color:var(--teal)"><i class="fa-solid fa-shield-halved"></i></div>
+    <div>
+      <div class="sh-title" style="color:var(--teal)">1. Contrataciones para la defensa nacional y seguridad externa del Estado</div>
+      <div class="sh-sub">En el caso de defensa nacional y seguridad externa del Estado:</div>
+    </div>
+   
+  </div>
+  <div class="hint"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales para conocer la información</div>
+  <div class="lit-grid lg-4 v-teal">
+    <div class="lit-btn" onclick="openModal('d1a','a)','Adquisición, modernización, repotenciación y mantenimiento de armamento; y, su equipo y accesorios especiales relacionados.','teal')">
+      <span class="lit-key">a)</span>
+      <span class="lit-text">Adquisición, modernización, repotenciación y mantenimiento de armamento; y, su equipo y accesorios especiales relacionados.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1b','b)','Adquisición y mantenimiento de equipo de intendencia, equipamiento y protección personal, material de guerra y equipo especial para seguridad y defensa.','teal')">
+      <span class="lit-key">b)</span>
+      <span class="lit-text">Adquisición y mantenimiento de equipo de intendencia, equipamiento y protección personal, material de guerra y equipo especial para seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1c','c)','Adquisición, modernización y repotenciación de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa.','teal')">
+      <span class="lit-key">c)</span>
+      <span class="lit-text">Adquisición, modernización y repotenciación de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1d','d)','Recuperación, mantenimiento y sostenimiento logístico integral de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa.','teal')">
+      <span class="lit-key">d)</span>
+      <span class="lit-text">Recuperación, mantenimiento y sostenimiento logístico integral de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1e','e)','Adquisición de bienes y servicios para la infraestructura tecnológica, comunicaciones, informática, ciberseguridad, ciber defensa, ingenios y aplicaciones espaciales, equipos para uso de la fuerza y seguridad de la información.','teal')">
+      <span class="lit-key">e)</span>
+      <span class="lit-text">Adquisición de bienes y servicios para la infraestructura tecnológica, comunicaciones, informática, ciberseguridad, ciber defensa, ingenios y aplicaciones espaciales, equipos para uso de la fuerza y seguridad de la información.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1f','f)','Adquisición de licencias de software propietario y acceso a segmento satelital para inteligencia y operaciones de seguridad y defensa.','teal')">
+      <span class="lit-key">f)</span>
+      <span class="lit-text">Adquisición de licencias de software propietario y acceso a segmento satelital para inteligencia y operaciones de seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1g','g)','Contratación de servicio de transporte internacional de equipos, partes y repuestos para la seguridad y defensa.','teal')">
+      <span class="lit-key">g)</span>
+      <span class="lit-text">Contratación de servicio de transporte internacional de equipos, partes y repuestos para la seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1h','h)','Contratación de servicios especializados en el exterior necesarios para la seguridad y defensa.','teal')">
+      <span class="lit-key">h)</span>
+      <span class="lit-text">Contratación de servicios especializados en el exterior necesarios para la seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1i','i)','Adquisición de raciones de combate.','teal')">
+      <span class="lit-key">i)</span>
+      <span class="lit-text">Adquisición de raciones de combate.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1j','j)','Contratación de servicios de instrucción, adoctrinamiento y capacitación especializada en defensa y seguridad.','teal')">
+      <span class="lit-key">j)</span>
+      <span class="lit-text">Contratación de servicios de instrucción, adoctrinamiento y capacitación especializada en defensa y seguridad.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1k','k)','Adquisición de animales para su adiestramiento y su equipo de protección cuyo uso sea para la seguridad y defensa.','teal')">
+      <span class="lit-key">k)</span>
+      <span class="lit-text">Adquisición de animales para su adiestramiento y su equipo de protección cuyo uso sea para la seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1l','l)','La contratación de obras o consultorías para construcción de infraestructura para seguridad y defensa.','teal')">
+      <span class="lit-key">l)</span>
+      <span class="lit-text">La contratación de obras o consultorías para construcción de infraestructura para seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1m','m)','Servicios de consultoría necesarios para seguridad y defensa.','teal')">
+      <span class="lit-key">m)</span>
+      <span class="lit-text">Servicios de consultoría necesarios para seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1n','n)','Bienes y servicios utilizados en materia electoral a cargo de las Fuerzas Armadas.','teal')">
+      <span class="lit-key">n)</span>
+      <span class="lit-text">Bienes y servicios utilizados en materia electoral a cargo de las Fuerzas Armadas.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1o','o)','Las contrataciones de seguros de los bienes de las Fuerzas Armadas. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.','teal')">
+      <span class="lit-key">o)</span>
+      <span class="lit-text">Las contrataciones de seguros de los bienes de las Fuerzas Armadas. (Arts. 327–330 del Reglamento General)</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d1p','p)','Adquisición o suscripción a manuales técnicos y operacionales de unidades navales, terrestres, aéreas y equipos especiales para seguridad y defensa.','teal')">
+      <span class="lit-key">p)</span>
+      <span class="lit-text">Adquisición o suscripción a manuales técnicos y operacionales de unidades navales, terrestres, aéreas y equipos especiales para seguridad y defensa.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--teal)"></i>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2 — CASA MILITAR -->
+<div class="slide" id="slide-2">
+  <div class="sh">
+    <div class="sh-icon" style="background:#FDF2E2;color:var(--gold)"><i class="fa-solid fa-star"></i></div>
+    <div>
+      <div class="sh-title" style="color:var(--gold)">2. Contrataciones de la Casa Militar Presidencial para protección y seguridad de autoridades</div>
+      <div class="sh-sub">A efecto de cumplir sus atribuciones, la Casa Militar Presidencial podrá efectuar las contrataciones detalladas en el numeral precedente, con énfasis en brindar protección, transporte y seguridad a las principales autoridades del país, dentro y fuera del territorio nacional; y, además:</div>
+    </div>
+
+  </div>
+  <div class="hint"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales para conocer la información</div>
+  <div class="lit-grid lg-3 v-gold">
+    <div class="lit-btn" onclick="openModal('d2a','a)','Servicio de limpieza en instalaciones e infraestructura del Complejo Presidencial incluidas las de la Casa Militar Presidencial.','gold')">
+      <span class="lit-key">a)</span>
+      <span class="lit-text">Servicio de limpieza en instalaciones e infraestructura del Complejo Presidencial incluidas las de la Casa Militar Presidencial.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--gold)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d2b','b)','Arrendamiento de inmuebles.','gold')">
+      <span class="lit-key">b)</span>
+      <span class="lit-text">Arrendamiento de inmuebles.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--gold)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d2c','c)','Blindaje de vehículos e inmuebles.','gold')">
+      <span class="lit-key">c)</span>
+      <span class="lit-text">Blindaje de vehículos e inmuebles.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--gold)"></i>
+    </div>
+  </div>
+  <div style="margin-top:14px">
+    <div class="card" style="border-top:4px solid var(--gold2)">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;color:var(--gold)"><i class="fa-solid fa-circle-info"></i></div>
+        <div>
+          <div style="font-weight:800;font-size:13.5px;margin-bottom:4px;color:var(--gold)">Nota importante</div>
+          <div style="font-size:12.5px;color:var(--muted);line-height:1.6">La Casa Militar Presidencial podrá efectuar <strong>todas las contrataciones del numeral 1</strong> (defensa nacional y seguridad externa), con énfasis especial en brindar protección, transporte y seguridad a las principales autoridades del país, dentro y fuera del territorio nacional; además de los literales específicos a), b) y c) indicados.</div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- SLIDE 1: Defensa -->
-  <div class="slide" id="slide1">
-    <div class="header">
-      <div class="icon" style="background:#e8f3f9;color:#1a6b8a;"><i class="fa-solid fa-shield-halved"></i></div>
-      <div class="title" style="color:#1a6b8a;">1. Defensa Nacional</div>
-      <div class="badge" style="background:#e8f3f9;color:#1a6b8a;">Hoja 1</div>
-    </div>
-    <div style="margin-bottom:10px;"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales</div>
-    <div class="grid">
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('a)','Adquisición, modernización, repotenciación y mantenimiento de armamento; y, su equipo y accesorios especiales relacionados.')"><span style="font-weight:800;">a)</span> Armamento y accesorios</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('b)','Adquisición y mantenimiento de equipo de intendencia, equipamiento y protección personal, material de guerra y equipo especial para seguridad y defensa.')"><span style="font-weight:800;">b)</span> Equipo intendencia y protección</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('c)','Adquisición, modernización y repotenciación de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa.')"><span style="font-weight:800;">c)</span> Unidades navales, aéreas, terrestres</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('d)','Recuperación, mantenimiento y sostenimiento logístico integral de unidades navales, aéreas, terrestres, sistemas de defensa aérea, simuladores y demás sistemas para seguridad y defensa.')"><span style="font-weight:800;">d)</span> Recuperación y mantenimiento</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('e)','Adquisición de bienes y servicios para la infraestructura tecnológica, comunicaciones, informática, ciberseguridad, ciber defensa, ingenios y aplicaciones espaciales, equipos para uso de la fuerza y seguridad de la información.')"><span style="font-weight:800;">e)</span> Infraestructura tecnológica</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('f)','Adquisición de licencias de software propietario y acceso a segmento satelital para inteligencia y operaciones de seguridad y defensa.')"><span style="font-weight:800;">f)</span> Software y segmento satelital</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('g)','Contratación de servicio de transporte internacional de equipos, partes y repuestos para la seguridad y defensa.')"><span style="font-weight:800;">g)</span> Transporte internacional</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('h)','Contratación de servicios especializados en el exterior necesarios para la seguridad y defensa.')"><span style="font-weight:800;">h)</span> Servicios especializados exterior</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('i)','Adquisición de raciones de combate.')"><span style="font-weight:800;">i)</span> Raciones de combate</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('j)','Contratación de servicios de instrucción, adoctrinamiento y capacitación especializada en defensa y seguridad.')"><span style="font-weight:800;">j)</span> Instrucción y capacitación</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('k)','Adquisición de animales para su adiestramiento y su equipo de protección cuyo uso sea para la seguridad y defensa.')"><span style="font-weight:800;">k)</span> Animales adiestrados</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('l)','La contratación de obras o consultorías para construcción de infraestructura para seguridad y defensa.')"><span style="font-weight:800;">l)</span> Obras y consultorías</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('m)','Servicios de consultoría necesarios para seguridad y defensa.')"><span style="font-weight:800;">m)</span> Consultoría</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('n)','Bienes y servicios utilizados en materia electoral a cargo de las Fuerzas Armadas.')"><span style="font-weight:800;">n)</span> Apoyo electoral</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('o)','Las contrataciones de seguros de los bienes de las Fuerzas Armadas. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.')"><span style="font-weight:800;">o)</span> Seguros (Arts. 327-330)</div>
-      <div class="item" style="border-left-color:#1a6b8a;" onclick="showModal('p)','Adquisición o suscripción a manuales técnicos y operacionales de unidades navales, terrestres, aéreas y equipos especiales para seguridad y defensa.')"><span style="font-weight:800;">p)</span> Manuales técnicos</div>
-    </div>
-  </div>
-
-  <!-- SLIDE 2: Casa Militar -->
-  <div class="slide" id="slide2">
-    <div class="header">
-      <div class="icon" style="background:#fdf2e2;color:#c48b12;"><i class="fa-solid fa-star"></i></div>
-      <div class="title" style="color:#c48b12;">2. Casa Militar Presidencial</div>
-      <div class="badge" style="background:#fdf2e2;color:#c48b12;">Hoja 2</div>
-    </div>
-    <div style="margin-bottom:10px;"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales</div>
-    <div class="grid">
-      <div class="item" style="border-left-color:#c48b12;" onclick="showModal('a)','Servicio de limpieza en instalaciones e infraestructura del Complejo Presidencial incluidas las de la Casa Militar Presidencial.')"><span style="font-weight:800;">a)</span> Limpieza Complejo Presidencial</div>
-      <div class="item" style="border-left-color:#c48b12;" onclick="showModal('b)','Arrendamiento de inmuebles.')"><span style="font-weight:800;">b)</span> Arrendamiento de inmuebles</div>
-      <div class="item" style="border-left-color:#c48b12;" onclick="showModal('c)','Blindaje de vehículos e inmuebles.')"><span style="font-weight:800;">c)</span> Blindaje de vehículos e inmuebles</div>
-    </div>
-    <div style="margin-top:20px;padding:15px;background:#fdf2e2;border-radius:10px;border-left:4px solid #c48b12;">
-      <strong>Nota:</strong> La Casa Militar Presidencial podrá efectuar todas las contrataciones del numeral 1 (defensa nacional), con énfasis en protección, transporte y seguridad de autoridades.
-    </div>
-  </div>
-
-  <!-- SLIDE 3: Orden Público -->
-  <div class="slide" id="slide3">
-    <div class="header">
-      <div class="icon" style="background:#e2f5f1;color:#1e8a6e;"><i class="fa-solid fa-scale-balanced"></i></div>
-      <div class="title" style="color:#1e8a6e;">3. Orden Público</div>
-      <div class="badge" style="background:#e2f5f1;color:#1e8a6e;">Hoja 3</div>
-    </div>
-    <div style="margin-bottom:10px;"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales</div>
-    <div class="grid">
-      <div class="item" style="border-left-color:#1e8a6e;" onclick="showModal('a)','Las contrataciones que sean necesarias para la adquisición, modernización, repotenciación, dotación, equipamiento y mantenimiento de armamento y accesorios especiales del personal policial o militar, según corresponda.')"><span style="font-weight:800;">a)</span> Armamento policial/militar</div>
-      <div class="item" style="border-left-color:#1e8a6e;" onclick="showModal('b)','Las contrataciones relacionadas a bienes y servicios, incluidos los estudios especializados de carácter estratégicos y/o especiales, incluyéndose su mantenimiento y operación; que sean necesarios para prevenir y disuadir potenciales amenazas o riesgos de seguridad interna.')"><span style="font-weight:800;">b)</span> Bienes/servicios estratégicos</div>
-      <div class="item" style="border-left-color:#1e8a6e;" onclick="showModal('c)','Las contrataciones relacionadas con la adquisición, desarrollo, mantenimiento, operación de licencias (software) y hardware; y, las contrataciones relacionadas con la compra de licencias y equipamiento tecnológico en general, comunicaciones, ciberseguridad y aplicaciones especiales.')"><span style="font-weight:800;">c)</span> Software, hardware, ciberseguridad</div>
-      <div class="item" style="border-left-color:#1e8a6e;" onclick="showModal('d)','Las contrataciones relacionadas con la administración y control de sustancias catalogadas sujetas a fiscalización, incluido su depósito, destrucción y logística.')"><span style="font-weight:800;">d)</span> Sustancias fiscalizadas</div>
-      <div class="item" style="border-left-color:#1e8a6e;" onclick="showModal('e)','Las contrataciones de seguros de los bienes de la Policía Nacional. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.')"><span style="font-weight:800;">e)</span> Seguros Policía (Arts. 327-330)</div>
-      <div class="item" style="border-left-color:#1e8a6e;" onclick="showModal('f)','Bienes y servicios relacionados con el apoyo institucional de Policía Nacional en período electoral.')"><span style="font-weight:800;">f)</span> Apoyo electoral Policía</div>
-    </div>
-  </div>
-
-  <!-- SLIDE 4: Rehabilitación Social -->
-  <div class="slide" id="slide4">
-    <div class="header">
-      <div class="icon" style="background:#e8edf8;color:#1b3a5c;"><i class="fa-solid fa-building-columns"></i></div>
-      <div class="title" style="color:#1b3a5c;">4. Rehabilitación Social</div>
-      <div class="badge" style="background:#e8edf8;color:#1b3a5c;">Hoja 4</div>
-    </div>
-    <div style="margin-bottom:10px;"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales</div>
-    <div class="grid">
-      <div class="item" style="border-left-color:#1b3a5c;" onclick="showModal('a)','Las contrataciones de obra relacionadas a la infraestructura carcelaria, incluido su mantenimiento y repotenciación.')"><span style="font-weight:800;">a)</span> Infraestructura carcelaria</div>
-      <div class="item" style="border-left-color:#1b3a5c;" onclick="showModal('b)','Las contrataciones necesarias para cumplir con el artículo 12 del Código Orgánico Integral Penal.')"><span style="font-weight:800;">b)</span> Art. 12 COIP</div>
-      <div class="item" style="border-left-color:#1b3a5c;" onclick="showModal('c)','Las contrataciones de seguros necesarias para el Sistema Nacional de Rehabilitación Social. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.')"><span style="font-weight:800;">c)</span> Seguros (Arts. 327-330)</div>
-    </div>
-    <div style="margin-top:20px;padding:15px;background:#e8edf8;border-radius:10px;border-left:4px solid #1b3a5c;">
-      <strong>Marco normativo:</strong> Art. 12 COIP (derechos personas privadas libertad) y Arts. 327-330 Reglamento General.
-    </div>
-  </div>
-
-  <!-- MODAL -->
-  <div class="modal" id="modal" onclick="closeModal(event)">
-    <div class="modal-content">
-      <button class="close" onclick="closeModalBtn()">×</button>
-      <h3 id="modalKey" style="color:#1a6b8a;margin-bottom:15px;"></h3>
-      <p id="modalText" style="line-height:1.6;"></p>
-    </div>
-  </div>
-
-  <!-- NAV -->
-  <div class="nav">
-    <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>‹</button>
-    <div id="navDots" style="display:flex;gap:8px;"></div>
-    <button class="nav-btn" id="nextBtn" onclick="nextSlide()">›</button>
-  </div>
-
 </div>
 
+<!-- SLIDE 3 — ORDEN PÚBLICO -->
+<div class="slide" id="slide-3">
+  <div class="sh">
+    <div class="sh-icon" style="background:var(--green-l);color:var(--green)"><i class="fa-solid fa-scale-balanced"></i></div>
+    <div>
+      <div class="sh-title" style="color:var(--green)">3. Contrataciones para el orden público, protección interna y seguridad ciudadana</div>
+      <div class="sh-sub">En el caso de orden público, protección interna, seguridad ciudadana y seguridad interna del Estado:</div>
+    </div>
+  
+  </div>
+  <div class="hint"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales para conocer la información</div>
+  <div class="lit-grid lg-3 v-green">
+    <div class="lit-btn" onclick="openModal('d3a','a)','Las contrataciones que sean necesarias para la adquisición, modernización, repotenciación, dotación, equipamiento y mantenimiento de armamento y accesorios especiales del personal policial o militar, según corresponda.','green')">
+      <span class="lit-key">a)</span>
+      <span class="lit-text">Adquisición, modernización, repotenciación, dotación, equipamiento y mantenimiento de armamento y accesorios especiales del personal policial o militar, según corresponda.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--green)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d3b','b)','Las contrataciones relacionadas a bienes y servicios, incluidos los estudios especializados de carácter estratégicos y/o especiales, incluyéndose su mantenimiento y operación; que sean necesarios para prevenir y disuadir potenciales amenazas o riesgos de seguridad interna.','green')">
+      <span class="lit-key">b)</span>
+      <span class="lit-text">Bienes y servicios (incluidos estudios especializados estratégicos y/o especiales), su mantenimiento y operación; para prevenir y disuadir potenciales amenazas o riesgos de seguridad interna.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--green)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d3c','c)','Las contrataciones relacionadas con la adquisición, desarrollo, mantenimiento, operación de licencias (software) y hardware; y, las contrataciones relacionadas con la compra de licencias y equipamiento tecnológico en general, comunicaciones, ciberseguridad y aplicaciones especiales.','green')">
+      <span class="lit-key">c)</span>
+      <span class="lit-text">Adquisición, desarrollo, mantenimiento, operación de licencias (software) y hardware; compra de licencias y equipamiento tecnológico, comunicaciones, ciberseguridad y aplicaciones especiales.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--green)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d3d','d)','Las contrataciones relacionadas con la administración y control de sustancias catalogadas sujetas a fiscalización, incluido su depósito, destrucción y logística.','green')">
+      <span class="lit-key">d)</span>
+      <span class="lit-text">Administración y control de sustancias catalogadas sujetas a fiscalización, incluido su depósito, destrucción y logística.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--green)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d3e','e)','Las contrataciones de seguros de los bienes de la Policía Nacional. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.','green')">
+      <span class="lit-key">e)</span>
+      <span class="lit-text">Contrataciones de seguros de los bienes de la Policía Nacional. (Arts. 327–330 del Reglamento General)</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--green)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d3f','f)','Bienes y servicios relacionados con el apoyo institucional de Policía Nacional en período electoral.','green')">
+      <span class="lit-key">f)</span>
+      <span class="lit-text">Bienes y servicios relacionados con el apoyo institucional de Policía Nacional en período electoral.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--green)"></i>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4 — REHABILITACIÓN SOCIAL -->
+<div class="slide" id="slide-4">
+  <div class="sh">
+    <div class="sh-icon" style="background:var(--navy-l);color:var(--navy)"><i class="fa-solid fa-building-columns"></i></div>
+    <div>
+      <div class="sh-title" style="color:var(--navy)">4. Contrataciones para el sistema de rehabilitación social</div>
+      <div class="sh-sub">En el caso de rehabilitación social:</div>
+    </div>
+   
+  </div>
+  <div class="hint"><i class="fa-solid fa-hand-pointer"></i> Haga clic en los literales para conocer la información</div>
+  <div class="lit-grid lg-3 v-navy">
+    <div class="lit-btn" onclick="openModal('d4a','a)','Las contrataciones de obra relacionadas a la infraestructura carcelaria, incluido su mantenimiento y repotenciación.','navy')">
+      <span class="lit-key">a)</span>
+      <span class="lit-text">Las contrataciones de obra relacionadas a la infraestructura carcelaria, incluido su mantenimiento y repotenciación.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--navy)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d4b','b)','Las contrataciones necesarias para cumplir con el artículo 12 del Código Orgánico Integral Penal.','navy')">
+      <span class="lit-key">b)</span>
+      <span class="lit-text">Las contrataciones necesarias para cumplir con el artículo 12 del Código Orgánico Integral Penal.</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--navy)"></i>
+    </div>
+    <div class="lit-btn" onclick="openModal('d4c','c)','Las contrataciones de seguros necesarias para el Sistema Nacional de Rehabilitación Social. Sin embargo, en estos casos se aplicarán además las reglas previstas en los artículos 327, 328, 329 y 330 de este Reglamento General.','navy')">
+      <span class="lit-key">c)</span>
+      <span class="lit-text">Las contrataciones de seguros necesarias para el Sistema Nacional de Rehabilitación Social. (Arts. 327–330 del Reglamento General)</span>
+      <i class="fa-solid fa-up-right-from-square lit-arrow" style="color:var(--navy)"></i>
+    </div>
+  </div>
+  <div style="margin-top:14px">
+    <div class="card" style="border-top:4px solid var(--navy2)">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--navy-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;color:var(--navy)"><i class="fa-solid fa-gavel"></i></div>
+        <div>
+          <div style="font-weight:800;font-size:13.5px;margin-bottom:4px;color:var(--navy)">Marco normativo</div>
+          <div style="font-size:12.5px;color:var(--muted);line-height:1.6">Las contrataciones de seguros del literal c) se someterán también a las reglas previstas en los <strong>artículos 327, 328, 329 y 330</strong> del Reglamento General a la Ley Orgánica del Sistema Nacional de Contratación Pública. El artículo 12 del COIP establece los derechos de las personas privadas de libertad.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="mo">
+  <div class="mbox" id="mbox">
+    <div class="mhead" id="mhead">
+      <div class="mhead-icon" id="mhead-icon"></div>
+      <div class="mhead-key" id="mhead-key"></div>
+      <div class="mhead-title" id="mhead-title"></div>
+      <button class="mclose" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mbody" id="mbody"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <button class="nbtn" id="bprev" onclick="prevSlide()" disabled><i class="fa-solid fa-chevron-left"></i></button>
+  <div class="dots" id="dots"></div>
+  <button class="nbtn" id="bnext" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
+
+</div></div>
+
 <script>
-let currentSlide = 0;
-const totalSlides = 5;
+const TOTAL=5,colors={teal:{bg:'#E8F3F9',color:'#1A6B8A',icon:'fa-shield-halved'},gold:{bg:'#FDF2E2',color:'#C48B12',icon:'fa-star'},green:{bg:'#E2F5F1',color:'#1E8A6E',icon:'fa-scale-balanced'},navy:{bg:'#E8EDF8',color:'#1B3A5C',icon:'fa-building-columns'}};
+let cur=0;
 
-// navegación
-function goTo(n){
-  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
-  document.getElementById('slide'+n).classList.add('active');
-  currentSlide = n;
-  updateNav();
-}
-function nextSlide(){
-  if(currentSlide < totalSlides-1) goTo(currentSlide+1);
-}
-function prevSlide(){
-  if(currentSlide > 0) goTo(currentSlide-1);
-}
-
-// dots
 function buildDots(){
-  const dots = document.getElementById('navDots');
-  for(let i=0; i<totalSlides; i++){
-    let dot = document.createElement('span');
-    dot.className = 'nav-dot' + (i===0 ? ' active' : '');
-    dot.onclick = ()=>goTo(i);
-    dots.appendChild(dot);
+  const d=document.getElementById('dots');
+  for(let i=0;i<TOTAL;i++){
+    const e=document.createElement('div');
+    e.className='dot'+(i===0?' active':'');
+    e.onclick=()=>goTo(i);
+    d.appendChild(e)
   }
 }
 buildDots();
 
 function updateNav(){
-  document.getElementById('prevBtn').disabled = currentSlide===0;
-  document.getElementById('nextBtn').disabled = currentSlide===totalSlides-1;
-  document.querySelectorAll('.nav-dot').forEach((d,i)=>{
-    d.classList.toggle('active', i===currentSlide);
-  });
+  document.getElementById('bprev').disabled=cur===0;
+  document.getElementById('bnext').disabled=cur===TOTAL-1;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur))
 }
+function goTo(n){
+  document.getElementById('slide-'+cur).classList.remove('active');
+  cur=n;
+  document.getElementById('slide-'+cur).classList.add('active');
+  updateNav()
+}
+function nextSlide(){if(cur<TOTAL-1)goTo(cur+1)}
+function prevSlide(){if(cur>0)goTo(cur-1)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nextSlide();if(e.key==='ArrowLeft')prevSlide();if(e.key==='Escape')closeModal()});
 
-// modal
-function showModal(key, text){
-  document.getElementById('modalKey').innerText = key;
-  document.getElementById('modalText').innerText = text;
-  document.getElementById('modal').classList.add('active');
+function openModal(id,key,text,col){
+  const c=colors[col]||colors.teal;
+  document.getElementById('mhead').style.background=c.bg;
+  document.getElementById('mhead').style.borderBottom='1px solid '+c.color+'33';
+  document.getElementById('mhead-icon').style.background=c.color;
+  document.getElementById('mhead-icon').style.color='#fff';
+  document.getElementById('mhead-icon').innerHTML=`<i class="fa-solid ${c.icon}"></i>`;
+  document.getElementById('mhead-key').style.color=c.color;
+  document.getElementById('mhead-key').textContent=key;
+  document.getElementById('mhead-title').textContent='';
+  document.getElementById('mbody').innerHTML=`<p>${text}</p>`;
+  document.getElementById('mo').classList.add('open');
 }
-function closeModal(event){
-  if(event.target === document.getElementById('modal')){
-    document.getElementById('modal').classList.remove('active');
-  }
-}
-function closeModalBtn(){
-  document.getElementById('modal').classList.remove('active');
-}
-
-// teclado
-document.addEventListener('keydown', (e)=>{
-  if(e.key==='Escape') closeModalBtn();
-  if(e.key==='ArrowRight') nextSlide();
-  if(e.key==='ArrowLeft') prevSlide();
-});
+function closeModal(){document.getElementById('mo').classList.remove('open')}
+document.getElementById('mo').addEventListener('click',function(e){if(e.target===this)closeModal()});
 </script>
 </body>
 </html>
