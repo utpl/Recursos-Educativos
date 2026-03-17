@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aprendizaje, Memoria y Amnesia</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F4F7F2;
+    --surface: #FFFFFF;
+    --primary: #1A5C38;
+    --primary-light: #2E7D50;
+    --accent: #D4670A;
+    --accent-light: #F08030;
+    --col-a: #1A5C38;
+    --col-b: #7B2D8B;
+    --col-a-bg: #E6F2EC;
+    --col-b-bg: #F3E8F7;
+    --text-main: #0F1E14;
+    --text-sub: #2D4A37;
+    --text-muted: #4A6355;
+    --border: #C2D9CC;
+    --shadow: 0 4px 20px rgba(26,92,56,0.13);
+    --radius: 14px;
+    --slide-w: 1280px;
+    --slide-h: 720px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  #scale-root {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--slide-w);
+    height: var(--slide-h);
+    transform-origin: top left;
+    overflow: hidden;
+  }
+
+  /* ── SLIDES ── */
+  .slide {
+    position: absolute; inset: 0;
+    width: var(--slide-w); height: var(--slide-h);
+    background: var(--bg);
+    display: none; flex-direction: column;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 44px; height: 60px;
+    background: var(--primary); flex-shrink: 0;
+  }
+  .topbar-brand { font-size: 13px; font-weight: 600; color: #B9F0D0; letter-spacing: .4px; }
+  .topbar-title { font-size: 14px; font-weight: 700; color: #fff; text-align: center; }
+  .topbar-meta  { font-size: 12px; font-weight: 500; color: #B9F0D0; text-align: right; line-height: 1.5; }
+
+  /* ── SLIDE BODY ── */
+  .slide-body {
+    flex: 1; display: flex; flex-direction: column;
+    padding: 22px 44px 14px; overflow: hidden; gap: 14px;
+  }
+
+  /* ── SECTION HEADING ── */
+  .sec-heading { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .sec-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sec-title { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.1; }
+  .sec-divider { height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--primary) 0%, transparent 100%); margin-top: 4px; }
+
+  /* ── TWO-COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; flex: 1; overflow: hidden; }
+
+  .col-card {
+    border-radius: var(--radius); padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 9px;
+    overflow: hidden; box-shadow: var(--shadow);
+  }
+  .col-card.ca { background: var(--col-a-bg); border: 2px solid #94D4B4; }
+  .col-card.cb { background: var(--col-b-bg); border: 2px solid #C89FD8; }
+
+  .col-header {
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 8px; border-bottom: 2px solid;
+  }
+  .col-card.ca .col-header { border-color: var(--col-a); }
+  .col-card.cb .col-header { border-color: var(--col-b); }
+
+  .col-badge {
+    border-radius: 8px; padding: 4px 11px;
+    font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap;
+  }
+  .ca .col-badge { background: var(--col-a); }
+  .cb .col-badge { background: var(--col-b); }
+
+  .col-sub { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+  .col-list { list-style: none; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .col-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; line-height: 1.45; color: var(--text-main);
+  }
+  .col-list li::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 5px;
+  }
+  .ca .col-list li::before { background: var(--col-a); }
+  .cb .col-list li::before { background: var(--col-b); }
+
+  /* ── EXAMPLE BAR ── */
+  .example-bar {
+    border-radius: 10px; background: #FFFBF5;
+    border: 1.5px solid #F0C890;
+    padding: 9px 14px; display: flex; gap: 16px; align-items: flex-start; flex-shrink: 0;
+  }
+  .ex-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; margin-top: 1px; }
+  .ex-items { display: flex; gap: 18px; flex-wrap: wrap; }
+  .ex-item { font-size: 12px; color: var(--text-main); line-height: 1.4; }
+  .ex-item strong { color: var(--accent); }
+
+  /* ── NAVIGATION ── */
+  .nav-bar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 8px 44px 12px; flex-shrink: 0;
+  }
+  .nav-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer; transition: all .2s;
+    background: var(--primary); color: #fff;
+  }
+  .nav-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+  .nav-btn:disabled { background: #BDD4C6; color: #7A9E8C; cursor: default; transform: none; }
+  .dots { display: flex; gap: 7px; align-items: center; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #BDD4C6; cursor: pointer; transition: all .2s; border: none; }
+  .dot.active { background: var(--primary); transform: scale(1.35); }
+  .dot:hover:not(.active) { background: var(--primary-light); }
+
+  /* ── PORTADA ── */
+  #slide-0 { background: linear-gradient(135deg, #0D3D22 0%, #1A5C38 50%, #0F4A2C 100%); }
+  .cover-body {
+    flex: 1; display: flex; align-items: center; gap: 0;
+    padding: 0 60px; position: relative; overflow: hidden;
+  }
+  .cover-left { flex: 1; display: flex; flex-direction: column; gap: 18px; z-index: 2; }
+  .cover-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.25);
+    border-radius: 20px; padding: 6px 16px;
+    font-size: 12px; font-weight: 600; color: #B9F0D0; width: fit-content;
+  }
+  .cover-h1 { font-size: 40px; font-weight: 800; color: #fff; line-height: 1.08; }
+  .cover-h1 span { color: #7DDBA8; }
+  .cover-subtitle { font-size: 14px; color: #B9F0D0; line-height: 1.6; max-width: 440px; }
+  .cover-instruction {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.1); border-left: 4px solid #7DDBA8;
+    border-radius: 0 10px 10px 0; padding: 11px 14px;
+    font-size: 13px; color: #E0F5EB; max-width: 440px;
+  }
+  .cover-right { width: 370px; display: flex; flex-direction: column; gap: 12px; z-index: 2; }
+  .topic-card {
+    background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 12px; padding: 13px 16px;
+    display: flex; align-items: center; gap: 13px;
+    cursor: pointer; transition: all .2s; text-decoration: none;
+    width: 100%; text-align: left;
+  }
+  .topic-card:hover { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.4); transform: translateX(6px); }
+  .topic-card:focus-visible { outline: 3px solid #7DDBA8; outline-offset: 2px; }
+  .topic-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .topic-text { flex: 1; }
+  .topic-name { font-size: 13px; font-weight: 700; color: #fff; }
+  .topic-num  { font-size: 11px; color: #B9F0D0; font-weight: 500; }
+  .cover-deco  { position: absolute; right: -60px; top: 50%; transform: translateY(-50%); width: 480px; height: 480px; border-radius: 50%; border: 55px solid rgba(255,255,255,.04); z-index: 1; }
+  .cover-deco2 { position: absolute; right: 40px; top: 30px; width: 180px; height: 180px; border-radius: 50%; border: 28px solid rgba(255,255,255,.05); z-index: 1; }
+
+  /* ── INDEX ── */
+  .index-grid { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(2,1fr); gap: 14px; flex: 1; }
+  .idx-card {
+    border-radius: 14px; padding: 20px 18px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 9px;
+    cursor: pointer; border: 2px solid transparent;
+    transition: all .2s; position: relative; overflow: hidden;
+    text-decoration: none; box-shadow: var(--shadow); text-align: left; width: 100%;
+  }
+  .idx-card::after { content:''; position:absolute; bottom:0; right:0; width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,.08); transform:translate(30%,30%); }
+  .idx-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+  .idx-card:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .idx-num  { font-size: 26px; font-weight: 800; opacity:.22; line-height:1; color:#fff; position:absolute; top:12px; right:16px; }
+  .idx-icon { font-size: 26px; }
+  .idx-name { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; z-index: 1; }
+  .idx-sub  { font-size: 11px; color: rgba(255,255,255,.75); z-index: 1; }
+  .idx-card:nth-child(1) { background: linear-gradient(135deg,#1A5C38,#2E7D50); }
+  .idx-card:nth-child(2) { background: linear-gradient(135deg,#7B2D8B,#A044B8); }
+  .idx-card:nth-child(3) { background: linear-gradient(135deg,#0E6B8A,#1590B8); }
+  .idx-card:nth-child(4) { background: linear-gradient(135deg,#C04A14,#E06030); }
+  .idx-card:nth-child(5) { background: linear-gradient(135deg,#5A4A00,#8A7200); }
+  .idx-card:nth-child(6) { background: linear-gradient(135deg,#2D1B6E,#4C3AA0); }
+
+  /* ── PROCESS STEPS (slide 3) ── */
+  .steps-row { display: flex; gap: 14px; flex: 1; overflow: hidden; }
+  .step-card {
+    flex: 1; border-radius: 14px; padding: 16px 16px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .step-card:nth-child(1) { background: var(--col-a-bg); border: 2px solid #94D4B4; }
+  .step-card:nth-child(2) { background: #E8F0F9; border: 2px solid #90B4D8; }
+  .step-card:nth-child(3) { background: var(--col-b-bg); border: 2px solid #C89FD8; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .step-card:nth-child(1) .step-num { background: var(--col-a); }
+  .step-card:nth-child(2) .step-num { background: #1A6B9A; }
+  .step-card:nth-child(3) .step-num { background: var(--col-b); }
+  .step-title { font-size: 15px; font-weight: 800; color: var(--text-main); }
+  .step-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+  .step-text { font-size: 12px; line-height: 1.5; color: var(--text-main); }
+  .step-arrow {
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; padding-top: 40px;
+    color: var(--primary);
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.55);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100; animation: fadeIn .2s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 16px;
+    padding: 26px 28px 22px; max-width: 700px; width: 92%;
+    max-height: 85%; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    position: relative; animation: slideUp .25s ease;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    width: 30px; height: 30px; border-radius: 8px;
+    border: none; cursor: pointer; background: #F0F0F0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; color: #333; transition: background .15s;
+  }
+  .modal-close:hover { background: #E0E0E0; }
+  .modal-close:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .modal-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 14px; padding-right: 30px; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .modal-col { border-radius: 10px; padding: 13px 15px; }
+  .modal-col.ca { background: var(--col-a-bg); border: 1.5px solid #94D4B4; }
+  .modal-col.cb { background: var(--col-b-bg); border: 1.5px solid #C89FD8; }
+  .modal-col-title { font-size: 13px; font-weight: 700; margin-bottom: 7px; padding-bottom: 5px; border-bottom: 2px solid; }
+  .modal-col.ca .modal-col-title { color: var(--col-a); border-color: var(--col-a); }
+  .modal-col.cb .modal-col-title { color: var(--col-b); border-color: var(--col-b); }
+  .modal-col ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .modal-col ul li { font-size: 12.5px; line-height: 1.5; color: var(--text-main); display: flex; gap: 7px; align-items: flex-start; }
+  .modal-col ul li::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+  .modal-col.ca ul li::before { background: var(--col-a); }
+  .modal-col.cb ul li::before { background: var(--col-b); }
+  .modal-examples { background: #FFFBF5; border: 1.5px solid #F0C890; border-radius: 10px; padding: 11px 14px; }
+  .modal-examples-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 7px; letter-spacing: .4px; }
+  .modal-examples p { font-size: 12.5px; color: var(--text-main); line-height: 1.5; margin-bottom: 5px; }
+  .modal-examples p:last-child { margin-bottom: 0; }
+  .modal-examples strong { color: var(--accent); }
+
+  /* ── TABLE SLIDE ── */
+  .tbl-wrap { flex: 1; overflow: auto; border-radius: 12px; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 12px; }
+  th, td { padding: 10px 13px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.45; }
+  thead th { background: var(--primary); color: #fff; font-size: 13px; font-weight: 700; }
+  thead th:first-child { border-radius: 12px 0 0 0; }
+  thead th:last-child  { border-radius: 0 12px 0 0; }
+  tbody tr:nth-child(even) td { background: #F4F7F2; }
+  tbody tr:hover td { background: #E6F2EC; }
+  td:first-child { font-weight: 700; color: var(--col-a); white-space: nowrap; }
+
+  /* clickable rows */
+  tr.expandable { cursor: pointer; }
+  tr.expandable:hover td { background: #D4EDE2 !important; }
+  tr.expand-detail td { background: #F8FFF8; }
+  tr.expand-detail { display: none; }
+  tr.expand-detail.visible { display: table-row; }
+  .expand-content { font-size: 12px; color: var(--text-main); padding: 8px 6px; }
+  .expand-row-hint { font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+  /* ── REFERENCE SLIDE ── */
+  .ref-card {
+    background: var(--surface); border-radius: 14px;
+    padding: 30px 38px; box-shadow: var(--shadow);
+    border: 2px solid var(--border);
+    display: flex; flex-direction: column; gap: 14px;
+    max-width: 720px; margin: auto;
+  }
+  .ref-title { font-size: 20px; font-weight: 800; color: var(--text-main); }
+  .ref-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+  .ref-citation { font-size: 14px; color: var(--text-main); line-height: 1.75; background: #F4F7F2; border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 0 10px 10px 0; }
+
+  /* ── CLICK BUTTONS in slide ── */
+  .click-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--col-a); color: #fff;
+    border: none; border-radius: 8px;
+    padding: 6px 14px; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all .2s; margin: 2px 4px 2px 0;
+  }
+  .click-btn.cb-b { background: var(--col-b); }
+  .click-btn.cb-c { background: #1A6B9A; }
+  .click-btn:hover { opacity: .85; transform: translateY(-1px); }
+  .click-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* ── INFO CARD (used in slide 1 & 6) ── */
+  .info-row { display: flex; gap: 14px; flex: 1; overflow: hidden; }
+  .info-card {
+    flex: 1; border-radius: 14px; padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 8px;
+    overflow: hidden; box-shadow: var(--shadow);
+  }
+  .info-card.ca { background: var(--col-a-bg); border: 2px solid #94D4B4; }
+  .info-card.cb { background: var(--col-b-bg); border: 2px solid #C89FD8; }
+  .info-card-title { font-size: 15px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; padding-bottom: 7px; border-bottom: 2px solid; }
+  .info-card.ca .info-card-title { border-color: var(--col-a); }
+  .info-card.cb .info-card-title { border-color: var(--col-b); }
+  .info-sub-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; margin-top: 4px; }
+  .info-text { font-size: 12.5px; color: var(--text-main); line-height: 1.5; }
+
+  /* ── NEURO SLIDE ── */
+  .neuro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex:1; overflow: hidden; }
+  .neuro-card {
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 2px 12px rgba(26,92,56,.09);
+    overflow: hidden;
+  }
+  .neuro-card:nth-child(1) { background: var(--col-a-bg); border: 2px solid #94D4B4; }
+  .neuro-card:nth-child(2) { background: var(--col-b-bg); border: 2px solid #C89FD8; }
+  .neuro-card:nth-child(3) { background: #E8F0F9; border: 2px solid #90B4D8; }
+  .neuro-card:nth-child(4) { background: #FFF5EC; border: 2px solid #F0C890; }
+  .neuro-card-title { font-size: 13px; font-weight: 800; color: var(--text-main); padding-bottom: 5px; border-bottom: 2px solid var(--border); }
+  .neuro-base  { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; }
+  .neuro-text  { font-size: 12px; color: var(--text-main); line-height: 1.45; }
+  .neuro-impl  { font-size: 11.5px; color: var(--text-sub); line-height: 1.4; }
+  .neuro-ex    { font-size: 11.5px; color: var(--text-main); line-height: 1.4; font-style: italic; }
+  .neuro-ex strong { color: var(--accent); font-style: normal; }
+
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<div id="scale-root">
+
+<!-- ═══ SLIDE 0: PORTADA ═══ -->
+<div class="slide active" id="slide-0">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Prácticum 4.1 · Examen Complexivo</div>
+    <div class="topbar-meta">Prof. Fabiola Enith Ludeña Jaramillo</div>
+  </div>
+  <div class="cover-body">
+    <div class="cover-deco"></div><div class="cover-deco2"></div>
+    <div class="cover-left">
+      <div class="cover-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.7-3.71 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.5-4.75z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.7-3.71 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.5-4.75z"/></svg>
+        Neuropsicología · Módulo Didáctico
+      </div>
+      <h1 class="cover-h1">Aprendizaje,<br><span>Memoria</span> y Amnesia</h1>
+      <p class="cover-subtitle">Comprenda los fundamentos neuropsicológicos del aprendizaje y la memoria, sus sistemas, procesos de codificación y recuperación, las patologías que los afectan y su relación con la psicopedagogía.</p>
+      <div class="cover-instruction">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V6a2 2 0 0 1 4 0v5"/><path d="M13 11V9a2 2 0 0 1 4 0v6a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-1a2 2 0 0 1 4 0"/></svg>
+        Haga clic en los temas para visualizar la información
+      </div>
+    </div>
+    <div class="cover-right">
+      <button class="topic-card" onclick="goSlide(1)" aria-label="Índice">
+        <div class="topic-icon" style="background:rgba(255,255,255,.15)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <div class="topic-text"><div class="topic-name">Ver todos los temas</div><div class="topic-num">Índice completo</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="topic-card" onclick="goSlide(2)" aria-label="Definición">
+        <div class="topic-icon" style="background:rgba(255,255,255,.15)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="topic-text"><div class="topic-name">Definición: aprendizaje y memoria</div><div class="topic-num">Tema 1</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="topic-card" onclick="goSlide(3)" aria-label="Sistemas de memoria">
+        <div class="topic-icon" style="background:rgba(255,255,255,.15)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.7-3.71 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.5-4.75z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.7-3.71 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.5-4.75z"/></svg>
+        </div>
+        <div class="topic-text"><div class="topic-name">Sistemas y tipos de memoria</div><div class="topic-num">Tema 2</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="topic-card" onclick="goSlide(4)" aria-label="Procesos de memoria">
+        <div class="topic-icon" style="background:rgba(255,255,255,.15)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="topic-text"><div class="topic-name">Procesos: codificación y recuperación</div><div class="topic-num">Tema 3</div></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DDBA8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" disabled aria-label="Anterior">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior
+    </button>
+    <div class="dots" id="dots-0"></div>
+    <button class="nav-btn" onclick="goSlide(1)" aria-label="Siguiente">
+      Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 1: ÍNDICE ═══ -->
+<div class="slide" id="slide-1">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Prof. Fabiola Enith Ludeña Jaramillo</div>
+  </div>
+  <div class="slide-body">
+    <div class="sec-heading">
+      <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <div><div class="sec-title">Índice de contenidos</div><div class="sec-divider" style="width:210px"></div></div>
+    </div>
+    <div class="index-grid">
+      <button class="idx-card" onclick="goSlide(2)" aria-label="Definición"><span class="idx-num">01</span><span class="idx-icon">🔬</span><span class="idx-name">Definición y relación: aprendizaje y memoria</span><span class="idx-sub">Conceptos neuropsicológicos clave</span></button>
+      <button class="idx-card" onclick="goSlide(3)" aria-label="Sistemas"><span class="idx-num">02</span><span class="idx-icon">🧠</span><span class="idx-name">Sistemas y tipos de memoria</span><span class="idx-sub">Explícita vs. implícita</span></button>
+      <button class="idx-card" onclick="goSlide(4)" aria-label="Procesos"><span class="idx-num">03</span><span class="idx-icon">⚙️</span><span class="idx-name">Procesos de la memoria</span><span class="idx-sub">Codificación, almacenamiento y recuperación</span></button>
+      <button class="idx-card" onclick="goSlide(5)" aria-label="Amnesia"><span class="idx-num">04</span><span class="idx-icon">🩺</span><span class="idx-name">Amnesia: patología de la memoria</span><span class="idx-sub">Anterógrada y retrógrada</span></button>
+      <button class="idx-card" onclick="goSlide(6)" aria-label="Disociación"><span class="idx-num">05</span><span class="idx-icon">🔀</span><span class="idx-name">Disociación de la memoria</span><span class="idx-sub">Circuitos neurales separados</span></button>
+      <button class="idx-card" onclick="goSlide(7)" aria-label="Neuropsicología"><span class="idx-num">06</span><span class="idx-icon">📚</span><span class="idx-name">Neuropsicología y psicopedagogía</span><span class="idx-sub">Implicaciones en el aula</span></button>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(0)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-1"></div>
+    <button class="nav-btn" onclick="goSlide(2)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 2: DEFINICIÓN ═══ -->
+<div class="slide" id="slide-2">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Tema 1 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="sec-heading">
+      <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div><div class="sec-title">Definición y relación entre aprendizaje y memoria</div><div class="sec-divider" style="width:440px"></div></div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text-main);line-height:1.55;flex-shrink:0;">El aprendizaje se define neuropsicológicamente como los cambios en el sistema nervioso que resultan de la experiencia y que modifican la conducta. La memoria es la capacidad de almacenar y recuperar la información resultante de ese aprendizaje <em>(Kolb &amp; Wishaw, 2017)</em>. Haga clic en los botones para visualizar la información.</p>
+    <div class="info-row">
+      <div class="info-card ca">
+        <div class="info-card-title" style="color:var(--col-a)">🎓 Aprendizaje</div>
+        <div class="info-sub-label">Definición clave</div>
+        <div class="info-text">Proceso de adquisición de nueva información o habilidades a través de la experiencia.</div>
+        <div class="info-sub-label" style="margin-top:6px">Mecanismo neurológico central</div>
+        <div class="info-text">Plasticidad sináptica (cambios en la fuerza o número de conexiones neuronales).</div>
+        <button class="click-btn" style="margin-top:auto" onclick="openModal('m-aprendizaje')" aria-label="Ver más sobre Aprendizaje">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Ver más
+        </button>
+      </div>
+      <div class="info-card cb">
+        <div class="info-card-title" style="color:var(--col-b)">🧠 Memoria</div>
+        <div class="info-sub-label">Definición clave</div>
+        <div class="info-text">Mecanismo por el cual el conocimiento adquirido se <strong>almacena</strong> y se hace accesible para el uso futuro.</div>
+        <div class="info-sub-label" style="margin-top:6px">Mecanismo neurológico central</div>
+        <div class="info-text">Consolidación (proceso que estabiliza el trazo de memoria) y recuperación.</div>
+        <button class="click-btn cb-b" style="margin-top:auto" onclick="openModal('m-memoria')" aria-label="Ver más sobre Memoria">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Ver más
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(1)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-2"></div>
+    <button class="nav-btn" onclick="goSlide(3)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+  <!-- modals -->
+  <div class="modal-overlay" id="m-aprendizaje" role="dialog" aria-modal="true" aria-labelledby="ma-title">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('m-aprendizaje')" aria-label="Cerrar">✕</button>
+      <div class="modal-title" id="ma-title">🎓 Aprendizaje</div>
+      <div class="modal-col ca" style="margin-bottom:12px">
+        <div class="modal-col-title">Definición clave</div>
+        <p style="font-size:13px;color:var(--text-main);line-height:1.5">Proceso de adquisición de nueva información o habilidades a través de la experiencia.</p>
+      </div>
+      <div class="modal-col ca" style="margin-bottom:12px">
+        <div class="modal-col-title">Mecanismo neurológico central</div>
+        <p style="font-size:13px;color:var(--text-main);line-height:1.5">Plasticidad sináptica: cambios en la fuerza o número de conexiones neuronales que permiten que la experiencia modifique la conducta futura.</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="m-memoria" role="dialog" aria-modal="true" aria-labelledby="mm-title">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('m-memoria')" aria-label="Cerrar">✕</button>
+      <div class="modal-title" id="mm-title">🧠 Memoria</div>
+      <div class="modal-col cb" style="margin-bottom:12px">
+        <div class="modal-col-title">Definición clave</div>
+        <p style="font-size:13px;color:var(--text-main);line-height:1.5">Mecanismo por el cual el conocimiento adquirido se <strong>almacena</strong> y se hace accesible para el uso futuro.</p>
+      </div>
+      <div class="modal-col cb">
+        <div class="modal-col-title">Mecanismo neurológico central</div>
+        <p style="font-size:13px;color:var(--text-main);line-height:1.5"><strong>Consolidación:</strong> proceso que estabiliza el trazo de memoria, pasando de una forma lábil a una estructura más permanente. Seguido de la <strong>recuperación</strong> cuando se necesita acceder al recuerdo.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 3: SISTEMAS Y TIPOS ═══ -->
+<div class="slide" id="slide-3">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Tema 2 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="sec-heading">
+      <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.7-3.71 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.5-4.75z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.7-3.71 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.5-4.75z"/></svg></div>
+      <div><div class="sec-title">Sistemas y tipos de memoria</div><div class="sec-divider" style="width:280px"></div></div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);flex-shrink:0;">La neuropsicología ha clasificado la memoria como múltiples sistemas interdependientes que operan en diferentes circuitos cerebrales <em>(Jiménez Bernadó et al., 2020)</em>. Haga clic en los botones para visualizar la información.</p>
+    <div class="two-col">
+      <div class="col-card ca">
+        <div class="col-header"><span class="col-badge">Memoria explícita (declarativa)</span></div>
+        <ul class="col-list">
+          <li>Almacenamiento <strong>consciente</strong> de hechos, eventos y conocimiento que puede ser verbalizado.</li>
+          <li><strong>Estructuras:</strong> Hipocampo, lóbulos temporales mediales, corteza prefrontal.</li>
+        </ul>
+        <div style="display:flex;gap:8px;margin-top:auto;flex-wrap:wrap">
+          <button class="click-btn" onclick="openModal('m-episodica')" aria-label="Ver Memoria episódica">Episódica</button>
+          <button class="click-btn" onclick="openModal('m-semantica')" aria-label="Ver Memoria semántica">Semántica</button>
+        </div>
+      </div>
+      <div class="col-card cb">
+        <div class="col-header"><span class="col-badge">Memoria implícita (no declarativa)</span></div>
+        <ul class="col-list">
+          <li>Almacenamiento <strong>inconsciente</strong> que influye en la conducta sin requerir conciencia del aprendizaje previo.</li>
+          <li><strong>Estructuras:</strong> Ganglios basales, cerebelo, amígdala.</li>
+        </ul>
+        <div style="display:flex;gap:8px;margin-top:auto;flex-wrap:wrap">
+          <button class="click-btn cb-b" onclick="openModal('m-procedural')" aria-label="Ver Memoria procedural">Procedural</button>
+          <button class="click-btn cb-b" onclick="openModal('m-cond')" aria-label="Ver Condicionamiento">Condicionamiento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(2)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-3"></div>
+    <button class="nav-btn" onclick="goSlide(4)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+  <!-- modals -->
+  <div class="modal-overlay" id="m-episodica" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('m-episodica')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">🗓️ Memoria Episódica</div>
+    <div class="modal-col ca"><div class="modal-col-title">Descripción</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)">Almacena eventos autobiográficos y contextos específicos ligados a un tiempo y lugar determinados.</p></div>
+    <div class="modal-examples" style="margin-top:12px"><div class="modal-examples-label">Ejemplo</div><p>Recordar la cena de anoche.</p></div>
+  </div></div>
+  <div class="modal-overlay" id="m-semantica" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('m-semantica')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">📖 Memoria Semántica</div>
+    <div class="modal-col ca"><div class="modal-col-title">Descripción</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)">Almacena conocimiento general del mundo, conceptos y vocabulario, desvinculado de experiencias personales concretas.</p></div>
+    <div class="modal-examples" style="margin-top:12px"><div class="modal-examples-label">Ejemplo</div><p>Saber que París es la capital de Francia.</p></div>
+  </div></div>
+  <div class="modal-overlay" id="m-procedural" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('m-procedural')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">🚲 Memoria Procedural</div>
+    <div class="modal-col cb"><div class="modal-col-title">Descripción</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)">Habilidades motoras y cognitivas ejecutadas de manera automática sin necesidad de conciencia explícita.</p></div>
+    <div class="modal-examples" style="margin-top:12px"><div class="modal-examples-label">Ejemplo</div><p>Andar en bicicleta o escribir a máquina sin pensar en el movimiento.</p></div>
+  </div></div>
+  <div class="modal-overlay" id="m-cond" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('m-cond')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">🔔 Condicionamiento</div>
+    <div class="modal-col cb"><div class="modal-col-title">Descripción</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)">Asociaciones aprendidas entre estímulos y respuestas que influyen en la conducta de forma automática (clásico y operante).</p></div>
+    <div class="modal-examples" style="margin-top:12px"><div class="modal-examples-label">Ejemplo</div><p>Desarrollar aversión a un alimento tras enfermarse.</p></div>
+  </div></div>
+</div>
+
+<!-- ═══ SLIDE 4: PROCESOS ═══ -->
+<div class="slide" id="slide-4">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Tema 3 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="sec-heading">
+      <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div><div class="sec-title">Procesos de la memoria: codificación, almacenamiento y recuperación</div><div class="sec-divider" style="width:520px"></div></div>
+    </div>
+    <div class="steps-row">
+      <div class="step-card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-num">1</div>
+          <div class="step-title">Codificación</div>
+        </div>
+        <div class="step-label">Descripción neuropsicológica</div>
+        <div class="step-text">Transformación de la información sensorial en un código neural que el cerebro pueda almacenar (atención y percepción son claves).</div>
+        <div class="step-label" style="margin-top:6px">Posible disfunción neurológica</div>
+        <div class="step-text">Lesiones en la <strong>corteza prefrontal ventrolateral</strong> pueden afectar la capacidad de prestar atención a la información relevante.</div>
+      </div>
+      <div class="step-arrow">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="step-card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-num">2</div>
+          <div class="step-title">Almacenamiento (consolidación)</div>
+        </div>
+        <div class="step-label">Descripción neuropsicológica</div>
+        <div class="step-text">Proceso de estabilización del trazo de memoria, pasando de una forma lábil a una estructura más permanente.</div>
+        <div class="step-label" style="margin-top:6px">Posible disfunción neurológica</div>
+        <div class="step-text">Daño en el <strong>hipocampo</strong> interfiere con la consolidación a largo plazo de la memoria declarativa.</div>
+      </div>
+      <div class="step-arrow">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="step-card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="step-num">3</div>
+          <div class="step-title">Recuperación</div>
+        </div>
+        <div class="step-label">Descripción neuropsicológica</div>
+        <div class="step-text">Acceso y evocación de la información almacenada en respuesta a una señal o contexto.</div>
+        <div class="step-label" style="margin-top:6px">Posible disfunción neurológica</div>
+        <div class="step-text">Disfunción en los <strong>lóbulos frontales</strong> puede generar fallos en la recuperación (ej., dificultad para recordar la fuente de la información).</div>
+      </div>
+    </div>
+    <div style="background:#E6F2EC;border-left:4px solid var(--col-a);border-radius:0 10px 10px 0;padding:10px 14px;font-size:12px;color:var(--text-main);line-height:1.5;flex-shrink:0;">
+      Conocer desde la neuropsicología el procesamiento de la información permite determinar posibles disfunciones neurológicas que afectan de alguna forma los procesos de aprendizaje.
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(3)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-4"></div>
+    <button class="nav-btn" onclick="goSlide(5)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 5: AMNESIA ═══ -->
+<div class="slide" id="slide-5">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Tema 4 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="sec-heading">
+      <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div><div class="sec-title">Amnesia: patología de la memoria</div><div class="sec-divider" style="width:320px"></div></div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);flex-shrink:0;">La amnesia es un trastorno neuropsicológico caracterizado por la pérdida parcial o total de la memoria, causada generalmente por daño cerebral, enfermedad o trauma. Haga clic en los botones para visualizar la información.</p>
+    <div class="two-col">
+      <div class="col-card ca">
+        <div class="col-header"><span class="col-badge">Amnesia anterógrada</span></div>
+        <ul class="col-list">
+          <li>Incapacidad para formar <strong>nuevos recuerdos</strong> después del evento causante de la lesión.</li>
+          <li><strong>Estructuras:</strong> Hipocampo y estructuras del lóbulo temporal medial.</li>
+        </ul>
+        <button class="click-btn" style="margin-top:auto;width:fit-content" onclick="openModal('m-antero')" aria-label="Ver ejemplo clínico amnesia anterógrada">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Ejemplo clínico
+        </button>
+      </div>
+      <div class="col-card cb">
+        <div class="col-header"><span class="col-badge">Amnesia retrógrada</span></div>
+        <ul class="col-list">
+          <li>Pérdida de la memoria de eventos que ocurrieron <strong>antes</strong> del evento causante de la lesión.</li>
+          <li><strong>Estructuras:</strong> Corteza cerebral difusa y estructuras frontales.</li>
+        </ul>
+        <button class="click-btn cb-b" style="margin-top:auto;width:fit-content" onclick="openModal('m-retro')" aria-label="Ver ejemplo clínico amnesia retrógrada">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Ejemplo clínico
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(4)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-5"></div>
+    <button class="nav-btn" onclick="goSlide(6)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+  <div class="modal-overlay" id="m-antero" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('m-antero')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">🩺 Amnesia Anterógrada — Ejemplo clínico</div>
+    <div class="modal-col ca" style="margin-bottom:10px"><div class="modal-col-title">Definición</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)">Incapacidad para formar <strong>nuevos recuerdos</strong> después del evento causante de la lesión (el aprendizaje nuevo está afectado).</p></div>
+    <div class="modal-col ca" style="margin-bottom:10px"><div class="modal-col-title">Estructuras cerebrales asociadas</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)"><strong>Hipocampo</strong> y estructuras del lóbulo temporal medial <em>(Kolb y Wishaw, 2017)</em>.</p></div>
+    <div class="modal-examples"><div class="modal-examples-label">Ejemplo clínico</div><p>Pacientes como H.M.: retienen la memoria antigua, pero no pueden aprender conscientemente una nueva lista de palabras.</p></div>
+  </div></div>
+  <div class="modal-overlay" id="m-retro" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('m-retro')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">🩺 Amnesia Retrógrada — Ejemplo clínico</div>
+    <div class="modal-col cb" style="margin-bottom:10px"><div class="modal-col-title">Definición</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)">Pérdida de la memoria de eventos que ocurrieron <strong>antes</strong> del evento causante de la lesión (el recuerdo antiguo está afectado).</p></div>
+    <div class="modal-col cb" style="margin-bottom:10px"><div class="modal-col-title">Estructuras cerebrales asociadas</div><p style="font-size:13px;line-height:1.5;color:var(--text-main)"><strong>Corteza cerebral difusa</strong> (donde los recuerdos consolidados son almacenados) y estructuras frontales <em>(Jiménez Bernadó et al., 2020)</em>.</p></div>
+    <div class="modal-examples"><div class="modal-examples-label">Ejemplo clínico</div><p>Incapacidad para recordar su propia boda o eventos significativos de su vida pasada.</p></div>
+  </div></div>
+</div>
+
+<!-- ═══ SLIDE 6: DISOCIACIÓN ═══ -->
+<div class="slide" id="slide-6">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Tema 5 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="sec-heading">
+      <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg></div>
+      <div><div class="sec-title">Disociación de la memoria</div><div class="sec-divider" style="width:280px"></div></div>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);flex-shrink:0;">La amnesia típicamente afecta la <strong>memoria explícita</strong>, mientras que la <strong>memoria implícita</strong> suele permanecer intacta, demostrando la existencia de circuitos neurales separados. Haga clic en las filas para visualizar la información.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Característica</th>
+            <th>Memoria explícita (declarativa)</th>
+            <th>Memoria implícita (no declarativa)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="expandable" onclick="toggleRow('r1')" aria-expanded="false">
+            <td>Naturaleza del acceso</td>
+            <td>Consciente y voluntaria. Requiere esfuerzo intencional para la recuperación <em>(Kolb y Wishaw, 2017)</em>.</td>
+            <td>Inconsciente o automática. Se manifiesta en la ejecución de una tarea o en la influencia sobre la conducta <em>(Jiménez Bernadó et al., 2020)</em>.</td>
+          </tr>
+          <tr class="expand-detail" id="r1"><td colspan="3"><div class="expand-content"><strong>Clave:</strong> la diferencia fundamental radica en si el acceso requiere conciencia intencional o no.</div></td></tr>
+
+          <tr class="expandable" onclick="toggleRow('r2')" aria-expanded="false">
+            <td>Contenido almacenado</td>
+            <td>Hechos, eventos y conocimiento. Puede ser verbalizada o declarada.</td>
+            <td>Habilidades, hábitos y respuestas emocionales. Es no verbal y procedimental.</td>
+          </tr>
+          <tr class="expand-detail" id="r2"><td colspan="3"><div class="expand-content"><strong>Clave:</strong> la memoria explícita almacena «qué», la implícita almacena «cómo».</div></td></tr>
+
+          <tr class="expandable" onclick="toggleRow('r3')" aria-expanded="false">
+            <td>Subtipos</td>
+            <td><strong>1. Episódica:</strong> eventos autobiográficos. <strong>2. Semántica:</strong> conocimiento general, conceptos y vocabulario.</td>
+            <td><strong>1. Procedural:</strong> habilidades motoras y cognitivas. <strong>2. Condicionamiento:</strong> clásico y operante. <strong>3. Priming:</strong> facilitación perceptiva.</td>
+          </tr>
+          <tr class="expand-detail" id="r3"><td colspan="3"><div class="expand-content"><strong>Clave:</strong> cada subtipo depende de circuitos neurales distintos y puede afectarse independientemente.</div></td></tr>
+
+          <tr class="expandable" onclick="toggleRow('r4')" aria-expanded="false">
+            <td>Estructuras neurales clave</td>
+            <td>Lóbulo Temporal Medial (LTM): <strong>Hipocampo</strong>, corteza parahipocampal, amígdala (conexión emocional).</td>
+            <td>Ganglios basales, cerebelo (habilidades motoras), amígdala (condicionamiento emocional), corteza sensorial específica (priming).</td>
+          </tr>
+          <tr class="expand-detail" id="r4"><td colspan="3"><div class="expand-content"><strong>Clave:</strong> el hipocampo es esencial para la memoria explícita pero NO para la implícita.</div></td></tr>
+
+          <tr class="expandable" onclick="toggleRow('r5')" aria-expanded="false">
+            <td>Ejemplo de adquisición</td>
+            <td>Aprender la <strong>definición</strong> de «zona de desarrollo próximo» para un examen.</td>
+            <td>Aprender a <strong>escribir a máquina</strong> con fluidez, sin poder describir conscientemente la posición de cada tecla.</td>
+          </tr>
+          <tr class="expand-detail" id="r5"><td colspan="3"><div class="expand-content"><strong>Clave:</strong> uno requiere estudio consciente; el otro, práctica repetida.</div></td></tr>
+
+          <tr class="expandable" onclick="toggleRow('r6')" aria-expanded="false">
+            <td>Impacto de la amnesia</td>
+            <td><strong>Altamente afectada.</strong> La amnesia anterógrada impide la formación de nuevos recuerdos explícitos.</td>
+            <td><strong>Típicamente conservada.</strong> Los pacientes amnésicos pueden aprender nuevas habilidades motoras o juegos de forma inconsciente.</td>
+          </tr>
+          <tr class="expand-detail" id="r6"><td colspan="3"><div class="expand-content"><strong>Evidencia:</strong> caso H.M. — podía aprender nuevas habilidades motoras a pesar de no recordar haberlas practicado <em>(Kolb &amp; Wishaw, 2017)</em>.</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);flex-shrink:0;font-style:italic">Haga clic en las filas para visualizar la información.</p>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(5)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-6"></div>
+    <button class="nav-btn" onclick="goSlide(7)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 7: NEUROPSICOLOGÍA Y PSICOPEDAGOGÍA ═══ -->
+<div class="slide" id="slide-7">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Tema 6 / 6</div>
+  </div>
+  <div class="slide-body">
+    <div class="sec-heading">
+      <div class="sec-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+      <div><div class="sec-title">Relación entre la neuropsicología y la psicopedagogía</div><div class="sec-divider" style="width:460px"></div></div>
+    </div>
+    <p style="font-size:11.5px;color:var(--text-muted);flex-shrink:0;">Haga clic en los botones para visualizar la información de cada concepto neuropsicológico y su aplicación psicopedagógica.</p>
+    <div class="neuro-grid">
+      <div class="neuro-card">
+        <div class="neuro-card-title">Memoria explícita (declarativa)</div>
+        <div class="neuro-base">Base neurológica</div>
+        <div class="neuro-text"><strong>Hipocampo y lóbulos temporales mediales.</strong> Esencial para la consolidación de nueva información consciente.</div>
+        <div class="neuro-base" style="margin-top:4px">Implicación psicopedagógica</div>
+        <div class="neuro-impl"><strong>Estrategias conscientes y contenido curricular:</strong> adquisición de fechas, fórmulas, definiciones.</div>
+        <button class="click-btn" style="margin-top:auto;font-size:11px" onclick="openModal('mp-explícita')" aria-label="Ver ejemplo en el aula">Ejemplo en el aula</button>
+      </div>
+      <div class="neuro-card">
+        <div class="neuro-card-title">Memoria implícita (procedural)</div>
+        <div class="neuro-base">Base neurológica</div>
+        <div class="neuro-text"><strong>Ganglios basales y cerebelo.</strong> Almacena habilidades motoras, hábitos y destrezas sin necesidad de conciencia.</div>
+        <div class="neuro-base" style="margin-top:4px">Implicación psicopedagógica</div>
+        <div class="neuro-impl"><strong>Adquisición de habilidades y automatización:</strong> lectoescritura fluida, cálculo mental, manejo de herramientas.</div>
+        <button class="click-btn cb-b" style="margin-top:auto;font-size:11px" onclick="openModal('mp-implícita')" aria-label="Ver ejemplo en el aula">Ejemplo en el aula</button>
+      </div>
+      <div class="neuro-card">
+        <div class="neuro-card-title">Amnesia anterógrada</div>
+        <div class="neuro-base">Base neurológica</div>
+        <div class="neuro-text">Daño en el <strong>hipocampo</strong>. Incapacidad para formar nuevos recuerdos explícitos después de la lesión.</div>
+        <div class="neuro-base" style="margin-top:4px">Implicación psicopedagógica</div>
+        <div class="neuro-impl"><strong>Evaluación y rehabilitación:</strong> la enseñanza debe depender de la repetición espaciada y del uso de la memoria implícita intacta.</div>
+        <button class="click-btn cb-c" style="margin-top:auto;font-size:11px" onclick="openModal('mp-antero')" aria-label="Ver ejemplo en el aula">Ejemplo en el aula</button>
+      </div>
+      <div class="neuro-card">
+        <div class="neuro-card-title">Codificación y Recuperación</div>
+        <div class="neuro-base">Base neurológica</div>
+        <div class="neuro-text"><strong>Corteza Prefrontal (CPF) y Lóbulos frontales.</strong> Atención selectiva y búsqueda estratégica de la información.</div>
+        <div class="neuro-base" style="margin-top:4px">Implicación psicopedagógica</div>
+        <div class="neuro-impl"><strong>Metacognición y evocación:</strong> enseñar a seleccionar, organizar y usar pistas de recuperación activa.</div>
+        <button class="click-btn" style="margin-top:auto;font-size:11px;background:var(--accent)" onclick="openModal('mp-codif')" aria-label="Ver ejemplos en el aula">Ejemplos en el aula</button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(6)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-7"></div>
+    <button class="nav-btn" onclick="goSlide(8)" aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+  <!-- modals -->
+  <div class="modal-overlay" id="mp-explícita" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('mp-explícita')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">📚 Memoria explícita — Ejemplo/Disfunción en el aula</div>
+    <div class="modal-examples"><div class="modal-examples-label">Ejemplo de aplicación</div><p>Un estudiante con una leve disfunción en el LTM puede <strong>olvidar lo que estudió</strong> para el examen de Historia, pero recuerda cómo usar el teclado (memoria implícita intacta).</p></div>
+  </div></div>
+  <div class="modal-overlay" id="mp-implícita" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('mp-implícita')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">🎓 Memoria implícita — Ejemplo/Disfunción en el aula</div>
+    <div class="modal-examples"><div class="modal-examples-label">Ejemplo de aplicación</div><p>Un niño con dislexia que tiene un buen entrenamiento fonológico automatiza las reglas de <strong>decodificación</strong> (implícito), liberando recursos atencionales para la comprensión (explícito).</p></div>
+  </div></div>
+  <div class="modal-overlay" id="mp-antero" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('mp-antero')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">🩺 Amnesia anterógrada — Ejemplo/Disfunción en el aula</div>
+    <div class="modal-examples"><div class="modal-examples-label">Ejemplo de aplicación</div><p>Un joven con TCE (Traumatismo Craneoencefálico) requiere que el psicopedagogo use la <strong>práctica constante</strong> y el <strong>modelado</strong> para enseñar una nueva ruta escolar, ya que la memoria explícita (recordar la ruta) falla.</p></div>
+  </div></div>
+  <div class="modal-overlay" id="mp-codif" role="dialog" aria-modal="true"><div class="modal-box">
+    <button class="modal-close" onclick="closeModal('mp-codif')" aria-label="Cerrar">✕</button>
+    <div class="modal-title">⚙️ Codificación y Recuperación — Ejemplos en el aula</div>
+    <div class="modal-examples" style="margin-bottom:12px"><div class="modal-examples-label">Codificación — Ejemplo</div><p>Un estudiante con TDAH necesita andamiajes (uso de colores, mapas mentales) para mejorar la <strong>calidad de la codificación</strong> de la información, ya que su CPF tiene dificultades en la atención sostenida.</p></div>
+    <div class="modal-examples"><div class="modal-examples-label">Recuperación — Ejemplo</div><p>Un estudiante en un examen presenta el fenómeno «lo tengo en la punta de la lengua». La intervención psicopedagógica se centra en mejorar la <strong>función ejecutiva frontal</strong> para optimizar la búsqueda.</p></div>
+  </div></div>
+</div>
+
+<!-- ═══ SLIDE 8: REFERENCIAS ═══ -->
+<div class="slide" id="slide-8">
+  <div class="topbar">
+    <div class="topbar-brand">PSIP_4003 · Semana 9</div>
+    <div class="topbar-title">Aprendizaje, Memoria y Amnesia</div>
+    <div class="topbar-meta">Referencias</div>
+  </div>
+  <div class="slide-body" style="justify-content:center;align-items:center">
+    <div class="ref-card">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <div class="ref-title">Referencias bibliográficas</div>
+      <div>
+        <div class="ref-label">Fuentes · Formato APA 7</div>
+        <div class="ref-citation">
+          Kolb, B., &amp; Wishaw, I. Q. (2017). <em>Neuropsicología humana</em> (7.ª ed.). Editorial Médica Panamericana.<br><br>
+          Jiménez Bernadó, T., Cardoso, M., &amp; Val, S. (2020). <em>Neuropsicología cognitiva</em>. Dykinson. https://www.digitaliapublishing.com/a/131418
+        </div>
+      </div>
+      <button class="nav-btn" onclick="goSlide(0)" style="margin-top:8px;width:fit-content" aria-label="Volver al inicio">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Volver al inicio
+      </button>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="goSlide(7)" aria-label="Anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
+    <div class="dots" id="dots-8"></div>
+    <button class="nav-btn" disabled aria-label="Siguiente">Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+
+</div><!-- end scale-root -->
+
+<script>
+  const TOTAL = 9;
+  let current = 0;
+
+  function goSlide(n) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    current = n;
+    document.getElementById('slide-' + current).classList.add('active');
+    renderDots();
+  }
+
+  function renderDots() {
+    for (let s = 0; s < TOTAL; s++) {
+      const el = document.getElementById('dots-' + s);
+      if (!el) continue;
+      el.innerHTML = '';
+      for (let i = 0; i < TOTAL; i++) {
+        const b = document.createElement('button');
+        b.className = 'dot' + (i === current ? ' active' : '');
+        b.setAttribute('aria-label', 'Ir a diapositiva ' + (i + 1));
+        b.onclick = (function(idx){ return function(){ goSlide(idx); }; })(i);
+        el.appendChild(b);
+      }
+    }
+  }
+
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('open'); el.focus(); }
+  }
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+  }
+
+  // close modal on overlay click
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+      e.target.classList.remove('open');
+    }
+  });
+
+  function toggleRow(id) {
+    const row = document.getElementById(id);
+    const btn = row.previousElementSibling;
+    const isVisible = row.classList.contains('visible');
+    row.classList.toggle('visible', !isVisible);
+    if (btn) btn.setAttribute('aria-expanded', String(!isVisible));
+  }
+
+  function scaleCanvas() {
+    const root = document.getElementById('scale-root');
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    const ox = (window.innerWidth  - 1280 * scale) / 2;
+    const oy = (window.innerHeight - 720  * scale) / 2;
+    root.style.transform = `translate(${ox}px,${oy}px) scale(${scale})`;
+  }
+
+  window.addEventListener('resize', scaleCanvas);
+  scaleCanvas();
+  renderDots();
+
+  document.addEventListener('keydown', function(e) {
+    const openMod = document.querySelector('.modal-overlay.open');
+    if (e.key === 'Escape' && openMod) { openMod.classList.remove('open'); return; }
+    if (openMod) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { if (current < TOTAL-1) goSlide(current+1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { if (current > 0) goSlide(current-1); }
+  });
+</script>
+</body>
+</html>
