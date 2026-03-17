@@ -38,7 +38,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#ffffff;font-family:
 /* ── CANVAS WRAPPER ── */
 #cw{
   width:100%;height:100%;
-  display:flex;align-items:flex-start;justify-content:center;
+  display:block;
   overflow:hidden;
   background:#ffffff;
 }
@@ -48,8 +48,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#ffffff;font-family:
   width:1280px;height:720px;
   position:relative;overflow:hidden;
   background:#ffffff;
-  transform-origin:top center;
-  flex-shrink:0;
+  transform-origin:top left;
+  display:block;
 }
 
 /* Sin degradado de fondo — fondo blanco puro */
@@ -497,26 +497,59 @@ document.getElementById('mo').addEventListener('click',function(e){if(e.target==
 </script>
 
 <script>
-/* ── RESPONSIVE SCALE: adapta el canvas de 1280x720 al ancho real ── */
+/* ── RESPONSIVE SCALE con postMessage para Canvas LMS ── */
 (function(){
   var CV_W = 1280, CV_H = 720;
   var cv = document.getElementById('cv');
   var cw = document.getElementById('cw');
 
   function scale(){
-    var w = window.innerWidth  || document.documentElement.clientWidth;
-    var h = window.innerHeight || document.documentElement.clientHeight;
-    // Escala por ancho, respetando que no supere el alto
-    var scaleX = w / CV_W;
-    var scaleY = h / CV_H;
-    var s = Math.min(scaleX, scaleY);
-    cv.style.transform = 'scale(' + s + ')';
-    // Ajustar el wrapper para que no quede espacio vacío
-    cw.style.height = Math.round(CV_H * s) + 'px';
+    /* Ancho disponible = ancho real de la ventana del iframe */
+    var w = window.innerWidth || document.documentElement.clientWidth;
+
+    /* Escalar solo por ancho (el alto se ajusta proporcionalmente) */
+    var s = w / CV_W;
+    if(s > 1) s = 1; /* nunca agrandar más del tamaño original */
+
+    var scaledH = Math.round(CV_H * s);
+
+    /* Aplicar escala al canvas */
+    cv.style.transform        = 'scale(' + s + ')';
+    cv.style.transformOrigin  = 'top left';
+
+    /* El wrapper toma exactamente el alto escalado → sin espacio blanco */
+    cw.style.height    = scaledH + 'px';
+    cw.style.minHeight = scaledH + 'px';
+    document.body.style.height    = scaledH + 'px';
+    document.body.style.minHeight = scaledH + 'px';
+    document.documentElement.style.height    = scaledH + 'px';
+    document.documentElement.style.minHeight = scaledH + 'px';
+    document.documentElement.style.overflow  = 'hidden';
+
+    /* 
+      postMessage para Canvas LMS: le dice al iframe padre
+      exactamente cuánto alto necesita → elimina el espacio blanco
+      y el scroll innecesario dentro del acordeón de Canvas.
+    */
+    var msg = JSON.stringify({
+      subject:  'lti.frameResize',   /* protocolo estándar LTI / Canvas */
+      height:   scaledH
+    });
+    try { window.parent.postMessage(msg, '*'); } catch(e){}
+
+    /* También intenta el formato antiguo de Canvas */
+    try {
+      window.parent.postMessage({ type: 'resize', height: scaledH }, '*');
+    } catch(e){}
   }
 
+  /* Ejecutar al cargar y en cada cambio de tamaño */
   scale();
   window.addEventListener('resize', scale);
+
+  /* Pequeño retraso extra para cuando Canvas termina de renderizar */
+  setTimeout(scale, 300);
+  setTimeout(scale, 800);
 })();
 </script>
 </body>
