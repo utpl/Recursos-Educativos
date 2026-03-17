@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Análisis PESTEL</title>
+  <style>
+    /* RESET & BASE */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      color: #2c2c2c;
+      min-height: 100vh;
+      padding: 40px 20px 60px;
+    }
+
+    /* TÍTULO */
+    .pestel-title {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .pestel-title h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: #1a2b48;
+      line-height: 1;
+    }
+    .pestel-title p {
+      font-size: 1.1rem;
+      letter-spacing: 0.4em;
+      color: #6b8299;
+      margin-top: 12px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* GRID DE TARJETAS */
+    .pestel-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* TARJETA INDIVIDUAL */
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      outline: none;
+      position: relative;
+    }
+    .card:hover, .card:focus {
+      transform: translateY(-12px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.18);
+    }
+
+    .card-body {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+      transition: transform 0.2s;
+    }
+
+    .card-letter {
+      font-size: 5rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .card-label {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: white;
+    }
+
+    /* COLORES POR COMPONENTE */
+    .p-card .card-body { background: #9DB4D8; }
+    .p-card .card-label { background: #9DB4D8; }
+    .p-card .card-letter { color: #ffffff; }
+
+    .e-card .card-body { background: #7DC8E0; }
+    .e-card .card-label { background: #7DC8E0; }
+    .e-card .card-letter { color: #ffffff; }
+
+    .s-card .card-body { background: #6BD5C5; }
+    .s-card .card-label { background: #6BD5C5; }
+    .s-card .card-letter { color: #ffffff; }
+
+    .t-card .card-body { background: #A8D98F; }
+    .t-card .card-label { background: #A8D98F; }
+    .t-card .card-letter { color: #ffffff; }
+
+    .en-card .card-body { background: #F4D35E; }
+    .en-card .card-label { background: #F4D35E; }
+    .en-card .card-letter { color: #2c3e50; }
+
+    .l-card .card-body { background: #F08080; }
+    .l-card .card-label { background: #F08080; }
+    .l-card .card-letter { color: #ffffff; }
+
+    /* MODAL */
+    .modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow: hidden; /* evita scroll general */
+}
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+  animation: modalIn 0.3s ease;
+  overflow: hidden; /* evita el scroll */
+}
+    @keyframes modalIn {
+      from { transform: scale(0.9) translateY(30px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 24px 28px 16px;
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 1;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .modal-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #1f2a44;
+    }
+
+    .modal-close {
+      margin-left: auto;
+      background: #f1f3f7;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: #444;
+    }
+    .modal-close:hover { background: #e0e4ea; }
+
+    .modal-body {
+      padding: 24px 28px 32px;
+    }
+    .modal-body p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #3f4a5e;
+      margin-bottom: 16px;
+    }
+    .modal-body ul {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+    .modal-body li {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #3f4a5e;
+      margin-bottom: 10px;
+    }
+
+    .modal-footer-note {
+      font-size: 0.9rem;
+      color: #7c8ca8;
+      margin-top: 24px;
+      font-style: italic;
+      border-top: 1px solid #eee;
+      padding-top: 16px;
+    }
+
+    /* COLORES MODAL ICON */
+    .modal-icon.p { background: #9DB4D8; }
+    .modal-icon.e { background: #7DC8E0; }
+    .modal-icon.s { background: #6BD5C5; }
+    .modal-icon.t { background: #A8D98F; }
+    .modal-icon.en { background: #F4D35E; }
+    .modal-icon.l { background: #F08080; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1100px) {
+      .pestel-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      .card-letter { font-size: 4.5rem; }
+      .pestel-title h1 { font-size: 3.2rem; }
+    }
+    @media (max-width: 600px) {
+      .pestel-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .card-letter { font-size: 3.8rem; }
+      .pestel-title h1 { font-size: 2.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="pestel-title">
+    <h1>ANÁLISIS PESTEL</h1>
+    <p>INFOGRAFÍA</p>
+  </div>
+
+  <div class="pestel-grid" role="list">
+    <!-- Político -->
+    <div class="card p-card" role="listitem" tabindex="0"
+         aria-label="Político – clic para ver detalles"
+         onclick="openModal('political')">
+      <div class="card-body">
+        <div class="card-letter">P</div>
+      </div>
+      <div class="card-label">POLÍTICO</div>
+    </div>
+
+    <!-- Económico -->
+    <div class="card e-card" role="listitem" tabindex="0"
+         aria-label="Económico – clic para ver detalles"
+         onclick="openModal('economic')">
+      <div class="card-body">
+        <div class="card-letter">E</div>
+      </div>
+      <div class="card-label">ECONÓMICO</div>
+    </div>
+
+    <!-- Social -->
+    <div class="card s-card" role="listitem" tabindex="0"
+         aria-label="Social – clic para ver detalles"
+         onclick="openModal('social')">
+      <div class="card-body">
+        <div class="card-letter">S</div>
+      </div>
+      <div class="card-label">SOCIAL</div>
+    </div>
+
+    <!-- Tecnológico -->
+    <div class="card t-card" role="listitem" tabindex="0"
+         aria-label="Tecnológico – clic para ver detalles"
+         onclick="openModal('technology')">
+      <div class="card-body">
+        <div class="card-letter">T</div>
+      </div>
+      <div class="card-label">TECNOLÓGICO</div>
+    </div>
+
+    <!-- Ambiental -->
+    <div class="card en-card" role="listitem" tabindex="0"
+         aria-label="Ambiental – clic para ver detalles"
+         onclick="openModal('environmental')">
+      <div class="card-body">
+        <div class="card-letter">E</div>
+      </div>
+      <div class="card-label">AMBIENTAL</div>
+    </div>
+
+    <!-- Legal -->
+    <div class="card l-card" role="listitem" tabindex="0"
+         aria-label="Legal – clic para ver detalles"
+         onclick="openModal('legal')">
+      <div class="card-body">
+        <div class="card-letter">L</div>
+      </div>
+      <div class="card-label">LEGAL</div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog"
+       aria-modal="true" aria-labelledby="modalTitleText"
+       onclick="closeOnOverlay(event)">
+    <div class="modal" id="modalBox">
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon"></div>
+        <div class="modal-title" id="modalTitleText"></div>
+        <button class="modal-close" onclick="closeModal()"
+                aria-label="Cerrar">×</button>
+      </div>
+      <div class="modal-body" id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const DATA = {
+      political: {
+        letter: 'P',
+        colorClass: 'p',
+        title: 'POLÍTICO',
+        emoji: '🏛️',
+        intro: 'En este apartado deberá analizar:',
+        items: [
+          'Las políticas públicas que afectan al sector en el que opera la organización.',
+          'La estabilidad política del país y su influencia en la actividad económica.',
+          'Programas gubernamentales de apoyo, incentivos o restricciones.',
+          'Reformas o cambios en normativas que impactan al sector financiero, empresarial o productivo.'
+        ],
+        closing: 'Este análisis permitirá identificar cómo el contexto político regula, impulsa o limita la gestión de la organización.'
+      },
+      economic: {
+        letter: 'E',
+        colorClass: 'e',
+        title: 'ECONÓMICO',
+        emoji: '📈',
+        intro: 'Este apartado requiere un análisis más profundo debido a su relevancia dentro del Prácticum I. Deberá examinar:',
+        items: [
+          'La evolución de las captaciones y colocaciones del sistema financiero.',
+          'El comportamiento de las tasas de interés de la cartera comercial, productiva, microcrédito, consumo.',
+          'La inflación, el empleo, el crecimiento económico y otros indicadores macroeconómicos.',
+          'La disponibilidad de crédito y condiciones de financiamiento.',
+          'Costos de producción, precios y tendencias económicas del sector.'
+        ],
+        closing: 'Esta información permitirá comprender las alternativas de financiamiento e inversión disponibles para la organización y anticipar riesgos económicos relevantes.'
+      },
+      social: {
+        letter: 'S',
+        colorClass: 's',
+        title: 'SOCIAL',
+        emoji: '👥',
+        intro: 'En este componente evaluará:',
+        items: [
+          'Cambios en el comportamiento del consumidor.',
+          'Nivel de educación financiera de la población.',
+          'Tendencias sociales, culturales y demográficas.',
+          'Preferencias sociales que influyen en la demanda de productos o servicios.',
+          'Condiciones laborales y dinámicas comunitarias del entorno.'
+        ],
+        closing: 'Este análisis permitirá reconocer factores sociales que influyen en la demanda, la aceptación de productos o la relación con clientes y comunidades.'
+      },
+      technology: {
+        letter: 'T',
+        colorClass: 't',
+        title: 'TECNOLÓGICO',
+        emoji: '💻',
+        intro: 'Aquí deberá analizar el grado de avance tecnológico del sector y de la organización:',
+        items: [
+          'Nivel de digitalización y uso de herramientas tecnológicas.',
+          'Innovaciones en sistemas de pago, finanzas digitales o producción.',
+          'Plataformas digitales utilizadas para ventas, atención o gestión interna.',
+          'Automatización y sistemas tecnológicos del sector.',
+          'Riesgos asociados a la ciberseguridad.'
+        ],
+        closing: 'Este componente permite evaluar si la organización cuenta con la tecnología necesaria para competir y adaptarse a los cambios del entorno.'
+      },
+      environmental: {
+        letter: 'E',
+        colorClass: 'en',
+        title: 'AMBIENTAL / ECOLÓGICO',
+        emoji: '🌿',
+        intro: 'En este apartado deberá considerar:',
+        items: [
+          'Reglamentación ambiental aplicable al sector.',
+          'Prácticas de sostenibilidad implementadas por la organización.',
+          'Gestión de residuos, eficiencia energética y uso responsable de recursos.',
+          'Riesgos ambientales que podrían afectar la operación.',
+          'Normativas o exigencias en materia ambiental que impacten al sector.'
+        ],
+        closing: 'Este análisis permitirá identificar oportunidades relacionadas con prácticas sostenibles y posibles amenazas derivadas de obligaciones ambientales.'
+      },
+      legal: {
+        letter: 'L',
+        colorClass: 'l',
+        title: 'LEGAL',
+        emoji: '⚖️',
+        intro: 'En este componente deberá analizar:',
+        items: [
+          'Normas laborales, tributarias y comerciales que regulan a la organización.',
+          'Regulaciones específicas del sector financiero, productivo o de servicios.',
+          'Exigencias de cumplimiento normativo.',
+          'Riesgos legales y cambios recientes en la normativa aplicable.'
+        ],
+        closing: 'Este análisis permitirá comprender el marco legal que condiciona el funcionamiento de la entidad y sus obligaciones operativas y financieras.'
+      }
+    };
+
+    function openModal(key) {
+      const d = DATA[key];
+      if (!d) return;
+
+      const icon = document.getElementById('modalIcon');
+      icon.className = 'modal-icon ' + d.colorClass;
+      icon.textContent = d.emoji;
+
+      document.getElementById('modalTitleText').textContent = d.title;
+
+      let html = '';
+      if (d.intro) html += `<p><strong>${d.intro}</strong></p>`;
+      if (d.items && d.items.length) {
+        html += '<ul>';
+        d.items.forEach(item => { html += `<li>${item}</li>`; });
+        html += '</ul>';
+      }
+      if (d.closing) html += `<p class="modal-footer-note">${d.closing}</p>`;
+
+      document.getElementById('modalContent').innerHTML = html;
+
+      document.getElementById('modalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      setTimeout(() => document.querySelector('.modal-close').focus(), 100);
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function closeOnOverlay(e) {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    }
+
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          card.click();
+        }
+      });
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>
