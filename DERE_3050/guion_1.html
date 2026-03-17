@@ -33,19 +33,27 @@
   --shadow:0 4px 20px rgba(0,0,0,.13);
   --shadow2:0 8px 32px rgba(0,0,0,.18);
 }
-html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-family:var(--font-main);color:var(--text)}
+html,body{width:100%;height:100%;overflow:hidden;background:#ffffff;font-family:var(--font-main);color:var(--text)}
 
-/* ── CANVAS ── */
-#cw{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#cv{width:1280px;height:720px;position:relative;overflow:hidden;background:var(--bg);border-radius:24px;box-shadow:var(--shadow2)}
+/* ── CANVAS WRAPPER ── */
+#cw{
+  width:100%;height:100%;
+  display:flex;align-items:flex-start;justify-content:center;
+  overflow:hidden;
+  background:#ffffff;
+}
 
-/* ── BG DECO ── */
-#cv::before{content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 700px 500px at -5% 50%,rgba(26,107,138,.12) 0%,transparent 70%),
-    radial-gradient(ellipse 500px 400px at 105% 50%,rgba(30,138,110,.10) 0%,transparent 70%),
-    radial-gradient(ellipse 400px 300px at 50% -5%,rgba(196,139,18,.07) 0%,transparent 70%);
-  pointer-events:none;z-index:0}
+/* Canvas fijo 1280x720, se escala con JS */
+#cv{
+  width:1280px;height:720px;
+  position:relative;overflow:hidden;
+  background:#ffffff;
+  transform-origin:top center;
+  flex-shrink:0;
+}
+
+/* Sin degradado de fondo — fondo blanco puro */
+#cv::before{display:none}
 
 /* ── SLIDES ── */
 .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:28px 44px 64px;z-index:1;animation:fsIn .45s cubic-bezier(.4,0,.2,1) both}
@@ -486,6 +494,30 @@ function openModal(id,key,text,col){
 }
 function closeModal(){document.getElementById('mo').classList.remove('open');}
 document.getElementById('mo').addEventListener('click',function(e){if(e.target===this)closeModal();});
+</script>
+
+<script>
+/* ── RESPONSIVE SCALE: adapta el canvas de 1280x720 al ancho real ── */
+(function(){
+  var CV_W = 1280, CV_H = 720;
+  var cv = document.getElementById('cv');
+  var cw = document.getElementById('cw');
+
+  function scale(){
+    var w = window.innerWidth  || document.documentElement.clientWidth;
+    var h = window.innerHeight || document.documentElement.clientHeight;
+    // Escala por ancho, respetando que no supere el alto
+    var scaleX = w / CV_W;
+    var scaleY = h / CV_H;
+    var s = Math.min(scaleX, scaleY);
+    cv.style.transform = 'scale(' + s + ')';
+    // Ajustar el wrapper para que no quede espacio vacío
+    cw.style.height = Math.round(CV_H * s) + 'px';
+  }
+
+  scale();
+  window.addEventListener('resize', scale);
+})();
 </script>
 </body>
 </html>
