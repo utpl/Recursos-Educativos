@@ -451,6 +451,9 @@ function closeModal(){ document.getElementById('modal').classList.remove('open')
 // ============================================
 // SOPA DE LETRAS (FUNCIONAL)
 // ============================================
+// ============================================
+// SOPA DE LETRAS (CORREGIDA)
+// ============================================
 const WS_WORDS = [
   {word:'INTERMEDIACION', hint:'El rol de canalizar fondos de ahorradores a inversores.'},
   {word:'LIQUIDEZ',       hint:'Facilidad para convertir un activo en efectivo sin pérdida de valor.'},
@@ -464,14 +467,17 @@ const GRID_SIZE = 14;
 let wsGrid = [];
 let wsFound = new Set();
 let wsPlaced = [];
+let wsSelected = [];
+let wsSelecting = false;
 
 function initWS(){
   // Crear grid vacío
   wsGrid = Array.from({length:GRID_SIZE},()=>Array(GRID_SIZE).fill(''));
+  wsPlaced = [];
   
   // Colocar palabras
   const dirs = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
-  WS_WORDS.forEach(({word}, idx) => {
+  WS_WORDS.forEach(({word}) => {
     let placed = false;
     for(let attempt=0; attempt<1000 && !placed; attempt++) {
       const dir = dirs[Math.floor(Math.random()*dirs.length)];
@@ -523,6 +529,20 @@ function renderWS() {
       td.textContent = wsGrid[r][c];
       td.dataset.r = r;
       td.dataset.c = c;
+      
+      // Si la celda pertenece a una palabra encontrada, marcarla como found
+      let isFound = false;
+      wsPlaced.forEach(p => {
+        if(wsFound.has(p.word)) {
+          p.cells.forEach(([fr,fc]) => {
+            if(fr===r && fc===c) {
+              td.classList.add('found');
+              isFound = true;
+            }
+          });
+        }
+      });
+      
       td.addEventListener('click', () => wsCellClick(r,c,td));
       tr.appendChild(td);
     }
@@ -534,27 +554,30 @@ function renderWS() {
   chips.innerHTML = '';
   WS_WORDS.forEach(({word}) => {
     const ch = document.createElement('div');
-    ch.className = 'word-chip';
+    ch.className = 'word-chip' + (wsFound.has(word) ? ' found' : '');
     ch.textContent = word;
     ch.id = 'chip-'+word;
     chips.appendChild(ch);
   });
 }
 
-let wsSelected = [];
-
 function wsCellClick(r,c,td) {
-  if(wsSelected.length === 0) {
+  // No permitir seleccionar celdas ya encontradas
+  if(td.classList.contains('found')) return;
+  
+  if(!wsSelecting) {
+    // PRIMER CLIC: iniciar selección
+    clearSelection();
     wsSelected = [[r,c]];
     td.classList.add('selected');
+    wsSelecting = true;
   } else {
+    // SEGUNDO CLIC: completar selección
     const [r1,c1] = wsSelected[0];
+    
+    // Si es la misma celda, cancelar selección
     if(r1===r && c1===c) {
-      wsSelected.forEach(cell => {
-        const t = document.querySelector(`#ws-tbody td[data-r="${cell[0]}"][data-c="${cell[1]}"]`);
-        if(t) t.classList.remove('selected');
-      });
-      wsSelected = [];
+      clearSelection();
       return;
     }
     
@@ -562,27 +585,36 @@ function wsCellClick(r,c,td) {
     const dc = c - c1;
     const steps = Math.max(Math.abs(dr), Math.abs(dc));
     
-    if(steps === 0) return;
-    
+    // Determinar dirección
     const sr = dr === 0 ? 0 : dr / Math.abs(dr);
     const sc = dc === 0 ? 0 : dc / Math.abs(dc);
     
-    let cells = [];
+    // Verificar que es línea recta
+    if((dr !== 0 && dc !== 0 && Math.abs(dr) !== Math.abs(dc)) || steps === 0) {
+      clearSelection();
+      return;
+    }
+    
+    // Construir línea de selección
+    const cells = [];
     for(let i=0; i<=steps; i++) {
       const nr = r1 + i*sr;
       const nc = c1 + i*sc;
       if(nr<0 || nr>=GRID_SIZE || nc<0 || nc>=GRID_SIZE) {
-        cells = [];
-        break;
+        clearSelection();
+        return;
+      }
+      // Verificar que ninguna celda esté ya encontrada
+      const cell = document.querySelector(`#ws-tbody td[data-r="${nr}"][data-c="${nc}"]`);
+      if(cell && cell.classList.contains('found')) {
+        clearSelection();
+        return;
       }
       cells.push([nr,nc]);
     }
     
-    // Quitar selección anterior
-    wsSelected.forEach(cell => {
-      const t = document.querySelector(`#ws-tbody td[data-r="${cell[0]}"][data-c="${cell[1]}"]`);
-      if(t) t.classList.remove('selected');
-    });
+    // Limpiar selección anterior
+    clearSelection(false); // No reiniciar flag aún
     
     // Seleccionar nueva línea
     cells.forEach(([nr,nc]) => {
@@ -590,14 +622,20 @@ function wsCellClick(r,c,td) {
       if(t) t.classList.add('selected');
     });
     
-    // Verificar si es una palabra encontrada
+    // Obtener la palabra seleccionada
     const word = cells.map(([nr,nc]) => wsGrid[nr][nc]).join('');
     const wordRev = word.split('').reverse().join('');
     
-    const found = wsPlaced.find(p => p.word === word || p.word === wordRev);
+    // Buscar si coincide con alguna palabra pendiente
+    const found = wsPlaced.find(p => 
+      !wsFound.has(p.word) && (p.word === word || p.word === wordRev)
+    );
     
-    if(found && !wsFound.has(found.word)) {
+    if(found) {
+      // Palabra encontrada correctamente
       wsFound.add(found.word);
+      
+      // Marcar celdas como encontradas
       found.cells.forEach(([nr,nc]) => {
         const t = document.querySelector(`#ws-tbody td[data-r="${nr}"][data-c="${nc}"]`);
         if(t) {
@@ -606,14 +644,26 @@ function wsCellClick(r,c,td) {
         }
       });
       
+      // Actualizar chip
       const chip = document.getElementById('chip-'+found.word);
       if(chip) chip.classList.add('found');
       
       updateWSProgress();
+      clearSelection(); // Limpiar todo
+    } else {
+      // Palabra incorrecta: mantener selección por si el usuario quiere ajustar
+      wsSelected = cells;
     }
-    
-    wsSelected = cells;
   }
+}
+
+function clearSelection(resetFlag = true) {
+  // Quitar clase selected de todas las celdas
+  document.querySelectorAll('#ws-tbody td.selected').forEach(td => {
+    td.classList.remove('selected');
+  });
+  wsSelected = [];
+  if(resetFlag) wsSelecting = false;
 }
 
 function updateWSProgress() {
@@ -630,6 +680,8 @@ function updateWSProgress() {
     ).join('');
   }
 }
+
+// Reemplaza la función initWS y renderWS en tu código con estas versiones
 
 // ============================================
 // CRUCIGRAMA 1
