@@ -122,27 +122,7 @@ html,body{
 .view-detail{ display:none }
 .view-detail.active{ display:block }
 
-/* Botón volver */
-.back-btn{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:8px 18px; border-radius:99px;
-  border:2px solid currentColor;
-  background:transparent;
-  font-family:var(--font); font-size:13px; font-weight:700;
-  cursor:pointer; margin-bottom:18px;
-  transition:background .18s, color .18s;
-}
-.back-btn:hover{ color:#fff !important; }
-.back-btn.c-teal{ color:var(--teal) }
-.back-btn.c-teal:hover{ background:var(--teal); border-color:var(--teal) }
-.back-btn.c-gold{ color:var(--gold) }
-.back-btn.c-gold:hover{ background:var(--gold); border-color:var(--gold) }
-.back-btn.c-green{ color:var(--green) }
-.back-btn.c-green:hover{ background:var(--green); border-color:var(--green) }
-.back-btn.c-navy{ color:var(--navy) }
-.back-btn.c-navy:hover{ background:var(--navy); border-color:var(--navy) }
-
-/* Header de sección */
+/* ── VISTAS DE DETALLE ── */
 .sh{
   display:flex; align-items:flex-start; gap:14px;
   margin-bottom:16px;
@@ -233,6 +213,37 @@ html,body{
 .v-navy .lit-btn::before{ background:var(--navy2) }
 .v-navy .lit-btn:hover{ border-color:var(--navy2); background:var(--navy-l) }
 .v-navy .lit-key{ color:var(--navy) }
+
+/* ── NAV BARRA FIJA ABAJO ── */
+#nav{
+  position:fixed; bottom:0; left:0; right:0;
+  display:flex; align-items:center; justify-content:center;
+  gap:12px; padding:10px 0 12px;
+  background:#fff;
+  border-top:1px solid rgba(0,0,0,.06);
+  z-index:100;
+  box-shadow:0 -2px 12px rgba(0,0,0,.06);
+}
+.nbtn{
+  width:38px; height:38px; border-radius:50%;
+  border:2px solid rgba(26,107,138,.25);
+  background:#fff; color:var(--teal);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:17px; transition:all .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.nbtn:hover{ background:var(--teal); color:#fff; border-color:var(--teal) }
+.nbtn:disabled{ opacity:.3; cursor:not-allowed }
+.dots{ display:flex; gap:7px; align-items:center }
+.dot{
+  width:8px; height:8px; border-radius:50%;
+  background:rgba(26,107,138,.22); cursor:pointer;
+  transition:all .3s;
+}
+.dot.active{ background:var(--teal); width:22px; border-radius:99px }
+
+/* Espacio para que el nav fijo no tape contenido */
+#app{ padding-bottom: 60px !important; }
 
 /* ── INFO CARD ── */
 .info-card{
@@ -341,7 +352,6 @@ html,body{
 
   <!-- ══ VISTA 1 — DEFENSA NACIONAL ══ -->
   <div id="view-1" class="view-detail">
-    <button class="back-btn c-teal" onclick="showHome()">&#8592; Volver</button>
     <div class="sh">
       <div class="sh-icon" style="background:#E8F3F9">🛡️</div>
       <div>
@@ -404,7 +414,6 @@ html,body{
 
   <!-- ══ VISTA 2 — CASA MILITAR ══ -->
   <div id="view-2" class="view-detail">
-    <button class="back-btn c-gold" onclick="showHome()">&#8592; Volver</button>
     <div class="sh">
       <div class="sh-icon" style="background:#FDF2E2">⭐</div>
       <div>
@@ -435,7 +444,6 @@ html,body{
 
   <!-- ══ VISTA 3 — ORDEN PÚBLICO ══ -->
   <div id="view-3" class="view-detail">
-    <button class="back-btn c-green" onclick="showHome()">&#8592; Volver</button>
     <div class="sh">
       <div class="sh-icon" style="background:var(--green-l)">⚖️</div>
       <div>
@@ -468,7 +476,6 @@ html,body{
 
   <!-- ══ VISTA 4 — REHABILITACIÓN SOCIAL ══ -->
   <div id="view-4" class="view-detail">
-    <button class="back-btn c-navy" onclick="showHome()">&#8592; Volver</button>
     <div class="sh">
       <div class="sh-icon" style="background:var(--navy-l)">🏛️</div>
       <div>
@@ -499,6 +506,13 @@ html,body{
 
 </div><!-- /app -->
 
+<!-- ══ NAV ══ -->
+<div id="nav">
+  <button class="nbtn" id="bprev" onclick="prevSlide()" disabled>&#8249;</button>
+  <div class="dots" id="dots"></div>
+  <button class="nbtn" id="bnext" onclick="nextSlide()">&#8250;</button>
+</div>
+
 <!-- ══ MODAL ══ -->
 <div id="mo">
   <div class="mbox">
@@ -513,20 +527,53 @@ html,body{
 </div>
 
 <script>
-/* ── NAVEGACIÓN ── */
-function showView(n){
-  document.getElementById('view-home').classList.add('hidden');
-  document.querySelectorAll('.view-detail').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+n).classList.add('active');
+const TOTAL = 5; // 0=portada, 1-4=secciones
+let cur = 0;
+
+/* Construir puntos */
+const dotsEl = document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n){
+  // ocultar actual
+  if(cur===0){
+    document.getElementById('view-home').classList.add('hidden');
+  } else {
+    const prev = document.getElementById('view-'+cur);
+    if(prev) prev.classList.remove('active');
+  }
+  cur = n;
+  // mostrar nuevo
+  if(cur===0){
+    document.getElementById('view-home').classList.remove('hidden');
+  } else {
+    const next = document.getElementById('view-'+cur);
+    if(next) next.classList.add('active');
+  }
+  // actualizar dots y botones
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  document.getElementById('bprev').disabled = cur===0;
+  document.getElementById('bnext').disabled = cur===TOTAL-1;
   window.scrollTo(0,0);
   notifyHeight();
 }
-function showHome(){
-  document.getElementById('view-home').classList.remove('hidden');
-  document.querySelectorAll('.view-detail').forEach(v=>v.classList.remove('active'));
-  window.scrollTo(0,0);
-  notifyHeight();
-}
+
+function nextSlide(){ if(cur<TOTAL-1) goTo(cur+1); }
+function prevSlide(){ if(cur>0)      goTo(cur-1); }
+
+/* Las tarjetas de portada también usan goTo */
+function showView(n){ goTo(n); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight') nextSlide();
+  if(e.key==='ArrowLeft')  prevSlide();
+  if(e.key==='Escape')     closeModal();
+});
 
 /* ── MODAL ── */
 const colors={
@@ -550,7 +597,6 @@ function openModal(key,text,col){
 }
 function closeModal(){ document.getElementById('mo').classList.remove('open'); }
 document.getElementById('mo').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 
 /* ── POST MESSAGE para Canvas LMS ── */
 function notifyHeight(){
@@ -558,7 +604,7 @@ function notifyHeight(){
     var h = document.body.scrollHeight || document.documentElement.scrollHeight;
     try{ window.parent.postMessage(JSON.stringify({subject:'lti.frameResize',height:h}),'*'); }catch(e){}
     try{ window.parent.postMessage({type:'resize',height:h},'*'); }catch(e){}
-  }, 100);
+  }, 150);
 }
 notifyHeight();
 window.addEventListener('resize', notifyHeight);
