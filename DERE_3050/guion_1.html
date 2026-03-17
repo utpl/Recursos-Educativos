@@ -20,40 +20,26 @@
 }
 
 html,body{
-  width:100%; height:100%;
-  max-height:100%;
+  width:100%;
   background:#fff;
   font-family:var(--font);
   color:var(--text);
-  overflow:hidden; /* NUNCA scroll en body */
+  overflow-x:hidden;
+  margin:0; padding:0;
 }
 
-/* ── WRAPPER: ocupa todo el espacio menos la barra nav (62px) ── */
+/* ── WRAPPER ── */
 #app{
   width:100%;
   max-width:1280px;
   margin:0 auto;
-  height:calc(100vh - 62px);
-  overflow-y:auto;       /* scroll interno si el contenido no cabe */
-  overflow-x:hidden;
-  padding:20px 20px 16px;
-  /* scrollbar discreta */
-  scrollbar-width:thin;
-  scrollbar-color:rgba(26,107,138,.2) transparent;
+  padding:20px 20px 0;
 }
-#app::-webkit-scrollbar{width:5px}
-#app::-webkit-scrollbar-thumb{background:rgba(26,107,138,.2);border-radius:99px}
 
 /* ══════════════════════════════
-   PORTADA — centrada vertical en el espacio disponible
+   PORTADA
 ══════════════════════════════ */
-#view-home{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  min-height:calc(100vh - 100px);
-}
+#view-home{ display:block }
 #view-home.hidden{ display:none }
 
 .port-title{
@@ -227,16 +213,19 @@ html,body{
 .v-navy .lit-btn:hover{ border-color:var(--navy2); background:var(--navy-l) }
 .v-navy .lit-key{ color:var(--navy) }
 
-/* ── NAV BARRA FIJA ABAJO ── */
+/* ── NAV — sticky al fondo, no fixed (fixed rompe iframes en Canvas) ── */
 #nav{
-  position:fixed; bottom:0; left:0; right:0;
+  position:sticky;
+  bottom:0;
+  left:0; right:0;
   display:flex; align-items:center; justify-content:center;
   gap:12px;
-  padding:12px 0 14px;
+  padding:10px 0 12px;
   background:#fff;
   border-top:1px solid rgba(0,0,0,.07);
   z-index:100;
   box-shadow:0 -3px 16px rgba(0,0,0,.07);
+  margin-top:16px;
 }
 .nbtn{
   width:38px; height:38px; border-radius:50%;
@@ -513,16 +502,16 @@ html,body{
         <div class="info-body">Las contrataciones de seguros del literal c) se someterán también a los <strong>artículos 327, 328, 329 y 330</strong> del Reglamento General a la LOSNCP. El artículo 12 del COIP establece los derechos de las personas privadas de libertad.</div>
       </div>
     </div>
+  </div><!-- /view-4 -->
+
+  <!-- ══ NAV — sticky al fondo del app ══ -->
+  <div id="nav">
+    <button class="nbtn" id="bprev" onclick="prevSlide()" disabled>&#8249;</button>
+    <div class="dots" id="dots"></div>
+    <button class="nbtn" id="bnext" onclick="nextSlide()">&#8250;</button>
   </div>
 
 </div><!-- /app -->
-
-<!-- ══ NAV ══ -->
-<div id="nav">
-  <button class="nbtn" id="bprev" onclick="prevSlide()" disabled>&#8249;</button>
-  <div class="dots" id="dots"></div>
-  <button class="nbtn" id="bnext" onclick="nextSlide()">&#8250;</button>
-</div>
 
 <!-- ══ MODAL ══ -->
 <div id="mo">
@@ -612,7 +601,12 @@ document.getElementById('mo').addEventListener('click',function(e){ if(e.target=
 /* ── POST MESSAGE para Canvas LMS ── */
 function notifyHeight(){
   setTimeout(function(){
-    var h = document.body.scrollHeight || document.documentElement.scrollHeight;
+    /* altura real del contenido — no del viewport */
+    var h = Math.max(
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.scrollHeight
+    );
     try{ window.parent.postMessage(JSON.stringify({subject:'lti.frameResize',height:h}),'*'); }catch(e){}
     try{ window.parent.postMessage({type:'resize',height:h},'*'); }catch(e){}
   }, 150);
