@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FODA Interactivo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    h1.title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #1e293b;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    p.subtitle {
+      font-size: 1rem;
+      color: #475569;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    /* ===== CONTENEDOR PRINCIPAL ===== */
+    .foda-container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* ===== GRID 2x2 ===== */
+    .foda-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ===== TARJETAS ===== */
+    .card {
+      border-radius: 18px;
+      padding: 30px 25px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .card:focus-visible {
+      outline: 3px solid #334155;
+      outline-offset: 3px;
+    }
+
+    /* ===== COLORES ACCESIBLES POR TIPO (WCAG AA) ===== */
+    /* Fortalezas: Azul accesible - Contraste 7.2:1 */
+    .fortalezas {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    /* Debilidades: Ámbar accesible - Contraste 6.1:1 */
+    .debilidades {
+      background: #fef3c7;
+      color: #92400e;
+      text-align: right;
+    }
+
+    /* Oportunidades: Verde accesible - Contraste 7.0:1 */
+    .oportunidades {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    /* Amenazas: Rojo accesible - Contraste 7.3:1 */
+    .amenazas {
+      background: #fee2e2;
+      color: #991b1b;
+      text-align: right;
+    }
+
+    .card h2 {
+      font-weight: 900;
+      font-size: 28px;
+      margin-bottom: 15px;
+    }
+
+    .card p {
+      font-size: 16px;
+      line-height: 1.6;
+      opacity: 0.95;
+    }
+
+    /* Icono decorativo */
+    .card-icon {
+      font-size: 48px;
+      opacity: 0.4;
+      margin-top: 15px;
+    }
+
+    /* ===== LETRAS DE FONDO REPOSICIONADAS ===== */
+    .bg-letter {
+      position: absolute;
+      font-size: 90px;
+      font-weight: 900;
+      opacity: 0.12;
+      color: inherit;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .fortalezas .bg-letter { top: 10px; right: 15px; }
+    .debilidades .bg-letter { top: 10px; left: 15px; }
+    .oportunidades .bg-letter { bottom: 10px; right: 15px; }
+    .amenazas .bg-letter { bottom: 10px; left: 15px; }
+
+    .fortalezas { padding-top: 45px; }
+    .debilidades { padding-top: 45px; }
+    .oportunidades { padding-bottom: 45px; }
+    .amenazas { padding-bottom: 45px; }
+
+    /* ===== CÍRCULO CENTRAL CON COLORES ARMONIZADOS ===== */
+    .circle-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 260px;
+      height: 260px;
+      z-index: 20;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .circle-container:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+
+    .circle-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.15));
+    }
+
+    /* Texto dentro del círculo */
+    .circle-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+      width: 180px;
+    }
+
+    .circle-text .small {
+      font-size: 16px;
+      letter-spacing: 3px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .circle-text .big {
+      font-size: 42px;
+      font-weight: 900;
+      color: #475569;
+      line-height: 1.2;
+    }
+
+    .circle-text .sub {
+      font-size: 14px;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .circle-text .hint {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: 8px;
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-5px); }
+    }
+
+    /* ===== MODALES ===== */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 18px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: modalIn 0.3s ease;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 20px 25px;
+      border-radius: 18px 18px 0 0;
+      position: relative;
+    }
+
+    /* Headers con colores accesibles sincronizados */
+    .modal-header.f { background: #dbeafe; border-bottom: 3px solid #1e40af; }
+    .modal-header.d { background: #fef3c7; border-bottom: 3px solid #92400e; }
+    .modal-header.o { background: #d1fae5; border-bottom: 3px solid #065f46; }
+    .modal-header.a { background: #fee2e2; border-bottom: 3px solid #991b1b; }
+    .modal-header.p { background: #f1f5f9; border-bottom: 3px solid #475569; }
+
+    .modal-header h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      border: 2px solid #cbd5e1;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      color: #475569;
+    }
+
+    .modal-close:hover {
+      background: white;
+      border-color: #94a3b8;
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      padding: 25px;
+      font-size: 16px;
+      color: #334151;
+      line-height: 1.7;
+    }
+
+    .modal-body ul {
+      padding-left: 25px;
+      margin-top: 10px;
+    }
+
+    .modal-body li {
+      margin-bottom: 8px;
+    }
+
+    /* ===== BOTÓN MÓVIL ===== */
+    .mobile-btn {
+      display: none;
+      margin: 25px auto 0;
+      background: #475569;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 30px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s;
+      box-shadow: 0 4px 14px rgba(71, 85, 105, 0.3);
+    }
+
+    .mobile-btn:hover {
+      background: #334155;
+      transform: translateY(-2px);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 700px) {
+      .foda-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .circle-container {
+        display: none;
+      }
+
+      .mobile-btn {
+        display: block;
+      }
+
+      .card {
+        min-height: 180px;
+        padding: 20px;
+      }
+
+      .card h2 {
+        font-size: 24px;
+      }
+
+      .bg-letter{
+        display: none;
+      }
+
+      .fortalezas .bg-letter,
+      .debilidades .bg-letter,
+      .oportunidades .bg-letter,
+      .amenazas .bg-letter {
+        top: auto;
+        bottom: 10px;
+        right: 15px;
+        left: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="title">Análisis FODA</h1>
+  <p class="subtitle">Haz clic en cada cuadrante o en el círculo central para explorar</p>
+
+  <div class="foda-container">
+    
+    <!-- Grid 2x2 -->
+    <div class="foda-grid">
+      
+      <!-- Fortalezas -->
+      <div class="card fortalezas" tabindex="0" role="button" 
+           onclick="openModal('f')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('f')">
+        <h2>Fortalezas</h2>
+        <p>Aspectos internos positivos que representan capacidades y recursos eficientes.</p>
+        <div class="card-icon">💪</div>
+        <span class="bg-letter">F</span>
+      </div>
+
+      <!-- Debilidades -->
+      <div class="card debilidades" tabindex="0" role="button"
+           onclick="openModal('d')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('d')">
+        <h2>Debilidades</h2>
+        <p>Aspectos internos negativos, limitaciones o carencias que dificultan el desempeño.</p>
+        <div class="card-icon">⚠️</div>
+        <span class="bg-letter">D</span>
+      </div>
+
+      <!-- Oportunidades -->
+      <div class="card oportunidades" tabindex="0" role="button"
+           onclick="openModal('o')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('o')">
+        <h2>Oportunidades</h2>
+        <p>Factores externos positivos del entorno que pueden favorecer el crecimiento.</p>
+        <div class="card-icon">🚀</div>
+        <span class="bg-letter">O</span>
+      </div>
+
+      <!-- Amenazas -->
+      <div class="card amenazas" tabindex="0" role="button"
+           onclick="openModal('a')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('a')">
+        <h2>Amenazas</h2>
+        <p>Factores externos que pueden perjudicar a la organización.</p>
+        <div class="card-icon">🛡️</div>
+        <span class="bg-letter">A</span>
+      </div>
+    </div>
+
+    <!-- Círculo central con SVG - COLORES SINCRONIZADOS CON CUADRANTES -->
+    <div class="circle-container" tabindex="0" role="button"
+         onclick="openModal('p')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('p')">
+      
+      <svg class="circle-svg" viewBox="0 0 200 200">
+        <!-- Anillo exterior dividido en 4 segmentos con colores de los cuadrantes -->
+        <!-- Fortalezas (azul) - Cuadrante superior izquierdo -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#ef4444" stroke-width="20" 
+                stroke-dasharray="125.6 502.4" stroke-dashoffset="0" stroke-linecap="round"/>
+        <!-- Debilidades (ámbar) - Cuadrante superior derecho -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#10b981" stroke-width="20" 
+                stroke-dasharray="125.6 502.4" stroke-dashoffset="-125.6" stroke-linecap="round"/>
+        <!-- Oportunidades (verde) - Cuadrante inferior izquierdo -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#3b82f6" stroke-width="20" 
+                stroke-dasharray="125.6 502.4" stroke-dashoffset="-251.2" stroke-linecap="round"/>
+        <!-- Amenazas (rojo) - Cuadrante inferior derecho -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#f59e0b" stroke-width="20" 
+                stroke-dasharray="125.6 502.4" stroke-dashoffset="-376.8" stroke-linecap="round"/>
+        
+        <!-- Círculo interior blanco con borde sutil -->
+        <circle cx="100" cy="100" r="50" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+        
+        
+        <!-- Líneas divisorias sutiles -->
+        <line x1="100" y1="20" x2="100" y2="180" stroke="#f1f5f9" stroke-width="2"/>
+        <line x1="20" y1="100" x2="180" y2="100" stroke="#f1f5f9" stroke-width="2"/>
+      </svg>
+     
+      <div class="circle-text">
+        <span class="big">FODA</span>
+        <div class="hint">▼ Haz clic ▼</div>
+      </div>
+    </div>
+
+    <!-- Botón para móvil -->
+    <button class="mobile-btn" onclick="openModal('p')">
+      👆 Ver introducción
+    </button>
+  </div>
+
+  <!-- MODALES CON COLORES ACCESIBLES -->
+  <div class="overlay" id="ov-f" onclick="bgClose(event,'f')">
+    <div class="modal">
+      <div class="modal-header f">
+        <h2>💪 Fortalezas</h2>
+        <button class="modal-close" onclick="closeModal('f')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Las fortalezas son los aspectos internos positivos de una empresa u organización que representan las capacidades, recursos, competencias y procesos que funcionan de manera eficiente y que le permiten diferenciarse, generar valor y alcanzar sus objetivos.</p>
+        <p>Para identificar las fortalezas, es importante realizar las siguientes preguntas:</p>
+        <ul>
+          <li>¿Qué hace bien la organización?</li>
+          <li>¿Con qué recursos, capacidades o ventajas cuenta?</li>
+          <li>¿Qué procesos funcionan adecuadamente?</li>
+          <li>¿Qué elementos internos aportan al buen desempeño?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-d" onclick="bgClose(event,'d')">
+    <div class="modal">
+      <div class="modal-header d">
+        <h2>⚠️ Debilidades</h2>
+        <button class="modal-close" onclick="closeModal('d')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Las debilidades son los aspectos internos negativos de una organización: limitaciones, deficiencias o carencias en recursos, capacidades, procesos o estructura que dificultan su desempeño y afectan su capacidad para competir o alcanzar sus objetivos.</p>
+        <p>Para identificar las debilidades, es importante realizar las siguientes preguntas:</p>
+        <ul>
+          <li>¿Qué está generando problemas dentro de la organización?</li>
+          <li>¿Qué recursos faltan o son insuficientes?</li>
+          <li>¿Qué procesos son lentos, informales o ineficientes?</li>
+          <li>¿Qué situaciones internas generan riesgo?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-o" onclick="bgClose(event,'o')">
+    <div class="modal">
+      <div class="modal-header o">
+        <h2>🚀 Oportunidades</h2>
+        <button class="modal-close" onclick="closeModal('o')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Las oportunidades son los factores externos positivos del entorno que pueden favorecer el crecimiento, fortalecimiento o desarrollo de la empresa u organización. Corresponden a tendencias, condiciones económicas, cambios tecnológicos, políticas públicas, necesidades del mercado u otros elementos del contexto que, si se aprovechan adecuadamente, pueden generar ventajas competitivas.</p>
+        <ul>
+          <li>¿Qué cambios del entorno pueden beneficiar a la organización?</li>
+          <li>¿Existen políticas, programas, tecnologías o tendencias que la favorecen?</li>
+          <li>¿Hay crecimiento en la demanda del sector?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-a" onclick="bgClose(event,'a')">
+    <div class="modal">
+      <div class="modal-header a">
+        <h2>🛡️ Amenazas</h2>
+        <button class="modal-close" onclick="closeModal('a')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Las amenazas son factores externos que pueden perjudicar a la organización o entidad en la que usted realiza sus prácticas preprofesionales.</p>
+        <ul>
+          <li>¿Qué riesgos del entorno representan un peligro para la organización?</li>
+          <li>¿Qué cambios económicos, políticos, tecnológicos o legales podrían afectarla?</li>
+          <li>¿La competencia o la regulación están aumentando la presión sobre la entidad?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-p" onclick="bgClose(event,'p')">
+    <div class="modal">
+      <div class="modal-header p">
+        <h2>📋 Introducción al FODA</h2>
+        <button class="modal-close" onclick="closeModal('p')">×</button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          <li>Para iniciar el proceso, es necesario reunir toda la información disponible, contar con la información de la ficha de diagnóstico interno, que incluye aspectos relacionados con la organización, sus procesos, la situación financiera y el comportamiento del mercado.</li>
+          <li>Asimismo, se debe analizar el mercado y el sector económico en el que opera la organización, identificando tendencias, dinámicas y condiciones relevantes.</li>
+          <li>De igual manera, es necesario considerar el análisis PESTEL, que aborda los factores políticos, económicos, sociales, tecnológicos, ecológicos y legales que influyen en el entorno externo.</li>
+          <li>Es necesario contar con toda esta información que permitirá desarrollar el análisis FODA simple y combinado.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(key) {
+      document.getElementById('ov-' + key).classList.add('active');
+    }
+    
+    function closeModal(key) {
+      document.getElementById('ov-' + key).classList.remove('active');
+    }
+    
+    function bgClose(event, key) {
+      if (event.target === document.getElementById('ov-' + key)) {
+        closeModal(key);
+      }
+    }
+    
+    // Cerrar con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.overlay.active').forEach(el => {
+          el.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

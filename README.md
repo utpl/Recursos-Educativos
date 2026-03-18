@@ -1,160 +1,188 @@
 Realice una infografía interactiva en HTML tipo Genially / Prezi, con diseño moderno, altamente visual e interactivo, optimizado para uso en LMS (Moodle/Canvas) dentro de un iframe.
 
+────────────────────────────────────────
 1. FORMATO Y CONTROL DEL LIENZO (CRÍTICO)
+────────────────────────────────────────
 
-Modo diapositiva obligatoria:
+- El recurso debe comportarse como una diapositiva tipo PowerPoint
+- Proporción fija 16:9 (ejemplo: 1280x720)
+- NO debe crecer verticalmente bajo ninguna circunstancia
+- PROHIBIDO scroll interno (ni vertical ni horizontal)
 
-El recurso debe comportarse como una diapositiva tipo PowerPoint
+Escalado obligatorio:
+- Usar transform: scale() para adaptar el contenido
+- Todo el contenido debe permanecer dentro del viewport
+- Debe ajustarse perfectamente dentro de un iframe sin romper diseño
 
-Proporción fija 16:9 (ejemplo: 1280x720)
+────────────────────────────────────────
+2. RESPONSIVIDAD (OBLIGATORIO)
+────────────────────────────────────────
 
-NO debe crecer verticalmente bajo ninguna circunstancia
+- Escritorio: lienzo centrado tipo presentación
+- Tablet: layout adaptativo (grid flexible)
+- Móvil: layout vertical (stack)
 
-Escalado en lugar de expansión:
+Reglas:
+- Sin necesidad de zoom
+- Botones táctiles accesibles
+- Usar @media:
+  - Tablet: max-width 1024px
+  - Móvil: max-width 768px
+  - otros: 480px
 
-El contenido debe escalar proporcionalmente (transform: scale)
+────────────────────────────────────────
+3. TIPOGRAFÍA (CRÍTICO)
+────────────────────────────────────────
 
-Nunca generar scroll interno
+- Tamaño máximo de títulos: 20px
+- Subtítulos: entre 16px y 18px
+- Texto general (párrafos, contenido, labels): 12px
+- PROHIBIDO usar tamaños mayores a 20px
+- Usar tipografía del sistema (system fonts) para evitar cargas externas:
+  - font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
-Todo debe verse dentro del mismo viewport
+────────────────────────────────────────
+4. SISTEMA DE COLORES (OBLIGATORIO)
+────────────────────────────────────────
 
-Compatibilidad con iframe:
+- Toda la paleta debe definirse en :root {}
 
-Debe ajustarse perfectamente al contenedor sin romper diseño
+Ejemplo:
 
-Sin scroll horizontal ni vertical
+:root{
+  --primary: #2A6F97;
+  --secondary: #468FAF;
+  --accent: #61A5C2;
+  --bg: #FFFFFF;
+  --text: #1A1A1A;
+  --muted: #6B7280;
+}
 
-2. RESPONSIVIDAD
+Reglas:
+- Cumplir accesibilidad W3C (mínimo contraste 7:1)
+- No usar colores fuera de variables
+- Toda la plantilla debe depender de :root
+- Si no se proporcionan colores:
+  - Generar automáticamente una paleta accesible
 
-En escritorio: lienzo centrado tipo presentación
+────────────────────────────────────────
+5. FIDELIDAD AL CONTENIDO (ESTRICTO)
+────────────────────────────────────────
 
-En móvil: reorganización vertical (stack)
-
-Sin necesidad de zoom
-
-Botones táctiles accesibles
-
-3. FIDELIDAD AL CONTENIDO (ESTRICTO)
-
-No agregar texto extra
-
-No modificar redacción
-
-No resumir ni reinterpretar
-
-Respetar exactamente el contenido del Word
+- NO agregar texto
+- NO resumir
+- NO reinterpretar
+- Respetar exactamente el contenido del Word
 
 Si falta contenido:
+- eliminar el bloque o dejarlo vacío
 
-eliminar el bloque o dejarlo vacío
+────────────────────────────────────────
+6. DISEÑO VISUAL (PROFESIONAL)
+────────────────────────────────────────
 
-4. DISEÑO VISUAL (MEJORADO)
+Estilo tipo Genially:
 
-Estilo moderno tipo Genially:
+- Tarjetas (cards)
+- Sombras suaves
+- Bordes redondeados
+- Layout limpio tipo dashboard
 
-Tarjetas (cards)
+Elementos visuales:
+- Usar únicamente SVG inline para iconos (NO librerías externas)
+- Ilustraciones simples en SVG (NO pedir al usuario)
+- Líneas, conectores, badges
+- Indicadores visuales
 
-Sombras suaves
+────────────────────────────────────────
+7. LIBRERÍAS PERMITIDAS
+────────────────────────────────────────
 
-Bordes redondeados
+Restricción estricta:
 
-Layout limpio tipo dashboard
+- ❌ NO usar librerías externas (CDN o links)
+- ❌ NO usar Google Fonts
+- ❌ NO usar Font Awesome
+- ❌ NO usar Bootstrap
+- ❌ NO usar Tailwind
 
-Elementos visuales enriquecidos:
+✔ Solo permitido:
+- HTML
+- CSS puro
+- JavaScript puro
+- SVG inline
 
-Iconos (Heroicons, Font Awesome o SVG inline)
+Objetivo:
+- Máximo rendimiento
+- Compatibilidad total con LMS (Moodle / Canvas)
 
-Ilustraciones o imágenes generadas automáticamente (NO pedir al usuario)
+────────────────────────────────────────
+8. IMÁGENES
+────────────────────────────────────────
 
-Indicadores visuales (líneas, conectores, badges)
+- Usar únicamente:
+  - SVG generados
+  - placeholders en CSS o SVG
+- NO usar imágenes externas (CDN)
+- NO solicitar imágenes al usuario
 
-5. LIBRERÍAS PERMITIDAS
+────────────────────────────────────────
+9. INTERACTIVIDAD (TIPO PRESENTACIÓN)
+────────────────────────────────────────
 
-Se permite el uso de:
+Modo obligatorio: slides
 
-Bootstrap (layout y componentes)
+- Navegación:
+  - Botón siguiente
+  - Botón anterior
+  - Tabs opcionales
 
-Tailwind CSS (estilado rápido)
-
-Google Fonts (tipografía profesional)
-
-Librerías de iconos (Font Awesome, Heroicons)
-
-Librerías JS ligeras para animaciones (opcional)
-
-IMPORTANTE:
-
-No sobrecargar con demasiadas librerías
-
-Priorizar rendimiento
-
-6. IMÁGENES
-
-Se pueden usar imágenes externas o generadas automáticamente
-
-No solicitar imágenes al usuario
-
-Si no hay imágenes en el contenido:
-
-generar placeholders visuales atractivos
-
-usar ilustraciones o fondos suaves
-
-7. INTERACTIVIDAD (TIPO PRESENTACIÓN)
-
-Modo slides obligatorio:
-
-Navegación por secciones (tipo diapositivas)
-
-Botones: siguiente / anterior o tabs
-
-Microinteracciones:
-
-Animaciones suaves (fade, slide, scale)
-
-Hover elegante (no crítico para funcionalidad)
+Animaciones:
+- Fade
+- Slide
+- Scale
+- Usar solo CSS o JS puro
 
 Modales:
+- Para contenido extenso
+- Overlay oscuro
+- Botón de cierre visible
 
-Para contenido extenso
+────────────────────────────────────────
+10. ACCESIBILIDAD
+────────────────────────────────────────
 
-Overlay oscuro
+- Fondo base: #FFFFFF
+- Contraste mínimo: 7:1
+- Texto mínimo: 12px
+- Botones accesibles y claros
 
-Botón de cierre visible
+────────────────────────────────────────
+11. CONTROL DE ESTRUCTURA
+────────────────────────────────────────
 
-8. ACCESIBILIDAD
+- Agregar contenido NO debe romper el layout
+- Todo debe mantenerse dentro del mismo lienzo
+- PROHIBIDO scroll interno
 
-Fondo blanco (#FFFFFF)
+────────────────────────────────────────
+12. INTEGRACIÓN LMS
+────────────────────────────────────────
 
-Contraste mínimo 7:1
+- Código en un solo archivo HTML
+- Compatible con Moodle y Canvas
+- Optimizado para iframe
 
-Texto legible (mínimo equivalente a 12pt)
+────────────────────────────────────────
+13. SALIDA
+────────────────────────────────────────
 
-Botones accesibles
+- Entregar solo código HTML completo
+- No incluir explicaciones
 
-9. CONTROL DE ESTRUCTURA
-
-Agregar más elementos NO debe cambiar el tamaño del lienzo
-
-Todo el contenido debe adaptarse dentro del mismo espacio
-
-Prohibido scroll interno
-
-10. INTEGRACIÓN LMS
-
-Código en un solo archivo HTML
-
-Compatible con Moodle y Canvas
-
-Optimizado para iframe
-
-11. SALIDA
-
-Entregar solo el código HTML completo
-
-No incluir explicaciones
-
-12. ENTRADAS
+────────────────────────────────────────
+14. ENTRADAS
+────────────────────────────────────────
 
 Contenido del Word:
 [PEGAR TEXTO AQUÍ]
