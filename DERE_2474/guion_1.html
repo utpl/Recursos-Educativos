@@ -2,890 +2,536 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Sopa de Letras – Contratación Pública</title>
-
 <style>
-  :root {
-    --primary:   #003366;
-    --secondary: #336699;
-    --accent:    #6699CC;
-    --light:     #99CCFF;
-    --lighter:   #CCCCFF;
-    --warm1:     #FFCC99;
-    --warm2:     #FF9900;
-    --warm3:     #FF6600;
-    --danger:    #CC3300;
-    --bg:        #FFFFFF;
-    --surface:   #F0F4FA;
-    --text:      #0A1628;
-    --muted:     #4A5568;
-    --found:     #336699;
-    --found-bg:  #99CCFF;
-    --sel:       #FF9900;
-    --sel-bg:    #FFCC99;
-    --radius:    8px;
-    --shadow:    0 2px 12px rgba(0,51,102,0.12);
-    
-    /* Variables dinámicas */
-    --cell-size: 24px;
-    --grid-gap: 2px;
-  }
+:root {
+  --primary:   #003366;
+  --secondary: #336699;
+  --accent:    #6699CC;
+  --light:     #99CCFF;
+  --lighter:   #CCCCFF;
+  --warm2:     #FF9900;
+  --warm3:     #FF6600;
+  --bg:        #f0f4fa;
+  --surface:   #ffffff;
+  --text:      #0a1628;
+  --muted:     #4a5568;
+  --found:     #336699;
+  --found-bg:  #cce0ff;
+  --sel-bg:    #ffe8b3;
+  --sel-br:    #FF9900;
+  --radius:    8px;
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden; 
-  }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-  }
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header-left { display: flex; flex-direction: column; gap: 2px; }
+.course-badge {
+  font-size: 10px;
+  color: var(--light);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.header h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+.header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.week-badge {
+  background: var(--warm2);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: flex; align-items: center; gap: 5px;
+}
+.score-box {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius);
+  padding: 4px 12px;
+  text-align: center;
+}
+.score-label { font-size: 9px; color: var(--light); letter-spacing: 1px; text-transform: uppercase; display: block; }
+.score-val   { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
 
-  /* ─── CANVAS PRINCIPAL ─── */
-  #canvas {
-    width: 100%;
-    height: 100%;
-    max-width: 1280px;
-    max-height: 720px;
-    position: relative;
-    background: linear-gradient(135deg, #EEF4FF 0%, #F8FAFF 60%, #E8EEFF 100%);
-    display: flex;
+/* ── INSTRUCCION ── */
+.instruction-box {
+  margin: 12px 16px 0;
+  background: #fff;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 8px 12px;
+}
+.instruction-box p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.instruction-box strong { color: var(--primary); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: flex;
+  gap: 14px;
+  padding: 12px 16px;
+  align-items: flex-start;
+}
+
+/* ── GRID ── */
+.grid-section { flex: 1; min-width: 0; }
+
+#word-grid {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 2px;
+  width: 100%;
+  user-select: none;
+  cursor: default;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0,51,102,0.1);
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(7px, 1.6vw, 13px);
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg);
+  border-radius: 4px;
+  border: 1px solid rgba(102,153,204,0.18);
+  transition: background 0.12s, color 0.12s;
+  cursor: pointer;
+}
+.cell:hover   { background: var(--lighter); }
+.cell.selected {
+  background: var(--sel-bg);
+  border-color: var(--sel-br);
+  color: var(--primary);
+}
+.cell.found {
+  background: var(--found-bg);
+  border-color: var(--found);
+  color: var(--primary);
+}
+.cell.found-flash { animation: pulse 0.35s ease; }
+@keyframes pulse {
+  0%   { transform: scale(1.15); background: var(--warm2); color:#fff; }
+  100% { transform: scale(1); }
+}
+
+/* ── SIDEBAR — columna derecha en desktop ── */
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,51,102,0.08);
+}
+
+.panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* lista de palabras: columna en desktop */
+.word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.word-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: var(--bg);
+  border: 1px solid rgba(102,153,204,0.12);
+  transition: all 0.2s;
+}
+.check-icon {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: transparent;
+  transition: all 0.25s;
+}
+.word-item.found-word { background: var(--found-bg); border-color: var(--found); }
+.word-item.found-word .check-icon { background: var(--found); border-color: var(--found); color: #fff; }
+.word-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+  transition: all 0.2s;
+}
+.word-item.found-word .word-text {
+  color: var(--primary);
+  text-decoration: line-through;
+  text-decoration-color: var(--secondary);
+}
+
+.progress-bar-wrap {
+  height: 5px;
+  background: rgba(102,153,204,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+#progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--warm2), var(--warm3));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+.dir-legend { display: flex; gap: 4px; flex-wrap: wrap; }
+.dir-chip {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(102,153,204,0.15);
+  color: var(--secondary);
+  font-weight: 600;
+}
+
+.actions { display: flex; gap: 6px; }
+.btn {
+  flex: 1;
+  padding: 8px 6px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all 0.18s;
+}
+.btn-secondary { background: var(--warm2); color: #fff; }
+.btn-secondary:hover { background: var(--warm3); }
+.btn-primary   { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--secondary); }
+
+/* ════════════════════════════════════════
+   PANTALLA PEQUEÑA — sidebar va abajo
+   ════════════════════════════════════════ */
+@media (max-width: 620px) {
+
+  /* main apila verticalmente */
+  .main {
     flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 8px 40px rgba(0,51,102,0.18);
+    padding: 10px 12px;
   }
 
-  /* Scroll en pantallas muy pequeñas verticales */
-  @media (max-height: 600px) and (orientation: portrait) {
-    html, body { overflow: auto; height: auto; }
-    #canvas { height: 100vh; max-height: none; }
-  }
+  /* grid ocupa todo el ancho */
+  .grid-section { width: 100%; }
 
-  /* ─── HEADER ── */
-  .header {
-    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
+  /* sidebar ocupa todo el ancho */
+  .sidebar {
+    width: 100%;
+    flex-direction: column;
     gap: 10px;
   }
-  .header-left { display: flex; flex-direction: column; min-width: 0; }
-  .course-badge {
-    font-size: 0.65rem;
-    color: var(--light);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+
+  /* tarjeta de palabras: grid 2 columnas */
+  .word-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
   }
-  .header h1 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .header-right {
+
+  /* tarjeta de controles: fila horizontal */
+  .panel-card.controls-card {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 12px;
-    flex-shrink: 0;
-  }
-  .week-badge {
-    background: var(--warm2);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-  }
-  .score-box {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: var(--radius);
-    padding: 4px 10px;
-    text-align: center;
-    min-width: 70px;
-  }
-  .score-label { font-size: 0.6rem; color: var(--light); letter-spacing: 1px; text-transform: uppercase; }
-  .score-val { font-size: 1.1rem; font-weight: 700; color: #fff; line-height: 1; }
-
-  /* ─── MAIN LAYOUT ─── */
-  .main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 260px;
-    gap: 0;
-    overflow: hidden;
-    min-height: 0;
-    position: relative;
-  }
-
-  /* ─── LEFT PANEL ─── */
-  .left-panel {
-    display: flex;
-    flex-direction: column;
-    padding: 12px 14px 10px 20px;
-    gap: 8px;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .instruction-box {
-    background: linear-gradient(90deg, rgba(0,51,102,0.06), rgba(102,153,204,0.06));
-    border-left: 3px solid var(--accent);
-    border-radius: 0 var(--radius) var(--radius) 0;
-    padding: 7px 12px;
-    flex-shrink: 0;
-  }
-  .instruction-box p {
-    font-size: 0.75rem;
-    color: var(--muted);
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .instruction-box p strong { color: var(--primary); display: flex; align-items: center; gap: 4px; }
-
-  .grid-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 0;
-    overflow: auto;
-    padding: 5px;
-  }
-
-  #word-grid {
-    display: grid;
-    grid-template-columns: repeat(20, var(--cell-size));
-    gap: var(--grid-gap);
-    user-select: none;
-    cursor: default;
-    margin: auto; 
-  }
-
-  .cell {
-    width: var(--cell-size);
-    height: var(--cell-size);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: calc(var(--cell-size) * 0.55);
-    font-weight: 700;
-    color: var(--text);
-    background: #fff;
-    border-radius: 4px;
-    border: 1px solid rgba(102,153,204,0.2);
-    transition: background 0.15s, color 0.15s, transform 0.1s;
-    cursor: pointer;
-    touch-action: none;
-  }
-  .cell:hover { background: var(--lighter); border-color: var(--accent); }
-  .cell.selected {
-    background: var(--sel-bg);
-    border-color: var(--sel);
-    color: var(--primary);
-    transform: scale(1.1);
-    z-index: 2;
-    position: relative;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  }
-  .cell.found {
-    background: var(--found-bg);
-    border-color: var(--found);
-    color: var(--primary);
-    font-weight: 700;
-  }
-  .cell.found-flash {
-    animation: foundPulse 0.4s ease;
-  }
-  @keyframes foundPulse {
-    0%   { transform: scale(1.2); background: var(--warm2); color: #fff; }
-    100% { transform: scale(1); }
-  }
-
-  /* ─── RIGHT PANEL ─── */
-  .right-panel {
-    background: var(--surface);
-    border-left: 1px solid rgba(102,153,204,0.2);
-    display: flex;
-    flex-direction: column;
-    padding: 12px 14px;
-    gap: 10px;
-    overflow: hidden;
-    z-index: 10;
-  }
-
-  .panel-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--primary);
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 5px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-
-  .word-list {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent) transparent;
-    min-height: 0;
-  }
-
-  .word-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    border-radius: var(--radius);
-    background: #fff;
-    border: 1px solid rgba(102,153,204,0.15);
-    transition: all 0.2s;
-    cursor: default;
-    font-size: 0.8rem;
-  }
-  .word-item .check-icon {
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-size: 9px;
-    color: transparent;
-    transition: all 0.3s;
-  }
-  .word-item.found-word {
-    background: var(--found-bg);
-    border-color: var(--found);
-  }
-  .word-item.found-word .check-icon {
-    background: var(--found);
-    border-color: var(--found);
-    color: #fff;
-  }
-  .word-item .word-text {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.3px;
-    transition: all 0.2s;
-    word-break: break-all;
-  }
-  .word-item.found-word .word-text {
-    color: var(--primary);
-    text-decoration: line-through;
-    text-decoration-color: var(--secondary);
-  }
-
-  /* ─── ACTION BUTTONS ─── */
-  .actions {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-    margin-top: auto; /* Empuja los botones al fondo */
-  }
-  .btn {
-    flex: 1;
-    padding: 8px 10px;
-    border: none;
-    border-radius: var(--radius);
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    transition: all 0.2s;
-  }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:hover { background: var(--secondary); transform: translateY(-1px); }
-  .btn-secondary { background: var(--warm2); color: #fff; }
-  .btn-secondary:hover { background: var(--warm3); transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-
-  /* ─── FOOTER ─── */
-  .footer {
-    background: var(--primary);
-    padding: 6px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    gap: 10px;
-  }
-  .footer-text { font-size: 0.65rem; color: var(--light); white-space: nowrap; }
-  .footer-info { font-size: 0.65rem; color: rgba(255,255,255,0.6); text-align: right; }
-
-  /* ─── MODAL ─── */
-  .modal-overlay {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(0,20,60,0.8);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(3px);
-    animation: fadeIn 0.3s ease;
-    padding: 20px;
-  }
-  .modal-overlay.active { display: flex; }
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
-  .modal {
-    background: #fff;
-    border-radius: 16px;
-    padding: 24px;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 20px 60px rgba(0,51,102,0.3);
-    text-align: center;
-    animation: slideUp 0.3s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-
-  .modal-icon { font-size: 32px; margin-bottom: 10px; }
-  .modal h2 { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
-  .modal p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
-  .modal p strong { color: var(--primary); }
-  .modal-btn {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 10px 24px;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-  }
-  .modal-btn:hover { background: var(--secondary); }
-
-  /* ─── PROGRESS BAR ─── */
-  .progress-bar-wrap {
-    height: 6px;
-    background: rgba(102,153,204,0.2);
-    border-radius: 3px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  #progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--warm2), var(--warm3));
-    border-radius: 3px;
-    transition: width 0.5s ease;
-    width: 0%;
-  }
-
-  /* ─── DIRECTION HINT ─── */
-  .dir-legend {
-    display: flex;
-    gap: 6px;
     flex-wrap: wrap;
+  }
+
+  .dir-legend { flex: 1; }
+
+  .progress-bar-wrap { width: 100%; }
+
+  .actions {
     flex-shrink: 0;
-    justify-content: center;
-  }
-  .dir-chip {
-    font-size: 0.6rem;
-    padding: 2px 6px;
-    border-radius: 10px;
-    background: rgba(102,153,204,0.15);
-    color: var(--secondary);
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    gap: 8px;
   }
 
-  /* ═══════════════════════════════════════════════════
-     MEDIA QUERIES RESPONSIVAS (CORREGIDAS)
-     ═══════════════════════════════════════════════════ */
-
-  /* TABLET: max-width 1024px */
-  @media (max-width: 1024px) {
-    :root { --cell-size: 22px; }
-    .header h1 { font-size: 1rem; }
-    .instruction-box p { font-size: 0.7rem; }
-    .right-panel { width: 240px; }
+  .btn {
+    padding: 9px 16px;
+    font-size: 12px;
+    flex: none;
   }
 
-  /* MÓVIL: max-width 768px */
-  @media (max-width: 768px) {
-    html, body { overflow: auto; height: auto; display: block; }
-    
-    #canvas {
-      max-height: none;
-      height: 100vh;
-      box-shadow: none;
-    }
-
-    .header {
-      padding: 8px 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-    }
-    .header-left { align-items: center; text-align: center; width: 100%; }
-    .header-right { width: 100%; justify-content: center; order: 3; margin-top: 5px; }
-    .course-badge { font-size: 0.6rem; }
-    .header h1 { font-size: 1.2rem; width: 100%; }
-
-    .main {
-      display: flex;
-      flex-direction: column;
-      overflow: visible;
-    }
-
-    .left-panel {
-      padding: 10px;
-      order: 1;
-      flex: none;
-      height: auto;
-    }
-
-    .instruction-box {
-      margin-bottom: 10px;
-      border-left: none;
-      border-top: 3px solid var(--accent);
-      border-radius: var(--radius) var(--radius) 0 0;
-      text-align: center;
-    }
-    .instruction-box p {
-      -webkit-line-clamp: 3;
-      font-size: 0.8rem;
-    }
-
-    .grid-wrapper {
-      width: 100%;
-      overflow-x: auto;
-      padding: 10px 0;
-      justify-content: flex-start;
-    }
-    
-    #word-grid {
-      margin: 0 auto;
-      grid-template-columns: repeat(20, min(22px, calc((100vw - 40px) / 20)));
-    }
-    .cell {
-      width: 100%;
-      height: 100%;
-      aspect-ratio: 1;
-      font-size: clamp(10px, 2.5vw, 14px);
-    }
-
-    /* CORRECCIÓN CLAVE PARA MÓVILES */
-    .right-panel {
-      order: 2;
-      width: 100%;
-      border-left: none;
-      border-top: 1px solid rgba(102,153,204,0.2);
-      padding: 15px;
-      flex: none;
-      height: auto;
-      /* Limitamos la altura del panel derecho para que no empuje los botones fuera */
-      max-height: 45vh; 
-      display: flex;
-      flex-direction: column;
-    }
-
-    .word-list {
-      /* La lista ahora tiene scroll interno si excede el espacio */
-      max-height: 220px;
-      overflow-y: auto;
-      grid-template-columns: 1fr 1fr;
-      display: grid;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    
-    .word-item {
-      font-size: 0.7rem;
-      padding: 4px 6px;
-    }
-
-    .footer {
-      flex-direction: column;
-      text-align: center;
-      padding: 10px;
-    }
-    .footer-info { text-align: center; }
+  /* celdas un poco más grandes en móvil */
+  .cell {
+    font-size: clamp(8px, 3.5vw, 13px);
   }
+}
 
-  /* OTROS / MÓVIL PEQUEÑO: max-width 480px */
-  @media (max-width: 480px) {
-    :root { --font-base: 14px; }
-    
-    .header h1 { font-size: 1rem; }
-    .week-badge { display: none; }
-    
-    .instruction-box p { font-size: 0.75rem; }
-    
-    .word-list {
-      grid-template-columns: 1fr; /* Una columna en lista */
-      max-height: 180px; /* Ajuste para pantallas muy pequeñas */
-    }
+/* ── FOOTER ── */
+.footer {
+  background: var(--primary);
+  padding: 6px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.footer-text { font-size: 10px; color: var(--light); }
+.footer-info { font-size: 10px; color: rgba(255,255,255,0.45); }
 
-    .actions {
-      flex-direction: column;
-      gap: 8px;
-    }
-    .btn { width: 100%; padding: 10px; }
-    
-    .dir-legend {
-      justify-content: flex-start;
-    }
-    .dir-chip {
-      font-size: 0.55rem;
-      padding: 1px 5px;
-    }
-  }
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,20,60,0.72);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 30px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 16px 50px rgba(0,51,102,0.28);
+  animation: modalIn 0.28s ease;
+}
+@keyframes modalIn { from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1} }
+.modal-icon { font-size: 36px; margin-bottom: 10px; }
+.modal h2   { font-size: 17px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+.modal p    { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 18px; }
+.modal p strong { color: var(--primary); }
+.modal-btn {
+  background: var(--primary); color: #fff;
+  border: none; border-radius: var(--radius);
+  padding: 9px 26px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.18s;
+}
+.modal-btn:hover { background: var(--secondary); }
 </style>
 </head>
 <body>
 
-<div id="canvas">
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-left">
-      <span class="course-badge">DERE_2074 · Contratación y Compras Públicas</span>
-      <h1>Sistema Nacional de Contratación Pública — Sopa de Letras</h1>
-    </div>
-    <div class="header-right">
-      <div class="week-badge"><svg style="width:12px;height:12px;vertical-align:-1px;fill:#fff;margin-right:3px" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 18H5V9h14v12zM5 7V5h14v2H5z"/></svg>Semana 1</div>
-      <div class="score-box">
-        <div class="score-label">Encontradas</div>
-        <div class="score-val" id="score-display">0 / 14</div>
-      </div>
-    </div>
+<div class="header">
+  <div class="header-left">
+    <span class="course-badge">DERE_2074 · Contratación y Compras Públicas</span>
+    <h1>Sistema Nacional de Contratación Pública — Sopa de Letras</h1>
   </div>
-
-  <!-- MAIN -->
-  <div class="main">
-    <!-- LEFT -->
-    <div class="left-panel">
-      <div class="instruction-box">
-        <p><strong><svg style="width:13px;height:13px;vertical-align:-2px;fill:#FF9900" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.62-1.45 4.9-3.58 6.12L15 17H9l-.42-1.88A7 7 0 0 1 5 9a7 7 0 0 1 7-7zm-1 16h2v1a1 1 0 0 1-2 0v-1z"/></svg> Instrucción:</strong>
-        Resuelva la siguiente sopa de letras identificando los términos clave que definen la gestión de las compras públicas. Estos conceptos son esenciales para garantizar la calidad del gasto público y evitar la discrecionalidad en los procesos del Estado.</p>
-      </div>
-      <div class="grid-wrapper">
-        <div id="word-grid"></div>
-      </div>
+  <div class="header-right">
+    <div class="week-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 18H5V9h14v12zM5 7V5h14v2H5z"/></svg>
+      Semana 1
     </div>
-
-    <!-- RIGHT -->
-    <div class="right-panel">
-      <div class="panel-title"><svg style="width:13px;height:13px;vertical-align:-2px;fill:var(--accent)" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Palabras a encontrar</div>
-
-      <div class="word-list" id="word-list"></div>
-
-      <div class="dir-legend">
-        <span class="dir-chip">→ Horizontal</span>
-        <span class="dir-chip">↓ Vertical</span>
-        <span class="dir-chip">↘ Diagonal</span>
-        <span class="dir-chip">← Inversa</span>
-      </div>
-
-      <div class="progress-bar-wrap">
-        <div id="progress-bar"></div>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-secondary" onclick="resetGame()"><svg style="width:12px;height:12px;fill:#fff;vertical-align:-1px" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg> Reiniciar</button>
-        <button class="btn btn-primary" onclick="revealAll()"><svg style="width:12px;height:12px;fill:#fff;vertical-align:-1px" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg> Revelar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <div class="footer">
-    <span class="footer-text">Álvaro Javier Rosales Vásquez · Docente</span>
-    <span class="footer-info">Haz clic en la primera letra y arrastra hasta la última · Direcciones: horizontal, vertical y diagonal</span>
-  </div>
-
-  <!-- MODAL FEEDBACK -->
-  <div class="modal-overlay" id="modal">
-    <div class="modal">
-      <div class="modal-icon">🎉</div>
-      <h2>¡Excelente trabajo!</h2>
-      <p>Ha identificado los pilares de la contratación pública. El dominio de conceptos como la <strong>transparencia</strong>, la <strong>concurrencia</strong> y la <strong>trazabilidad</strong> es fundamental para asegurar que el Estado adquiera bienes y servicios de calidad, promoviendo la participación social y el cumplimiento efectivo de los contratos.</p>
-      <button class="modal-btn" onclick="closeModal()"><svg style="width:13px;height:13px;fill:#fff;vertical-align:-2px;margin-right:4px" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>¡Entendido!</button>
+    <div class="score-box">
+      <span class="score-label">Encontradas</span>
+      <span class="score-val" id="score-display">0 / 14</span>
     </div>
   </div>
 </div>
 
+<div class="instruction-box">
+  <p>
+    <strong>
+      <svg style="width:12px;height:12px;vertical-align:-1px;fill:#FF9900" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.62-1.45 4.9-3.58 6.12L15 17H9l-.42-1.88A7 7 0 0 1 5 9a7 7 0 0 1 7-7zm-1 16h2v1a1 1 0 0 1-2 0v-1z"/></svg>
+      Instrucción:
+    </strong>
+    Resuelva la siguiente sopa de letras identificando los términos clave que definen la gestión de las compras públicas. Estos conceptos son esenciales para garantizar la calidad del gasto público y evitar la discrecionalidad en los procesos del Estado.
+  </p>
+</div>
+
+<div class="main">
+  <div class="grid-section">
+    <div id="word-grid"></div>
+  </div>
+  <div class="sidebar">
+    <div class="panel-card">
+      <div class="panel-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--accent)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Palabras a encontrar
+      </div>
+      <div class="word-list" id="word-list"></div>
+    </div>
+    <div class="panel-card controls-card">
+        <span class="dir-chip">→ Horiz.</span>
+        <span class="dir-chip">↓ Vert.</span>
+        <span class="dir-chip">↘ Diag.</span>
+        <span class="dir-chip">← Inv.</span>
+      </div>
+      <div class="progress-bar-wrap" style="margin-top:8px">
+        <div id="progress-bar"></div>
+      </div>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn btn-secondary" onclick="resetGame()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+          Reiniciar
+        </button>
+        <button class="btn btn-primary" onclick="revealAll()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+          Revelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="footer-text">Álvaro Javier Rosales Vásquez · Docente</span>
+  <span class="footer-info">Clic en primera letra y arrastra · horizontal, vertical y diagonal</span>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon">🎉</div>
+    <h2>¡Excelente trabajo!</h2>
+    <p>Ha identificado los pilares de la contratación pública. El dominio de conceptos como la <strong>transparencia</strong>, la <strong>concurrencia</strong> y la <strong>trazabilidad</strong> es fundamental para asegurar que el Estado adquiera bienes y servicios de calidad, promoviendo la participación social y el cumplimiento efectivo de los contratos.</p>
+    <button class="modal-btn" onclick="closeModal()">
+      <svg style="width:12px;height:12px;fill:#fff;vertical-align:-1px;margin-right:4px" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      ¡Entendido!
+    </button>
+  </div>
+</div>
+
 <script>
-// ═══════════════════════════════════════════════════
-// WORDS & GRID SETUP
-// ═══════════════════════════════════════════════════
-const WORDS = [
-  'ADJUDICATARIO','CONSULTORIA','PROVEEDOR','TRANSPARENCIA',
-  'CONCURRENCIA','INTEGRIDAD','TRAZABILIDAD','SERCOP',
-  'PLIEGOS','OFERENTE','SOSTENIBILIDAD','LEGALIDAD',
-  'EFICIENCIA','CONTRATISTA'
-];
-const ROWS = 20, COLS = 20;
-let grid = [], wordPositions = {}, foundWords = new Set();
-let selecting = false, startCell = null, currentPath = [];
+const WORDS=['ADJUDICATARIO','CONSULTORIA','PROVEEDOR','TRANSPARENCIA','CONCURRENCIA','INTEGRIDAD','TRAZABILIDAD','SERCOP','PLIEGOS','OFERENTE','SOSTENIBILIDAD','LEGALIDAD','EFICIENCIA','CONTRATISTA'];
+const ROWS=20,COLS=20;
+let grid=[],wordPositions={},foundWords=new Set();
+let selecting=false,startCell=null,currentPath=[];
+const DIRS=[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-// ═══════════════════════════════════════════════════
-// GRID GENERATION
-// ═══════════════════════════════════════════════════
-const DIRS = [
-  [0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]
-];
-const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function initGrid(){grid=Array.from({length:ROWS},()=>Array(COLS).fill(''));wordPositions={};}
+function canPlace(w,row,col,dir){for(let i=0;i<w.length;i++){const r=row+dir[0]*i,c=col+dir[1]*i;if(r<0||r>=ROWS||c<0||c>=COLS)return false;if(grid[r][c]!==''&&grid[r][c]!==w[i])return false;}return true;}
+function placeWord(w){const dirs=[...DIRS].sort(()=>Math.random()-0.5);for(const d of dirs)for(let a=0;a<80;a++){const row=Math.floor(Math.random()*ROWS),col=Math.floor(Math.random()*COLS);if(canPlace(w,row,col,d)){const cells=[];for(let i=0;i<w.length;i++){grid[row+d[0]*i][col+d[1]*i]=w[i];cells.push([row+d[0]*i,col+d[1]*i]);}wordPositions[w]=cells;return true;}}return false;}
+function fillRandom(){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(!grid[r][c])grid[r][c]=ALPHA[Math.floor(Math.random()*26)];}
+function buildPuzzle(){initGrid();[...WORDS].sort((a,b)=>b.length-a.length).forEach(w=>placeWord(w));fillRandom();}
 
-function initGrid() {
-  grid = Array.from({length:ROWS}, ()=>Array(COLS).fill(''));
-  wordPositions = {};
-}
-
-function placeWord(word) {
-  const shuffledDirs = [...DIRS].sort(()=>Math.random()-0.5);
-  for(let d of shuffledDirs) {
-    for(let attempt=0; attempt<80; attempt++) {
-      const row = Math.floor(Math.random()*ROWS);
-      const col = Math.floor(Math.random()*COLS);
-      if(canPlace(word,row,col,d)) {
-        const cells = [];
-        for(let i=0;i<word.length;i++) {
-          grid[row+d[0]*i][col+d[1]*i] = word[i];
-          cells.push([row+d[0]*i, col+d[1]*i]);
-        }
-        wordPositions[word] = cells;
-        return true;
-      }
-    }
+function renderGrid(){
+  const cont=document.getElementById('word-grid');cont.innerHTML='';
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const el=document.createElement('div');
+    el.className='cell';el.textContent=grid[r][c];el.dataset.r=r;el.dataset.c=c;
+    el.addEventListener('mousedown',onMouseDown);
+    el.addEventListener('mouseenter',onMouseEnter);
+    el.addEventListener('mouseup',onMouseUp);
+    el.addEventListener('touchstart',onTouchStart,{passive:true});
+    el.addEventListener('touchmove',onTouchMove,{passive:false});
+    el.addEventListener('touchend',onTouchEnd);
+    cont.appendChild(el);
   }
-  return false;
+  foundWords.forEach(w=>markFound(w));
 }
 
-function canPlace(word,row,col,dir) {
-  for(let i=0;i<word.length;i++) {
-    const r=row+dir[0]*i, c=col+dir[1]*i;
-    if(r<0||r>=ROWS||c<0||c>=COLS) return false;
-    if(grid[r][c]!=='' && grid[r][c]!==word[i]) return false;
-  }
-  return true;
-}
-
-function fillRandom() {
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
-    if(!grid[r][c]) grid[r][c] = ALPHA[Math.floor(Math.random()*26)];
-}
-
-function buildPuzzle() {
-  initGrid();
-  const sorted = [...WORDS].sort((a,b)=>b.length-a.length);
-  for(const w of sorted) placeWord(w);
-  fillRandom();
-}
-
-// ═══════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════
-function renderGrid() {
-  const container = document.getElementById('word-grid');
-  container.innerHTML = '';
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    cell.textContent = grid[r][c];
-    cell.dataset.r = r; cell.dataset.c = c;
-    cell.addEventListener('mousedown', onMouseDown);
-    cell.addEventListener('mouseenter', onMouseEnter);
-    cell.addEventListener('mouseup', onMouseUp);
-    cell.addEventListener('touchstart', onTouchStart, {passive:false});
-    cell.addEventListener('touchmove', onTouchMove, {passive:false});
-    cell.addEventListener('touchend', onTouchEnd);
-    container.appendChild(cell);
-  }
-  for(const w of foundWords) markFound(w);
-}
-
-function renderWordList() {
-  const list = document.getElementById('word-list');
-  list.innerHTML = '';
-  for(const w of WORDS) {
-    const item = document.createElement('div');
-    item.className = 'word-item' + (foundWords.has(w)?' found-word':'');
-    item.id = 'witem-'+w;
-    item.innerHTML = `
-      <div class="check-icon"><svg style="width:10px;height:10px;fill:currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
-      <span class="word-text">${w}</span>`;
+function renderWordList(){
+  const list=document.getElementById('word-list');list.innerHTML='';
+  WORDS.forEach(w=>{
+    const item=document.createElement('div');
+    item.className='word-item'+(foundWords.has(w)?' found-word':'');
+    item.id='witem-'+w;
+    item.innerHTML=`<div class="check-icon"><svg style="width:9px;height:9px;fill:currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div><span class="word-text">${w}</span>`;
     list.appendChild(item);
-  }
-}
-
-// ═══════════════════════════════════════════════════
-// SELECTION LOGIC
-// ═══════════════════════════════════════════════════
-function cellAt(r,c) {
-  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
-}
-
-function getLineCells(a, b) {
-  if(!a || !b) return [];
-  const r1=+a.dataset.r, c1=+a.dataset.c;
-  const r2=+b.dataset.r, c2=+b.dataset.c;
-  const dr=r2-r1, dc=c2-c1;
-  const len=Math.max(Math.abs(dr),Math.abs(dc));
-  if(len===0) return [a];
-  if(dr!==0 && dc!==0 && Math.abs(dr)!==Math.abs(dc)) return [];
-  const sr=dr===0?0:dr/Math.abs(dr), sc=dc===0?0:dc/Math.abs(dc);
-  const cells=[];
-  for(let i=0;i<=len;i++) cells.push(cellAt(r1+sr*i,c1+sc*i));
-  return cells.every(Boolean) ? cells : [];
-}
-
-function clearSelection() {
-  currentPath.forEach(c=>{ if(c && !c.classList.contains('found')) c.classList.remove('selected'); });
-  currentPath = [];
-}
-
-function onMouseDown(e) {
-  e.preventDefault();
-  selecting=true; startCell=e.currentTarget;
-  clearSelection();
-  e.currentTarget.classList.add('selected');
-  currentPath=[e.currentTarget];
-}
-
-function onMouseEnter(e) {
-  if(!selecting) return;
-  clearSelection();
-  currentPath = getLineCells(startCell, e.currentTarget);
-  currentPath.forEach(c=>{ if(c && !c.classList.contains('found')) c.classList.add('selected'); });
-}
-
-function onMouseUp(e) {
-  if(!selecting) return;
-  selecting=false;
-  checkSelection();
-}
-
-function getTouchCell(e) {
-  const t = e.changedTouches[0];
-  const el = document.elementFromPoint(t.clientX, t.clientY);
-  return el && el.classList.contains('cell') ? el : null;
-}
-
-function onTouchStart(e) { 
-  e.preventDefault(); 
-  selecting=true; 
-  startCell=e.currentTarget; 
-  clearSelection(); 
-  e.currentTarget.classList.add('selected'); 
-  currentPath=[e.currentTarget]; 
-}
-
-function onTouchMove(e) { 
-  e.preventDefault(); 
-  const c=getTouchCell(e); 
-  if(!c) return; 
-  clearSelection(); 
-  currentPath=getLineCells(startCell,c); 
-  currentPath.forEach(c=>{if(c&&!c.classList.contains('found'))c.classList.add('selected');}); 
-}
-
-function onTouchEnd(e) { 
-  e.preventDefault();
-  selecting=false; 
-  checkSelection(); 
-}
-
-document.addEventListener('mouseup', ()=>{ if(selecting){selecting=false;checkSelection();} });
-
-// ═══════════════════════════════════════════════════
-// CHECK & MARK
-// ═══════════════════════════════════════════════════
-function checkSelection() {
-  const word = currentPath.map(c=>c.textContent).join('');
-  const wordRev = word.split('').reverse().join('');
-  let found = WORDS.find(w=>w===word||w===wordRev);
-  if(found && !foundWords.has(found)) {
-    foundWords.add(found);
-    markFound(found);
-    updateUI();
-    if(foundWords.size===WORDS.length) setTimeout(showModal, 600);
-  }
-  clearSelection();
-}
-
-function markFound(word) {
-  const cells = wordPositions[word] || [];
-  cells.forEach(([r,c])=>{
-    const el=cellAt(r,c);
-    if(el){ el.classList.remove('selected'); el.classList.add('found','found-flash'); }
   });
-  const item=document.getElementById('witem-'+word);
-  if(item) item.className='word-item found-word';
 }
 
-function updateUI() {
+function cellAt(r,c){return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);}
+function getLineCells(a,b){
+  if(!a||!b)return[];
+  const r1=+a.dataset.r,c1=+a.dataset.c,r2=+b.dataset.r,c2=+b.dataset.c;
+  const dr=r2-r1,dc=c2-c1,len=Math.max(Math.abs(dr),Math.abs(dc));
+  if(len===0)return[a];
+  if(dr!==0&&dc!==0&&Math.abs(dr)!==Math.abs(dc))return[];
+  const sr=dr===0?0:dr/Math.abs(dr),sc=dc===0?0:dc/Math.abs(dc);
+  const cells=[];for(let i=0;i<=len;i++)cells.push(cellAt(r1+sr*i,c1+sc*i));
+  return cells.every(Boolean)?cells:[];
+}
+function clearSelection(){currentPath.forEach(c=>{if(c&&!c.classList.contains('found'))c.classList.remove('selected');});currentPath=[];}
+function onMouseDown(e){e.preventDefault();selecting=true;startCell=e.currentTarget;clearSelection();e.currentTarget.classList.add('selected');currentPath=[e.currentTarget];}
+function onMouseEnter(e){if(!selecting)return;clearSelection();currentPath=getLineCells(startCell,e.currentTarget);currentPath.forEach(c=>{if(c&&!c.classList.contains('found'))c.classList.add('selected');});}
+function onMouseUp(){if(!selecting)return;selecting=false;checkSelection();}
+function getTouchCell(e){const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);return el&&el.classList.contains('cell')?el:null;}
+function onTouchStart(e){selecting=true;startCell=e.currentTarget;clearSelection();e.currentTarget.classList.add('selected');currentPath=[e.currentTarget];}
+function onTouchMove(e){e.preventDefault();const c=getTouchCell(e);if(!c)return;clearSelection();currentPath=getLineCells(startCell,c);currentPath.forEach(c=>{if(c&&!c.classList.contains('found'))c.classList.add('selected');});}
+function onTouchEnd(){selecting=false;checkSelection();}
+document.addEventListener('mouseup',()=>{if(selecting){selecting=false;checkSelection();}});
+
+function checkSelection(){
+  const word=currentPath.map(c=>c.textContent).join('');
+  const rev=word.split('').reverse().join('');
+  const found=WORDS.find(w=>w===word||w===rev);
+  if(found&&!foundWords.has(found)){foundWords.add(found);markFound(found);updateUI();if(foundWords.size===WORDS.length)setTimeout(showModal,600);}
+  clearSelection();
+}
+function markFound(word){
+  (wordPositions[word]||[]).forEach(([r,c])=>{const el=cellAt(r,c);if(el){el.classList.remove('selected');el.classList.add('found','found-flash');}});
+  const item=document.getElementById('witem-'+word);if(item)item.className='word-item found-word';
+}
+function updateUI(){
   document.getElementById('score-display').textContent=`${foundWords.size} / ${WORDS.length}`;
   document.getElementById('progress-bar').style.width=`${(foundWords.size/WORDS.length)*100}%`;
 }
+function resetGame(){foundWords.clear();buildPuzzle();renderGrid();renderWordList();updateUI();}
+function revealAll(){WORDS.forEach(w=>{if(!foundWords.has(w)){foundWords.add(w);markFound(w);}});updateUI();}
+function showModal(){document.getElementById('modal').classList.add('active');}
+function closeModal(){document.getElementById('modal').classList.remove('active');}
 
-// ═══════════════════════════════════════════════════
-// CONTROLS
-// ═══════════════════════════════════════════════════
-function resetGame() {
-  foundWords.clear();
-  buildPuzzle();
-  renderGrid();
-  renderWordList();
-  updateUI();
-}
-
-function revealAll() {
-  for(const w of WORDS) if(!foundWords.has(w)){ foundWords.add(w); markFound(w); }
-  updateUI();
-}
-
-function showModal() { document.getElementById('modal').classList.add('active'); }
-function closeModal() { document.getElementById('modal').classList.remove('active'); }
-
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
-buildPuzzle();
-renderGrid();
-renderWordList();
-updateUI();
+buildPuzzle();renderGrid();renderWordList();updateUI();
 </script>
 </body>
 </html>
