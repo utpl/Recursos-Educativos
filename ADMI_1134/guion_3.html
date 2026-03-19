@@ -47,7 +47,7 @@ html,body{width:100%;height:100%;
   background:var(--bg);overflow:hidden;
   display:flex;align-items:center;justify-content:center;}
 
-#sw{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#sw{width:100%;height:100%;display:flex;flex-direction:column;}
 #stage{width:1280px;height:720px;flex-shrink:0;transform-origin:center center;
   background:var(--surface);border-radius:16px;overflow:hidden;
   box-shadow:0 16px 64px rgba(0,40,80,.22);display:flex;flex-direction:column;}
@@ -613,13 +613,37 @@ function updateScore() {
   else ring.style.stroke = 'var(--accent)';
 }
 
+
+// Responsive scale: fills iframe at any size
 function scale() {
-  const s = document.getElementById('stage');
-  if (window.innerWidth <= 1024) { s.style.transform=''; s.style.width=''; s.style.height=''; return; }
-  const sc = Math.min(window.innerWidth/1280, window.innerHeight/720, 1);
-  s.style.transform = `scale(${sc})`; s.style.width='1280px'; s.style.height='570px';
+  const stage = document.getElementById('stage');
+  const sw    = document.getElementById('sw');
+  const W = 1280, H = 720;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // Always fill the full iframe/viewport width
+  // Scale down proportionally if needed, never crop
+  const sc = Math.min(vw / W, vh / H);
+
+  if (sc >= 1) {
+    // Larger than stage: just fill 100%
+    stage.style.transform = '';
+    stage.style.width  = '100%';
+    stage.style.height = '100%';
+    sw.style.alignItems = 'stretch';
+  } else {
+    // Smaller: scale down and center
+    stage.style.width  = W + 'px';
+    stage.style.height = H + 'px';
+    stage.style.transform = `scale(${sc})`;
+    stage.style.transformOrigin = 'top left';
+    sw.style.width  = (W * sc) + 'px';
+    sw.style.height = (H * sc) + 'px';
+  }
 }
 window.addEventListener('resize', scale); scale();
+
 
 renderIntro();
 </script>
