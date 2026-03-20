@@ -4,8 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Quiz – Corrientes Teóricas en la Administración Pública</title>
-<style>
-
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);overflow:hidden;}
+#sw{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#stage{width:1280px;height:720px;flex-shrink:0;transform-origin:top left;background:var(--surface);display:flex;flex-direction:column;overflow:hidden;}
 :root {
   --c1:#A51C30;--c2:#00529B;--c3:#8C1515;--c4:#B9D3B0;
   --c5:#6CACE4;--c6:#E1D9B9;--c7:#FFD700;--c8:#006747;
@@ -36,23 +38,7 @@
 }
 
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);overflow-x:hidden;}
-#sw{width:100%;min-height:100vh;display:flex;flex-direction:column;}
-#stage{
-  width:100%;
-  min-height:100%;
-  background:var(--surface);
-  display:flex;
-  flex-direction:column;
-}
 
-
-/* ── HEADER ── */
-.hdr{
-  background:linear-gradient(110deg, var(--primary) 0%, var(--primary-d) 50%, var(--accent) 100%);
-  padding:0 28px;min-height:58px;display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;position:relative;overflow:hidden;}
 .hdr::before{content:'';position:absolute;right:-60px;top:-60px;width:200px;height:200px;
   border-radius:50%;background:rgba(245,168,0,.1);}
 .hdr::after{content:'';position:absolute;right:80px;bottom:-40px;width:120px;height:120px;
@@ -260,8 +246,7 @@ html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe 
    RESPONSIVE — TABLET ≤900px
 ══════════════════════════════════ */
 @media(max-width:900px){
-  html,body{overflow-x:hidden;}
-  #sw,#stage{width:100%;height:auto;}
+  #sw,
 
   /* Apila: primero pregunta, luego sidebar */
   .main{flex-direction:column;overflow:visible;}
@@ -384,8 +369,7 @@ html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe 
   .intro-meta{grid-template-columns:1fr;}
   .options-grid{grid-template-columns:1fr;}
   .q-text{font-size:15px;}
-}
-</style>
+}</style>
 </head>
 <body>
 <div id="sw"><div id="stage">
@@ -740,16 +724,18 @@ function updateScore() {
 
 // Responsive scale: fills iframe at any size
 
-function scale(){
-  /* fully fluid — fills any container */
+function scaleStage(){
+  const stage=document.getElementById('stage');
+  const sw=document.getElementById('sw');
+  if(!stage||!sw)return;
+  const W=1280,H=720;
+  const sc=Math.min(sw.clientWidth/W, sw.clientHeight/H);
+  stage.style.transform='scale('+sc+')';
+  stage.style.marginLeft=((sw.clientWidth-W*sc)/2)+'px';
+  stage.style.marginTop=((sw.clientHeight-H*sc)/2)+'px';
 }
-window.addEventListener('resize', scale); scale();
-
-
-/* ══ INIT ══ */
-renderIntro();
-
-// ResizeObserver removed - CSS handles resize
-</script>
-</body>
-</html>
+window.addEventListener('resize',scaleStage);
+if(typeof ResizeObserver!=='undefined'){
+  new ResizeObserver(scaleStage).observe(document.getElementById('sw')||document.body);
+}
+scaleStage();
