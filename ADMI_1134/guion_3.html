@@ -37,8 +37,13 @@
 
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);overflow-x:hidden;}
-#sw{width:100%;min-height:100vh;display:flex;flex-direction:column;}
+html,body{
+  width:100%;height:100%;
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);
+  overflow-x:hidden;
+}
+#sw{width:100%;min-height:100%;}
 #stage{
   width:100%;
   min-height:100%;
@@ -46,7 +51,9 @@ html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe 
   display:flex;
   flex-direction:column;
 }
-
+#stage{width:1280px;height:720px;flex-shrink:0;transform-origin:center center;
+  background:var(--surface);border-radius:16px;overflow:hidden;
+  box-shadow:0 16px 64px rgba(0,40,80,.22);display:flex;flex-direction:column;}
 
 .hdr{
   background:linear-gradient(110deg, var(--primary) 0%, var(--primary-d) 50%, var(--accent) 100%);
@@ -69,7 +76,7 @@ html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe 
 .top-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--salmon));
   transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;}
 
-.main{flex:1;display:flex;overflow:visible;}
+.main{flex:1;display:flex;overflow:hidden;}
 
 .q-panel{
   flex:1;display:flex;flex-direction:column;
@@ -160,7 +167,7 @@ html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe 
   width:220px;flex-shrink:0;
   background:linear-gradient(180deg,var(--sand) 0%,#f0ead8 100%);
   border-left:1px solid var(--border);
-  display:flex;flex-direction:column;padding:20px 16px;gap:16px;overflow-y:auto;overflow-x:hidden;}
+  display:flex;flex-direction:column;padding:20px 16px;gap:16px;overflow:hidden;}
 
 .q-tracker{display:flex;flex-direction:column;gap:8px;}
 .tracker-title{font-size:11px;font-weight:700;color:var(--muted);
@@ -286,22 +293,6 @@ html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,'Segoe 
   .intro-meta{grid-template-columns:1fr 1fr;}
   .hdr-t p,.bdg-gold{display:none;}
   .q-actions{flex-wrap:wrap;}
-}
-
-/* ── Hide sidebar when container is narrow (Canvas menu open) ── */
-@media(max-width:700px){
-  .sidebar{display:none;}
-  .q-panel{padding:16px;}
-}
-@media(max-width:500px){
-  .hdr{padding:8px 12px;height:auto;flex-wrap:wrap;gap:4px;}
-  .hdr-t h1{font-size:13px;}
-  .bdg{display:none;}
-  .intro-hero{padding:14px 16px;}
-  .intro-hero h2{font-size:16px;}
-  .intro-meta{grid-template-columns:1fr;}
-  .options-grid{grid-template-columns:1fr;}
-  .q-text{font-size:15px;}
 }
 </style>
 </head>
@@ -636,7 +627,17 @@ window.addEventListener('resize', scale); scale();
 
 renderIntro();
 
-// ResizeObserver removed - CSS handles resize
+// ResizeObserver: re-triggers layout on ANY container change
+// (Canvas hamburger menu, sidebar open/close, window resize)
+if (typeof ResizeObserver !== 'undefined') {
+  const _stageEl = document.getElementById('stage') || document.documentElement;
+  new ResizeObserver(() => {
+    // Force browser reflow so flex/grid recalculates
+    _stageEl.style.display = 'none';
+    _stageEl.offsetHeight; // trigger reflow
+    _stageEl.style.display = '';
+  }).observe(document.documentElement);
+}
 </script>
 </body>
 </html>
