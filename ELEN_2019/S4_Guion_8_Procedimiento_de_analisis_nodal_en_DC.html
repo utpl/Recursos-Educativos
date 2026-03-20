@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Arrastrar y Soltar – Análisis Nodal en DC</title>
+<style>
+:root {
+  --primary:#0E2D52; --primary-d:#1B4F8A; --accent:#2E6DAD;
+  --gold:#F5A800; --gold-d:#C98700;
+  --green:#006747; --green-bg:#e8f5ee;
+  --red:#A51C30; --red-bg:#fdecea;
+  --sand:#E8F0FA; --blue-l:#B8CCE4;
+  --bg:#FFFFFF; --surface:#F4F7FB;
+  --text:#0E2D52; --muted:#4A5568; --border:#B8CCE4;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:auto;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);overflow:hidden;margin:0;padding:0;}
+#sw{width:100%;height:auto;display:block;overflow:hidden;}
+#stage{width:1280px;height:720px;flex-shrink:0;transform-origin:top left;background:var(--surface);display:flex;flex-direction:column;overflow:hidden;}
+
+.hdr{background:linear-gradient(110deg,var(--primary) 0%,var(--primary-d) 50%,var(--accent) 100%);
+  padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;background:rgba(245,168,0,.08);}
+.hdr-l{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+.hdr-ico{width:36px;height:36px;flex-shrink:0;}
+.hdr-t h1{font-size:14px;font-weight:700;color:#fff;line-height:1.2;}
+.hdr-t p{font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;}
+.hdr-r{display:flex;align-items:center;gap:8px;position:relative;z-index:1;}
+.bdg{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;}
+.bdg-gold{background:var(--gold);border-color:var(--gold-d);color:var(--primary);}
+
+.prog-bar{height:4px;background:rgba(0,0,0,.08);flex-shrink:0;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5c842);transition:width .5s ease;width:0%;}
+
+.main{flex:1;display:flex;overflow:hidden;padding:14px 20px 10px;gap:16px;}
+
+/* LEFT: drop zones */
+.drop-col{flex:1;display:flex;flex-direction:column;gap:8px;}
+.drop-label{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.drop-zone{
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border:2px dashed var(--border);border-radius:12px;
+  padding:10px 14px;min-height:52px;
+  transition:all .2s;position:relative;
+}
+.drop-zone.drag-over{border-color:var(--gold);background:#fffbee;}
+.drop-zone.filled{border-style:solid;border-color:var(--accent);background:var(--sand);}
+.drop-zone.correct{border-color:var(--green);background:var(--green-bg);}
+.drop-zone.wrong{border-color:var(--red);background:var(--red-bg);}
+.step-num{width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.drop-zone.correct .step-num{background:var(--green);}
+.drop-zone.wrong   .step-num{background:var(--red);}
+.drop-text{font-size:12px;color:var(--muted);font-style:italic;}
+.drop-zone.filled .drop-text,.drop-zone.correct .drop-text,.drop-zone.wrong .drop-text{
+  font-style:normal;font-weight:600;color:var(--text);}
+.drop-hint{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap;}
+
+/* RIGHT: draggable items bank */
+.items-col{width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+.items-label{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.drag-item{
+  background:#fff;border:2px solid var(--border);border-radius:10px;
+  padding:10px 14px;font-size:12px;font-weight:600;color:var(--text);
+  cursor:grab;user-select:none;
+  transition:all .2s;box-shadow:0 2px 6px rgba(0,40,80,.07);
+}
+.drag-item:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(0,40,80,.12);transform:translateY(-2px);}
+.drag-item.dragging{opacity:.4;cursor:grabbing;}
+.drag-item.placed{display:none;}
+
+/* bottom bar */
+.bottom-bar{
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+  padding:8px 20px;background:var(--sand);border-top:1px solid var(--border);}
+.score-text{font-size:13px;font-weight:700;color:var(--text);}
+.score-sub{font-size:12px;color:var(--muted);flex:1;}
+.btn{border:none;border-radius:20px;padding:8px 20px;font-family:inherit;
+  font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .18s;}
+.btn:active{transform:scale(.97);}
+.btn-check{background:var(--primary);color:#fff;}
+.btn-check:hover{background:var(--primary-d);}
+.btn-reset{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.btn-reset:hover{background:var(--blue-l);}
+
+.ftr{background:linear-gradient(90deg,var(--primary),var(--accent));height:26px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;}
+.ftr-l{font-size:12px;color:rgba(255,255,255,.7);}
+.ftr-r{font-size:12px;color:rgba(245,168,0,.85);font-style:italic;}
+
+/* feedback modal */
+.fb-bar{display:none;margin:0 20px 8px;border-radius:10px;padding:10px 16px;
+  font-size:12px;line-height:1.6;animation:fbIn .3s ease;}
+.fb-bar.show{display:block;}
+.fb-bar.all-ok{background:var(--green-bg);border:1.5px solid var(--green);color:var(--green);}
+.fb-bar.has-err{background:var(--red-bg);border:1.5px solid var(--red);color:var(--red);}
+@keyframes fbIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div id="sw"><div id="stage">
+
+<div class="hdr">
+  <div class="hdr-l">
+    <svg class="hdr-ico" viewBox="0 0 36 36" fill="none">
+      <rect width="36" height="36" rx="8" fill="rgba(255,255,255,.12)"/>
+      <rect x="7" y="8" width="22" height="5" rx="2.5" fill="rgba(255,255,255,.3)" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+      <rect x="7" y="16" width="22" height="5" rx="2.5" fill="rgba(245,168,0,.5)" stroke="var(--gold)" stroke-width="1"/>
+      <rect x="7" y="24" width="22" height="5" rx="2.5" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
+      <path d="M29 10.5l-3-2.5v5l3-2.5z" fill="#fff" opacity=".6"/>
+    </svg>
+    <div class="hdr-t">
+      <h1>Procedimiento de Análisis Nodal en DC — Arrastrar y Soltar</h1>
+      <p>ELEN_2019 Circuitos Eléctricos &nbsp;|&nbsp; Semana 4 &nbsp;|&nbsp; Esteban Briceño Sánchez</p>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span class="bdg">Actividad</span>
+    <span class="bdg bdg-gold">Semana 4</span>
+  </div>
+</div>
+<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+
+<div style="padding:8px 20px 0;flex-shrink:0;">
+  <div style="background:linear-gradient(90deg,#fff8e8,#fff);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:8px 14px;font-size:13px;color:var(--text);">
+    <strong style="color:var(--accent)">Instrucción:</strong> Arrastra cada enunciado y ubícalo en la secuencia correcta del procedimiento para realizar el análisis nodal en corriente continua.
+  </div>
+</div>
+<div id="fb-bar" class="fb-bar"></div>
+
+<div class="main">
+  <!-- Drop zones -->
+  <div class="drop-col">
+    <div class="drop-label">Secuencia del procedimiento nodal</div>
+    <div class="drop-zone" id="dz-1" data-step="1" ondragover="onOver(event)" ondrop="onDrop(event,1)">
+      <div class="step-num">1</div>
+      <span class="drop-text" id="dt-1">Arrastra el primer paso aquí</span>
+    </div>
+    <div class="drop-zone" id="dz-2" data-step="2" ondragover="onOver(event)" ondrop="onDrop(event,2)">
+      <div class="step-num">2</div>
+      <span class="drop-text" id="dt-2">Arrastra el segundo paso aquí</span>
+    </div>
+    <div class="drop-zone" id="dz-3" data-step="3" ondragover="onOver(event)" ondrop="onDrop(event,3)">
+      <div class="step-num">3</div>
+      <span class="drop-text" id="dt-3">Arrastra el tercer paso aquí</span>
+    </div>
+    <div class="drop-zone" id="dz-4" data-step="4" ondragover="onOver(event)" ondrop="onDrop(event,4)">
+      <div class="step-num">4</div>
+      <span class="drop-text" id="dt-4">Arrastra el cuarto paso aquí</span>
+    </div>
+    <div class="drop-zone" id="dz-5" data-step="5" ondragover="onOver(event)" ondrop="onDrop(event,5)">
+      <div class="step-num">5</div>
+      <span class="drop-text" id="dt-5">Arrastra el quinto paso aquí</span>
+    </div>
+  </div>
+
+  <!-- Items bank -->
+  <div class="items-col">
+    <div class="items-label">Pasos disponibles (barajeados)</div>
+    <div id="items-bank"></div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div>
+    <div class="score-text" id="scoreText">0 / 5 correctos</div>
+    <div class="score-sub" id="scoreHint">Coloca todos los pasos en el orden correcto</div>
+  </div>
+  <button class="btn btn-check" onclick="checkOrder()">✓ Verificar</button>
+  <button class="btn btn-reset" onclick="resetActivity()">↺ Reiniciar</button>
+</div>
+
+<div class="ftr">
+  <span class="ftr-l">Esteban Briceño Sánchez · ELEN_2019 · Semana 4</span>
+  <span class="ftr-r">Arrastra cada paso a su posición correcta en la secuencia</span>
+</div>
+
+</div></div>
+
+<script>
+const STEPS = [
+  {id:1, text:'Elegir nodo de referencia', fb:'Establecer el nodo de referencia permite definir un punto de potencial cero, indispensable para medir correctamente las tensiones de los demás nodos.'},
+  {id:2, text:'Asignar tensiones de nodo', fb:'La asignación de variables a cada nodo convierte el problema en un sistema de incógnitas eléctricas que podrá resolverse posteriormente.'},
+  {id:3, text:'Aplicar LCK en cada nodo de no referencia', fb:'La Ley de Corrientes de Kirchhoff genera una ecuación por nodo, relacionando las corrientes de las ramas adyacentes.'},
+  {id:4, text:'Escribir el sistema de ecuaciones', fb:'Organizar las ecuaciones obtenidas facilita su resolución mediante métodos algebraicos o matriciales.'},
+  {id:5, text:'Resolver el sistema y obtener tensiones', fb:'Paso final donde se determinan las magnitudes eléctricas del circuito a partir de las incógnitas halladas.'}
+];
+
+let placement = {}; // step → itemId
+let shuffled = [...STEPS].sort(()=>Math.random()-.5);
+
+function buildBank() {
+  const bank = document.getElementById('items-bank');
+  bank.innerHTML = '';
+  shuffled.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'drag-item';
+    el.id = 'item-'+s.id;
+    el.draggable = true;
+    el.textContent = s.text;
+    el.addEventListener('dragstart', e => { e.dataTransfer.setData('itemId', s.id); el.classList.add('dragging'); });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+    // Touch support
+    el.addEventListener('touchstart', onTouchStart, {passive:true});
+    el.addEventListener('touchmove', onTouchMove, {passive:false});
+    el.addEventListener('touchend', onTouchEnd);
+    bank.appendChild(el);
+  });
+}
+
+function onOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+
+function onDrop(e, step) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const itemId = parseInt(e.dataTransfer.getData('itemId'));
+  placeItem(step, itemId);
+}
+
+function placeItem(step, itemId) {
+  // If step already has item, return it to bank
+  if (placement[step]) {
+    document.getElementById('item-'+placement[step])?.classList.remove('placed');
+  }
+  // If item already placed somewhere else, free that zone
+  Object.keys(placement).forEach(s => {
+    if (placement[s] === itemId) { delete placement[s]; resetZone(parseInt(s)); }
+  });
+  placement[step] = itemId;
+  document.getElementById('item-'+itemId)?.classList.add('placed');
+  const dz = document.getElementById('dz-'+step);
+  dz.classList.add('filled');
+  dz.classList.remove('correct','wrong','drag-over');
+  document.getElementById('dt-'+step).textContent = STEPS.find(s=>s.id===itemId).text;
+  updateProg();
+}
+
+function resetZone(step) {
+  const dz = document.getElementById('dz-'+step);
+  dz.classList.remove('filled','correct','wrong');
+  document.getElementById('dt-'+step).textContent = `Arrastra el paso ${['primer','segundo','tercer','cuarto','quinto'][step-1]} aquí`;
+}
+
+function updateProg() {
+  const placed = Object.keys(placement).length;
+  document.getElementById('progFill').style.width = (placed/5*100)+'%';
+}
+
+function checkOrder() {
+  let correct = 0;
+  const fb = [];
+  for (let step=1; step<=5; step++) {
+    const dz = document.getElementById('dz-'+step);
+    const itemId = placement[step];
+    if (!itemId) { dz.classList.remove('correct','wrong'); continue; }
+    if (itemId === step) {
+      dz.classList.add('correct'); dz.classList.remove('wrong');
+      correct++;
+    } else {
+      dz.classList.add('wrong'); dz.classList.remove('correct');
+      fb.push(`Paso ${step}: ${STEPS.find(s=>s.id===itemId)?.text} — debería ser: ${STEPS[step-1].text}`);
+    }
+  }
+  document.getElementById('scoreText').textContent = `${correct} / 5 correctos`;
+  const bar = document.getElementById('fb-bar');
+  if (correct === 5) {
+    bar.className = 'fb-bar show all-ok';
+    bar.innerHTML = '<strong>✓ ¡Perfecto!</strong> La secuencia del análisis nodal es correcta. ' + STEPS.map(s=>`<strong>${s.id}.</strong> ${s.text}`).join(' → ');
+    document.getElementById('scoreHint').textContent = '¡Secuencia completa y correcta!';
+  } else {
+    bar.className = 'fb-bar show has-err';
+    bar.innerHTML = `<strong>✕ ${5-correct} paso(s) incorrectos.</strong> Revise el orden y vuelva a intentarlo.`;
+    document.getElementById('scoreHint').textContent = `Revise los pasos marcados en rojo`;
+  }
+}
+
+function resetActivity() {
+  placement = {};
+  shuffled = [...STEPS].sort(()=>Math.random()-.5);
+  for(let i=1;i<=5;i++) resetZone(i);
+  buildBank();
+  document.getElementById('progFill').style.width='0%';
+  document.getElementById('scoreText').textContent='0 / 5 correctos';
+  document.getElementById('scoreHint').textContent='Coloca todos los pasos en el orden correcto';
+  const bar=document.getElementById('fb-bar');
+  bar.className='fb-bar'; bar.innerHTML='';
+}
+
+// Touch drag support
+let touchItem=null, touchClone=null;
+function onTouchStart(e){
+  touchItem=e.currentTarget;
+  const r=touchItem.getBoundingClientRect();
+  touchClone=touchItem.cloneNode(true);
+  touchClone.style.cssText=`position:fixed;top:${r.top}px;left:${r.left}px;width:${r.width}px;opacity:.7;z-index:999;pointer-events:none;`;
+  document.body.appendChild(touchClone);
+}
+function onTouchMove(e){
+  e.preventDefault();
+  const t=e.touches[0];
+  if(touchClone){touchClone.style.top=(t.clientY-30)+'px';touchClone.style.left=(t.clientX-100)+'px';}
+}
+function onTouchEnd(e){
+  if(touchClone){document.body.removeChild(touchClone);touchClone=null;}
+  if(!touchItem)return;
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const dz=el?.closest('.drop-zone');
+  if(dz){
+    const step=parseInt(dz.dataset.step);
+    const itemId=parseInt(touchItem.id.replace('item-',''));
+    placeItem(step,itemId);
+  }
+  touchItem=null;
+}
+
+document.querySelectorAll('.drop-zone').forEach(dz=>{
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+});
+
+function scaleStage(){
+  const stage=document.getElementById('stage');
+  const sw=document.getElementById('sw');
+  if(!stage||!sw)return;
+  const W=1280, cw=sw.clientWidth||window.innerWidth;
+  if(!cw)return;
+  const sc=cw/W;
+  stage.style.transform='scale('+sc+')';
+  stage.style.transformOrigin='top left';
+  sw.style.height=(720*sc)+'px';
+}
+window.addEventListener('resize',scaleStage);
+if(typeof ResizeObserver!=='undefined') new ResizeObserver(scaleStage).observe(document.getElementById('sw')||document.body);
+requestAnimationFrame(()=>requestAnimationFrame(scaleStage));
+
+buildBank();
+</script>
+</body>
+</html>
