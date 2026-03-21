@@ -5,333 +5,119 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Quiz – Topologías Básicas de Circuitos Eléctricos</title>
 <style>
+/* RESET BÁSICO */
 :root {
-  --c1:#A51C30;--c2:#00529B;--c3:#8C1515;--c4:#B9D3B0;
-  --c5:#6CACE4;--c6:#E1D9B9;--c7:#FFD700;--c8:#006747;
-  --c9:#E68F71;--c10:#9E1030;--c11:#D2B48C;--c12:#6D351A;
-
-  --primary:   #0E2D52;
-  --primary-d: #1B4F8A;
-  --accent:    #2E6DAD;
-  --accent-d:  #0E2D52;
-  --gold:      #F5A800;
-  --gold-dark: #C98700;
-  --green:     #006747;
-  --green-l:   #B9D3B0;
-  --sand:      #E8F0FA;
-  --salmon:    #F5A800;
-  --blue-l:    #B8CCE4;
-  --bg:        #FFFFFF;
-  --surface:   #F4F7FB;
-  --text:      #0E2D52;
-  --muted:     #4A5568;
-  --border:    #B8CCE4;
-  --correct:   #006747;
-  --correct-bg:#e8f5ee;
-  --wrong:     #A51C30;
-  --wrong-bg:  #fdecea;
+  --primary: #0E2D52; --primary-d: #1B4F8A; --accent: #2E6DAD;
+  --gold: #F5A800; --green: #006747; --sand: #E8F0FA;
+  --blue-l: #B8CCE4; --bg: #FFFFFF; --surface: #F4F7FB;
+  --text: #0E2D52; --muted: #4A5568; --border: #B8CCE4;
+  --correct: #006747; --correct-bg: #e8f5ee;
+  --wrong: #A51C30; --wrong-bg: #fdecea;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
-/* ── CORRECCIÓN CRÍTICA: HTML/BODY ── */
-html,body {
+/* CLAVE: HTML/BODY sin overflow hidden para permitir crecimiento */
+html, body {
   width: 100%;
-  height: auto; 
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: var(--bg);
+  height: auto;
   margin: 0;
   padding: 0;
-  /* Importante: Sin overflow hidden en body para permitir crecimiento */
-  overflow-x: hidden;
-  display: flex;
-  justify-content: center;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: block; /* Importante: no flex en body para iframes */
 }
 
-/* ── CORRECCIÓN CRÍTICA: #sw (CONTENEDOR PRINCIPAL) ── */
+/* CONTENEDOR PRINCIPAL (#sw) */
 #sw {
   width: 100%;
-  max-width: 900px;
+  max-width: 900px; /* Un poco más ancho que el iframe para margen */
   margin: 0 auto;
   background: var(--surface);
-  position: relative;
   
-  /* CAMBIO CLAVE: Altura mínima grande para evitar colapso en Canvas */
+  /* SOLUCIÓN AL PROBLEMA DE LOS 35PX: Altura mínima grande */
   min-height: 700px; 
   height: auto;
   
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  /* Sin overflow hidden aquí para permitir que el contenido empuje el alto */
-}
-
-/* ── CORRECCIÓN CRÍTICA: #stage (ESCENARIO) ── */
-#stage {
-  width: 100%;
-  height: 100%;
-  flex-shrink: 0;
-  background: var(--surface);
-  display: flex;
-  flex-direction: column;
-  /* Overflow visible para que nada se corte */
-  overflow: visible; 
   position: relative;
 }
 
-/* ── HEADER ── */
-.hdr{
-  background:linear-gradient(110deg,var(--primary) 0%,var(--primary-d) 50%,var(--accent) 100%);
-  padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;position:relative;overflow:hidden;
-}
-.hdr::before{content:'';position:absolute;right:-60px;top:-60px;width:200px;height:200px;
-  border-radius:50%;background:rgba(245,168,0,.1);}
-.hdr::after{content:'';position:absolute;right:80px;bottom:-40px;width:120px;height:120px;
-  border-radius:50%;background:rgba(255,255,255,.05);}
-.hdr-l{display:flex;align-items:center;gap:10px;position:relative;z-index:1; min-width: 0;}
-.hdr-ico{width:32px;height:32px;flex-shrink:0;}
-.hdr-t h1{font-size:14px;font-weight:700;color:#fff;line-height:1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-.hdr-t p{font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;letter-spacing:.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-.hdr-r{display:flex;align-items:center;gap:10px;position:relative;z-index:1; flex-shrink: 0;}
-.bdg{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
-  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff; white-space: nowrap;}
-.bdg-gold{background:var(--gold);border-color:var(--gold-dark);color:var(--text);}
-
-.top-progress{height:4px;background:rgba(0,0,0,.08);flex-shrink:0;}
-.top-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--salmon));
-  transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;}
-
-.main{flex:1;display:flex;overflow:visible; min-height: 400px;}
-
-.q-panel{
-  flex:1;display:flex;flex-direction:column;
-  padding:20px;overflow-y:visible;overflow-x:hidden;
-  background:var(--surface);
+#stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: visible; /* Permitir que el contenido empuje */
 }
 
-/* intro */
-.intro-wrap{display:flex;flex-direction:column;gap:20px;width:100%;}
-.intro-hero{
-  background:linear-gradient(120deg,var(--primary) 0%,var(--primary-d) 40%,var(--accent) 100%);
-  border-radius:14px;padding:25px;display:flex;align-items:center;gap:20px;
-  position:relative;overflow:hidden;color:#fff;
+/* HEADER */
+.hdr {
+  background: linear-gradient(110deg, var(--primary), var(--accent));
+  padding: 0 20px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
 }
-.intro-hero-ico{width:60px;height:60px;flex-shrink:0;}
-.intro-hero h2{font-size:20px;font-weight:700;margin-bottom:5px;}
-.intro-hero p{font-size:13px;opacity:0.9;line-height:1.5;}
-.intro-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.meta-card{
-  background:#fff;border:1.5px solid var(--border);border-radius:10px;
-  padding:12px;display:flex;flex-direction:column;gap:5px;text-align:center;
-}
-.meta-card-ico{
-  width:36px;height:36px;margin:0 auto;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-}
-.meta-card-ico.blue{background:rgba(0,82,155,.1);color:var(--primary);}
-.meta-card-ico.red{background:rgba(165,28,48,.1);color:var(--wrong);}
-.meta-card-ico.green{background:rgba(0,103,71,.1);color:var(--green);}
-.meta-card strong{font-size:13px;color:var(--text);}
-.meta-card span{font-size:11px;color:var(--muted);}
-.intro-instr{
-  background:#fff8e8;border-left:4px solid var(--gold);
-  border-radius:0 8px 8px 0;padding:12px 15px;
-  display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);
-}
-.btn-start{
-  align-self:flex-start;
-  background:linear-gradient(135deg,var(--primary-d),var(--accent));
-  color:#fff;border:none;border-radius:25px;
-  padding:12px 30px;font-size:14px;font-weight:700;
-  cursor:pointer;box-shadow:0 4px 15px rgba(14,45,82,.3);
-  transition:transform .2s;display:flex;align-items:center;gap:8px;
-}
-.btn-start:hover{transform:translateY(-2px);}
+.hdr-l { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+.hdr-ico { width: 32px; height: 32px; }
+.hdr-t h1 { font-size: 14px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hdr-t p { font-size: 10px; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bdg { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--gold); color: var(--text); }
 
-/* Questions */
-.q-wrap{display:flex;flex-direction:column;gap:15px;max-width:800px;margin:0 auto;width:100%;}
-.q-header{
-  display:flex;align-items:flex-start;gap:12px;
-  padding-bottom:15px;border-bottom:2px solid var(--sand);
-}
-.q-num-tag{
-  background:var(--primary);color:#fff;
-  border-radius:6px;padding:5px 12px;
-  font-size:11px;font-weight:700;white-space:nowrap;
-}
-.q-text{font-size:17px;font-weight:700;color:var(--text);line-height:1.4;}
-.q-sub{font-size:13px;color:var(--muted);margin-top:5px;font-family:monospace;background:#fff;padding:4px 8px;border-radius:4px;display:inline-block;}
+/* MAIN LAYOUT */
+.main { display: flex; flex: 1; min-height: 500px; } /* Min-height extra de seguridad */
 
-/* Options */
-.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.options-grid.single{grid-template-columns:1fr;}
-.option{
-  display:flex;align-items:center;gap:12px;
-  background:#fff;border:2px solid var(--border);
-  border-radius:10px;padding:15px;
-  cursor:pointer;transition:all .2s;position:relative;
-}
-.option:hover{border-color:var(--primary);background:var(--sand);transform:translateY(-2px);}
-.option.correct{border-color:var(--correct);background:var(--correct-bg);}
-.option.wrong{border-color:var(--wrong);background:var(--wrong-bg);}
-.option.disabled{cursor:default;transform:none;opacity:0.7;}
-.opt-letter{
-  width:30px;height:30px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:#fff;background:var(--primary);
-}
-.option.correct .opt-letter{background:var(--correct);}
-.option.wrong .opt-letter{background:var(--wrong);}
-.opt-text{font-size:14px;color:var(--text);line-height:1.4;}
-
-/* Match */
-.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-.match-col h4{font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;margin-bottom:10px;border-bottom:2px solid var(--blue-l);padding-bottom:5px;}
-.match-item{
-  background:#fff;border:1.5px solid var(--border);border-radius:8px;
-  padding:10px;margin-bottom:8px;font-size:13px;cursor:pointer;transition:all .2s;
-}
-.match-item:hover{border-color:var(--accent);background:var(--sand);}
-.match-item.selected{border-color:var(--gold);background:#fffbe6;}
-.match-item.matched{border-color:var(--correct);background:var(--correct-bg);opacity:0.6;cursor:default;}
-.match-key{font-weight:700;color:var(--primary);margin-right:5px;}
-
-/* Formula */
-.formula-opts{display:flex;gap:10px;flex-wrap:wrap;}
-.formula-opt{
-  background:#fff;border:2px solid var(--border);border-radius:8px;
-  padding:10px 20px;font-size:16px;font-weight:700;font-family:monospace;
-  cursor:pointer;transition:all .2s;
-}
-.formula-opt:hover{border-color:var(--primary);background:var(--sand);}
-.formula-opt.correct{border-color:var(--correct);background:var(--correct-bg);color:var(--correct);}
-.formula-opt.wrong{border-color:var(--wrong);background:var(--wrong-bg);color:var(--wrong);}
-
-/* Feedback */
-.feedback{
-  border-radius:10px;padding:15px;display:flex;gap:12px;
-  animation:slideIn .3s ease;border:1.5px solid transparent;
-}
-@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.feedback.correct{background:var(--correct-bg);border-color:var(--correct);}
-.feedback.wrong{background:var(--wrong-bg);border-color:var(--wrong);}
-.fb-ico{
-  width:28px;height:28px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;
-}
-.feedback.correct .fb-ico{background:var(--correct);}
-.feedback.wrong .fb-ico{background:var(--wrong);}
-.fb-txt strong{display:block;font-size:14px;margin-bottom:4px;}
-.feedback.correct .fb-txt strong{color:var(--correct);}
-.feedback.wrong .fb-txt strong{color:var(--wrong);}
-.fb-txt p{font-size:13px;color:var(--muted);line-height:1.5;}
-
-/* Sidebar */
-.sidebar{
-  width:240px;flex-shrink:0;
-  background:linear-gradient(180deg,var(--sand) 0%,#dde8f5 100%);
-  border-left:1px solid var(--border);
-  display:flex;flex-direction:column;
-  padding:20px;gap:20px;
-  overflow-y:auto;
-}
-.q-tracker{display:flex;flex-direction:column;gap:8px;}
-.tracker-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;}
-.tracker-item{
-  display:flex;align-items:center;gap:10px;padding:10px;
-  border-radius:8px;border:1.5px solid var(--border);background:#fff;
-  cursor:pointer;transition:all .2s;font-size:12px;
-}
-.tracker-item:hover{border-color:var(--primary);background:#eaf2fb;}
-.tracker-item.active{border-color:var(--accent);background:rgba(46,109,173,.1);}
-.tracker-item.done-ok{border-color:var(--correct);background:var(--correct-bg);}
-.tracker-item.done-fail{border-color:var(--wrong);background:var(--wrong-bg);}
-.ti-num{
-  width:24px;height:24px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;background:var(--border);color:var(--muted);
-}
-.tracker-item.active .ti-num{background:var(--accent);color:#fff;}
-.tracker-item.done-ok .ti-num{background:var(--correct);color:#fff;}
-.tracker-item.done-fail .ti-num{background:var(--wrong);color:#fff;}
-.ti-label{flex:1;line-height:1.2;}
-
-.score-card{
-  background:#fff;border-radius:12px;border:1.5px solid var(--border);
-  padding:15px;text-align:center;margin-top:auto;
-}
-.score-ring{width:70px;height:70px;margin:0 auto 10px;position:relative;}
-.score-ring svg{width:100%;height:100%;transform:rotate(-90deg);}
-.score-ring-bg{fill:none;stroke:var(--sand);stroke-width:6;}
-.score-ring-fill{
-  fill:none;stroke:var(--gold);stroke-width:6;stroke-linecap:round;
-  stroke-dasharray:188.5;stroke-dashoffset:188.5;
-  transition:stroke-dashoffset .6s ease;
-}
-.score-num{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:700;color:var(--text);
-}
-.score-lbl{font-size:11px;color:var(--muted);}
-.score-lbl strong{display:block;font-size:13px;color:var(--text);margin-bottom:2px;}
-
-/* Actions & Footer */
-.q-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;}
-.btn{
-  border:none;border-radius:25px;padding:10px 24px;
-  font-size:13px;font-weight:600;cursor:pointer;
-  display:flex;align-items:center;gap:6px;transition:all .2s;
-}
-.btn-next{background:var(--primary);color:#fff;}
-.btn-next:hover{background:var(--primary-d);}
-.btn-finish{background:var(--green);color:#fff;}
-.btn-retry{background:var(--sand);color:var(--text);border:1.5px solid var(--border);}
-
-.ftr{
-  background:var(--primary);height:30px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;font-size:11px;color:rgba(255,255,255,0.7);
-  flex-shrink:0;
+.q-panel {
+  flex: 1;
+  padding: 20px;
+  background: var(--surface);
+  overflow: visible; /* Sin scroll interno */
 }
 
-/* Results */
-.results-wrap{display:flex;flex-direction:column;gap:20px;width:100%;}
-.results-hero{
-  background:linear-gradient(120deg,var(--green),var(--primary));
-  border-radius:14px;padding:25px;color:#fff;
-  display:flex;align-items:center;gap:20px;
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: linear-gradient(180deg, var(--sand), #dde8f5);
+  border-left: 1px solid var(--border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
-.results-score-big{font-size:42px;font-weight:700;color:var(--gold);}
-.results-list{display:flex;flex-direction:column;gap:8px;}
-.result-item{
-  display:flex;align-items:center;gap:10px;
-  background:#fff;border:1.5px solid var(--border);
-  border-radius:8px;padding:10px;font-size:13px;
-}
-.ri-ico{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;}
-.ri-ico.ok{background:var(--correct-bg);color:var(--correct);}
-.ri-ico.fail{background:var(--wrong-bg);color:var(--wrong);}
-.ri-q{flex:1;}
-.ri-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;}
-.ri-badge.ok{background:var(--correct-bg);color:var(--correct);}
-.ri-badge.fail{background:var(--wrong-bg);color:var(--wrong);}
 
-/* ═══════════════════════════════════════════════════
-   MEDIA QUERIES RESPONSIVAS
-   ═══════════════════════════════════════════════════ */
+/* COMPONENTES INTERNOS (Estilos simplificados para el ejemplo) */
+.intro-wrap, .results-wrap { display: flex; flex-direction: column; gap: 20px; }
+.intro-hero { background: var(--primary); color: #fff; padding: 20px; border-radius: 10px; display: flex; gap: 15px; align-items: center; }
+.intro-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.meta-card { background: #fff; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
+.meta-card strong { display: block; font-size: 13px; }
+.meta-card span { font-size: 10px; color: var(--muted); }
+.btn-start { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
+
+.q-wrap { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+.q-header { border-bottom: 2px solid var(--sand); padding-bottom: 10px; }
+.q-text { font-size: 16px; font-weight: bold; }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.option { background: #fff; border: 2px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; gap: 10px; align-items: center; }
+.option:hover { border-color: var(--primary); background: var(--sand); }
+.option.correct { border-color: var(--correct); background: var(--correct-bg); }
+.option.wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+
+.tracker-item { background: #fff; padding: 8px; margin-bottom: 5px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; cursor: pointer; }
+.tracker-item.active { border-color: var(--accent); background: #eaf2fb; }
+.score-card { background: #fff; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid var(--border); margin-top: auto; }
+.score-num { font-size: 20px; font-weight: bold; color: var(--primary); }
+
+.ftr { background: var(--primary); color: rgba(255,255,255,0.7); font-size: 10px; padding: 8px 20px; text-align: center; }
+
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  #sw { min-height: 500px; }
   .sidebar { display: none; }
-  .hdr { padding: 0 15px; height: 50px; }
-  .hdr-t h1 { font-size: 13px; }
-  .intro-hero { flex-direction: column; text-align: center; }
-  .intro-meta { grid-template-columns: 1fr; }
   .options-grid { grid-template-columns: 1fr; }
-  .match-wrap { grid-template-columns: 1fr; }
-  .q-actions { flex-direction: column; }
-  .btn { width: 100%; justify-content: center; }
-  .ftr { flex-direction: column; height: auto; padding: 10px; text-align: center; gap: 5px; }
-  .results-hero { flex-direction: column; text-align: center; }
+  .intro-meta { grid-template-columns: 1fr; }
+  .hdr-t h1 { font-size: 12px; }
 }
 </style>
 </head>
@@ -339,460 +125,175 @@ html,body {
 
 <div id="sw">
   <div id="stage">
-    
     <!-- HEADER -->
     <div class="hdr">
       <div class="hdr-l">
-        <svg class="hdr-ico" viewBox="0 0 38 38" fill="none">
-          <rect width="38" height="38" rx="9" fill="rgba(255,255,255,.12)"/>
-          <rect x="8" y="7" width="14" height="18" rx="3" fill="rgba(255,255,255,.25)" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/>
-          <path d="M11 12h8M11 15h6M11 18h7" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>
-          <circle cx="27" cy="26" r="7" fill="var(--gold)"/>
-          <path d="M24.5 26l2 2 4-3.5" stroke="#5a3d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <svg class="hdr-ico" viewBox="0 0 38 38" fill="none"><rect width="38" height="38" rx="9" fill="rgba(255,255,255,.2)"/><circle cx="19" cy="19" r="10" fill="var(--gold)"/></svg>
         <div class="hdr-t">
-          <h1>Topologías Básicas de Circuitos</h1>
+          <h1>Topologías de Circuitos</h1>
           <p>ELEN_2019 | Semana 2</p>
         </div>
       </div>
-      <div class="hdr-r">
-        <span class="bdg bdg-gold">Quiz</span>
-      </div>
+      <div class="bdg">Quiz</div>
     </div>
 
-    <!-- PROGRESS BAR -->
-    <div class="top-progress"><div class="top-progress-fill" id="topBar"></div></div>
-
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <div class="main">
-      <div class="q-panel" id="q-panel">
-        <!-- Content injected by JS -->
-      </div>
+      <div class="q-panel" id="q-panel"></div>
       
-      <!-- SIDEBAR -->
       <div class="sidebar">
-        <div class="q-tracker">
-          <div class="tracker-title">Preguntas</div>
-          <div id="tracker-items"></div>
-        </div>
+        <div id="tracker-items"></div>
         <div class="score-card">
-          <div class="score-ring">
-            <svg viewBox="0 0 64 64">
-              <circle class="score-ring-bg" cx="32" cy="32" r="28"/>
-              <circle class="score-ring-fill" id="scoreRing" cx="32" cy="32" r="28"/>
-            </svg>
-            <div class="score-num" id="scoreNum">0/5</div>
-          </div>
-          <div class="score-lbl"><strong>Puntaje</strong>Respuestas correctas</div>
+          <div class="score-num" id="scoreNum">0/5</div>
+          <div style="font-size:10px; color:var(--muted)">Puntaje</div>
         </div>
       </div>
     </div>
 
     <!-- FOOTER -->
-    <div class="ftr">
-      <span>Esteban Briceño · ELEN_2019</span>
-      <span>Seleccione la respuesta correcta</span>
-    </div>
-
+    <div class="ftr">Seleccione la respuesta correcta</div>
   </div>
 </div>
 
 <script>
-/* ══ DATA ══ */
+// DATOS DEL QUIZ
 const QUIZ = [
-  {
-    type: 'tf',
-    q: 'Una rama representa un elemento de dos terminales por el cual circula una única corriente.',
-    correct: 0,
-    opts: ['Verdadero','Falso'],
-    fb_ok: 'Correcto. La carga es fundamental en protones y electrones.',
-    fb_fail: 'Incorrecto. La carga es una propiedad intrínseca.',
-    author: 'Rama'
-  },
-  {
-    type: 'mc',
-    q: '¿Qué característica define correctamente a un nodo en un circuito eléctrico?',
-    opts: [
-      'Trayectoria cerrada formada por varias ramas.',
-      'Elemento que genera energía eléctrica.',
-      'Punto de conexión entre dos o más ramas.'
-    ],
-    correct: 2,
-    fb_ok: 'Exacto. Se requiere una fuerza impulsora (tensión).',
-    fb_fail: 'Incorrecto. Se necesita una diferencia de potencial.',
-    author: 'Nodo'
-  },
-  {
-    type: 'formula',
-    q: 'Un lazo es una trayectoria cerrada que _____ en un nodo y regresa al mismo punto.',
-    sub: 'Complete con la palabra correcta:',
-    opts: ['inicia', 'termina', 'bifurca', 'interrumpe'],
-    correct: 0,
-    fb_ok: 'Correcto. Es la derivada de la carga respecto al tiempo.',
-    fb_fail: 'Incorrecto. La fórmula es i = dq/dt.',
-    author: 'Lazo'
-  },
-  {
-    type: 'match',
-    q: 'Relacione cada magnitud con su definición.',
-    colA: [
-      { key:'A', label:'Serie' },
-      { key:'B', label:'Paralelo' },
-      { key:'C', label:'Malla' }
-    ],
-    colB: [
-      { key:'1', label:'Trayectoria cerrada más simple sin lazos internos.' },
-      { key:'2', label:'Elementos con la misma corriente.' },
-      { key:'3', label:'Elementos con la misma tensión.' }
-    ],
-    correctMap: {'A':'2','B':'3','C':'1'},
-    fb_ok: '¡Perfecto! Has relacionado correctamente los conceptos.',
-    fb_fail: 'Incorrecto. Tensión=Energía/Carga, Potencia=Tasa, Energía=Trabajo.',
-    author: 'Conceptos'
-  },
-  {
-    type: 'tf',
-    q: 'En una conexión en paralelo, los elementos comparten los mismos dos nodos.',
-    correct: 0,
-    opts: ['Verdadero','Falso'],
-    fb_ok: 'Correcto. El flujo es unidireccional y constante.',
-    fb_fail: 'Incorrecto. La corriente continua es constante.',
-    author: 'Paralelo'
-  }
+  { type: 'tf', q: 'Una rama es un elemento de dos terminales.', correct: 0, opts: ['Verdadero','Falso'], author: 'Rama' },
+  { type: 'mc', q: '¿Qué es un nodo?', opts: ['Un cable', 'Punto de conexión', 'Una batería'], correct: 1, author: 'Nodo' },
+  { type: 'mc', q: 'Un lazo es una trayectoria...', opts: ['Abierta', 'Cerrada', 'Infinita'], correct: 1, author: 'Lazo' },
+  { type: 'tf', q: 'En paralelo, los elementos tienen la misma tensión.', correct: 0, opts: ['Verdadero','Falso'], author: 'Paralelo' },
+  { type: 'mc', q: 'Serie implica:', opts: ['Misma corriente', 'Mismo voltaje', 'Ninguna'], correct: 0, author: 'Serie' }
 ];
 
-const LETTERS = ['A','B','C','D'];
-let current = -1;
-let answers = Array(QUIZ.length).fill(null);
-let answered = Array(QUIZ.length).fill(false);
-let score = 0;
-let matchSelA = null;
-let matchPairs = {};
+let current = -1, score = 0, answered = [], answers = [];
 
-/* ══ FUNCTIONS ══ */
+function init() {
+  answered = Array(QUIZ.length).fill(false);
+  answers = Array(QUIZ.length).fill(null);
+  score = 0;
+  renderIntro();
+  resizeIframe();
+}
 
 function renderIntro() {
   current = -1;
   document.getElementById('q-panel').innerHTML = `
     <div class="intro-wrap">
       <div class="intro-hero">
-        <svg class="intro-hero-ico" viewBox="0 0 72 72" fill="none">
-          <rect width="72" height="72" rx="14" fill="rgba(255,255,255,.08)"/>
-          <circle cx="36" cy="28" r="14" fill="none" stroke="#fff" stroke-width="1.8"/>
-          <path d="M36 14v4M36 38v4M22 28h4M46 28h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
-          <circle cx="52" cy="52" r="14" fill="var(--gold)"/>
-          <path d="M47 52l3.5 3.5 7.5-7" stroke="#0E2D52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <div>
-          <h2>¡Bienvenidos al Quiz!</h2>
-          <p>Evalúa tus conocimientos sobre topologías de circuitos.</p>
-        </div>
+        <div style="font-size:40px">⚡</div>
+        <div><h2>¡Bienvenidos!</h2><p>Evalúa tus conocimientos sobre topologías.</p></div>
       </div>
       <div class="intro-meta">
-        <div class="meta-card">
-          <div class="meta-card-ico blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <div><strong>5 preguntas</strong><span>Tipos variados</span></div>
-        </div>
-        <div class="meta-card">
-          <div class="meta-card-ico red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <div><strong>Sin límite</strong><span>Tiempo libre</span></div>
-        </div>
-        <div class="meta-card">
-          <div class="meta-card-ico green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-          <div><strong>Retroalimentación</strong><span>Inmediata</span></div>
-        </div>
+        <div class="meta-card"><strong>5</strong><span>Preguntas</span></div>
+        <div class="meta-card"><strong>Sin límite</strong><span>Tiempo</span></div>
+        <div class="meta-card"><strong>Inmediata</strong><span>Retro</span></div>
       </div>
-      <div class="intro-instr">
-        <svg width="18" height="18" viewBox="0 0 22 22" fill="none" style="flex-shrink:0"><circle cx="11" cy="11" r="10" fill="var(--gold)"/><path d="M11 7v5M11 14v1" stroke="#0E2D52" stroke-width="1.7" stroke-linecap="round"/></svg>
-        <p><strong>Instrucción:</strong> Revise cada enunciado y elija la opción correcta.</p>
-      </div>
-      <button class="btn-start" onclick="startQuiz()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
-        Comenzar Quiz
-      </button>
+      <button class="btn-start" onclick="startQuiz()">▶ Comenzar Quiz</button>
     </div>`;
-  updateTracker(); updateTopBar(); updateScore();
+  updateTracker();
   resizeIframe();
 }
+
+function startQuiz() { renderQuestion(0); }
 
 function renderQuestion(idx) {
   current = idx;
   const q = QUIZ[idx];
-  const isAnswered = answered[idx];
-  let contentHTML = '';
-
-  if (q.type === 'tf' || q.type === 'mc') {
-    const cols = q.opts.length === 2 ? 'single' : '';
-    const optsHTML = q.opts.map((opt, i) => {
-      let cls = 'option';
-      if (isAnswered) {
-        cls += ' disabled';
-        if (i === q.correct) cls += ' correct';
-        else if (answers[idx] === i && i !== q.correct) cls += ' wrong';
-      }
-      const onclick = isAnswered ? '' : `onclick="selectAnswer(${idx},${i})"`;
-      return `<div class="${cls}" ${onclick}>
-        <div class="opt-letter">${LETTERS[i]}</div>
-        <div class="opt-text">${opt}</div>
-      </div>`;
-    }).join('');
-    contentHTML = `<div class="options-grid ${cols}">${optsHTML}</div>`;
-
-  } else if (q.type === 'formula') {
-    const optsHTML = q.opts.map((opt, i) => {
-      let cls = 'formula-opt';
-      if (isAnswered) {
-        cls += ' disabled';
-        if (i === q.correct) cls += ' correct';
-        else if (answers[idx] === i) cls += ' wrong';
-      }
-      const onclick = isAnswered ? '' : `onclick="selectAnswer(${idx},${i})"`;
-      return `<div class="${cls}" ${onclick}>${opt}</div>`;
-    }).join('');
-    contentHTML = `
-      <div style="margin-bottom:15px;">
-        <div style="font-size:18px;font-weight:bold;font-family:monospace;">Lazo = ?</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:5px;">Selecciona la expresión:</div>
-      </div>
-      <div class="formula-opts">${optsHTML}</div>`;
-
-  } else if (q.type === 'match') {
-    contentHTML = renderMatchContent(idx, isAnswered);
-  }
-
-  let fbHTML = '';
-  if (isAnswered) {
-    const ok = answers[idx] === true || answers[idx] === q.correct;
-    fbHTML = `<div class="feedback ${ok?'correct':'wrong'}">
-      <div class="fb-ico">${ok?'✓':'✕'}</div>
-      <div class="fb-txt">
-        <strong>${ok?'¡Excelente!':'¡Oh, no!'}</strong>
-        <p>${ok ? q.fb_ok : q.fb_fail}</p>
-      </div>
+  let html = `<div class="q-wrap">
+    <div class="q-header"><div class="q-text">${idx+1}. ${q.q}</div></div>
+    <div class="options-grid">`;
+  
+  q.opts.forEach((opt, i) => {
+    let cls = 'option';
+    if(answered[idx]) {
+      cls += ' disabled';
+      if(i === q.correct) cls += ' correct';
+      else if(answers[idx] === i) cls += ' wrong';
+    }
+    html += `<div class="${cls}" onclick="${answered[idx]?'':'selectAnswer('+idx+','+i+')'}">
+      <div style="font-weight:bold; background:var(--primary); color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px;">${String.fromCharCode(65+i)}</div>
+      <div>${opt}</div>
     </div>`;
-  }
-
-  const allDone = answered.every(Boolean);
-  const isLast = idx === QUIZ.length - 1;
-  let actionsHTML = '';
-  if (isAnswered) {
-    if (allDone) {
-      actionsHTML = `<button class="btn btn-finish" onclick="showResults()">Ver resultados</button>`;
-    } else if (!isLast) {
-      actionsHTML = `<button class="btn btn-next" onclick="nextQuestion()">Siguiente</button>`;
+  });
+  
+  html += `</div>`;
+  
+  if(answered[idx]) {
+    const ok = answers[idx] === q.correct;
+    html += `<div style="background:${ok?'var(--correct-bg)':'var(--wrong-bg)'}; padding:15px; border-radius:8px; margin-top:15px; border:1px solid ${ok?'var(--correct)':'var(--wrong)'}">
+      <strong>${ok?'¡Correcto!':'Incorrecto'}</strong><br>${ok?'Muy bien.': 'La respuesta correcta era la opción '+String.fromCharCode(65+q.correct)+'. '}
+    </div>`;
+    
+    if(idx < QUIZ.length - 1) {
+      html += `<div style="margin-top:15px; text-align:right"><button class="btn-start" onclick="renderQuestion(${idx+1})">Siguiente ▶</button></div>`;
     } else {
-      actionsHTML = `<button class="btn btn-next" onclick="nextUnanswered()">Siguiente sin responder</button>`;
+      html += `<div style="margin-top:15px; text-align:right"><button class="btn-start" style="background:var(--green)" onclick="showResults()">Ver Resultados 🏆</button></div>`;
     }
   }
-
-  document.getElementById('q-panel').innerHTML = `
-    <div class="q-wrap">
-      <div class="q-header">
-        <div class="q-num-tag">Pregunta ${idx+1}/${QUIZ.length}</div>
-        <div>
-          <div class="q-text">${q.q}</div>
-          ${q.sub ? `<div class="q-sub">${q.sub}</div>` : ''}
-        </div>
-      </div>
-      ${contentHTML}
-      ${fbHTML}
-      <div class="q-actions">${actionsHTML}</div>
-    </div>`;
-
-  if (q.type === 'match' && !isAnswered) bindMatchEvents(idx);
-  updateTracker(); updateTopBar(); updateScore();
+  
+  html += `</div>`;
+  document.getElementById('q-panel').innerHTML = html;
+  updateTracker();
   resizeIframe();
-}
-
-function renderMatchContent(idx, isAnswered) {
-  const q = QUIZ[idx];
-  const pairs = isAnswered ? (answers[idx] || {}) : matchPairs;
-  const colAHTML = q.colA.map(a => {
-    const paired = pairs[a.key];
-    let cls = 'match-item';
-    if (isAnswered) {
-      cls += q.correctMap[a.key] === paired ? ' matched' : ' wrong-sel';
-    } else if (matchSelA === a.key) cls += ' selected';
-    else if (pairs[a.key]) cls += ' matched';
-    return `<div class="${cls}" id="ma-${a.key}" data-key="${a.key}">
-      <span class="match-key">${a.key})</span> ${a.label}
-      ${paired ? `<span style="font-size:10px;color:var(--muted);margin-left:4px;">→ ${paired}</span>` : ''}
-    </div>`;
-  }).join('');
-  const colBHTML = q.colB.map(b => {
-    const used = Object.values(pairs).includes(b.key);
-    let cls = 'match-item' + (used ? ' matched' : '');
-    if (isAnswered) {
-      const aKey = Object.keys(pairs).find(k => pairs[k] === b.key);
-      if (aKey) cls = 'match-item ' + (q.correctMap[aKey] === b.key ? 'matched' : 'wrong-sel');
-    }
-    return `<div class="${cls}" id="mb-${b.key}" data-key="${b.key}">
-      <span class="match-key">${b.key})</span> ${b.label}
-    </div>`;
-  }).join('');
-  return `<div class="match-wrap">
-    <div class="match-col"><h4>Columna A</h4>${colAHTML}</div>
-    <div class="match-col"><h4>Columna B</h4>${colBHTML}</div>
-  </div>`;
-}
-
-function bindMatchEvents(idx) {
-  const q = QUIZ[idx];
-  q.colA.forEach(a => {
-    const el = document.getElementById('ma-'+a.key);
-    if (el) el.addEventListener('click', () => selectMatchA(idx, a.key));
-  });
-  q.colB.forEach(b => {
-    const el = document.getElementById('mb-'+b.key);
-    if (el) el.addEventListener('click', () => selectMatchB(idx, b.key));
-  });
-}
-
-function selectMatchA(idx, key) {
-  if (matchPairs[key]) return;
-  matchSelA = key;
-  renderQuestion(idx);
-  bindMatchEvents(idx);
-}
-
-function selectMatchB(idx, key) {
-  if (!matchSelA) return;
-  if (Object.values(matchPairs).includes(key)) return;
-  matchPairs[matchSelA] = key;
-  matchSelA = null;
-  if (Object.keys(matchPairs).length === QUIZ[idx].colA.length) {
-    const correct = QUIZ[idx].colA.every(a => matchPairs[a.key] === QUIZ[idx].correctMap[a.key]);
-    answered[idx] = true;
-    answers[idx] = {...matchPairs};
-    if (correct) score++;
-    renderQuestion(idx);
-  } else {
-    renderQuestion(idx);
-    bindMatchEvents(idx);
-  }
 }
 
 function selectAnswer(qIdx, optIdx) {
-  if (answered[qIdx]) return;
   answered[qIdx] = true;
   answers[qIdx] = optIdx;
-  if (optIdx === QUIZ[qIdx].correct) score++;
+  if(optIdx === QUIZ[qIdx].correct) score++;
   renderQuestion(qIdx);
   updateScore();
-}
-
-function nextQuestion() { if (current < QUIZ.length-1) renderQuestion(current+1); }
-function nextUnanswered() { const i = answered.findIndex(a=>!a); if(i!==-1) renderQuestion(i); }
-function startQuiz() { matchPairs={}; matchSelA=null; renderQuestion(0); }
-
-function showResults() {
-  current = QUIZ.length;
-  const pct = Math.round((score/QUIZ.length)*100);
-  let msg='',emoji='';
-  if (score===QUIZ.length){msg='¡Perfecto! Domina todos los conceptos.';emoji='🏆';}
-  else if(score>=4){msg='¡Muy bien! Sólida comprensión.';emoji='🎯';}
-  else if(score>=3){msg='¡Buen intento! Repase los conceptos.';emoji='📚';}
-  else{msg='Repase los contenidos e intente de nuevo.';emoji='💡';}
-
-  const listHTML = QUIZ.map((q,i)=>{
-    const ok = answers[i]===q.correct || (q.type==='match' && typeof answers[i]==='object' &&
-      q.colA.every(a=>answers[i][a.key]===q.correctMap[a.key]));
-    return `<div class="result-item">
-      <div class="ri-ico ${ok?'ok':'fail'}">${ok?'✓':'✕'}</div>
-      <div class="ri-q">${q.q}</div>
-      <span class="ri-badge ${ok?'ok':'fail'}">${ok?'Correcto':'Incorrecto'}</span>
-    </div>`;
-  }).join('');
-
-  document.getElementById('q-panel').innerHTML = `
-    <div class="results-wrap">
-      <div class="results-hero">
-        <div>
-          <div class="results-score-big">${score}/${QUIZ.length}</div>
-          <div class="results-score-sub">${pct}% correcto</div>
-        </div>
-        <div>
-          <h2>${emoji} Resultados</h2>
-          <p>${msg}</p>
-        </div>
-      </div>
-      <div class="results-list">${listHTML}</div>
-      <div class="q-actions">
-        <button class="btn btn-retry" onclick="retryQuiz()">Volver a intentar</button>
-      </div>
-    </div>`;
-  updateTracker(); updateTopBar();
   resizeIframe();
 }
 
-function retryQuiz() {
-  answers=Array(QUIZ.length).fill(null);
-  answered=Array(QUIZ.length).fill(false);
-  score=0; matchPairs={}; matchSelA=null;
-  renderIntro();
+function showResults() {
+  const pct = Math.round((score/QUIZ.length)*100);
+  document.getElementById('q-panel').innerHTML = `
+    <div class="results-wrap" style="text-align:center; padding:20px;">
+      <div style="font-size:50px">🏆</div>
+      <h2>Resultados</h2>
+      <p style="font-size:24px; font-weight:bold; color:var(--primary)">${score}/${QUIZ.length} (${pct}%)</p>
+      <p>${pct>=80?'¡Excelente trabajo!':(pct>=60?'Bien hecho':'Sigue practicando.')}</p>
+      <button class="btn-start" onclick="init()">🔄 Intentar de nuevo</button>
+    </div>`;
+  resizeIframe();
 }
 
 function updateTracker() {
-  const cont = document.getElementById('tracker-items');
-  cont.innerHTML='';
-  QUIZ.forEach((q,i)=>{
-    const div = document.createElement('div');
+  const container = document.getElementById('tracker-items');
+  container.innerHTML = '<div style="font-weight:bold; margin-bottom:10px; font-size:12px; color:var(--muted)">PREGUNTAS</div>';
+  QUIZ.forEach((q, i) => {
     let cls = 'tracker-item';
     if(i===current) cls+=' active';
-    else if(answered[i]){
-      const ok = answers[i]===q.correct || (q.type==='match' && typeof answers[i]==='object' && q.colA.every(a=>answers[i][a.key]===q.correctMap[a.key]));
-      cls += ok?' done-ok':' done-fail';
-    }
-    div.className=cls;
-    div.onclick=()=>renderQuestion(i);
-    div.innerHTML=`<div class="ti-num">${i+1}</div><div class="ti-label">${q.author||'Pregunta '+(i+1)}</div>`;
-    cont.appendChild(div);
+    else if(answered[i]) cls += (answers[i]===q.correct)?' correct-border':' wrong-border';
+    container.innerHTML += `<div class="${cls}">${i+1}. ${q.author}</div>`;
   });
 }
 
-function updateTopBar(){
-  const done=answered.filter(Boolean).length;
-  document.getElementById('topBar').style.width=(done/QUIZ.length*100)+'%';
+function updateScore() {
+  document.getElementById('scoreNum').textContent = `${score}/${QUIZ.length}`;
 }
 
-function updateScore(){
-  const pct=score/QUIZ.length;
-  const offset=188.5*(1-pct);
-  document.getElementById('scoreRing').style.strokeDashoffset=offset;
-  document.getElementById('scoreNum').textContent=`${score}/${QUIZ.length}`;
-  const ring=document.getElementById('scoreRing');
-  if(pct>=.75)ring.style.stroke='var(--correct)';
-  else if(pct>=.5)ring.style.stroke='var(--gold)';
-  else ring.style.stroke='var(--accent)';
-}
-
-/* ══ CANVAS LMS FIX: AUTO RESIZE IFRAME ══ */
+/* ── SCRIPT MÁGICO PARA CANVAS ── */
 function resizeIframe() {
-  // Calculamos la altura real del contenido
-  const bodyHeight = document.body.scrollHeight;
-  const htmlHeight = document.documentElement.scrollHeight;
-  const newHeight = Math.max(bodyHeight, htmlHeight) + 20; // +20px buffer
-
-  // Enviamos el mensaje a Canvas
-  window.parent.postMessage({
-    subject: 'lti.frameResize',
-    message: { height: newHeight }
-  }, '*');
+  // Esperar un poco para que el DOM se renderice
+  setTimeout(() => {
+    // Calcular altura real
+    const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, 600);
+    // Enviar mensaje a Canvas (LTI)
+    window.parent.postMessage({ subject: 'lti.frameResize', message: { height: height + 20 } }, '*');
+  }, 100);
 }
 
-// Ejecutar al cargar
-window.addEventListener('load', () => {
-  resizeIframe();
-  // Pequeño retraso adicional para asegurar renderizado
-  setTimeout(resizeIframe, 500);
-});
-
-// Observador para cambios dinámicos
+// Escuchar cambios en el DOM para redimensionar automáticamente
 const observer = new MutationObserver(resizeIframe);
 observer.observe(document.body, { childList: true, subtree: true });
 
-// Init
-renderIntro();
+// Iniciar
+window.addEventListener('load', () => {
+  init();
+  setTimeout(resizeIframe, 500); // Doble disparo por seguridad
+});
 </script>
 </body>
 </html>
