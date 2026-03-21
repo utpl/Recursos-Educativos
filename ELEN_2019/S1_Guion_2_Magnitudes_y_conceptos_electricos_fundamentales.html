@@ -761,4 +761,29 @@ function updateScore(){
 renderIntro();
 </script>
 </body>
+<!-- Script para ajustar el alto del iframe en Canvas LMS -->
+<script>
+  function resizeIframe() {
+    // Calculamos el alto total del documento
+    var newHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+    
+    // Enviamos un mensaje al window padre (Canvas) con el nuevo alto
+    // Canvas escucha estos mensajes y ajusta el iframe automáticamente
+    window.parent.postMessage({
+      subject: 'lti.frameResize',
+      message: { height: newHeight }
+    }, '*');
+  }
+
+  // Ejecutamos la función al cargar la página
+  window.addEventListener('load', resizeIframe);
+  
+  // Y también cada vez que el contenido cambie (ej: al responder una pregunta)
+  // Puedes llamar a resizeIframe() desde tus funciones de renderizado si es necesario
+  const observer = new MutationObserver(resizeIframe);
+  observer.observe(document.body, { 
+    childList: true, 
+    subtree: true 
+  });
+</script>
 </html>
