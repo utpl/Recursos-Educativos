@@ -1,1 +1,571 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Caso de Estudio – LCK en Circuitos AC Paralelos</title>
+<style>
+:root {
+  --primary:   #0E2D52;
+  --primary-d: #1B4F8A;
+  --accent:    #2E6DAD;
+  --gold:      #F5A800;
+  --gold-d:    #C98700;
+  --green:     #006747;
+  --green-bg:  #e8f5ee;
+  --red:       #A51C30;
+  --red-bg:    #fdecea;
+  --sand:      #E8F0FA;
+  --blue-l:    #B8CCE4;
+  --bg:        #FFFFFF;
+  --surface:   #F4F7FB;
+  --text:      #0E2D52;
+  --muted:     #4A5568;
+  --border:    #B8CCE4;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:auto;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);overflow:hidden;margin:0;padding:0;}
+#sw{width:100%;height:auto;display:block;overflow:hidden;}
+#stage{width:1280px;height:720px;flex-shrink:0;transform-origin:top left;
+  background:var(--surface);display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(110deg,var(--primary) 0%,var(--primary-d) 50%,var(--accent) 100%);
+  padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;right:-60px;top:-60px;width:180px;height:180px;
+  border-radius:50%;background:rgba(245,168,0,.08);}
+.hdr-l{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+.hdr-ico{width:36px;height:36px;flex-shrink:0;}
+.hdr-t h1{font-size:14px;font-weight:700;color:#fff;line-height:1.2;}
+.hdr-t p{font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;}
+.hdr-r{display:flex;align-items:center;gap:8px;position:relative;z-index:1;}
+.bdg{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;}
+.bdg-gold{background:var(--gold);border-color:var(--gold-d);color:var(--primary);}
+
+/* ── PROGRESS ── */
+.prog-bar{height:4px;background:rgba(0,0,0,.08);flex-shrink:0;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5c842);
+  transition:width .5s cubic-bezier(.4,0,.2,1);width:0%;}
+
+/* ── MAIN LAYOUT ── */
+.main{flex:1;display:flex;overflow:hidden;gap:0;}
+
+/* ── LEFT: CASE PANEL ── */
+.case-panel{
+  width:400px;flex-shrink:0;
+  background:linear-gradient(160deg,var(--primary) 0%,var(--primary-d) 60%,var(--accent) 100%);
+  display:flex;flex-direction:column;padding:20px 22px;gap:14px;
+  position:relative;overflow:hidden;}
+.case-panel::before{content:'';position:absolute;right:-40px;bottom:-40px;width:200px;height:200px;
+  border-radius:50%;background:rgba(255,255,255,.04);}
+.case-panel::after{content:'';position:absolute;left:-20px;top:-20px;width:120px;height:120px;
+  border-radius:50%;background:rgba(245,168,0,.06);}
+
+.case-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.55);position:relative;z-index:1;}
+.case-icon{width:60px;height:60px;position:relative;z-index:1;flex-shrink:0;}
+.case-title{font-size:16px;font-weight:700;color:#fff;line-height:1.3;position:relative;z-index:1;}
+.case-body{font-size:12px;color:rgba(255,255,255,.78);line-height:1.7;
+  position:relative;z-index:1;flex:1;overflow-y:auto;}
+.case-body::-webkit-scrollbar{width:3px;}
+.case-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
+
+/* step indicator */
+.step-dots{display:flex;gap:6px;position:relative;z-index:1;}
+.sdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);
+  transition:background .2s,transform .2s;}
+.sdot.active{background:var(--gold);transform:scale(1.3);}
+.sdot.done{background:rgba(255,255,255,.6);}
+
+/* ── RIGHT: QUESTION PANEL ── */
+.q-panel{flex:1;display:flex;flex-direction:column;padding:20px 24px 16px;
+  overflow-y:auto;overflow-x:hidden;background:var(--surface);}
+.q-panel::-webkit-scrollbar{width:4px;}
+.q-panel::-webkit-scrollbar-thumb{background:var(--blue-l);border-radius:2px;}
+
+/* intro */
+.intro-wrap{display:flex;flex-direction:column;gap:16px;height:100%;}
+.intro-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(46,109,173,.1);
+  border:1px solid var(--blue-l);border-radius:20px;padding:4px 14px;
+  font-size:12px;font-weight:700;color:var(--primary);width:fit-content;}
+.intro-title{font-size:22px;font-weight:700;color:var(--primary);line-height:1.3;}
+.intro-desc{font-size:13px;color:var(--muted);line-height:1.7;}
+.intro-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.mc{background:#fff;border:1.5px solid var(--border);border-radius:10px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.mc-ico{width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;}
+.mc-ico.blue{background:rgba(14,45,82,.1);}
+.mc-ico.gold{background:rgba(245,168,0,.12);}
+.mc-ico.green{background:rgba(0,103,71,.1);}
+.mc strong{font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:1px;}
+.mc span{font-size:11px;color:var(--muted);}
+.intro-instr{background:linear-gradient(90deg,#fff8e8,#fff);
+  border-left:3px solid var(--gold);border-radius:0 10px 10px 0;
+  padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.intro-instr p{font-size:13px;color:var(--text);line-height:1.5;}
+.intro-instr strong{color:var(--accent);}
+.btn-start{align-self:flex-start;background:linear-gradient(135deg,var(--primary-d),var(--accent));
+  color:#fff;border:none;border-radius:25px;padding:11px 30px;font-size:14px;font-weight:700;
+  cursor:pointer;box-shadow:0 4px 14px rgba(14,45,82,.3);
+  transition:all .2s;display:flex;align-items:center;gap:8px;font-family:inherit;}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(14,45,82,.35);}
+
+/* question */
+.q-num{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:6px;}
+.q-text{font-size:17px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:16px;}
+
+/* OPTION CARDS */
+.opts-wrap{display:flex;flex-direction:column;gap:10px;}
+.opt-card{
+  display:flex;align-items:flex-start;gap:14px;
+  background:#fff;border:2px solid var(--border);border-radius:12px;
+  padding:16px 18px;cursor:pointer;
+  transition:all .22s ease;position:relative;overflow:hidden;}
+.opt-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:var(--border);transition:background .2s;}
+.opt-card:hover{border-color:var(--accent);transform:translateX(4px);}
+.opt-card:hover::before{background:var(--accent);}
+.opt-card.selected-ok{border-color:var(--green);background:var(--green-bg);}
+.opt-card.selected-ok::before{background:var(--green);}
+.opt-card.selected-fail{border-color:var(--red);background:var(--red-bg);}
+.opt-card.selected-fail::before{background:var(--red);}
+.opt-card.correct-show{border-color:var(--green);background:var(--green-bg);}
+.opt-card.correct-show::before{background:var(--green);}
+.opt-card.disabled{cursor:default;transform:none;}
+.opt-letter{width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;
+  background:var(--primary);transition:background .2s;}
+.opt-card.selected-ok   .opt-letter{background:var(--green);}
+.opt-card.selected-fail .opt-letter{background:var(--red);}
+.opt-card.correct-show  .opt-letter{background:var(--green);}
+.opt-body strong{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.opt-body p{font-size:12px;color:var(--muted);line-height:1.5;}
+
+/* FEEDBACK CARD */
+.fb-card{
+  background:#fff;border-radius:14px;border:2px solid var(--border);
+  padding:16px 20px;margin-top:14px;
+  display:none;
+  animation:fbSlide .3s cubic-bezier(.36,.07,.19,.97);}
+.fb-card.show{display:block;}
+@keyframes fbSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fb-card.ok{border-color:var(--green);}
+.fb-card.fail{border-color:var(--red);}
+.fb-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.fb-ico{width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;}
+.fb-card.ok   .fb-ico{background:var(--green);}
+.fb-card.fail .fb-ico{background:var(--red);}
+.fb-card-head strong{font-size:15px;font-weight:700;}
+.fb-card.ok   .fb-card-head strong{color:var(--green);}
+.fb-card.fail .fb-card-head strong{color:var(--red);}
+.fb-card p{font-size:13px;color:var(--muted);line-height:1.7;}
+
+/* ACTIONS */
+.q-actions{display:flex;gap:10px;margin-top:16px;}
+.btn{border:none;border-radius:25px;padding:10px 24px;font-family:inherit;
+  font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:all .2s;}
+.btn:active{transform:scale(.97);}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+  box-shadow:0 3px 12px rgba(0,82,155,.3);}
+.btn-next:hover{opacity:.9;}
+.btn-retry{background:var(--sand);color:var(--text);border:1.5px solid var(--border);}
+.btn-retry:hover{background:var(--blue-l);}
+.btn-finish{background:linear-gradient(135deg,var(--green),#004d36);color:#fff;
+  box-shadow:0 3px 12px rgba(0,103,71,.3);}
+
+/* RESULTS */
+.res-wrap{display:flex;flex-direction:column;gap:14px;height:100%;}
+.res-hero{background:linear-gradient(120deg,var(--green),#004d36 40%,var(--primary) 80%);
+  border-radius:14px;padding:20px 26px;display:flex;align-items:center;gap:18px;
+  flex-shrink:0;position:relative;overflow:hidden;}
+.res-hero::before{content:'';position:absolute;right:-20px;top:-20px;width:120px;height:120px;
+  border-radius:50%;background:rgba(255,215,0,.1);}
+.res-big{font-size:46px;font-weight:700;color:var(--gold);line-height:1;flex-shrink:0;}
+.res-sub{font-size:12px;color:rgba(255,255,255,.72);}
+.res-hero h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:5px;}
+.res-hero p{font-size:12px;color:rgba(255,255,255,.8);line-height:1.6;}
+.res-list{display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;}
+.res-item{display:flex;align-items:center;gap:10px;background:var(--sand);
+  border-radius:10px;border:1.5px solid var(--border);padding:10px 14px;}
+.ri-ico{width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;}
+.ri-ico.ok{background:var(--green-bg);color:var(--green);}
+.ri-ico.fail{background:var(--red-bg);color:var(--red);}
+.ri-q{font-size:13px;color:var(--text);flex:1;line-height:1.3;}
+.ri-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;flex-shrink:0;}
+.ri-tag.ok{background:var(--green-bg);color:var(--green);}
+.ri-tag.fail{background:var(--red-bg);color:var(--red);}
+
+/* FOOTER */
+.ftr{background:linear-gradient(90deg,var(--primary),var(--accent));
+  height:26px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;flex-shrink:0;}
+.ftr-l{font-size:12px;color:rgba(255,255,255,.7);}
+.ftr-r{font-size:12px;color:rgba(245,168,0,.85);font-style:italic;}
+
+@media(max-width:700px){
+  .case-panel{display:none;}
+}
+</style>
+</head>
+<body>
+<div id="sw"><div id="stage">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-l">
+    <svg class="hdr-ico" viewBox="0 0 36 36" fill="none">
+      <rect width="36" height="36" rx="8" fill="rgba(255,255,255,.12)"/>
+      <circle cx="18" cy="16" r="7" fill="none" stroke="#fff" stroke-width="1.5"/>
+      <path d="M14 16h8M18 12v8" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M10 26h16" stroke="rgba(255,255,255,.5)" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M13 29h10" stroke="rgba(255,255,255,.3)" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <div class="hdr-t">
+      <h1>LCK en Circuitos AC Paralelos — Caso de Estudio</h1>
+      <p>ELEN_2019 Circuitos Eléctricos &nbsp;|&nbsp; Semana 12 &nbsp;|&nbsp; Esteban Briceño Sánchez</p>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span class="bdg">Caso de Estudio</span>
+    <span class="bdg bdg-gold">Semana 12</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: Case -->
+  <div class="case-panel" id="case-panel">
+    <div class="case-label">Caso de Estudio</div>
+    <svg class="case-icon" viewBox="0 0 60 60" fill="none">
+      <rect width="60" height="60" rx="12" fill="rgba(255,255,255,.08)"/>
+      <!-- horizontal rails -->
+      <line x1="5" y1="12" x2="55" y2="12" stroke="rgba(255,255,255,.4)" stroke-width="1.3"/>
+      <line x1="5" y1="48" x2="55" y2="48" stroke="rgba(255,255,255,.4)" stroke-width="1.3"/>
+      <!-- AC source -->
+      <line x1="5" y1="12" x2="5" y2="48" stroke="rgba(255,255,255,.4)" stroke-width="1.3"/>
+      <circle cx="5" cy="30" r="5" fill="none" stroke="var(--gold)" stroke-width="1.3"/>
+      <path d="M3 30 Q4 27 5 30 Q6 33 7 30" fill="none" stroke="var(--gold)" stroke-width="1.1" stroke-linecap="round"/>
+      <!-- R branch -->
+      <line x1="18" y1="12" x2="18" y2="20" stroke="#fff" stroke-width="1.2"/>
+      <rect x="14" y="20" width="8" height="8" rx="1.5" fill="none" stroke="#fff" stroke-width="1.2"/>
+      <line x1="18" y1="28" x2="18" y2="48" stroke="#fff" stroke-width="1.2"/>
+      <text x="23" y="27" font-size="5.5" font-weight="700" fill="#fff">R</text>
+      <!-- L branch -->
+      <line x1="35" y1="12" x2="35" y2="20" stroke="var(--gold)" stroke-width="1.2"/>
+      <path d="M31 26 Q33 20 35 26 Q37 32 39 26" fill="none" stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round"/>
+      <line x1="35" y1="32" x2="35" y2="48" stroke="var(--gold)" stroke-width="1.2"/>
+      <text x="40" y="27" font-size="5.5" font-weight="700" fill="var(--gold)">L</text>
+      <!-- C branch -->
+      <line x1="52" y1="12" x2="52" y2="24" stroke="rgba(255,255,255,.7)" stroke-width="1.2"/>
+      <line x1="47" y1="24" x2="57" y2="24" stroke="rgba(255,255,255,.7)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="47" y1="28" x2="57" y2="28" stroke="rgba(255,255,255,.5)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="52" y1="28" x2="52" y2="48" stroke="rgba(255,255,255,.7)" stroke-width="1.2"/>
+      <text x="44" y="39" font-size="5.5" font-weight="700" fill="rgba(255,255,255,.7)">C</text>
+      <!-- IT arrow at top -->
+      <path d="M9 12 L14 12" stroke="rgba(255,255,255,.6)" stroke-width="1.2" marker-end="url(#arr)"/>
+      <text x="8" y="10" font-size="5" fill="rgba(255,255,255,.7)">IT</text>
+    </svg>
+    <div class="case-title">Red AC con 3 Ramas en Paralelo (R, L, C)</div>
+    <div class="case-body" id="case-text">
+      Una fuente sinusoidal alimenta tres ramas en <strong style="color:var(--gold)">paralelo</strong>: resistivo (R), inductivo (L) y capacitivo (C). El objetivo es determinar la corriente total y verificar que la suma fasorial cumple la <strong style="color:var(--gold)">LCK</strong>.<br><br>
+      Cada rama se expresa mediante su <strong style="color:var(--gold)">admitancia equivalente</strong>. El voltaje es común a todas las ramas, y la corriente de cada una es Ik = E · Yk.<br><br>
+      Se debe identificar el tipo de comportamiento según la <strong style="color:var(--gold)">susceptancia resultante</strong>.
+    </div>
+    <div class="step-dots" id="stepDots"></div>
+  </div>
+
+  <!-- RIGHT: Questions -->
+  <div class="q-panel" id="q-panel"></div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<div class="ftr">
+  <span class="ftr-l">Esteban Briceño Sánchez · ELEN_2019 · Semana 12</span>
+  <span class="ftr-r">Aplique los temas estudiados al resolver el caso</span>
+</div>
+
+</div></div>
+
+<script>
+/* ══ DATA ══ */
+const QUESTIONS = [
+  {
+    q:'¿Cuál es el primer paso más adecuado para aplicar correctamente la LCK en este circuito en paralelo?',
+    opts:[
+      {label:'A', text:'Identificar el nodo principal y establecer una convención de signos para las corrientes.', correct:true,
+       fb:'Esta opción es la más adecuada porque la aplicación rigurosa de la LCK exige definir el nodo de análisis y una convención de signos coherente antes de realizar cualquier cálculo fasorial.'},
+      {label:'B', text:'Calcular directamente la corriente total sin definir previamente la referencia de corrientes.', correct:false,
+       fb:'Aunque calcular la corriente total es necesario, omitir la convención de signos puede provocar inconsistencias en la suma fasorial y dificultar la verificación correcta de la ley.'}
+    ]
+  },
+  {
+    q:'¿Qué procedimiento permite obtener correctamente las corrientes de cada rama del circuito?',
+    opts:[
+      {label:'A', text:'Expresar cada rama mediante su admitancia y multiplicarla por el voltaje común del circuito.', correct:true,
+       fb:'Es la alternativa más pertinente, ya que en paralelo las corrientes dependen de la admitancia de cada rama y del voltaje común: Ik = E · Yk.'},
+      {label:'B', text:'Determinar la corriente de cada rama utilizando únicamente la impedancia total del circuito.', correct:false,
+       fb:'Este enfoque es válido para hallar la corriente total, pero no permite distinguir adecuadamente la distribución de corrientes entre las ramas individuales del circuito.'}
+    ]
+  },
+  {
+    q:'¿Cómo se verifica finalmente que la LCK se cumple en el nodo analizado?',
+    opts:[
+      {label:'A', text:'Sumando fasorialmente las corrientes de todas las ramas y comprobando que igualan la corriente total.', correct:true,
+       fb:'Esta es la opción correcta porque la LCK en AC requiere una suma fasorial completa, considerando tanto magnitudes como ángulos de fase de las corrientes.'},
+      {label:'B', text:'Comparando únicamente las magnitudes de las corrientes sin considerar sus ángulos de fase.', correct:false,
+       fb:'Aunque comparar magnitudes aporta información parcial, ignorar los ángulos de fase puede conducir a conclusiones incorrectas sobre el cumplimiento de la ley.'}
+    ]
+  }
+];
+
+// Shuffle options per question
+function shuffleOpts(q) {
+  const opts = [...q.opts];
+  for (let i = opts.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [opts[i],opts[j]] = [opts[j],opts[i]];
+  }
+  // Relabel A/B after shuffle
+  opts.forEach((o,i) => o.displayLabel = ['A','B'][i]);
+  return opts;
+}
+
+let current  = -1;
+let answered = Array(QUESTIONS.length).fill(false);
+let results  = Array(QUESTIONS.length).fill(null); // true/false
+let shuffled = QUESTIONS.map(q => shuffleOpts(q));
+let score    = 0;
+
+/* ══ STEP DOTS ══ */
+function renderDots() {
+  const el = document.getElementById('stepDots');
+  el.innerHTML = '';
+  QUESTIONS.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'sdot' + (i===current?' active':(answered[i]?' done':''));
+    d.onclick = () => { if(answered[i]||i===current) return; };
+    el.appendChild(d);
+  });
+}
+
+/* ══ PROGRESS ══ */
+function updateProg() {
+  const done = answered.filter(Boolean).length;
+  document.getElementById('progFill').style.width = (done/QUESTIONS.length*100)+'%';
+}
+
+/* ══ RENDER INTRO ══ */
+function renderIntro() {
+  current = -1;
+  document.getElementById('q-panel').innerHTML = `
+    <div class="intro-wrap">
+      <div class="intro-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-6h2v6h-2zm0-8V7h2v2h-2z" fill="var(--primary)"/></svg>
+        Caso de Estudio Práctico
+      </div>
+      <div class="intro-title">LCK Fasorial en Circuito AC Paralelo</div>
+      <div class="intro-desc">Analice la red R–L–C en paralelo y tome decisiones fundamentadas sobre cómo aplicar la LCK fasorial, calcular corrientes por admitancias y verificar el nodo principal.</div>
+      <div class="intro-meta">
+        <div class="mc">
+          <div class="mc-ico blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke="var(--primary)" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <div><strong>3 preguntas</strong><span>Caso de estudio</span></div>
+        </div>
+        <div class="mc">
+          <div class="mc-ico gold"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="var(--gold-d)" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <div><strong>LCK fasorial</strong><span>Ik = E · Yk</span></div>
+        </div>
+        <div class="mc">
+          <div class="mc-ico green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><strong>Retroalimentación</strong><span>Por carta</span></div>
+        </div>
+      </div>
+      <div class="intro-instr">
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none" style="flex-shrink:0"><circle cx="11" cy="11" r="10" fill="var(--gold)"/><path d="M11 7v5M11 14v1" stroke="#0E2D52" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <p><strong>Instrucción:</strong> Aplique los temas estudiados al resolver el siguiente caso. La retroalimentación aparecerá en formato carta al seleccionar su respuesta.</p>
+      </div>
+      <button class="btn-start" onclick="startCase()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+        Iniciar Caso
+      </button>
+    </div>`;
+  renderDots(); updateProg();
+}
+
+/* ══ RENDER QUESTION ══ */
+function renderQuestion(idx) {
+  current = idx;
+  const q = QUESTIONS[idx];
+  const opts = shuffled[idx];
+  const isAns = answered[idx];
+
+  const optsHTML = opts.map((opt, i) => {
+    let cls = 'opt-card';
+    if (isAns) {
+      cls += ' disabled';
+      if (opt.correct) cls += ' correct-show';
+      else if (results[idx] === i) cls += ' selected-fail';
+    }
+    const onclick = isAns ? '' : `onclick="selectOpt(${idx},${i})"`;
+    return `<div class="${cls}" ${onclick}>
+      <div class="opt-letter">${opt.displayLabel||opt.label}</div>
+      <div class="opt-body">
+        <strong>Opción ${opt.displayLabel||opt.label}</strong>
+        <p>${opt.text}</p>
+      </div>
+    </div>`;
+  }).join('');
+
+  let fbHTML = '';
+  if (isAns) {
+    const chosenOpt = opts[results[idx]];
+    const ok = chosenOpt.correct;
+    fbHTML = `<div class="fb-card ${ok?'ok':'fail'} show">
+      <div class="fb-card-head">
+        <div class="fb-ico">${ok?'✓':'✕'}</div>
+        <strong>${ok?'¡Decisión acertada!':'Decisión menos recomendable'}</strong>
+      </div>
+      <p>${chosenOpt.fb}</p>
+    </div>`;
+  }
+
+  const allDone = answered.every(Boolean);
+  const isLast  = idx === QUESTIONS.length-1;
+  let actHTML = '';
+  if (isAns) {
+    if (allDone) {
+      actHTML = `<button class="btn btn-finish" onclick="showResults()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Ver resultados
+      </button>`;
+    } else if (!isLast) {
+      actHTML = `<button class="btn btn-next" onclick="renderQuestion(${idx+1})">
+        Siguiente pregunta
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+      </button>`;
+    }
+  }
+
+  document.getElementById('q-panel').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px;height:100%;">
+      <div class="q-num">Pregunta ${idx+1} de ${QUESTIONS.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="opts-wrap">${optsHTML}</div>
+      ${fbHTML}
+      <div class="q-actions">${actHTML}</div>
+    </div>`;
+
+  renderDots(); updateProg();
+}
+
+/* ══ SELECT ══ */
+function selectOpt(qIdx, optIdx) {
+  if (answered[qIdx]) return;
+  answered[qIdx] = true;
+  results[qIdx]  = optIdx;
+  if (shuffled[qIdx][optIdx].correct) score++;
+  renderQuestion(qIdx);
+}
+
+/* ══ RESULTS ══ */
+function showResults() {
+  current = QUESTIONS.length;
+  const pct = Math.round(score/QUESTIONS.length*100);
+  let msg='',emoji='';
+  if(score===QUESTIONS.length){msg='¡Felicitaciones! La LCK fasorial en paralelo exige admitancias, convención de signos y suma vectorial.';emoji='🏆';}
+  else if(score>=2){msg='¡Muy bien! Comprende el procedimiento para aplicar LCK en circuitos AC en paralelo.';emoji='🎯';}
+  else{msg='Revise los conceptos de admitancia, LCK fasorial y suma de corrientes en paralelo.';emoji='📚';}
+
+  const listHTML = QUESTIONS.map((q,i)=>{
+    const ok = shuffled[i][results[i]]?.correct;
+    return `<div class="res-item">
+      <div class="ri-ico ${ok?'ok':'fail'}">${ok?'✓':'✕'}</div>
+      <div class="ri-q">${q.q}</div>
+      <span class="ri-tag ${ok?'ok':'fail'}">${ok?'Correcto':'Incorrecto'}</span>
+    </div>`;
+  }).join('');
+
+  // Final feedback summary
+  const summary = `
+    <div style="background:#fff;border-radius:12px;border:1.5px solid var(--border);padding:14px 18px;margin-top:2px;">
+      <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">Conclusiones del caso:</div>
+      <ul style="font-size:12px;color:var(--muted);line-height:1.8;padding-left:16px;">
+        <li>Definir <strong style="color:var(--text)">nodo y convención de signos</strong> garantiza coherencia matemática.</li>
+        <li>Corrientes por admitancias: <strong style="color:var(--text)">Ik = E · Yk</strong> (análisis directo en paralelo).</li>
+        <li>Verificar con <strong style="color:var(--text)">suma fasorial</strong> asegura el cumplimiento de la LCK.</li>
+      </ul>
+    </div>`;
+
+  document.getElementById('q-panel').innerHTML = `
+    <div class="res-wrap">
+      <div class="res-hero">
+        <div>
+          <div class="res-big">${score}/${QUESTIONS.length}</div>
+          <div class="res-sub">${pct}% correcto</div>
+        </div>
+        <div>
+          <h2>${emoji} Resultados del Caso</h2>
+          <p>${msg}</p>
+        </div>
+      </div>
+      <div class="res-list">${listHTML}${summary}</div>
+      <div class="q-actions">
+        <button class="btn btn-retry" onclick="retryCase()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+          Intentar de nuevo
+        </button>
+      </div>
+    </div>`;
+  renderDots(); updateProg();
+}
+
+function retryCase() {
+  answered = Array(QUESTIONS.length).fill(false);
+  results  = Array(QUESTIONS.length).fill(null);
+  score    = 0;
+  shuffled = QUESTIONS.map(q => shuffleOpts(q));
+  renderIntro();
+}
+
+function startCase() { renderQuestion(0); }
+
+/* ══ SCALE ══ */
+function scaleStage(){
+  const stage=document.getElementById('stage');
+  const sw=document.getElementById('sw');
+  if(!stage||!sw)return;
+  const W=1280;
+  const cw=sw.clientWidth||window.innerWidth;
+  if(!cw)return;
+  const sc=cw/W;
+  stage.style.transform='scale('+sc+')';
+  stage.style.transformOrigin='top left';
+  stage.style.marginLeft='0px';
+  stage.style.marginTop='0px';
+  sw.style.height=(720*sc)+'px';
+}
+window.addEventListener('resize',scaleStage);
+if(typeof ResizeObserver!=='undefined'){
+  new ResizeObserver(scaleStage).observe(document.getElementById('sw')||document.body);
+}
+requestAnimationFrame(()=>requestAnimationFrame(scaleStage));
+
+/* ══ INIT ══ */
+renderIntro();
+</script>
+</body>
+</html>

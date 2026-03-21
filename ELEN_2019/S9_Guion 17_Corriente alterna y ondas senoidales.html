@@ -1,1 +1,553 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Unir con Líneas – Corriente Alterna y Ondas Senoidales</title>
+<style>
+:root {
+  --primary:   #0E2D52;
+  --primary-d: #1B4F8A;
+  --accent:    #2E6DAD;
+  --gold:      #F5A800;
+  --gold-dark: #C98700;
+  --green:     #006747;
+  --green-bg:  #e8f5ee;
+  --red:       #A51C30;
+  --red-bg:    #fdecea;
+  --bg:        #F4F7FB;
+  --surface:   #FFFFFF;
+  --border:    #B8CCE4;
+  --text:      #0E2D52;
+  --muted:     #4A5568;
+  --sand:      #E8F0FA;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  width:100%;height:100%;
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);overflow:hidden;
+}
+
+/* ── ROOT FILL ── */
+#sw{width:100%;height:100%;display:flex;flex-direction:column;}
+#stage{width:100%;height:100%;background:var(--surface);display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── HEADER ── */
+.hdr{
+  background:linear-gradient(110deg,var(--primary) 0%,var(--primary-d) 50%,var(--accent) 100%);
+  padding:0 clamp(12px,2vw,26px);min-height:clamp(44px,7vh,60px);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;right:-50px;top:-50px;width:180px;height:180px;
+  border-radius:50%;background:rgba(245,168,0,.08);}
+.hdr-l{display:flex;align-items:center;gap:clamp(8px,1.5vw,14px);position:relative;z-index:1;}
+.hdr-ico{width:clamp(28px,3.5vw,36px);height:clamp(28px,3.5vw,36px);flex-shrink:0;}
+.hdr-t h1{font-size:clamp(11px,1.6vw,15px);font-weight:700;color:#fff;line-height:1.25;}
+.hdr-t p{font-size:clamp(9px,1vw,11px);color:rgba(255,255,255,.72);margin-top:2px;}
+.hdr-r{display:flex;align-items:center;gap:8px;position:relative;z-index:1;}
+.bdg{font-size:clamp(10px,1.2vw,12px);font-weight:700;padding:3px 10px;border-radius:20px;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;white-space:nowrap;}
+.bdg-gold{background:var(--gold);border-color:var(--gold-dark);color:var(--primary);}
+
+/* ── PROGRESS BAR ── */
+.top-bar{height:4px;background:rgba(0,0,0,.08);flex-shrink:0;}
+.top-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5c842);
+  transition:width .5s cubic-bezier(.4,0,.2,1);width:0%;}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;
+  padding:clamp(6px,1.2vh,14px) clamp(10px,1.8vw,20px) clamp(6px,1vh,10px);}
+
+/* ── INSTRUCTION ── */
+.instr{
+  background:linear-gradient(90deg,#fff8e8,#fff);
+  border-left:3px solid var(--gold);border-radius:0 10px 10px 0;
+  padding:clamp(6px,1vh,10px) clamp(10px,1.5vw,16px);
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;margin-bottom:clamp(6px,1.2vh,12px);}
+.instr p{font-size:clamp(10px,1.4vw,13px);color:var(--text);line-height:1.5;}
+.instr strong{color:var(--primary);}
+
+/* ── CANVAS AREA ── */
+.canvas-area{
+  flex:1;min-height:0;position:relative;
+  display:flex;align-items:stretch;gap:0;
+  overflow:hidden;
+}
+
+/* SVG overlay for lines */
+#lines-svg{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  pointer-events:none;
+  z-index:5;
+  overflow:visible;
+}
+
+/* ── COLUMNS — always side by side, never stack ── */
+.col{
+  display:flex;flex-direction:column;
+  justify-content:space-around;
+  gap:clamp(4px, 1.2vh, 10px);
+  z-index:10;
+  position:relative;
+}
+.col-left { width:38%; padding-right:clamp(4px,1vw,10px); }
+.col-right{ width:38%; padding-left:clamp(4px,1vw,10px); margin-left:auto; }
+
+/* ── ITEMS ── */
+.item{
+  background:#fff;border:2px solid var(--border);
+  border-radius:10px;
+  padding:clamp(6px,1.2vh,12px) clamp(8px,1.2vw,16px);
+  font-size:clamp(10px,1.4vw,13px);
+  font-weight:600;color:var(--text);
+  cursor:pointer;user-select:none;
+  transition:all .2s ease;
+  display:flex;align-items:center;gap:clamp(5px,0.8vw,10px);
+  position:relative;
+  line-height:1.35;
+}
+.item:hover{border-color:var(--accent);box-shadow:0 3px 12px rgba(14,45,82,.12);}
+.item.selected{border-color:var(--gold);background:#fffbee;box-shadow:0 0 0 3px rgba(245,168,0,.2);}
+.item.matched-ok{border-color:var(--green);background:var(--green-bg);cursor:default;}
+.item.matched-ok:hover{border-color:var(--green);box-shadow:none;}
+.item.matched-err{border-color:var(--red);background:var(--red-bg);}
+.item.shake{animation:shake .4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* Dot connector */
+.dot{
+  width:clamp(10px,1.4vw,15px);height:clamp(10px,1.4vw,15px);
+  border-radius:50%;flex-shrink:0;
+  background:var(--border);border:2px solid var(--border);
+  transition:all .2s;
+}
+.item.selected .dot{background:var(--gold);border-color:var(--gold);}
+.item.matched-ok .dot{background:var(--green);border-color:var(--green);}
+.item.matched-err .dot{background:var(--red);border-color:var(--red);}
+.col-left  .dot{margin-left:auto;order:2;}
+.col-right .dot{order:-1;}
+
+/* ── SCORE BAR ── */
+.score-bar{
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;margin-top:8px;padding:6px 12px;
+  background:var(--sand);border-radius:10px;border:1px solid var(--border);
+  min-height:0;
+}
+.score-ring{position:relative;width:clamp(36px,5vw,52px);height:clamp(36px,5vw,52px);flex-shrink:0;}
+.score-ring svg{width:100%;height:100%;}
+.sr-bg{fill:none;stroke:var(--border);stroke-width:5;}
+.sr-fill{fill:none;stroke:var(--gold);stroke-width:5;stroke-linecap:round;
+  stroke-dasharray:138.2;stroke-dashoffset:138.2;
+  transition:stroke-dashoffset .5s ease;transform:rotate(-90deg);transform-origin:50% 50%;}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(10px,1.4vw,13px);font-weight:700;color:var(--text);}
+.score-info{flex:1;min-width:0;}
+.score-info strong{display:block;font-size:clamp(11px,1.4vw,13px);font-weight:700;color:var(--text);margin-bottom:1px;}
+.score-info span{font-size:clamp(10px,1.2vw,12px);color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
+.score-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn{border:none;border-radius:20px;
+  padding:clamp(5px,0.8vh,8px) clamp(10px,1.5vw,20px);
+  font-family:inherit;font-size:clamp(10px,1.2vw,12px);font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:4px;transition:all .18s;white-space:nowrap;}
+.btn:active{transform:scale(.97);}
+.btn-reset{background:var(--sand);color:var(--text);border:1.5px solid var(--border);}
+.btn-reset:hover{background:var(--border);}
+.btn-check{background:var(--primary);color:#fff;}
+.btn-check:hover{background:var(--primary-d);}
+
+/* ── FOOTER ── */
+.ftr{background:linear-gradient(90deg,var(--primary),var(--accent));
+  min-height:24px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;flex-shrink:0;}
+.ftr-l{font-size:clamp(9px,1.1vw,12px);color:rgba(255,255,255,.7);}
+.ftr-r{font-size:clamp(9px,1.1vw,12px);color:rgba(245,168,0,.85);font-style:italic;}
+
+/* ── MODAL ── */
+.modal-ov{display:none;position:absolute;inset:0;
+  background:rgba(0,20,50,.72);z-index:200;
+  align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-ov.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:clamp(16px,3vw,28px);
+  max-width:480px;width:88%;
+  text-align:center;box-shadow:0 16px 50px rgba(0,40,80,.28);
+  animation:mIn .28s cubic-bezier(.36,.07,.19,.97);}
+@keyframes mIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.modal-ico{font-size:clamp(28px,4vw,40px);margin-bottom:8px;}
+.modal h2{font-size:clamp(15px,2vw,18px);font-weight:700;color:var(--primary);margin-bottom:8px;}
+.modal p{font-size:clamp(11px,1.4vw,13px);color:var(--muted);line-height:1.7;margin-bottom:16px;}
+.modal p strong{color:var(--primary);}
+.modal-btn{background:var(--primary);color:#fff;border:none;border-radius:10px;
+  padding:9px 24px;font-family:inherit;font-size:clamp(11px,1.4vw,13px);font-weight:600;
+  cursor:pointer;transition:background .2s;}
+.modal-btn:hover{background:var(--primary-d);}
+
+/* ── RESPONSIVE: header only, no layout changes ── */
+@media(max-width:600px){
+  .hdr{padding:7px 12px;flex-wrap:wrap;gap:5px;min-height:auto;}
+  .hdr-t h1{font-size:13px;}
+  .hdr-t p{display:none;}
+  .bdg{display:none;}
+  .main{padding:8px 10px 6px;}
+  .instr{padding:7px 12px;}
+  .instr p{font-size:clamp(10px,2.8vw,12px);}
+}
+</style>
+</head>
+<body>
+<div id="sw"><div id="stage">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-l">
+    <svg class="hdr-ico" viewBox="0 0 36 36" fill="none">
+      <rect width="36" height="36" rx="8" fill="rgba(255,255,255,.12)"/>
+      <circle cx="10" cy="10" r="4" fill="none" stroke="#fff" stroke-width="1.4"/>
+      <circle cx="26" cy="10" r="4" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.4"/>
+      <circle cx="10" cy="26" r="4" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.4"/>
+      <circle cx="26" cy="26" r="4" fill="none" stroke="#fff" stroke-width="1.4"/>
+      <line x1="14" y1="10" x2="22" y2="26" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="14" y1="26" x2="22" y2="10" stroke="rgba(255,255,255,.4)" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <div class="hdr-t">
+      <h1>Corriente Alterna y Ondas Senoidales — Unir con Líneas</h1>
+      <p>ELEN_2019 Circuitos Eléctricos &nbsp;|&nbsp; Semana 9 &nbsp;|&nbsp; Esteban Briceño Sánchez</p>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span class="bdg">Actividad</span>
+    <span class="bdg bdg-gold">Semana 9</span>
+  </div>
+</div>
+
+<!-- TOP PROGRESS -->
+<div class="top-bar"><div class="top-bar-fill" id="topBar"></div></div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Instrucción -->
+  <div class="instr">
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none" style="flex-shrink:0">
+      <circle cx="11" cy="11" r="10" fill="var(--gold)"/>
+      <path d="M11 7v5M11 14v1" stroke="var(--primary)" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    <p><strong>Instrucción:</strong> Relacione cada enunciado con su concepto correspondiente para identificar correctamente los conceptos fundamentales de la corriente alterna y las características de una señal senoidal.</p>
+  </div>
+
+  <!-- Canvas: conceptos ← líneas → definiciones -->
+  <div class="canvas-area" id="canvas-area">
+    <svg id="lines-svg"></svg>
+    <div class="col col-left"  id="col-left"></div>
+    <div class="col col-right" id="col-right"></div>
+  </div>
+
+  <!-- Score bar -->
+  <div class="score-bar">
+    <div class="score-ring">
+      <svg viewBox="0 0 44 44">
+        <circle class="sr-bg"   cx="22" cy="22" r="18"/>
+        <circle class="sr-fill" id="srFill" cx="22" cy="22" r="18"/>
+      </svg>
+      <div class="score-num" id="scoreNum">0/5</div>
+    </div>
+    <div class="score-info">
+      <strong id="scoreLabel">Conecta los pares</strong>
+      <span id="scoreHint">Haz clic en un concepto y luego en su definición</span>
+    </div>
+    <div class="score-actions">
+      <button class="btn btn-reset" onclick="resetGame()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        Reiniciar
+      </button>
+      <button class="btn btn-check" onclick="revealAll()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+        Revelar
+      </button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<div class="ftr">
+  <span class="ftr-l">Esteban Briceño Sánchez · ELEN_2019 · Semana 9</span>
+  <span class="ftr-r">Haz clic en un concepto, luego en su definición para conectarlos</span>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="modal">
+  <div class="modal">
+    <div class="modal-ico">🎉</div>
+    <h2>¡Excelente trabajo!</h2>
+    <p>¡Excelente! Comprender los parámetros de una señal senoidal es esencial para analizar sistemas eléctricos en <strong>corriente alterna</strong>.</p>
+    <button class="modal-btn" onclick="closeModal()">¡Entendido!</button>
+  </div>
+</div>
+
+</div></div>
+
+<script>
+/* ══ DATA ══ */
+const PAIRS = [
+  {
+    id: 1,
+    concept: 'Corriente alterna (AC)',
+    definition: 'Tipo de corriente donde el voltaje y la corriente cambian continuamente su valor y polaridad.',
+    feedback: 'Describe correctamente el comportamiento variable de la corriente alterna frente a la corriente continua.'
+  },
+  {
+    id: 2,
+    concept: 'Onda senoidal',
+    definition: 'Señal periódica cuya respuesta en circuitos lineales mantiene la misma forma matemática.',
+    feedback: 'Identifica la señal más importante en generación y análisis de sistemas eléctricos.'
+  },
+  {
+    id: 3,
+    concept: 'Amplitud pico',
+    definition: 'Parámetro que indica el mayor valor alcanzado por la señal desde su nivel de referencia.',
+    feedback: 'Permite cuantificar la magnitud máxima de la señal respecto a su nivel medio.'
+  },
+  {
+    id: 4,
+    concept: 'Período T',
+    definition: 'Intervalo necesario para que la señal repita su forma de onda.',
+    feedback: 'Representa la duración temporal de un ciclo completo de la onda.'
+  },
+  {
+    id: 5,
+    concept: 'Frecuencia f',
+    definition: 'Magnitud relacionada con el período mediante f = 1/T y medida en hercios.',
+    feedback: 'Expresa cuántas veces se repite el ciclo en un segundo y caracteriza la rapidez de la señal.'
+  }
+];
+
+/* ══ STATE ══ */
+let selectedLeft  = null; // id selected on left
+let matched       = {};   // id → true/false
+let score         = 0;
+
+/* ══ SHUFFLE ══ */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ══ BUILD UI ══ */
+function buildUI() {
+  const colL = document.getElementById('col-left');
+  const colR = document.getElementById('col-right');
+  colL.innerHTML = '';
+  colR.innerHTML = '';
+
+  const shuffledDefs = shuffle(PAIRS);
+
+  PAIRS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.id = 'left-' + p.id;
+    el.dataset.id = p.id;
+    el.innerHTML = `<span>${p.concept}</span><div class="dot"></div>`;
+    el.addEventListener('click', () => clickLeft(p.id));
+    colL.appendChild(el);
+  });
+
+  shuffledDefs.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.id = 'right-' + p.id;
+    el.dataset.id = p.id;
+    el.innerHTML = `<div class="dot"></div><span>${p.definition}</span>`;
+    el.addEventListener('click', () => clickRight(p.id));
+    colR.appendChild(el);
+  });
+}
+
+/* ══ CLICK HANDLERS ══ */
+function clickLeft(id) {
+  if (matched[id] !== undefined) return; // already matched
+  // deselect previous
+  if (selectedLeft !== null) {
+    document.getElementById('left-' + selectedLeft)?.classList.remove('selected');
+  }
+  if (selectedLeft === id) { selectedLeft = null; return; }
+  selectedLeft = id;
+  document.getElementById('left-' + id).classList.add('selected');
+  updateHint('Ahora selecciona la definición correspondiente');
+}
+
+function clickRight(id) {
+  if (matched[id] !== undefined) return;
+  if (selectedLeft === null) {
+    updateHint('Primero selecciona un concepto de la izquierda');
+    return;
+  }
+
+  const leftId  = selectedLeft;
+  const correct = (leftId === id);
+
+  // Clear selection
+  document.getElementById('left-' + leftId).classList.remove('selected');
+  selectedLeft = null;
+
+  if (correct) {
+    matched[id] = true;
+    score++;
+    document.getElementById('left-'  + id).classList.add('matched-ok');
+    document.getElementById('right-' + id).classList.add('matched-ok');
+    drawLine(id, true);
+    updateScore();
+    updateHint(PAIRS.find(p => p.id === id).feedback);
+    if (score === PAIRS.length) setTimeout(showModal, 600);
+  } else {
+    // Wrong — flash error briefly
+    const lEl = document.getElementById('left-'  + leftId);
+    const rEl = document.getElementById('right-' + id);
+    lEl.classList.add('matched-err', 'shake');
+    rEl.classList.add('matched-err', 'shake');
+    updateHint('Incorrecto. Intenta de nuevo.');
+    setTimeout(() => {
+      lEl.classList.remove('matched-err', 'shake');
+      rEl.classList.remove('matched-err', 'shake');
+    }, 800);
+  }
+}
+
+/* ══ DRAW LINE ══ */
+function getCenter(el, origin) {
+  // Walk up offsetParent chain to get position relative to 'origin'
+  let x = el.offsetLeft + el.offsetWidth  / 2;
+  let y = el.offsetTop  + el.offsetHeight / 2;
+  let cur = el.offsetParent;
+  while (cur && cur !== origin) {
+    x += cur.offsetLeft;
+    y += cur.offsetTop;
+    cur = cur.offsetParent;
+  }
+  return { x, y };
+}
+
+function drawLine(id, animate) {
+  const svg  = document.getElementById('lines-svg');
+  const area = document.getElementById('canvas-area');
+  const lDot = document.getElementById('left-'  + id)?.querySelector('.dot');
+  const rDot = document.getElementById('right-' + id)?.querySelector('.dot');
+  if (!lDot || !rDot) return;
+
+  // Sync SVG size to canvas-area
+  svg.setAttribute('width',  area.offsetWidth);
+  svg.setAttribute('height', area.offsetHeight);
+  svg.setAttribute('viewBox', `0 0 ${area.offsetWidth} ${area.offsetHeight}`);
+
+  const p1 = getCenter(lDot, area);
+  const p2 = getCenter(rDot, area);
+
+  const cx1 = p1.x + (p2.x - p1.x) * 0.45;
+  const cx2 = p2.x - (p2.x - p1.x) * 0.45;
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  const d = `M ${p1.x} ${p1.y} C ${cx1} ${p1.y}, ${cx2} ${p2.y}, ${p2.x} ${p2.y}`;
+  path.setAttribute('d', d);
+  path.setAttribute('stroke', '#006747');
+  path.setAttribute('stroke-width', '2.5');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('opacity', '.85');
+  path.id = 'line-' + id;
+
+  if (animate) {
+    const len = path.getTotalLength ? path.getTotalLength() : 300;
+    path.style.strokeDasharray  = len;
+    path.style.strokeDashoffset = len;
+    path.style.transition = 'stroke-dashoffset .4s ease';
+    svg.appendChild(path);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
+    });
+  } else {
+    svg.appendChild(path);
+  }
+}
+
+function redrawLines() {
+  const svg = document.getElementById('lines-svg');
+  svg.innerHTML = '';
+  Object.keys(matched).forEach(id => drawLine(parseInt(id), false));
+}
+
+/* ══ SCORE / UI ══ */
+function updateScore() {
+  const pct = score / PAIRS.length;
+  const circ = 2 * Math.PI * 18; // r=18
+  const offset = circ * (1 - pct);
+  const fill = document.getElementById('srFill');
+  fill.style.strokeDasharray  = circ;
+  fill.style.strokeDashoffset = offset;
+  fill.style.stroke = pct >= .8 ? 'var(--green)' : pct >= .5 ? 'var(--gold)' : 'var(--accent)';
+  document.getElementById('scoreNum').textContent   = `${score}/${PAIRS.length}`;
+  document.getElementById('scoreLabel').textContent = score === PAIRS.length ? '¡Perfecto!' : `${score} de ${PAIRS.length} correctos`;
+  document.getElementById('topBar').style.width = (pct * 100) + '%';
+}
+
+function updateHint(msg) {
+  document.getElementById('scoreHint').textContent = msg;
+}
+
+/* ══ CONTROLS ══ */
+function resetGame() {
+  matched      = {};
+  score        = 0;
+  selectedLeft = null;
+  document.getElementById('lines-svg').innerHTML = '';
+  updateScore();
+  updateHint('Haz clic en un concepto y luego en su definición para conectarlos');
+  buildUI();
+}
+
+function revealAll() {
+  PAIRS.forEach(p => {
+    if (matched[p.id] === undefined) {
+      matched[p.id] = true;
+      score++;
+      document.getElementById('left-'  + p.id)?.classList.add('matched-ok');
+      document.getElementById('right-' + p.id)?.classList.add('matched-ok');
+      drawLine(p.id, false);
+    }
+  });
+  updateScore();
+  updateHint('¡Todas las respuestas reveladas!');
+}
+
+function showModal()  { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+/* ══ RESIZE — redraw lines ══ */
+function redrawLines() {
+  const svg  = document.getElementById('lines-svg');
+  const area = document.getElementById('canvas-area');
+  svg.innerHTML = '';
+  svg.setAttribute('width',  area.offsetWidth);
+  svg.setAttribute('height', area.offsetHeight);
+  svg.setAttribute('viewBox', `0 0 ${area.offsetWidth} ${area.offsetHeight}`);
+  Object.keys(matched).forEach(id => drawLine(parseInt(id), false));
+}
+// ResizeObserver fires on ANY container size change (Canvas sidebar, etc.)
+const _ro = new ResizeObserver(() => { redrawLines(); });
+_ro.observe(document.getElementById('stage') || document.body);
+window.addEventListener('resize', redrawLines);
+
+/* ══ INIT ══ */
+buildUI();
+updateScore();
+</script>
+</body>
+</html>

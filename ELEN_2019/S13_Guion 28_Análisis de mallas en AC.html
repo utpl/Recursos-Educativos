@@ -1,1 +1,407 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Arrastrar y Soltar – Análisis de Mallas en AC</title>
+<style>
+:root {
+  --primary:#0E2D52; --primary-d:#1B4F8A; --accent:#2E6DAD;
+  --gold:#F5A800; --gold-d:#C98700;
+  --green:#006747; --green-bg:#e8f5ee;
+  --red:#A51C30; --red-bg:#fdecea;
+  --sand:#E8F0FA; --blue-l:#B8CCE4;
+  --bg:#FFFFFF; --surface:#F4F7FB;
+  --text:#0E2D52; --muted:#4A5568; --border:#B8CCE4;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:auto;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  background:var(--bg);overflow:hidden;margin:0;padding:0;}
+#sw{width:100%;height:auto;display:block;overflow:hidden;}
+#stage{width:1280px;height:720px;flex-shrink:0;transform-origin:top left;
+  background:var(--surface);display:flex;flex-direction:column;overflow:hidden;}
+
+.hdr{background:linear-gradient(110deg,var(--primary) 0%,var(--primary-d) 50%,var(--accent) 100%);
+  padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;right:-60px;top:-60px;width:180px;height:180px;
+  border-radius:50%;background:rgba(245,168,0,.08);}
+.hdr-l{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+.hdr-ico{width:34px;height:34px;flex-shrink:0;}
+.hdr-t h1{font-size:14px;font-weight:700;color:#fff;line-height:1.2;}
+.hdr-t p{font-size:10px;color:rgba(255,255,255,.72);margin-top:1px;}
+.hdr-r{display:flex;align-items:center;gap:8px;position:relative;z-index:1;}
+.bdg{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;}
+.bdg-gold{background:var(--gold);border-color:var(--gold-d);color:var(--primary);}
+
+.prog-bar{height:4px;background:rgba(0,0,0,.08);flex-shrink:0;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),#f5c842);transition:width .5s ease;width:0%;}
+
+.main{flex:1;display:flex;overflow:hidden;padding:10px 18px 8px;gap:16px;}
+
+/* LEFT: sentences with drop targets */
+.sentences-col{flex:1;display:flex;flex-direction:column;gap:7px;overflow:hidden;}
+.sent-label{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:2px;}
+.sentence{
+  background:#fff;border:1.5px solid var(--border);border-radius:10px;
+  padding:9px 14px;font-size:12px;color:var(--text);line-height:1.5;
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  transition:border-color .2s;
+}
+.sentence.drag-over{border-color:var(--gold);background:#fffbee;}
+.sentence.correct{border-color:var(--green);background:var(--green-bg);}
+.sentence.wrong{border-color:var(--red);background:var(--red-bg);}
+.drop-slot{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:120px;height:28px;
+  border-bottom:2px dashed var(--accent);
+  border-radius:4px;padding:0 8px;
+  font-size:12px;font-weight:700;color:var(--accent);
+  background:rgba(46,109,173,.06);
+  transition:all .2s;cursor:default;
+  font-style:italic;
+}
+.drop-slot.filled{border-style:solid;background:var(--sand);color:var(--text);font-style:normal;}
+.drop-slot.ok{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.drop-slot.err{border-color:var(--red);background:var(--red-bg);color:var(--red);}
+
+/* RIGHT: draggable terms */
+.terms-col{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:7px;}
+.terms-label{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:2px;}
+.term{
+  background:#fff;border:2px solid var(--border);border-radius:9px;
+  padding:9px 13px;font-size:12px;font-weight:700;color:var(--text);
+  cursor:grab;user-select:none;text-align:center;
+  transition:all .2s;box-shadow:0 2px 6px rgba(0,40,80,.07);
+}
+.term:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,40,80,.12);}
+.term.dragging{opacity:.4;cursor:grabbing;}
+.term.placed{opacity:.35;cursor:default;transform:none;pointer-events:none;}
+
+/* bottom bar */
+.bottom-bar{display:flex;align-items:center;gap:12px;flex-shrink:0;
+  padding:7px 18px;background:var(--sand);border-top:1px solid var(--border);}
+.score-text{font-size:13px;font-weight:700;color:var(--text);}
+.score-sub{font-size:12px;color:var(--muted);flex:1;}
+.btn{border:none;border-radius:20px;padding:7px 18px;font-family:inherit;
+  font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .18s;}
+.btn:active{transform:scale(.97);}
+.btn-check{background:var(--primary);color:#fff;}
+.btn-check:hover{background:var(--primary-d);}
+.btn-reset{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.btn-reset:hover{background:var(--blue-l);}
+
+.ftr{background:linear-gradient(90deg,var(--primary),var(--accent));height:24px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;flex-shrink:0;}
+.ftr-l{font-size:11px;color:rgba(255,255,255,.7);}
+.ftr-r{font-size:11px;color:rgba(245,168,0,.85);font-style:italic;}
+
+.fb-bar{display:none;padding:6px 18px;font-size:12px;line-height:1.5;
+  animation:fbIn .3s ease;}
+.fb-bar.show{display:block;}
+.fb-bar.all-ok{background:var(--green-bg);border-top:1.5px solid var(--green);color:var(--green);}
+.fb-bar.has-err{background:var(--red-bg);border-top:1.5px solid var(--red);color:var(--red);}
+@keyframes fbIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div id="sw"><div id="stage">
+
+<div class="hdr">
+  <div class="hdr-l">
+    <svg class="hdr-ico" viewBox="0 0 34 34" fill="none">
+      <rect width="34" height="34" rx="8" fill="rgba(255,255,255,.12)"/>
+      <!-- mesh loop 1 -->
+      <rect x="4" y="6" width="12" height="10" rx="1.5" fill="none" stroke="#fff" stroke-width="1.3"/>
+      <!-- mesh loop 2 -->
+      <rect x="18" y="6" width="12" height="10" rx="1.5" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.3"/>
+      <!-- mesh loop 3 -->
+      <rect x="4" y="19" width="12" height="10" rx="1.5" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.3"/>
+      <!-- loop arrows -->
+      <path d="M8 11 Q10 8 12 11" fill="none" stroke="var(--gold)" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M22 11 Q24 8 26 11" fill="none" stroke="var(--gold)" stroke-width="1.2" stroke-linecap="round"/>
+      <!-- Z label -->
+      <text x="19" y="27" font-size="7" font-weight="700" fill="rgba(255,255,255,.7)">Z</text>
+    </svg>
+    <div class="hdr-t">
+      <h1>Análisis de Mallas en AC — Arrastrar y Soltar</h1>
+      <p>ELEN_2019 Circuitos Eléctricos &nbsp;|&nbsp; Semana 13 &nbsp;|&nbsp; Esteban Briceño Sánchez</p>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span class="bdg">Actividad</span>
+    <span class="bdg bdg-gold">Semana 13</span>
+  </div>
+</div>
+<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+
+<!-- Instruction -->
+<div style="padding:7px 18px 0;flex-shrink:0;">
+  <div style="background:linear-gradient(90deg,#fff8e8,#fff);border-left:3px solid var(--gold);
+    border-radius:0 10px 10px 0;padding:7px 14px;font-size:12px;color:var(--text);">
+    <strong style="color:var(--accent)">Instrucción:</strong>
+    Arrastre cada concepto y colóquelo en el espacio que complete correctamente el enunciado, aplicando el procedimiento del método de mallas en circuitos de corriente alterna con impedancias complejas.
+  </div>
+</div>
+
+<div id="fb-bar" class="fb-bar"></div>
+
+<div class="main">
+  <div class="sentences-col">
+    <div class="sent-label">Enunciados — arrastra el concepto al hueco</div>
+    <div id="sentences-list"></div>
+  </div>
+  <div class="terms-col">
+    <div class="terms-label">Conceptos disponibles</div>
+    <div id="terms-bank"></div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div>
+    <div class="score-text" id="scoreText">0 / 6 correctos</div>
+    <div class="score-sub" id="scoreHint">Arrastra cada concepto a su enunciado correspondiente</div>
+  </div>
+  <button class="btn btn-check" onclick="checkAll()">&#10003; Verificar</button>
+  <button class="btn btn-reset" onclick="resetActivity()">&#8635; Reiniciar</button>
+</div>
+
+<div class="ftr">
+  <span class="ftr-l">Esteban Briceño Sánchez · ELEN_2019 · Semana 13</span>
+  <span class="ftr-r">Arrastra cada término al enunciado del método de mallas AC</span>
+</div>
+
+</div></div>
+
+<script>
+var ITEMS = [
+  {
+    id: 1,
+    term: 'Mallas independientes',
+    before: 'Las',
+    after: 'son lazos cerrados que no contienen otros lazos y constituyen la base del método de análisis de mallas.',
+    fb: 'Las mallas independientes permiten definir la estructura del análisis, ya que cada una genera una ecuación basada en la LVK para resolver las corrientes del circuito.'
+  },
+  {
+    id: 2,
+    term: 'Corriente de malla',
+    before: 'La',
+    after: 'es una variable hipotética asignada a cada lazo para formular las ecuaciones del circuito.',
+    fb: 'La corriente de malla es una variable auxiliar que facilita el planteamiento matemático del circuito sin representar necesariamente una corriente física directa.'
+  },
+  {
+    id: 3,
+    term: 'Impedancias complejas',
+    before: 'En AC, las resistencias del análisis en DC se sustituyen por',
+    after: 'para representar los elementos del circuito.',
+    fb: 'Las impedancias complejas incorporan los efectos resistivos y reactivos, permitiendo modelar correctamente inductores y capacitores en régimen sinusoidal.'
+  },
+  {
+    id: 4,
+    term: 'LVK',
+    before: 'El método de mallas se fundamenta en aplicar la',
+    after: 'a cada lazo independiente del circuito.',
+    fb: 'La LVK establece que la suma fasorial de voltajes en un lazo cerrado es cero, principio esencial para formular las ecuaciones de malla.'
+  },
+  {
+    id: 5,
+    term: 'Sistema de ecuaciones',
+    before: 'Al aplicar la LVK en todas las mallas, se obtiene un',
+    after: 'que permite determinar las corrientes desconocidas.',
+    fb: 'El sistema de ecuaciones simultáneas resultante permite resolver matemáticamente las corrientes de cada malla del circuito.'
+  },
+  {
+    id: 6,
+    term: 'Supermalla',
+    before: 'Cuando existe una fuente de corriente entre dos mallas, se utiliza una',
+    after: 'para simplificar el análisis.',
+    fb: 'La supermalla evita escribir ecuaciones a través de la fuente de corriente y añade una relación adicional entre corrientes para completar el sistema.'
+  }
+];
+
+var placement = {}; // sentenceId -> termId
+var shuffledTerms = [];
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function buildUI() {
+  var sentList = document.getElementById('sentences-list');
+  sentList.innerHTML = '';
+  ITEMS.forEach(function(item) {
+    var div = document.createElement('div');
+    div.className = 'sentence';
+    div.id = 'sent-' + item.id;
+    div.dataset.sentId = item.id;
+    div.ondragover = function(e) { e.preventDefault(); div.classList.add('drag-over'); };
+    div.ondragleave = function() { div.classList.remove('drag-over'); };
+    div.ondrop = function(e) {
+      e.preventDefault();
+      div.classList.remove('drag-over');
+      var termId = parseInt(e.dataTransfer.getData('termId'));
+      placeItem(item.id, termId);
+    };
+
+    var placed = placement[item.id];
+    var slotText = placed ? ITEMS.find(function(x){return x.id===placed;}).term : '___________';
+    var slotCls = 'drop-slot' + (placed ? ' filled' : '');
+
+    div.innerHTML = '<span style="font-weight:600;color:var(--accent);margin-right:4px;">' + item.id + '.</span>'
+      + '<span>' + item.before + '</span>'
+      + '<span class="' + slotCls + '" id="slot-' + item.id + '">' + slotText + '</span>'
+      + '<span>' + item.after + '</span>';
+    sentList.appendChild(div);
+  });
+
+  // Terms bank
+  var bank = document.getElementById('terms-bank');
+  bank.innerHTML = '';
+  shuffledTerms.forEach(function(item) {
+    var used = Object.values(placement).indexOf(item.id) >= 0;
+    var div = document.createElement('div');
+    div.className = 'term' + (used ? ' placed' : '');
+    div.id = 'term-' + item.id;
+    div.draggable = !used;
+    div.textContent = item.term;
+    div.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('termId', item.id);
+      div.classList.add('dragging');
+    });
+    div.addEventListener('dragend', function() { div.classList.remove('dragging'); });
+    // Touch support
+    div.addEventListener('touchstart', onTouchStart, {passive:true});
+    div.addEventListener('touchmove', onTouchMove, {passive:false});
+    div.addEventListener('touchend', onTouchEnd);
+    bank.appendChild(div);
+  });
+  updateProg();
+}
+
+function placeItem(sentId, termId) {
+  // Remove termId from any previous sentence
+  Object.keys(placement).forEach(function(k) {
+    if (placement[k] === termId) { delete placement[k]; }
+  });
+  // Remove any term previously in this sentence
+  if (placement[sentId]) {
+    var oldTerm = document.getElementById('term-' + placement[sentId]);
+    if (oldTerm) { oldTerm.classList.remove('placed'); oldTerm.draggable = true; }
+  }
+  placement[sentId] = termId;
+  var termEl = document.getElementById('term-' + termId);
+  if (termEl) { termEl.classList.add('placed'); termEl.draggable = false; }
+  buildUI();
+}
+
+function updateProg() {
+  var n = Object.keys(placement).length;
+  document.getElementById('progFill').style.width = (n / ITEMS.length * 100) + '%';
+}
+
+function checkAll() {
+  var correct = 0;
+  ITEMS.forEach(function(item) {
+    var sentEl = document.getElementById('sent-' + item.id);
+    var slot = document.getElementById('slot-' + item.id);
+    var placed = placement[item.id];
+    sentEl.classList.remove('correct','wrong');
+    if (!slot) return;
+    slot.classList.remove('ok','err');
+    if (!placed) return;
+    if (placed === item.id) {
+      correct++;
+      sentEl.classList.add('correct');
+      slot.classList.add('ok');
+    } else {
+      sentEl.classList.add('wrong');
+      slot.classList.add('err');
+    }
+  });
+  document.getElementById('scoreText').textContent = correct + ' / ' + ITEMS.length + ' correctos';
+  var bar = document.getElementById('fb-bar');
+  if (correct === ITEMS.length) {
+    bar.className = 'fb-bar show all-ok';
+    bar.innerHTML = '<strong>&#10003; ¡Perfecto!</strong> El método de mallas permite resolver sistemáticamente circuitos AC complejos mediante ecuaciones basadas en impedancias y leyes fundamentales.';
+    document.getElementById('scoreHint').textContent = '¡Todos los conceptos correctamente ubicados!';
+  } else {
+    bar.className = 'fb-bar show has-err';
+    bar.innerHTML = '<strong>&#10005; ' + (ITEMS.length - correct) + ' concepto(s) incorrecto(s).</strong> Revise los enunciados marcados en rojo e intente de nuevo.';
+    document.getElementById('scoreHint').textContent = 'Revise los enunciados marcados en rojo';
+  }
+}
+
+function resetActivity() {
+  placement = {};
+  shuffledTerms = shuffle(ITEMS);
+  var bar = document.getElementById('fb-bar');
+  bar.className = 'fb-bar'; bar.innerHTML = '';
+  document.getElementById('scoreText').textContent = '0 / 6 correctos';
+  document.getElementById('scoreHint').textContent = 'Arrastra cada concepto a su enunciado correspondiente';
+  ITEMS.forEach(function(item) {
+    var s = document.getElementById('sent-' + item.id);
+    if (s) s.classList.remove('correct','wrong');
+  });
+  buildUI();
+}
+
+// Touch drag
+var touchItem = null, touchClone = null;
+function onTouchStart(e) {
+  touchItem = e.currentTarget;
+  var r = touchItem.getBoundingClientRect();
+  touchClone = touchItem.cloneNode(true);
+  touchClone.style.cssText = 'position:fixed;top:' + r.top + 'px;left:' + r.left + 'px;width:' + r.width + 'px;opacity:.7;z-index:999;pointer-events:none;border-radius:9px;';
+  document.body.appendChild(touchClone);
+}
+function onTouchMove(e) {
+  e.preventDefault();
+  var t = e.touches[0];
+  if (touchClone) { touchClone.style.top = (t.clientY - 20) + 'px'; touchClone.style.left = (t.clientX - 70) + 'px'; }
+}
+function onTouchEnd(e) {
+  if (touchClone) { document.body.removeChild(touchClone); touchClone = null; }
+  if (!touchItem) return;
+  var t = e.changedTouches[0];
+  var el = document.elementFromPoint(t.clientX, t.clientY);
+  var sent = el ? el.closest('.sentence') : null;
+  if (sent) {
+    var sentId = parseInt(sent.dataset.sentId);
+    var termId = parseInt(touchItem.id.replace('term-', ''));
+    placeItem(sentId, termId);
+  }
+  touchItem = null;
+}
+
+function scaleStage() {
+  var stage = document.getElementById('stage');
+  var sw = document.getElementById('sw');
+  if (!stage || !sw) return;
+  var cw = sw.clientWidth || window.innerWidth;
+  if (!cw) return;
+  var sc = cw / 1280;
+  stage.style.transform = 'scale(' + sc + ')';
+  stage.style.transformOrigin = 'top left';
+  sw.style.height = (720 * sc) + 'px';
+}
+window.addEventListener('resize', scaleStage);
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(scaleStage).observe(document.getElementById('sw') || document.body);
+}
+requestAnimationFrame(function() { requestAnimationFrame(scaleStage); });
+
+shuffledTerms = shuffle(ITEMS);
+buildUI();
+</script>
+</body>
+</html>
