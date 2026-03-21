@@ -29,23 +29,31 @@
 
 html, body {
   width: 100%;
-  height: auto; /* Importante para Canvas */
+  height: auto; 
+  min-height: 100%;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
+  /* Importante: Permitir que el body crezca */
+  position: relative; 
 }
 
 /* ══ CONTENEDOR PRINCIPAL (IFRAME WRAPPER) ══ */
 #sw {
   width: 100%;
-  max-width: 900px; /* Ancho máximo cómodo */
+  max-width: 900px;
   margin: 0 auto;
   background: var(--surface);
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Ocupa al menos toda la pantalla */
+  
+  /* CORRECCIÓN CRÍTICA PARA CANVAS:
+     Usamos una altura mínima fija en px en lugar de vh para evitar el colapso a 35px */
+  min-height: 600px; 
+  height: auto;
+  
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
@@ -54,8 +62,9 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible; /* Cambiado a visible para asegurar que nada se corte */
   position: relative;
+  height: 100%;
 }
 
 /* ══ HEADER ═ */
@@ -104,8 +113,8 @@ html, body {
 .main {
   flex: 1;
   display: flex;
-  overflow: hidden;
-  min-height: 0; /* Crucial para flex scroll */
+  overflow: visible; /* Permitir expansión */
+  min-height: 400px; /* Altura mínima para el área de contenido */
 }
 
 .q-panel {
@@ -113,8 +122,9 @@ html, body {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  overflow-y: auto; /* Scroll interno si es necesario */
+  overflow-y: visible; /* Sin scroll interno, deja que crezca */
   background: var(--surface);
+  width: 100%;
 }
 
 /* Sidebar */
@@ -127,7 +137,7 @@ html, body {
   flex-direction: column;
   padding: 20px;
   gap: 20px;
-  overflow-y: auto;
+  overflow-y: visible;
   z-index: 5;
 }
 
@@ -174,7 +184,7 @@ html, body {
 .score-lbl strong { display: block; font-size: 13px; color: var(--text); margin-bottom: 2px; }
 
 /* ══ CONTENT STYLES ══ */
-.intro-wrap { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+.intro-wrap { display: flex; flex-direction: column; gap: 20px; width: 100%; }
 .intro-hero {
   background: linear-gradient(120deg, var(--primary) 0%, var(--primary-d) 40%, var(--accent) 100%);
   border-radius: 14px; padding: 25px; display: flex; align-items: center; gap: 20px;
@@ -313,7 +323,7 @@ html, body {
 }
 
 /* Results */
-.results-wrap { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+.results-wrap { display: flex; flex-direction: column; gap: 20px; width: 100%; }
 .results-hero {
   background: linear-gradient(120deg, var(--green), var(--primary));
   border-radius: 14px; padding: 25px; color: #fff;
@@ -336,7 +346,7 @@ html, body {
 
 /* ══ MEDIA QUERIES (RESPONSIVE) ══ */
 @media (max-width: 768px) {
-  .sidebar { display: none; } /* Ocultar sidebar en móvil */
+  .sidebar { display: none; }
   .hdr { padding: 0 15px; height: 50px; }
   .hdr-t h1 { font-size: 13px; }
   .intro-hero { flex-direction: column; text-align: center; }
@@ -384,7 +394,7 @@ html, body {
         <!-- Content injected by JS -->
       </div>
       
-      <!-- SIDEBAR (Hidden on mobile via CSS) -->
+      <!-- SIDEBAR -->
       <div class="sidebar">
         <div class="q-tracker">
           <div class="tracker-title">Preguntas</div>
@@ -488,7 +498,7 @@ let score = 0;
 let matchSelA = null;
 let matchPairs = {};
 
-/* ══ FUNCTIONS ══ */
+/* ══ FUNCTIONS ═ */
 
 function renderIntro() {
   current = -1;
@@ -620,7 +630,7 @@ function renderQuestion(idx) {
 
   if (q.type === 'match' && !isAnswered) bindMatchEvents(idx);
   updateTracker(); updateTopBar(); updateScore();
-  resizeIframe(); // Ajustar alto al cambiar pregunta
+  resizeIframe();
 }
 
 function renderMatchContent(idx, isAnswered) {
@@ -787,18 +797,30 @@ function updateScore(){
 
 /* ══ CANVAS LMS FIX: AUTO RESIZE IFRAME ══ */
 function resizeIframe() {
-  // Pequeño delay para asegurar que el DOM se ha renderizado
-  setTimeout(() => {
-    const newHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-    // Mensaje estándar LTI para redimensionar
-    window.parent.postMessage({
-      subject: 'lti.frameResize',
-      message: { height: newHeight + 20 } // +20px buffer
-    }, '*');
-  }, 100);
+  // Calculamos la altura real del contenido
+  const bodyHeight = document.body.scrollHeight;
+  const htmlHeight = document.documentElement.scrollHeight;
+  const newHeight = Math.max(bodyHeight, htmlHeight) + 20; // +20px buffer
+
+  // Enviamos el mensaje a Canvas
+  window.parent.postMessage({
+    subject: 'lti.frameResize',
+    message: { height: newHeight }
+  }, '*');
+  
+  // Fallback para navegadores que no soportan lti.frameResize inmediatamente
+  // Esto asegura que al menos tenga un alto mínimo visible
+  document.getElementById('sw').style.minHeight = newHeight + 'px';
 }
 
-// Observador para detectar cambios dinámicos en el DOM
+// Ejecutar al cargar
+window.addEventListener('load', () => {
+  resizeIframe();
+  // Pequeño retraso adicional para asegurar renderizado
+  setTimeout(resizeIframe, 500);
+});
+
+// Observador para cambios dinámicos
 const observer = new MutationObserver(resizeIframe);
 observer.observe(document.body, { childList: true, subtree: true });
 
