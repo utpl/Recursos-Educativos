@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Estructura General del Prácticum 1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --teal: #2ea89e; --bg: #eef0f3; }
+
+  body {
+  background: var(--bg);
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+  /* HEADER */
+  header {
+  width: 100%;
+  background: linear-gradient(135deg, #1a3a4a 0%, #2c6e5a 55%, #4a8c6f 100%);
+  padding: 16px 24px 14px;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+  position: relative; overflow: hidden;
+}
+  header::before {
+    content:''; position:absolute; top:-40px; right:-40px;
+    width:180px; height:180px; border-radius:50%;
+    background:rgba(255,255,255,0.05);
+  }
+  .header-badge {
+    background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28);
+    border-radius:20px; padding:4px 18px; font-size:11px;
+    color:rgba(255,255,255,0.82); letter-spacing:2.5px;
+    text-transform:uppercase; margin-bottom:10px;
+  }
+  header h1 {
+    font-size: clamp(18px,3.5vw,30px); font-weight:700; color:#fff;
+    text-align:center; letter-spacing:2px; text-transform:uppercase;
+    line-height:1.25; margin-bottom:6px;
+  }
+  header p.subtitle { font-size:13px; color:rgba(255,255,255,0.72); text-align:center; }
+  .header-meta {
+    display:flex; gap:16px; margin-top:14px; flex-wrap:wrap; justify-content:center;
+  }
+  .header-meta span {
+    font-size:11.5px; color:rgba(255,255,255,0.7);
+    background:rgba(255,255,255,0.1); padding:3px 13px; border-radius:12px;
+  }
+  .header-meta span strong { color:#fff; }
+
+  /* WRAPPER */
+  .wrapper { width:100%; max-width:850px; padding:20px 16px 16px; }
+
+  /* INSTRUCTION */
+  .instr {
+    background:rgba(46,168,158,0.1); border-left:4px solid var(--teal);
+    border-radius:0 10px 10px 0; padding:10px 18px; margin-bottom:30px;
+    display:flex; align-items:center; gap:10px; font-size:13px; color:#555;
+  }
+
+  /* MAIN LAYOUT */
+  .main { display:flex; align-items:flex-start; gap:0; }
+
+  /* SVG COLUMN */
+  .left-svg-col { flex:0 0 260px; position:relative; }
+  #leftSvg { display:block; width:260px; overflow:visible; }
+
+  /* CARDS */
+  .cards-col {
+    flex:1 1 auto; display:flex; flex-direction:column;
+    gap:40px; padding-top:80px;
+  }
+  .card {
+    background:#fff; border-radius:50px;
+    display:flex; align-items:center;
+    padding:0 22px 0 0;
+    box-shadow:0 5px 20px rgba(0,0,0,0.09);
+    min-height:120px; cursor:pointer;
+    transition:transform .18s, box-shadow .18s; position:relative;
+  }
+  .card:hover { transform:translateY(-3px); box-shadow:0 12px 30px rgba(0,0,0,0.14); }
+  .card-num {
+    flex:0 0 auto; width:86px; height:86px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px; font-weight:700; color:#fff;
+    margin:14px 16px 14px 14px;
+    box-shadow:2px 4px 12px rgba(0,0,0,0.20);
+  }
+  .num1 { background:linear-gradient(145deg,#6baa6f,#2c5a6a); }
+  .num2 { background:linear-gradient(145deg,#c97abd,#7e3fcf); }
+  .num3 { background:linear-gradient(145deg,#f5a642,#e05a2b); }
+  .card-body { flex:1; }
+  .card-rule { height:2px; margin-bottom:7px; border:none; border-radius:2px; }
+  .rule1 { background:linear-gradient(90deg,#6baa6f,#2c6e5a,#1a3a6a); }
+  .rule2 { background:linear-gradient(90deg,#e05a8a,#9b4fcf); }
+  .rule3 { background:linear-gradient(90deg,#f5a642,#e05a2b); }
+  .card-title {
+    font-size:16px; font-weight:700; color:#2a2a2a;
+    letter-spacing:1.2px; text-transform:uppercase; margin-bottom:5px;
+  }
+  .card-text { font-size:12px; color:#777; line-height:1.65; }
+  .card-hint {
+    position:absolute; bottom:10px; right:18px;
+    font-size:10px; color:#ccc; display:flex; align-items:center; gap:4px;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.42); backdrop-filter:blur(4px);
+    z-index:1000; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal {
+    background:#fff; border-radius:22px; max-width:600px; width:100%;
+    max-height:82vh; overflow-y:auto;
+    box-shadow:0 24px 60px rgba(0,0,0,0.28);
+    animation:popIn .28s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn {
+    from{opacity:0;transform:scale(.88) translateY(18px);}
+    to{opacity:1;transform:scale(1) translateY(0);}
+  }
+  .modal-hdr {
+    border-radius:22px 22px 0 0; padding:22px 26px 18px;
+    display:flex; align-items:center; gap:14px; position:relative;
+  }
+  .modal-hdr-icon {
+    width:54px; height:54px; border-radius:50%;
+    background:rgba(255,255,255,0.22);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .modal-hdr-icon svg { width:28px; height:28px; }
+  .modal-hdr-num  { font-size:11px; color:rgba(255,255,255,0.72); letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; }
+  .modal-hdr-title { font-size:20px; font-weight:700; color:#fff; letter-spacing:1px; text-transform:uppercase; }
+  .modal-close {
+    position:absolute; top:14px; right:14px; width:32px; height:32px;
+    border-radius:50%; background:rgba(255,255,255,0.18); border:none;
+    cursor:pointer; font-size:17px; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .18s;
+  }
+  .modal-close:hover { background:rgba(255,255,255,0.32); }
+  .mh1{background:linear-gradient(135deg,#6baa6f,#2c5a6a);}
+  .mh2{background:linear-gradient(135deg,#c97abd,#7e3fcf);}
+  .mh3{background:linear-gradient(135deg,#f5a642,#e05a2b);}
+  .modal-body { padding:22px 26px 26px; }
+  .msec { margin-bottom:16px; }
+  .msec-title {
+    font-size:12px; font-weight:700; color:#666;
+    text-transform:uppercase; letter-spacing:1px;
+    margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid #eee;
+  }
+  .msec p { font-size:13px; color:#555; line-height:1.7; }
+  .mlist { list-style:none; display:flex; flex-direction:column; gap:7px; }
+  .mlist li {
+    display:flex; align-items:flex-start; gap:10px;
+    font-size:13px; color:#555; line-height:1.6;
+    background:#f8f9fa; border-radius:10px; padding:8px 12px;
+  }
+  .nbadge {
+    flex-shrink:0; width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:#fff; margin-top:1px;
+  }
+  .nb1{background:#6baa6f;} .nb2{background:#9b4fcf;} .nb3{background:#e05a2b;}
+  .imp-box {
+    background:rgba(46,168,158,0.08); border-left:4px solid var(--teal);
+    border-radius:0 12px 12px 0; padding:12px 16px; margin-top:12px;
+  }
+  .imp-label {
+    font-size:11px; font-weight:700; color:var(--teal);
+    text-transform:uppercase; letter-spacing:1px;
+    margin-bottom:4px; display:flex; align-items:center; gap:5px;
+  }
+  .imp-box p { font-size:13px; color:#555; line-height:1.6; }
+
+  /* FOOTER */
+  footer {
+    width:100%; background:linear-gradient(135deg,#1a3a4a,#2c4a5a);
+    padding:20px 40px; display:flex; flex-direction:column;
+    align-items:center; gap:6px; margin-top:auto;
+  }
+  footer .fquote { font-size:14px; color:rgba(255,255,255,0.82); letter-spacing:.5px; text-align:center; font-style:italic; }
+  footer p { font-size:11px; color:rgba(255,255,255,0.52); text-align:center; }
+  .fdots { display:flex; gap:6px; margin-top:8px; }
+  .fdots span { width:7px; height:7px; border-radius:50%; }
+
+  @media(max-width:768px){
+  .left-svg-col{display:none;}
+  .main{flex-direction:column;}
+  .cards-col{padding-top:0; gap:16px;}
+  .card { min-height:90px; }
+  .card-num { width:60px; height:60px; font-size:24px; }
+  header h1 { font-size:16px; }
+  header p.subtitle { font-size:11px; }
+  .wrapper { padding:14px 12px 12px; }
+}
+@media(max-width:480px){
+  .card-num { width:50px; height:50px; font-size:20px; margin:10px 12px; }
+  .card-title { font-size:13px; }
+  .card-text { font-size:11px; }
+  .cards-col { gap:12px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+
+  <h1>Estructura General del Prácticum 1</h1>
+  <p class="subtitle">Aplicación práctica preprofesional · Turismo</p>
+
+</header>
+
+<div class="wrapper">
+  <div class="instr">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="#2ea89e" stroke-width="2"/>
+      <path d="M12 8v4M12 16h.01" stroke="#2ea89e" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    Haga clic en los temas para visualizar la información detallada.
+  </div>
+
+  <div class="main">
+
+    <!-- LEFT SVG: snake + connectors + circles all in one coordinate space -->
+    <div class="left-svg-col">
+      <svg id="leftSvg" xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 260 700" style="width:260px;">
+        <defs>
+          <linearGradient id="sg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8cbf6e"/>
+            <stop offset="100%" stop-color="#2c7a6a"/>
+          </linearGradient>
+          <linearGradient id="sg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#5bbfb0"/>
+            <stop offset="100%" stop-color="#2c8a7a"/>
+          </linearGradient>
+          <linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#6baa6f"/>
+            <stop offset="100%" stop-color="#2c5a6a"/>
+          </linearGradient>
+          <linearGradient id="cg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c97abd"/>
+            <stop offset="100%" stop-color="#7e3fcf"/>
+          </linearGradient>
+          <linearGradient id="cg3" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f5a642"/>
+            <stop offset="100%" stop-color="#e05a2b"/>
+          </linearGradient>
+          <filter id="sh" x="-40%" y="-20%" width="180%" height="140%">
+            <feDropShadow dx="2" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.17)"/>
+          </filter>
+          <filter id="csh" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="2" dy="4" stdDeviation="5" flood-color="rgba(0,0,0,0.15)"/>
+          </filter>
+        </defs>
+
+        <!--
+          LAYOUT MATH (viewBox 0 0 260 700):
+          Card centers in SVG coords:
+            padding-top on cards-col = 80px
+            Card height = 120px (min-height), gap = 40px
+            Card 1 center = 80 + 60 = 140
+            Card 2 center = 80 + 120 + 40 + 60 = 300
+            Card 3 center = 80 + 120 + 40 + 120 + 40 + 60 = 460
+
+          Snake center X = 100
+          Snake stroke-width = 54 → spans x=73..127 on vertical, bulges to x=173 on curves
+
+          Icon circles: cx=100, cy=140/300/460, r=36
+          Connector dots: cx=170, cy=140/300/460
+          Connector lines: from x=170 to x=255 at each cy
+        -->
+
+        <!-- SNAKE PATHS -->
+        <!-- Loop 1: right C, top=60, mid=140, bottom=220 -->
+        <path id="sp1"
+              d="M100,60 C100,60 185,60 185,140 C185,220 100,220 100,220"
+              stroke="url(#sg1)" stroke-width="54" fill="none"
+              stroke-linecap="round" filter="url(#sh)"/>
+        <!-- Loop 2: left C, top=220, mid=300, bottom=380 -->
+        <path id="sp2"
+              d="M100,220 C100,220 15,220 15,300 C15,380 100,380 100,380"
+              stroke="url(#sg2)" stroke-width="54" fill="none"
+              stroke-linecap="round" filter="url(#sh)"/>
+        <!-- Loop 3: right C, top=380, mid=460, bottom=540 -->
+        <path id="sp3"
+              d="M100,380 C100,380 185,380 185,460 C185,540 100,540 100,540"
+              stroke="url(#sg1)" stroke-width="54" fill="none"
+              stroke-linecap="round" filter="url(#sh)"/>
+
+        <!-- VERTICAL GUIDE LINE for connectors -->
+        <line id="vline" x1="170" y1="100" x2="170" y2="500"
+              stroke="#d0d3d8" stroke-width="2"/>
+
+        <!-- ICON CIRCLE 1 (cy=140) -->
+        <circle id="ic1" cx="100" cy="140" r="36" fill="white" filter="url(#csh)"
+                cursor="pointer" onclick="openModal(0)"/>
+        <!-- Book icon, centered at 100,140 (icon 24x24 centered) -->
+        <g id="ig1" transform="translate(88,128)" onclick="openModal(0)" cursor="pointer">
+          <rect x="0" y="0" width="16" height="22" rx="2" fill="url(#cg1)" opacity=".9"/>
+          <line x1="2.5" y1="5"  x2="13.5" y2="5"  stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="2.5" y1="9"  x2="13.5" y2="9"  stroke="white" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+          <line x1="2.5" y1="13" x2="10"   y2="13" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>
+          <line x1="2.5" y1="17" x2="8"    y2="17" stroke="white" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>
+        </g>
+
+        <!-- ICON CIRCLE 2 (cy=300) -->
+        <circle id="ic2" cx="100" cy="300" r="36" fill="white" filter="url(#csh)"
+                cursor="pointer" onclick="openModal(1)"/>
+        <!-- Clipboard icon -->
+        <g id="ig2" transform="translate(88,287)" onclick="openModal(1)" cursor="pointer">
+          <rect x="0" y="2" width="16" height="22" rx="2" fill="url(#cg2)" opacity=".9"/>
+          <rect x="4" y="0" width="8" height="5" rx="1.5" fill="#9b3fcf" opacity=".85"/>
+          <line x1="2.5" y1="9"  x2="13.5" y2="9"  stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="2.5" y1="13" x2="13.5" y2="13" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+          <line x1="2.5" y1="17" x2="9"    y2="17" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>
+        </g>
+
+        <!-- ICON CIRCLE 3 (cy=460) -->
+        <circle id="ic3" cx="100" cy="460" r="36" fill="white" filter="url(#csh)"
+                cursor="pointer" onclick="openModal(2)"/>
+        <!-- Link icon -->
+        <g id="ig3" transform="translate(89,449)" onclick="openModal(2)" cursor="pointer">
+          <path d="M7 18.5a5 5 0 0 0 7.07 0l2.5-2.5a5 5 0 0 0-7.07-7.07l-1.25 1.25"
+                stroke="url(#cg3)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <path d="M15 5.5a5 5 0 0 0-7.07 0l-2.5 2.5a5 5 0 0 0 7.07 7.07l1.25-1.25"
+                stroke="url(#cg3)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <!-- CONNECTORS -->
+        <!-- Connector 1 -->
+        <circle id="cd1" cx="170" cy="140" r="9" fill="#6baa6f"/>
+        <line   id="cl1" x1="170" y1="140" x2="255" y2="140" stroke="#2c5a8a" stroke-width="2.5"/>
+        <circle id="ce1" cx="255" cy="140" r="5.5" fill="#2c5a8a"/>
+        <!-- Connector 2 -->
+        <circle id="cd2" cx="170" cy="300" r="9" fill="#c97abd"/>
+        <line   id="cl2" x1="170" y1="300" x2="255" y2="300" stroke="#9b3fcf" stroke-width="2.5"/>
+        <circle id="ce2" cx="255" cy="300" r="5.5" fill="#9b3fcf"/>
+        <!-- Connector 3 -->
+        <circle id="cd3" cx="170" cy="460" r="9" fill="#f5a642"/>
+        <line   id="cl3" x1="170" y1="460" x2="255" y2="460" stroke="#e05a2b" stroke-width="2.5"/>
+        <circle id="ce3" cx="255" cy="460" r="5.5" fill="#e05a2b"/>
+
+      </svg>
+    </div>
+
+    <!-- CARDS -->
+    <div class="cards-col">
+
+      <div class="card" onclick="openModal(0)">
+        <div class="card-num num1">01</div>
+        <div class="card-body">
+          <hr class="card-rule rule1">
+          <div class="card-title">Estructura General</div>
+          <p class="card-text">El Prácticum 1 permite aplicar conocimientos teóricos mediante procesos reales y simulados en entornos del sector turístico, fortaleciendo competencias profesionales.</p>
+        </div>
+        <div class="card-hint">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#ccc" stroke-width="2"/>
+            <path d="M12 8v4M12 16h.01" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          clic para más info
+        </div>
+      </div>
+
+      <div class="card" onclick="openModal(1)">
+        <div class="card-num num2">02</div>
+        <div class="card-body">
+          <hr class="card-rule rule2">
+          <div class="card-title">Diagnóstico de la Empresa</div>
+          <p class="card-text">El informe incluye portada, índice, introducción, descripción institucional, actividades realizadas, diagnóstico del entorno, análisis del servicio y conclusiones.</p>
+        </div>
+        <div class="card-hint">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#ccc" stroke-width="2"/>
+            <path d="M12 8v4M12 16h.01" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          clic para más info
+        </div>
+      </div>
+
+      <div class="card" onclick="openModal(2)">
+        <div class="card-num num3">03</div>
+        <div class="card-body">
+          <hr class="card-rule rule3">
+          <div class="card-title">Articulación Teoría–Práctica</div>
+          <p class="card-text">El Prácticum I articula la formación teórica con la práctica profesional, permitiendo la toma de decisiones informadas en el ámbito turístico.</p>
+        </div>
+        <div class="card-hint">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#ccc" stroke-width="2"/>
+            <path d="M12 8v4M12 16h.01" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          clic para más info
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p class="fquote">«La práctica sin teoría es ciega; la teoría sin práctica es estéril.»</p>
+
+  <div class="fdots">
+    <span style="background:#4a7c6f;"></span>
+    <span style="background:#7c4a8a;"></span>
+    <span style="background:#e86c30;"></span>
+    <span style="background:#2ea89e;"></span>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeBg(event)">
+  <div class="modal">
+    <div class="modal-hdr" id="mHdr">
+      <div class="modal-hdr-icon" id="mIcon"></div>
+      <div>
+        <div class="modal-hdr-num"   id="mNum"></div>
+        <div class="modal-hdr-title" id="mTitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+/* ── MODAL DATA ── */
+const DATA = [
+  {
+    num:"TEMA 01", title:"Estructura General", cls:"mh1",
+    icon:`<svg viewBox="0 0 28 28" fill="none"><rect x="2" y="1" width="18" height="24" rx="2.5" fill="white" opacity=".9"/><line x1="5" y1="8" x2="17" y2="8" stroke="#6baa6f" stroke-width="1.8" stroke-linecap="round"/><line x1="5" y1="12" x2="17" y2="12" stroke="#6baa6f" stroke-width="1.8" stroke-linecap="round" opacity=".8"/><line x1="5" y1="16" x2="12" y2="16" stroke="#6baa6f" stroke-width="1.8" stroke-linecap="round" opacity=".6"/></svg>`,
+    body:`<div class="msec"><div class="msec-title">Descripción</div>
+    <p>El Prácticum 1 permite al estudiante aplicar los conocimientos teóricos adquiridos durante su formación académica mediante su participación en procesos reales y simulados de investigación de entornos del sector turístico, fortaleciendo sus competencias profesionales.</p></div>
+    <div class="msec"><div class="msec-title">Datos del recurso</div><ul class="mlist">
+      <li><span class="nbadge nb1">📌</span><span><strong>Asignatura:</strong> Prácticum 1 – TURI_2010</span></li>
+      <li><span class="nbadge nb1">👩‍🏫</span><span><strong>Docente:</strong> Ana Armijos</span></li>
+      <li><span class="nbadge nb1">📅</span><span><strong>Semana:</strong> 1</span></li>
+      <li><span class="nbadge nb1">🖥️</span><span><strong>Recurso:</strong> Presentación Interactiva</span></li>
+    </ul></div>`
+  },
+  {
+    num:"TEMA 02", title:"Diagnóstico de la Empresa", cls:"mh2",
+    icon:`<svg viewBox="0 0 28 28" fill="none"><rect x="2" y="3" width="18" height="24" rx="2.5" fill="white" opacity=".9"/><rect x="7" y="0" width="8" height="6" rx="2" fill="rgba(155,63,207,0.5)"/><line x1="5" y1="11" x2="17" y2="11" stroke="#9b4fcf" stroke-width="1.8" stroke-linecap="round"/><line x1="5" y1="15" x2="17" y2="15" stroke="#9b4fcf" stroke-width="1.8" stroke-linecap="round" opacity=".8"/><line x1="5" y1="19" x2="12" y2="19" stroke="#9b4fcf" stroke-width="1.8" stroke-linecap="round" opacity=".6"/></svg>`,
+    body:`<div class="msec"><div class="msec-title">Descripción</div>
+    <p>El informe de diagnóstico corresponde a la empresa, institución u organización comunitaria donde el estudiante realiza su práctica preprofesional. La estructura del informe se compone de los siguientes elementos:</p></div>
+    <div class="msec"><div class="msec-title">Estructura del informe</div><ul class="mlist">
+      <li><span class="nbadge nb2">1</span><span>Portada institucional</span></li>
+      <li><span class="nbadge nb2">2</span><span>Índice</span></li>
+      <li><span class="nbadge nb2">3</span><span>Introducción</span></li>
+      <li><span class="nbadge nb2">4</span><span>Descripción de la institución (diagnóstico)</span></li>
+      <li><span class="nbadge nb2">5</span><span>Desarrollo de actividades: Mapa de procesos, Informe de relaciones profesionales, Herramientas tecnológicas, Reporte preliminar</span></li>
+      <li><span class="nbadge nb2">6</span><span>Diagnóstico descriptivo del entorno</span></li>
+      <li><span class="nbadge nb2">7</span><span>Análisis del servicio o proceso observado</span></li>
+      <li><span class="nbadge nb2">8</span><span>Recomendaciones básicas</span></li>
+      <li><span class="nbadge nb2">9</span><span>Conclusiones</span></li>
+      <li><span class="nbadge nb2">10</span><span>Bibliografía (si aplica)</span></li>
+      <li><span class="nbadge nb2">11</span><span>Apéndices</span></li>
+    </ul></div>`
+  },
+  {
+    num:"TEMA 03", title:"Articulación Teoría–Práctica", cls:"mh3",
+    icon:`<svg viewBox="0 0 28 28" fill="none"><path d="M10 20a6 6 0 0 0 8.49 0l3-3a6 6 0 0 0-8.49-8.49l-1.5 1.5" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".9"/><path d="M18 8a6 6 0 0 0-8.49 0l-3 3a6 6 0 0 0 8.49 8.49l1.5-1.5" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".7"/></svg>`,
+    body:`<div class="msec"><div class="msec-title">Descripción</div>
+    <p>El Prácticum I articula la formación teórica con la práctica profesional, permitiendo la toma de decisiones informadas en el ámbito turístico. Esta articulación es fundamental para el desarrollo integral del estudiante como futuro profesional del turismo.</p></div>
+    <div class="msec"><div class="msec-title">Competencias que fortalece</div><ul class="mlist">
+      <li><span class="nbadge nb3">🔬</span><span><strong>Investigativas:</strong> Capacidad de indagar y sistematizar información del entorno turístico.</span></li>
+      <li><span class="nbadge nb3">📊</span><span><strong>Analíticas:</strong> Habilidad para interpretar datos y situaciones del sector profesional.</span></li>
+      <li><span class="nbadge nb3">💬</span><span><strong>Comunicativas:</strong> Destrezas para comunicar hallazgos y propuestas de manera efectiva.</span></li>
+    </ul></div>
+    <div class="imp-box"><div class="imp-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="#2ea89e" stroke-width="2" stroke-linecap="round"/></svg>
+      Importante
+    </div><p>El desarrollo del Prácticum 1 fortalece competencias investigativas, analíticas y comunicativas fundamentales para la gestión turística.</p></div>`
+  }
+];
+
+function openModal(i){
+  const d=DATA[i];
+  document.getElementById('mHdr').className='modal-hdr '+d.cls;
+  document.getElementById('mIcon').innerHTML=d.icon;
+  document.getElementById('mNum').textContent=d.num;
+  document.getElementById('mTitle').textContent=d.title;
+  document.getElementById('mBody').innerHTML=d.body;
+  document.getElementById('modalOverlay').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.body.style.overflow='';
+}
+function closeBg(e){
+  if(e.target===document.getElementById('modalOverlay')) closeModal();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ── DYNAMIC ALIGNMENT ──
+   After the page renders, measure actual card center Y positions in px,
+   convert to SVG viewBox units, then update all SVG element positions. */
+function alignSVG(){
+  const svg    = document.getElementById('leftSvg');
+  const cards  = Array.from(document.querySelectorAll('.card'));
+  if(!svg || cards.length<3) return;
+
+  const svgRect = svg.getBoundingClientRect();
+  const vbW = 260, vbH = 700;
+  const scaleY = vbH / svgRect.height;
+
+  // Card center Y positions in SVG viewBox units
+  const cY = cards.map(card=>{
+    const r = card.getBoundingClientRect();
+    const centerPx = (r.top - svgRect.top) + r.height/2;
+    return centerPx * scaleY;
+  });
+
+  const [y1,y2,y3] = cY;
+  const R = 36; // icon circle radius
+  const CX = 100; // snake/icon center X
+
+  /* ── UPDATE SNAKE PATHS ── */
+  // Each loop: a C-curve that starts & ends at (CX, midY±80) and peaks at side
+  // Loop 1: right-bulging, midY=y1
+  const p1t=y1-80, p1b=y1+80;
+  document.getElementById('sp1').setAttribute('d',
+    `M${CX},${p1t} C${CX},${p1t} 185,${p1t} 185,${y1} C185,${p1b} ${CX},${p1b} ${CX},${p1b}`);
+
+  // Loop 2: left-bulging, midY=y2
+  const p2t=p1b, p2b=y2+80;
+  document.getElementById('sp2').setAttribute('d',
+    `M${CX},${p2t} C${CX},${p2t} 15,${p2t} 15,${y2} C15,${p2b} ${CX},${p2b} ${CX},${p2b}`);
+
+  // Loop 3: right-bulging, midY=y3
+  const p3t=p2b, p3b=y3+80;
+  document.getElementById('sp3').setAttribute('d',
+    `M${CX},${p3t} C${CX},${p3t} 185,${p3t} 185,${y3} C185,${p3b} ${CX},${p3b} ${CX},${p3b}`);
+
+  /* ── UPDATE ICON CIRCLES & GROUPS ── */
+  // Circle positions
+  [['ic1',y1],['ic2',y2],['ic3',y3]].forEach(([id,y])=>{
+    document.getElementById(id).setAttribute('cy', y);
+  });
+
+  // Icon groups: each icon is ~16x22px, centered on (CX, iconY)
+  // translate(CX-8, iconY-11) for book & clipboard (16wide, 22tall)
+  document.getElementById('ig1').setAttribute('transform',`translate(${CX-8},${y1-11})`);
+  document.getElementById('ig2').setAttribute('transform',`translate(${CX-8},${y2-12})`);
+  // Link icon is 22x22, translate(CX-11, y3-11)
+  document.getElementById('ig3').setAttribute('transform',`translate(${CX-11},${y3-11})`);
+
+  /* ── UPDATE CONNECTORS ── */
+  [
+    ['cd1','cl1','ce1',y1],
+    ['cd2','cl2','ce2',y2],
+    ['cd3','cl3','ce3',y3],
+  ].forEach(([dotId,lineId,endId,y])=>{
+    document.getElementById(dotId).setAttribute('cy',y);
+    document.getElementById(lineId).setAttribute('y1',y);
+    document.getElementById(lineId).setAttribute('y2',y);
+    document.getElementById(endId).setAttribute('cy',y);
+  });
+
+  /* ── UPDATE VERTICAL GUIDE LINE ── */
+  document.getElementById('vline').setAttribute('y1', y1-30);
+  document.getElementById('vline').setAttribute('y2', y3+30);
+
+  /* ── RESIZE SVG VIEWBOX ── */
+  const newH = Math.ceil(p3b + 40);
+  svg.setAttribute('viewBox',`0 0 ${vbW} ${newH}`);
+}
+
+// Run after full layout
+window.addEventListener('load', alignSVG);
+window.addEventListener('resize', alignSVG);
+</script>
+</body>
+</html>
