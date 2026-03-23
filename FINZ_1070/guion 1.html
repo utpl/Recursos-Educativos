@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>El Dinero en Ecuador — Cronología</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --gold:   #c9a84c;
+  --gold2:  #f0d080;
+  --blue:   #0a1628;
+  --blue2:  #132244;
+  --red:    #b0282a;
+  --cream:  #f5f0e8;
+  --dark:   #080e1c;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--dark);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative; z-index: 1;
+  padding: 80px 40px 60px;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+}
+
+.hero-eyebrow {
+  font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; width: 60px; height: 1px; background: var(--gold); opacity: .5;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 7vw, 90px);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #f0d080 0%, #c9a84c 40%, #fff8e7 70%, #c9a84c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+
+.hero-sub {
+  font-size: 15px; color: rgba(245,240,232,0.55);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* coin decoration */
+.coin-deco {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  margin: 28px auto 0;
+  position: relative;
+  animation: coinSpin 12s linear infinite;
+}
+.coin-deco::before {
+  content: '₡';
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  color: var(--gold);
+}
+.coin-deco::after {
+  content: '';
+  position: absolute; inset: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,168,76,0.3);
+}
+@keyframes coinSpin {
+  0%   { transform: rotateY(0deg); }
+  50%  { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+/* ── INSTRUCTION ── */
+.instruction {
+  text-align: center; padding: 24px 20px 0;
+  font-size: 12px; color: rgba(245,240,232,0.35);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  position: relative; z-index: 1;
+}
+
+/* ── TIMELINE TRACK ── */
+.timeline-wrap {
+  position: relative; z-index: 1;
+  padding: 60px 0 40px;
+  overflow: hidden;
+}
+
+/* Horizontal scrollable track on desktop, stacked on mobile */
+.track {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 0 60px 40px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) transparent;
+}
+.track::-webkit-scrollbar { height: 3px; }
+.track::-webkit-scrollbar-track { background: transparent; }
+.track::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+/* The horizontal line connecting everything */
+.track-line {
+  position: absolute;
+  top: calc(60px + 44px); /* top padding + half node height */
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(201,168,76,0.15) 5%,
+    var(--gold) 20%,
+    var(--gold2) 50%,
+    var(--red) 80%,
+    rgba(176,40,42,0.15) 95%,
+    transparent 100%);
+  z-index: 0;
+}
+
+/* ── EVENT NODE ── */
+.event {
+  flex: 0 0 220px;
+  scroll-snap-align: center;
+  position: relative;
+  cursor: pointer;
+  padding: 0 16px;
+  transition: flex 0.5s cubic-bezier(.4,0,.2,1);
+}
+
+/* Connector stem from line to node */
+.event-stem {
+  width: 2px; height: 40px;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  position: relative; z-index: 1;
+  transition: height 0.3s ease;
+}
+.event:hover .event-stem,
+.event.open .event-stem { height: 54px; background: linear-gradient(to bottom, var(--gold2), transparent); }
+
+/* Node circle */
+.node {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  margin: 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  position: relative; z-index: 2;
+  border: 2px solid rgba(201,168,76,0.4);
+  background: radial-gradient(circle at 35% 35%, #1e2f52, #0a1628);
+  box-shadow: 0 0 0 0 rgba(201,168,76,0);
+  transition: all 0.4s cubic-bezier(.4,0,.2,1);
+}
+.event:hover .node,
+.event.open .node {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 6px rgba(201,168,76,0.12), 0 0 30px rgba(201,168,76,0.2);
+  background: radial-gradient(circle at 35% 35%, #2a4070, #0f1f3a);
+}
+
+.node-icon { font-size: 22px; line-height: 1; }
+.node-year {
+  font-size: 11px; font-weight: 500;
+  color: var(--gold); letter-spacing: 0.5px;
+  margin-top: 3px;
+}
+
+/* Short label below node */
+.event-label {
+  text-align: center; margin-top: 14px;
+  font-size: 11px; font-weight: 500;
+  color: rgba(245,240,232,0.5);
+  letter-spacing: 0.5px; line-height: 1.4;
+  transition: color 0.3s;
+  max-width: 160px; margin-left: auto; margin-right: auto;
+}
+.event:hover .event-label,
+.event.open .event-label { color: var(--gold2); }
+
+/* Active indicator dot */
+.event.open .node::after {
+  content: '';
+  position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+/* ── DETAIL PANEL ── */
+.detail-panel {
+  position: relative; z-index: 10;
+  margin: 0 40px 60px;
+  background: linear-gradient(135deg, #101c35 0%, #0e1828 60%, #12090a 100%);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 20px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.6s cubic-bezier(.4,0,.2,1), opacity 0.4s ease, margin-top 0.3s ease;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+}
+.detail-panel.visible {
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* Gold top bar */
+.detail-panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red), var(--gold), var(--gold2));
+}
+
+.panel-inner {
+  display: flex; gap: 0;
+  min-height: 240px;
+}
+
+/* Left: big year stamp */
+.panel-year {
+  flex: 0 0 200px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 30px;
+  border-right: 1px solid rgba(201,168,76,0.15);
+  background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 100%);
+}
+.panel-year-num {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #f0d080, #c9a84c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.panel-year-icon { font-size: 48px; margin-top: 12px; }
+.panel-year-era {
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(245,240,232,0.35); margin-top: 10px; text-align: center;
+}
+
+/* Right: content */
+.panel-content {
+  flex: 1; padding: 36px 40px 36px 36px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 2.5vw, 30px);
+  font-weight: 700;
+  color: #fff; margin-bottom: 14px;
+  line-height: 1.2;
+}
+.panel-text {
+  font-size: 14px; line-height: 1.8;
+  color: rgba(245,240,232,0.7);
+}
+.panel-text strong { color: var(--gold2); font-weight: 500; }
+
+/* Tags */
+.panel-tags {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-top: 20px;
+}
+.tag {
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--gold);
+  background: rgba(201,168,76,0.05);
+}
+
+/* Close button */
+.panel-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid rgba(201,168,76,0.3);
+  background: rgba(201,168,76,0.05);
+  color: var(--gold); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.panel-close:hover { background: rgba(201,168,76,0.15); }
+
+/* Progress bar inside panel */
+.panel-progress {
+  height: 2px;
+  background: rgba(201,168,76,0.1);
+  margin: 0 40px 0 200px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  overflow: hidden;
+}
+.panel-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red), var(--gold));
+  transition: width 0.4s ease;
+}
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid rgba(201,168,76,0.12);
+  padding: 40px;
+  text-align: center;
+  position: relative; z-index: 1;
+}
+.footer-source {
+  font-size: 12px; color: rgba(245,240,232,0.3);
+  font-style: italic; line-height: 1.7;
+}
+.footer-source strong { color: rgba(245,240,232,0.5); font-style: normal; }
+
+/* ── NAVIGATION DOTS ── */
+.nav-dots {
+  display: flex; justify-content: center; gap: 8px;
+  padding: 16px 0 0;
+  position: relative; z-index: 1;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(201,168,76,0.2);
+  cursor: pointer; transition: all 0.3s;
+}
+.dot.active {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+  transform: scale(1.4);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  .track { padding: 0 20px 30px; gap: 0; }
+  .event { flex: 0 0 160px; }
+  .panel-inner { flex-direction: column; }
+  .panel-year {
+    flex: none; border-right: none;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    padding: 24px; flex-direction: row; gap: 16px; justify-content: flex-start;
+  }
+  .panel-year-num { font-size: 44px; }
+  .panel-year-era { display: none; }
+  .panel-content { padding: 24px; }
+  .panel-progress { margin-left: 0; }
+  .detail-panel { margin: 0 16px 40px; }
+  .hero { padding: 50px 20px 40px; }
+  .track-line { top: calc(60px + 44px); }
+}
+
+/* Entry animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.event {
+  animation: fadeUp 0.6s ease both;
+}
+.event:nth-child(1) { animation-delay: 0.05s; }
+.event:nth-child(2) { animation-delay: 0.12s; }
+.event:nth-child(3) { animation-delay: 0.19s; }
+.event:nth-child(4) { animation-delay: 0.26s; }
+.event:nth-child(5) { animation-delay: 0.33s; }
+.event:nth-child(6) { animation-delay: 0.40s; }
+.event:nth-child(7) { animation-delay: 0.47s; }
+.event:nth-child(8) { animation-delay: 0.54s; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <p class="hero-eyebrow">Historia monetaria</p>
+  <h1>El Dinero<br>en Ecuador</h1>
+  <p class="hero-sub">Cronología de la moneda · 1845 – 2000</p>
+  <div class="coin-deco"></div>
+</header>
+
+<p class="instruction">Seleccione un evento para explorar su historia</p>
+
+<!-- TIMELINE -->
+<div class="timeline-wrap">
+  <div class="track-line"></div>
+
+  <div class="track" id="track">
+
+    <div class="event" data-id="0">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">🗽</div>
+        <div class="node-year">1845</div>
+      </div>
+      <div class="event-label">Revolución Marcista</div>
+    </div>
+
+    <div class="event" data-id="1">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">🏦</div>
+        <div class="node-year">1863</div>
+      </div>
+      <div class="event-label">Primeros bancos</div>
+    </div>
+
+    <div class="event" data-id="2">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">🪙</div>
+        <div class="node-year">1872</div>
+      </div>
+      <div class="event-label">Sistema decimal</div>
+    </div>
+
+    <div class="event" data-id="3">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">⚜️</div>
+        <div class="node-year">1884</div>
+      </div>
+      <div class="event-label">Nace el Sucre</div>
+    </div>
+
+    <div class="event" data-id="4">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">🦅</div>
+        <div class="node-year">1899</div>
+      </div>
+      <div class="event-label">Monedas de oro</div>
+    </div>
+
+    <div class="event" data-id="5">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">⚡</div>
+        <div class="node-year">1925</div>
+      </div>
+      <div class="event-label">Revolución Juliana</div>
+    </div>
+
+    <div class="event" data-id="6">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">🦁</div>
+        <div class="node-year">1928</div>
+      </div>
+      <div class="event-label">El Cóndor</div>
+    </div>
+
+    <div class="event" data-id="7">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">💵</div>
+        <div class="node-year">2000</div>
+      </div>
+      <div class="event-label">Dolarización</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- NAV DOTS -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <button class="panel-close" id="panelClose">✕</button>
+  <div class="panel-inner" id="panelInner"></div>
+  <div class="panel-progress">
+    <div class="panel-progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p class="footer-source">
+    <strong>Fuente:</strong> Salas, E. (2019). <em>Texto Guía de Dinero y Operaciones Bancarias.</em>
+    Loja, Ecuador: Editorial Universidad Técnica Particular de Loja.
+  </p>
+</footer>
+
+<script>
+const EVENTS = [
+  {
+    year: "1845",
+    era: "Siglo XIX",
+    icon: "🗽",
+    title: "La Revolución Marcista",
+    tags: ["Política", "Numismática", "Independencia"],
+    text: `Con la <strong>Revolución Marcista</strong>, se puso fin a la dominación floreana. Apareció un nuevo tipo de moneda que mostraba en una de sus caras la figura de una india encinta, con la leyenda <strong>"Libertad"</strong>, y en la otra, el Chimborazo y un cóndor. Esta moneda simbolizó el inicio de una nueva era republicana.`
+  },
+  {
+    year: "1863",
+    era: "Siglo XIX",
+    icon: "🏦",
+    title: "Los primeros bancos particulares",
+    tags: ["Banca", "Economía", "Historia"],
+    text: `Desaparece la <strong>casa de amonedación de Quito</strong>. Se formaron los primeros bancos particulares, los cuales solicitaron al Gobierno permiso para acuñar moneda de circulación nacional, marcando el inicio del sistema bancario moderno en el Ecuador.`
+  },
+  {
+    year: "1872",
+    era: "García Moreno",
+    icon: "🪙",
+    title: "Sistema decimal y monedas de cobre",
+    tags: ["García Moreno", "Decimal", "Cobre"],
+    text: `El presidente <strong>García Moreno</strong> ordenó la acuñación de monedas de cobre —de uno y dos centavos— bajo el <strong>sistema decimal</strong>. Esta reforma modernizó la economía ecuatoriana al adoptar un sistema de medida monetaria más ordenado y universal.`
+  },
+  {
+    year: "1884",
+    era: "Siglo XIX",
+    icon: "⚜️",
+    title: "Nace el Sucre como unidad monetaria",
+    tags: ["Sucre", "Moneda Nacional", "Hito"],
+    text: `Se establece el <strong>sucre</strong> como unidad monetaria en el Ecuador. Esta moneda —nombrada en honor al mariscal Antonio José de Sucre— estuvo vigente por <strong>116 años</strong>, convirtiéndose en el símbolo monetario más duradero de la historia ecuatoriana.`
+  },
+  {
+    year: "1899–1900",
+    era: "Belle Époque",
+    icon: "🦅",
+    title: "Las primeras monedas de oro",
+    tags: ["Oro", "Sucre", "Sucre A.J."],
+    text: `Las dos primeras monedas de oro fueron de diez sucres. En el anverso tenían el perfil del mariscal <strong>Antonio José de Sucre</strong>, la leyenda "República del Ecuador" y el año de emisión; al reverso, el escudo de la República, el valor y los datos de acuñación.`
+  },
+  {
+    year: "1925",
+    era: "Siglo XX",
+    icon: "⚡",
+    title: "Revolución Juliana y Banco Central",
+    tags: ["Banco Central", "Revolución", "Reforma"],
+    text: `La <strong>Revolución Juliana</strong> puso fin al gobierno del Dr. Gonzalo S. Córdova R., con la fundación del <strong>Banco Central del Ecuador</strong>. Este hecho transformó radicalmente el sistema financiero nacional, centralizando la emisión monetaria del país.`
+  },
+  {
+    year: "1928",
+    era: "Isidro Ayora",
+    icon: "🦁",
+    title: "El Cóndor y la moneda Ayora",
+    tags: ["Cóndor", "BCE", "Ayora"],
+    text: `Fue acuñada la moneda denominada el <strong>Cóndor</strong>, de veinticinco sucres, como parte del primer grupo de monedas del Banco Central. También se emitió la popularmente llamada <strong>«Ayora»</strong> —durante el gobierno del lojano Dr. Isidro Ayora Cueva— y aparecieron las primeras monedas de 0.50 centavos.`
+  },
+  {
+    year: "2000",
+    era: "Siglo XXI",
+    icon: "💵",
+    title: "Dolarización y nuevas monedas fraccionarias",
+    tags: ["Dolarización", "BCE", "Personajes"],
+    text: `El <strong>Banco Central del Ecuador (BCE)</strong> contrató la acuñación de monedas fraccionarias de 50, 25, 10, 5 y 1 centavo con ilustres personajes ecuatorianos, para suplir la demanda generada por la <strong>dolarización</strong>. Desde aquel año estas monedas circulan en el país.`
+  }
+];
+
+let openId = null;
+
+const events   = document.querySelectorAll('.event');
+const panel    = document.getElementById('detailPanel');
+const panelInner = document.getElementById('panelInner');
+const panelClose = document.getElementById('panelClose');
+const progress = document.getElementById('progressFill');
+const navDotsEl = document.getElementById('navDots');
+
+// Build nav dots
+EVENTS.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  d.addEventListener('click', () => activate(i));
+  navDotsEl.appendChild(d);
+});
+const dots = navDotsEl.querySelectorAll('.dot');
+
+function renderPanel(id) {
+  const e = EVENTS[id];
+  const pct = Math.round(((id + 1) / EVENTS.length) * 100);
+  panelInner.innerHTML = `
+    <div class="panel-year">
+      <div class="panel-year-num">${e.year}</div>
+      <div class="panel-year-icon">${e.icon}</div>
+      <div class="panel-year-era">${e.era}</div>
+    </div>
+    <div class="panel-content">
+      <h2 class="panel-title">${e.title}</h2>
+      <p class="panel-text">${e.text}</p>
+      <div class="panel-tags">${e.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+  `;
+  progress.style.width = pct + '%';
+}
+
+function activate(id) {
+  // Deactivate previous
+  if (openId !== null) {
+    events[openId].classList.remove('open');
+    dots[openId].classList.remove('active');
+  }
+
+  if (openId === id) {
+    // Toggle off
+    openId = null;
+    panel.classList.remove('visible');
+    return;
+  }
+
+  openId = id;
+  events[id].classList.add('open');
+  dots[id].classList.add('active');
+  renderPanel(id);
+
+  if (!panel.classList.contains('visible')) {
+    panel.classList.add('visible');
+  }
+
+  // Scroll the selected event into view in the track
+  events[id].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // Scroll panel into view
+  setTimeout(() => {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 300);
+}
+
+events.forEach(ev => {
+  ev.addEventListener('click', () => activate(+ev.dataset.id));
+});
+
+panelClose.addEventListener('click', () => {
+  if (openId !== null) {
+    events[openId].classList.remove('open');
+    dots[openId].classList.remove('active');
+    openId = null;
+  }
+  panel.classList.remove('visible');
+});
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') activate(openId === null ? 0 : Math.min(openId + 1, EVENTS.length - 1));
+  if (e.key === 'ArrowLeft')  activate(openId === null ? 0 : Math.max(openId - 1, 0));
+  if (e.key === 'Escape')     panelClose.click();
+});
+
+// Auto-open first on load
+setTimeout(() => activate(0), 700);
+</script>
+</body>
+</html>

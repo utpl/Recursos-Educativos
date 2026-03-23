@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Proceso de Titularización</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --gold:   #c9a84c;
+  --gold2:  #f0d080;
+  --blue:   #0a1628;
+  --blue2:  #132244;
+  --teal:   #1a7a6e;
+  --teal2:  #2eb8a6;
+  --cream:  #f5f0e8;
+  --dark:   #080e1c;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--dark);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative; z-index: 1;
+  padding: 80px 40px 60px;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+}
+
+.hero-eyebrow {
+  font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--teal2); margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; width: 60px; height: 1px; background: var(--teal2); opacity: .5;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 6vw, 80px);
+  font-weight: 900;
+  line-height: 1.05;
+  background: linear-gradient(135deg, #f0d080 0%, #c9a84c 40%, #fff8e7 70%, #2eb8a6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+
+.hero-sub {
+  font-size: 14px; color: rgba(245,240,232,0.5);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* Gear decoration */
+.gear-deco {
+  width: 86px; height: 86px;
+  margin: 28px auto 0;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  animation: gearSpin 18s linear infinite;
+}
+.gear-deco svg { width: 100%; height: 100%; }
+@keyframes gearSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── INSTRUCTION ── */
+.instruction {
+  text-align: center; padding: 24px 20px 0;
+  font-size: 12px; color: rgba(245,240,232,0.35);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  position: relative; z-index: 1;
+}
+
+/* ── TIMELINE TRACK ── */
+.timeline-wrap {
+  position: relative; z-index: 1;
+  padding: 60px 0 40px;
+  overflow: hidden;
+}
+
+.track {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 0 60px 40px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--teal2) transparent;
+}
+.track::-webkit-scrollbar { height: 3px; }
+.track::-webkit-scrollbar-track { background: transparent; }
+.track::-webkit-scrollbar-thumb { background: var(--teal2); border-radius: 3px; }
+
+.track-line {
+  position: absolute;
+  top: calc(60px + 44px);
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(46,184,166,0.15) 5%,
+    var(--teal2) 20%,
+    var(--gold) 50%,
+    var(--teal) 80%,
+    rgba(26,122,110,0.15) 95%,
+    transparent 100%);
+  z-index: 0;
+}
+
+/* Stage number badge */
+.stage-badge {
+  position: absolute;
+  top: -18px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--teal2);
+  white-space: nowrap;
+}
+
+/* ── EVENT NODE ── */
+.event {
+  flex: 0 0 220px;
+  scroll-snap-align: center;
+  position: relative;
+  cursor: pointer;
+  padding: 0 16px;
+}
+
+.event-stem {
+  width: 2px; height: 40px;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, var(--teal2), transparent);
+  position: relative; z-index: 1;
+  transition: height 0.3s ease;
+}
+.event:hover .event-stem,
+.event.open .event-stem {
+  height: 54px;
+  background: linear-gradient(to bottom, var(--gold2), transparent);
+}
+
+.node {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  margin: 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  position: relative; z-index: 2;
+  border: 2px solid rgba(46,184,166,0.35);
+  background: radial-gradient(circle at 35% 35%, #1e2f52, #0a1628);
+  box-shadow: 0 0 0 0 rgba(46,184,166,0);
+  transition: all 0.4s cubic-bezier(.4,0,.2,1);
+}
+.event:hover .node,
+.event.open .node {
+  border-color: var(--teal2);
+  box-shadow: 0 0 0 6px rgba(46,184,166,0.12), 0 0 30px rgba(46,184,166,0.18);
+  background: radial-gradient(circle at 35% 35%, #1d3d50, #0b1e2e);
+}
+
+.node-icon { font-size: 22px; line-height: 1; }
+.node-etapa {
+  font-size: 10px; font-weight: 600;
+  color: var(--teal2); letter-spacing: 0.5px;
+  margin-top: 3px;
+}
+
+.event-label {
+  text-align: center; margin-top: 14px;
+  font-size: 11px; font-weight: 500;
+  color: rgba(245,240,232,0.5);
+  letter-spacing: 0.5px; line-height: 1.4;
+  transition: color 0.3s;
+  max-width: 160px; margin-left: auto; margin-right: auto;
+}
+.event:hover .event-label,
+.event.open .event-label { color: var(--gold2); }
+
+.event.open .node::after {
+  content: '';
+  position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal2);
+  box-shadow: 0 0 8px var(--teal2);
+}
+
+/* Arrow between events */
+.event:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -10px;
+  top: 60px;
+  color: rgba(46,184,166,0.3);
+  font-size: 18px;
+  z-index: 3;
+}
+
+/* ── DETAIL PANEL ── */
+.detail-panel {
+  position: relative; z-index: 10;
+  margin: 0 40px 60px;
+  background: linear-gradient(135deg, #091a2e 0%, #0d1e2a 60%, #091618 100%);
+  border: 1px solid rgba(46,184,166,0.22);
+  border-radius: 20px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.6s cubic-bezier(.4,0,.2,1), opacity 0.4s ease;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+}
+.detail-panel.visible {
+  max-height: 520px;
+  opacity: 1;
+}
+
+.detail-panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal2), var(--gold), var(--teal2));
+}
+
+.panel-inner {
+  display: flex; gap: 0;
+  min-height: 260px;
+}
+
+.panel-left {
+  flex: 0 0 200px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 28px;
+  border-right: 1px solid rgba(46,184,166,0.12);
+  background: linear-gradient(135deg, rgba(46,184,166,0.05) 0%, transparent 100%);
+  gap: 10px;
+}
+.panel-etapa-label {
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(245,240,232,0.3);
+}
+.panel-etapa-num {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(52px, 6vw, 86px);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #2eb8a6, #c9a84c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.panel-icon { font-size: 46px; }
+.panel-keyword {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--teal2); text-align: center; line-height: 1.5;
+  padding: 6px 10px; border: 1px solid rgba(46,184,166,0.2);
+  border-radius: 20px; background: rgba(46,184,166,0.05);
+}
+
+.panel-content {
+  flex: 1; padding: 36px 40px 36px 36px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 700;
+  color: #fff; margin-bottom: 14px;
+  line-height: 1.25;
+}
+.panel-title span {
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  font-weight: 400; color: var(--teal2);
+  display: block; letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.panel-text {
+  font-size: 14px; line-height: 1.85;
+  color: rgba(245,240,232,0.68);
+}
+.panel-text strong { color: var(--gold2); font-weight: 500; }
+
+.panel-tags {
+  display: flex; gap: 7px; flex-wrap: wrap;
+  margin-top: 18px;
+}
+.tag {
+  padding: 3px 11px; border-radius: 20px;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  border: 1px solid rgba(46,184,166,0.25);
+  color: var(--teal2);
+  background: rgba(46,184,166,0.05);
+}
+
+.panel-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid rgba(46,184,166,0.25);
+  background: rgba(46,184,166,0.05);
+  color: var(--teal2); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.panel-close:hover { background: rgba(46,184,166,0.15); }
+
+.panel-progress {
+  height: 2px;
+  background: rgba(46,184,166,0.08);
+  margin: 0 40px 0 200px;
+}
+.panel-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  transition: width 0.5s ease;
+}
+
+/* ── NAV DOTS ── */
+.nav-dots {
+  display: flex; justify-content: center; gap: 8px;
+  padding: 16px 0 0;
+  position: relative; z-index: 1;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(46,184,166,0.18);
+  cursor: pointer; transition: all 0.3s;
+}
+.dot.active {
+  background: var(--teal2);
+  box-shadow: 0 0 8px var(--teal2);
+  transform: scale(1.4);
+}
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid rgba(46,184,166,0.1);
+  padding: 36px 40px;
+  text-align: center;
+  position: relative; z-index: 1;
+}
+.footer p {
+  font-size: 11px; color: rgba(245,240,232,0.28); font-style: italic;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  .track { padding: 0 20px 30px; }
+  .event { flex: 0 0 160px; }
+  .panel-inner { flex-direction: column; }
+  .panel-left {
+    flex: none; border-right: none;
+    border-bottom: 1px solid rgba(46,184,166,0.12);
+    padding: 22px 24px; flex-direction: row;
+    gap: 14px; justify-content: flex-start;
+  }
+  .panel-etapa-label { display: none; }
+  .panel-content { padding: 22px 24px; }
+  .panel-progress { margin-left: 0; }
+  .detail-panel { margin: 0 16px 40px; }
+  .hero { padding: 50px 20px 40px; }
+  .event:not(:last-child)::after { display: none; }
+}
+
+/* Entrance animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.event { animation: fadeUp 0.55s ease both; }
+.event:nth-child(1) { animation-delay: 0.05s; }
+.event:nth-child(2) { animation-delay: 0.13s; }
+.event:nth-child(3) { animation-delay: 0.21s; }
+.event:nth-child(4) { animation-delay: 0.29s; }
+.event:nth-child(5) { animation-delay: 0.37s; }
+.event:nth-child(6) { animation-delay: 0.45s; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <p class="hero-eyebrow">Mercado de valores</p>
+  <h1>Proceso de<br>Titularización</h1>
+  <p class="hero-sub">6 etapas del proceso · Del originador al inversionista</p>
+  <div class="gear-deco">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M43 5h14l2 10a32 32 0 0 1 8.5 4.9l9.8-3.4 9.9 9.9-3.4 9.8A32 32 0 0 1 89 45v0l-5 0 5 0a32 32 0 0 1-4.9 8.5l3.4 9.8-9.9 9.9-9.8-3.4A32 32 0 0 1 57 95H43l-2-10a32 32 0 0 1-8.5-4.9l-9.8 3.4-9.9-9.9 3.4-9.8A32 32 0 0 1 11 55H5V45h6a32 32 0 0 1 4.9-8.5l-3.4-9.8 9.9-9.9 9.8 3.4A32 32 0 0 1 43 5z"
+        stroke="rgba(46,184,166,0.4)" stroke-width="3" fill="rgba(46,184,166,0.04)"/>
+      <circle cx="50" cy="50" r="16" stroke="rgba(201,168,76,0.5)" stroke-width="2.5" fill="rgba(10,22,40,0.8)"/>
+      <circle cx="50" cy="50" r="5" fill="rgba(201,168,76,0.6)"/>
+    </svg>
+  </div>
+</header>
+
+<p class="instruction">Seleccione una etapa para ver el detalle</p>
+
+<!-- TIMELINE -->
+<div class="timeline-wrap">
+  <div class="track-line"></div>
+  <div class="track" id="track">
+
+    <div class="event" data-id="0">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">📋</div>
+        <div class="node-etapa">Etapa 1</div>
+      </div>
+      <div class="event-label">Selección y preparación de cartera</div>
+    </div>
+
+    <div class="event" data-id="1">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">🔒</div>
+        <div class="node-etapa">Etapa 2</div>
+      </div>
+      <div class="event-label">Transferencia al patrimonio autónomo</div>
+    </div>
+
+    <div class="event" data-id="2">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">📄</div>
+        <div class="node-etapa">Etapa 3</div>
+      </div>
+      <div class="event-label">Estructuración y emisión de valores</div>
+    </div>
+
+    <div class="event" data-id="3">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">📈</div>
+        <div class="node-etapa">Etapa 4</div>
+      </div>
+      <div class="event-label">Colocación en mercado de valores</div>
+    </div>
+
+    <div class="event" data-id="4">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">⚙️</div>
+        <div class="node-etapa">Etapa 5</div>
+      </div>
+      <div class="event-label">Administración y cobranza</div>
+    </div>
+
+    <div class="event" data-id="5">
+      <div class="event-stem"></div>
+      <div class="node">
+        <div class="node-icon">✅</div>
+        <div class="node-etapa">Etapa 6</div>
+      </div>
+      <div class="event-label">Liquidación y cierre</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- NAV DOTS -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <button class="panel-close" id="panelClose">✕</button>
+  <div class="panel-inner" id="panelInner"></div>
+  <div class="panel-progress">
+    <div class="panel-progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>Proceso de Titularización · Mercado de Valores · Material de estudio</p>
+</footer>
+
+<script>
+const STAGES = [
+  {
+    num: "1",
+    icon: "📋",
+    keyword: "Originador · Elegibilidad",
+    title: "Selección y preparación de cartera",
+    tags: ["Cartera", "Hipotecaria", "Prendaria", "Quirografaria"],
+    text: `El <strong>originador</strong> define la cartera a titularizar (hipotecaria, prendaria o quirografaria) y realiza un análisis de elegibilidad (calidad, mora, documentos). Regulatoriamente, debe acreditar propiedad de activos transferidos y justificar flujos y rentas esperadas que respaldan la emisión.`
+  },
+  {
+    num: "2",
+    icon: "🔒",
+    keyword: "Fideicomiso · Autonomía",
+    title: "Transferencia al patrimonio autónomo",
+    tags: ["Fideicomiso", "Patrimonio Autónomo", "Transferencia"],
+    text: `La cartera es <strong>transferida al fideicomiso de propósito exclusivo</strong>, formándose un patrimonio autónomo. Este patrimonio queda jurídicamente separado del originador, protegiendo los activos frente a posibles contingencias del emisor.`
+  },
+  {
+    num: "3",
+    icon: "📄",
+    keyword: "Emisión · Calificación",
+    title: "Estructuración y emisión de valores",
+    tags: ["Valores Respaldados", "Calificación de Riesgo", "Estructuración"],
+    text: `El <strong>fideicomiso emite valores respaldados</strong> por los activos del patrimonio autónomo. Dichos valores obtienen una <strong>calificación de riesgo</strong> otorgada por una calificadora autorizada, elemento clave para su posterior colocación en el mercado.`
+  },
+  {
+    num: "4",
+    icon: "📈",
+    keyword: "Bolsa · Negociación",
+    title: "Colocación en mercado de valores",
+    tags: ["Bolsa de Valores", "Inversionistas", "Negociación"],
+    text: `Los valores emitidos son <strong>colocados y negociados en bolsa</strong>. Los inversionistas adquieren los títulos y, a través de su precio, el mercado determina el costo de financiamiento. Esta etapa permite al originador obtener liquidez inmediata.`
+  },
+  {
+    num: "5",
+    icon: "⚙️",
+    keyword: "Servicing · Flujos",
+    title: "Administración y cobranza de la cartera",
+    tags: ["Servicing", "Cobranza", "Flujos", "Reservas"],
+    text: `Los <strong>deudores pagan sus cuotas</strong> y esos flujos ingresan al fideicomiso. El administrador (servicer) los distribuye para: pagos a inversionistas, gastos operativos y constitución de reservas, conforme al orden de prelación establecido en el contrato.`
+  },
+  {
+    num: "6",
+    icon: "✅",
+    keyword: "Redención · Cierre",
+    title: "Liquidación y cierre",
+    tags: ["Redención", "Vencimiento", "Liquidación"],
+    text: `Al <strong>vencimiento</strong>, se redimen los valores emitidos cancelando el capital e intereses pendientes a los inversionistas. Una vez cumplidas todas las obligaciones, se <strong>liquida el patrimonio autónomo</strong> y se extingue el fideicomiso de propósito exclusivo.`
+  }
+];
+
+let openId = null;
+
+const events    = document.querySelectorAll('.event');
+const panel     = document.getElementById('detailPanel');
+const panelInner= document.getElementById('panelInner');
+const panelClose= document.getElementById('panelClose');
+const progress  = document.getElementById('progressFill');
+const navDotsEl = document.getElementById('navDots');
+
+// Build nav dots
+STAGES.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  d.addEventListener('click', () => activate(i));
+  navDotsEl.appendChild(d);
+});
+const dots = navDotsEl.querySelectorAll('.dot');
+
+function renderPanel(id) {
+  const s = STAGES[id];
+  const pct = Math.round(((id + 1) / STAGES.length) * 100);
+  panelInner.innerHTML = `
+    <div class="panel-left">
+      <div class="panel-etapa-label">Etapa</div>
+      <div class="panel-etapa-num">${s.num}</div>
+      <div class="panel-icon">${s.icon}</div>
+      <div class="panel-keyword">${s.keyword}</div>
+    </div>
+    <div class="panel-content">
+      <h2 class="panel-title">
+        <span>Etapa ${s.num} de ${STAGES.length}</span>
+        ${s.title}
+      </h2>
+      <p class="panel-text">${s.text}</p>
+      <div class="panel-tags">${s.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+  `;
+  progress.style.width = pct + '%';
+}
+
+function activate(id) {
+  if (openId !== null) {
+    events[openId].classList.remove('open');
+    dots[openId].classList.remove('active');
+  }
+  if (openId === id) {
+    openId = null;
+    panel.classList.remove('visible');
+    return;
+  }
+  openId = id;
+  events[id].classList.add('open');
+  dots[id].classList.add('active');
+  renderPanel(id);
+  if (!panel.classList.contains('visible')) panel.classList.add('visible');
+  events[id].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
+}
+
+events.forEach(ev => ev.addEventListener('click', () => activate(+ev.dataset.id)));
+
+panelClose.addEventListener('click', () => {
+  if (openId !== null) {
+    events[openId].classList.remove('open');
+    dots[openId].classList.remove('active');
+    openId = null;
+  }
+  panel.classList.remove('visible');
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') activate(openId === null ? 0 : Math.min(openId + 1, STAGES.length - 1));
+  if (e.key === 'ArrowLeft')  activate(openId === null ? 0 : Math.max(openId - 1, 0));
+  if (e.key === 'Escape')     panelClose.click();
+});
+
+setTimeout(() => activate(0), 700);
+</script>
+</body>
+</html>
