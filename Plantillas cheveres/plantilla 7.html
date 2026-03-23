@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canbar LMS - Infografía Interactiva Premium</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --secondary: #ec4899;
+      --accent: #06b6d4;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --glass: rgba(255, 255, 255, 0.05);
+      --neon-glow: 0 0 20px rgba(99, 102, 241, 0.5);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--light);
+      perspective: 1000px;
+    }
+
+    /* Fondo animado con partículas */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(99, 102, 241, 0.4);
+      border-radius: 50%;
+      animation: float 15s infinite;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Header con efecto de vidrio y animación de texto */
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 3rem 1rem;
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transform-style: preserve-3d;
+      animation: slideDown 1s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%) rotateX(-20deg); opacity: 0; }
+      to { transform: translateY(0) rotateX(0); opacity: 1; }
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent), var(--primary));
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 3s ease infinite;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+    }
+
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      animation: fadeIn 2s ease-out 0.5s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Grid principal con efectos 3D */
+    .infographic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      padding: 3rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 5;
+      transform-style: preserve-3d;
+    }
+
+    /* Cards con efecto 3D flip y glassmorphism */
+    .card-container {
+      perspective: 1000px;
+      height: 400px;
+      cursor: pointer;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: cardEntry 0.8s ease-out backwards;
+    }
+
+    @keyframes cardEntry {
+      from { 
+        opacity: 0; 
+        transform: translateY(50px) rotateX(45deg) scale(0.8);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) rotateX(0) scale(1);
+      }
+    }
+
+    .card-container:hover .card {
+      transform: rotateY(180deg) scale(1.05);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .card-front::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 70%
+      );
+      transform: rotate(45deg);
+      transition: all 0.5s;
+      opacity: 0;
+    }
+
+    .card-container:hover .card-front::before {
+      animation: shine 0.8s ease-in-out;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; }
+    }
+
+    .card-back {
+      background: linear-gradient(135deg, var(--dark), #1e293b);
+      transform: rotateY(180deg);
+      border: 2px solid var(--primary);
+      box-shadow: var(--neon-glow);
+    }
+
+    /* Iconos animados */
+    .icon-wrapper {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(99, 102, 241, 0.5); }
+      50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(236, 72, 153, 0.8); }
+    }
+
+    .card-container:hover .icon-wrapper {
+      animation: rotate3d 1s ease-in-out;
+    }
+
+    @keyframes rotate3d {
+      0% { transform: rotateY(0deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.2); }
+      100% { transform: rotateY(360deg) scale(1); }
+    }
+
+    /* Títulos con efecto de máquina de escribir */
+    .card-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.5s;
+    }
+
+    .card-container:hover .card-title::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    /* Barras de progreso animadas */
+    .progress-container {
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 10px;
+      width: 0;
+      transition: width 2s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .card-container:hover .progress-fill {
+      width: var(--progress);
+    }
+
+    /* Estadísticas con contador */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s;
+    }
+
+    .stat-item:hover {
+      transform: translateY(-5px);
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--primary);
+      box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--accent);
+      display: block;
+      animation: countUp 2s ease-out;
+    }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Botones con efecto de rebote y brillo */
+    .btn {
+      margin-top: 1.5rem;
+      padding: 0.8rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(236, 72, 153, 0.5);
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    /* Efecto de ondas en click */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      transform: scale(0);
+      animation: ripple-animation 0.6s ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* Líneas conectadas animadas */
+    .connector {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      opacity: 0.3;
+      animation: connect 3s ease-in-out infinite;
+    }
+
+    @keyframes connect {
+      0%, 100% { opacity: 0.3; transform: scaleX(1); }
+      50% { opacity: 1; transform: scaleX(1.1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .infographic-grid {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
+      
+      .card-container {
+        height: 350px;
+      }
+    }
+
+    /* Efecto de scroll parallax */
+    .parallax-layer {
+      position: absolute;
+      width: 100%;
+      height: 120%;
+      top: -10%;
+      background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1), transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Animación de entrada escalonada */
+    .card-container:nth-child(1) .card { animation-delay: 0.1s; }
+    .card-container:nth-child(2) .card { animation-delay: 0.2s; }
+    .card-container:nth-child(3) .card { animation-delay: 0.3s; }
+    .card-container:nth-child(4) .card { animation-delay: 0.4s; }
+    .card-container:nth-child(5) .card { animation-delay: 0.5s; }
+    .card-container:nth-child(6) .card { animation-delay: 0.6s; }
+
+    /* Checkbox oculto para interacción click */
+    .flip-checkbox {
+      display: none;
+    }
+
+    .flip-checkbox:checked + .card-container .card {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Partículas de fondo -->
+  <div class="particles" id="particles"></div>
+  
+  <!-- Capa parallax -->
+  <div class="parallax-layer"></div>
+
+  <header>
+    <h1>Canbar LMS</h1>
+    <p class="subtitle">Sistema de Aprendizaje de Nueva Generación</p>
+  </header>
+
+  <main class="infographic-grid">
+    
+    <!-- Card 1: Cursos Interactivos -->
+    <input type="checkbox" id="flip1" class="flip-checkbox">
+    <label for="flip1" class="card-container">
+      <div class="card">
+        <div class="card-face card-front">
+          <div class="icon-wrapper">📚</div>
+          <h2 class="card-title">Cursos Interactivos</h2>
+          <p>Contenido multimedia avanzado con realidad aumentada</p>
+          <div class="progress-container">
+            <div class="progress-label">
+              <span>Engagement</span>
+              <span>94%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="--progress: 94%"></div>
+            </div>
+          </div>
+          <button class="btn" onclick="event.stopPropagation()">Ver Demo</button>
+        </div>
+        <div class="card-face card-back">
+          <h3>Características</h3>
+          <ul style="list-style: none; text-align: left; line-height: 2;">
+            <li>✨ Videos 4K interactivos</li>
+            <li>🎮 Gamificación avanzada</li>
+            <li>🥽 Soporte VR/AR</li>
+            <li>🤖 IA adaptativa</li>
+          </ul>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number">500+</span>
+              <small>Cursos</small>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">50k</span>
+              <small>Usuarios</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </label>
+
+    <!-- Card 2: Analytics -->
+    <input type="checkbox" id="flip2" class="flip-checkbox">
+    <label for="flip2" class="card-container">
+      <div class="card">
+        <div class="card-face card-front">
+          <div class="icon-wrapper" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">📊</div>
+          <h2 class="card-title">Analytics Real-time</h2>
+          <p>Métricas avanzadas y predicciones con machine learning</p>
+          <div class="progress-container">
+            <div class="progress-label">
+              <span>Precisión</span>
+              <span>98%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="--progress: 98%; background: linear-gradient(90deg, #06b6d4, #3b82f6);"></div>
+            </div>
+          </div>
+          <button class="btn" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);" onclick="event.stopPropagation()">Explorar</button>
+        </div>
+        <div class="card-face card-back">
+          <h3>Métricas Clave</h3>
+          <ul style="list-style: none; text-align: left; line-height: 2;">
+            <li>📈 Tasa de completitud</li>
+            <li>⏱️ Tiempo de aprendizaje</li>
+            <li>🎯 Score de habilidades</li>
+            <li>💡 Recomendaciones IA</li>
+          </ul>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number">24/7</span>
+              <small>Monitoreo</small>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">0.1s</span>
+              <small>Latency</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </label>
+
+    <!-- Card 3: Colaboración -->
+    <input type="checkbox" id="flip3" class="flip-checkbox">
+    <label for="flip3" class="card-container">
+      <div class="card">
+        <div class="card-face card-front">
+          <div class="icon-wrapper" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">👥</div>
+          <h2 class="card-title">Colaboración</h2>
+          <p>Aulas virtuales y trabajo en equipo en tiempo real</p>
+          <div class="progress-container">
+            <div class="progress-label">
+              <span>Participación</span>
+              <span>87%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="--progress: 87%; background: linear-gradient(90deg, #f59e0b, #ef4444);"></div>
+            </div>
+          </div>
+          <button class="btn" style="background: linear-gradient(135deg, #f59e0b, #ef4444);" onclick="event.stopPropagation()">Conectar</button>
+        </div>
+        <div class="card-face card-back">
+          <h3>Herramientas</h3>
+          <ul style="list-style: none; text-align: left; line-height: 2;">
+            <li>💬 Chat inteligente</li>
+            <li>🎥 Videoconferencias HD</li>
+            <li>📝 Pizarra colaborativa</li>
+            <li>📁 Compartir archivos</li>
+          </ul>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number">100+</span>
+              <small>Países</small>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">99.9%</span>
+              <small>Uptime</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </label>
+
+    <!-- Card 4: Certificaciones -->
+    <input type="checkbox" id="flip4" class="flip-checkbox">
+    <label for="flip4" class="card-container">
+      <div class="card">
+        <div class="card-face card-front">
+          <div class="icon-wrapper" style="background: linear-gradient(135deg, #10b981, #059669);">🏆</div>
+          <h2 class="card-title">Certificaciones</h2>
+          <p>Certificados blockchain verificables globalmente</p>
+          <div class="progress-container">
+            <div class="progress-label">
+              <span>Reconocimiento</span>
+              <span>100%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="--progress: 100%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+            </div>
+          </div>
+          <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="event.stopPropagation()">Verificar</button>
+        </div>
+        <div class="card-face card-back">
+          <h3>Validación</h3>
+          <ul style="list-style: none; text-align: left; line-height: 2;">
+            <li>🔗 Tecnología Blockchain</li>
+            <li>🌐 Reconocimiento global</li>
+            <li>📱 QR de verificación</li>
+            <li>💼 Integración LinkedIn</li>
+          </ul>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number">10k+</span>
+              <small>Certificados</small>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">100%</span>
+              <small>Seguros</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </label>
+
+    <!-- Card 5: Mobile -->
+    <input type="checkbox" id="flip5" class="flip-checkbox">
+    <label for="flip5" class="card-container">
+      <div class="card">
+        <div class="card-face card-front">
+          <div class="icon-wrapper" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">📱</div>
+          <h2 class="card-title">App Nativa</h2>
+          <p>Aprendizaje offline sincronizado across devices</p>
+          <div class="progress-container">
+            <div class="progress-label">
+              <span>Descargas</span>
+              <span>92%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="--progress: 92%; background: linear-gradient(90deg, #8b5cf6, #7c3aed);"></div>
+            </div>
+          </div>
+          <button class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);" onclick="event.stopPropagation()">Descargar</button>
+        </div>
+        <div class="card-face card-back">
+          <h3>Plataformas</h3>
+          <ul style="list-style: none; text-align: left; line-height: 2;">
+            <li>🍎 iOS & iPadOS</li>
+            <li>🤖 Android</li>
+            <li>💻 Windows/Mac</li>
+            <li>🌐 Web App</li>
+          </ul>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number">4.9★</span>
+              <small>Rating</small>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">1M+</span>
+              <small>Downloads</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </label>
+
+    <!-- Card 6: Seguridad -->
+    <input type="checkbox" id="flip6" class="flip-checkbox">
+    <label for="flip6" class="card-container">
+      <div class="card">
+        <div class="card-face card-front">
+          <div class="icon-wrapper" style="background: linear-gradient(135deg, #ec4899, #db2777);">🔒</div>
+          <h2 class="card-title">Seguridad</h2>
+          <p>Encriptación end-to-end y cumplimiento GDPR</p>
+          <div class="progress-container">
+            <div class="progress-label">
+              <span>Protección</span>
+              <span>100%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="--progress: 100%; background: linear-gradient(90deg, #ec4899, #db2777);"></div>
+            </div>
+          </div>
+          <button class="btn" style="background: linear-gradient(135deg, #ec4899, #db2777);" onclick="event.stopPropagation()">Auditar</button>
+        </div>
+        <div class="card-face card-back">
+          <h3>Protocolos</h3>
+          <ul style="list-style: none; text-align: left; line-height: 2;">
+            <li>🔐 AES-256</li>
+            <li>🛡️ Firewall avanzado</li>
+            <li>✅ GDPR compliant</li>
+            <li>🔍 Penetration testing</li>
+          </ul>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number">SOC2</span>
+              <small>Certified</small>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">ISO</span>
+              <small>27001</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </label>
+
+  </main>
+
+  <script>
+    // Generar partículas dinámicamente
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 50; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 15 + 's';
+      particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+      particlesContainer.appendChild(particle);
+    }
+
+    // Efecto de ondas en botones
+    document.querySelectorAll('.btn').forEach(button => {
+      button.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        
+        this.appendChild(ripple);
+        
+        setTimeout(() => ripple.remove(), 600);
+      });
+    });
+
+    // Parallax suave al mover el mouse
+    document.addEventListener('mousemove', (e) => {
+      const cards = document.querySelectorAll('.card');
+      const x = (window.innerWidth - e.pageX * 2) / 100;
+      const y = (window.innerHeight - e.pageY * 2) / 100;
+      
+      cards.forEach((card, index) => {
+        const speed = (index + 1) * 0.5;
+        card.style.transform = `perspective(1000px) rotateY(${x * speed}deg) rotateX(${y * speed}deg)`;
+      });
+    });
+
+    // Intersection Observer para animaciones al scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.card-container').forEach(card => {
+      observer.observe(card);
+    });
+  </script>
+
+</body>
+</html>

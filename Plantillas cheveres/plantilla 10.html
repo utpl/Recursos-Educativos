@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infografía Interactiva - Educación Ambiental</title>
+    <style>
+        /* Reset y variables CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c5aa0;
+            --secondary-color: #4a90e2;
+            --accent-color: #7ed321;
+            --danger-color: #d0021b;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+            --border-radius: 16px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, var(--bg-light) 0%, #e3f2fd 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Menú de temas */
+        .topics-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .topic-card {
+            background: var(--white);
+            padding: 32px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .topic-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .topic-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+        }
+
+        .topic-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--white);
+        }
+
+        /* Contenido de temas */
+        .content-section {
+            display: none;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2.2rem, 6vw, 4rem);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        /* Timeline interactiva */
+        .timeline {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin: 48px 0;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            cursor: pointer;
+            padding-left: 60px;
+            transition: var(--transition);
+        }
+
+        .timeline-item:hover {
+            transform: translateX(12px);
+        }
+
+        .timeline-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-color);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            position: absolute;
+            left: 0;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(126, 211, 33, 0.4);
+        }
+
+        .timeline-content {
+            background: var(--white);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            border-left: 4px solid transparent;
+            transition: var(--transition);
+        }
+
+        .timeline-item.active .timeline-content {
+            border-left-color: var(--accent-color);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Acordeón */
+        .accordion {
+            max-width: 800px;
+            margin: 48px auto;
+        }
+
+        .accordion-item {
+            margin-bottom: 12px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .accordion-header {
+            background: var(--white);
+            padding: 24px 32px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .accordion-header:hover {
+            background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+        }
+
+        .accordion-icon {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--text-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+            border-color: var(--accent-color);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            background: var(--white);
+            transition: max-height 0.5s ease-out;
+        }
+
+        .accordion-content.active {
+            max-height: 500px;
+            padding: 24px 32px;
+        }
+
+        /* Contador animado */
+        .counter {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* Quiz */
+        .quiz-container {
+            background: var(--white);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            max-width: 700px;
+            margin: 48px auto;
+        }
+
+        .quiz-question {
+            display: none;
+            margin-bottom: 32px;
+        }
+
+        .quiz-question.active {
+            display: block;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .quiz-option {
+            padding: 20px;
+            background: #f8f9ff;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.1rem;
+        }
+
+        .quiz-option:hover {
+            background: linear-gradient(135deg, #e3f2fd, #f0f4ff);
+            transform: translateX(4px);
+        }
+
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .quiz-feedback {
+            display: none;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .feedback-correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid var(--accent-color);
+        }
+
+        .feedback-incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid var(--danger-color);
+        }
+
+        .quiz-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        .score {
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsividad */
+        @media (max-width: 1024px) {
+            .topics-menu {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+            
+            .timeline {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .topics-menu {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-item {
+                padding-left: 48px;
+            }
+            
+            .timeline::before {
+                left: 16px;
+            }
+            
+            .timeline-number {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header, .quiz-container, .footer {
+                padding: 24px 16px;
+            }
+            
+            .topic-card, .accordion-header {
+                padding: 20px 16px;
+            }
+            
+            .counter {
+                font-size: 2.2rem;
+            }
+        }
+
+        /* Accesibilidad */
+        .btn:focus, .topic-card:focus, .quiz-option:focus {
+            outline: 3px solid var(--secondary-color);
+            outline-offset: 2px;
+        }
+
+        /* Ocultar scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header" id="homeSection">
+            <h1>Infografía Interactiva</h1>
+            <p>Explora de forma interactiva 3 temas clave sobre medio ambiente y sostenibilidad. ¡Aprende haciendo!</p>
+            <button class="btn" onclick="showTopics()">Comenzar</button>
+        </header>
+
+        <!-- Menú de temas -->
+        <section id="topicsSection" class="topics-menu" style="display: none;">
+            <div class="topic-card" onclick="showTopic(1)" tabindex="0" aria-label="Ciclo del agua">
+                <div class="topic-icon">💧</div>
+                <h2>Ciclo del Agua</h2>
+                <p>Descubre cómo funciona el ciclo del agua y su relación con el cambio climático</p>
+            </div>
+            <div class="topic-card" onclick="showTopic(2)" tabindex="0" aria-label="Energías renovables">
+                <div class="topic-icon">☀️</div>
+                <h2>Energías Renovables Ecuador</h2>
+                <p>Principales fuentes de energía limpia disponibles en nuestro país</p>
+            </div>
+            <div class="topic-card" onclick="showTopic(3)" tabindex="0" aria-label="Huella de carbono">
+                <div class="topic-icon">🌱</div>
+                <h2>Reducir Huella de Carbono</h2>
+                <p>Hábitos prácticos para vivir de forma más sostenible</p>
+            </div>
+        </section>
+
+        <!-- Contenido Tema 1: Ciclo del Agua -->
+        <section id="topic1" class="content-section">
+            <div class="section-header">
+                <h2>El Ciclo del Agua</h2>
+                <p>Su importancia en el cambio climático</p>
+            </div>
+
+            <!-- Timeline Ciclo del Agua -->
+            <div class="timeline">
+                <div class="timeline-item" onclick="toggleTimeline(1,1)">
+                    <div class="timeline-number">1</div>
+                    <div class="timeline-content">
+                        <h3>Evaporación</h3>
+                        <p>El agua de océanos, ríos y lagos se convierte en vapor por el calor del sol.</p>
+                    </div>
+                </div>
+                <div class="timeline-item" onclick="toggleTimeline(1,2)">
+                    <div class="timeline-number">2</div>
+                    <div class="timeline-content">
+                        <h3>Condensación</h3>
+                        <p>El vapor se enfría en la atmósfera formando nubes.</p>
+                    </div>
+                </div>
+                <div class="timeline-item" onclick="toggleTimeline(1,3)">
+                    <div class="timeline-number">3</div>
+                    <div class="timeline-content">
+                        <h3>Precipitación</h3>
+                        <p>Las gotas de agua caen como lluvia, nieve o granizo.</p>
+                    </div>
+                </div>
+                <div class="timeline-item" onclick="toggleTimeline(1,4)">
+                    <div class="timeline-number">4</div>
+                    <div class="timeline-content">
+                        <h3>Escorrentía e Infiltración</h3>
+                        <p>El agua retorna a ríos, lagos y acuíferos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acordeón -->
+            <div class="accordion">
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>¿Cómo afecta el cambio climático al ciclo del agua?</span>
+                        <div class="accordion-icon">+</div>
+                    </div>
+                    <div class="accordion-content">
+                        <p>El calentamiento global intensifica la evaporación, altera patrones de precipitación y provoca eventos extremos como sequías e inundaciones.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>Importancia del ciclo del agua</span>
+                        <div class="accordion-icon">+</div>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Regula el clima global, provee agua dulce y mantiene los ecosistemas. Sin él, la vida tal como la conocemos sería imposible.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Tema 1 -->
+            <div class="quiz-container">
+                <h3>🧠 Mini Quiz: Ciclo del Agua</h3>
+                <div class="quiz-progress">
+                    <span>Pregunta <span id="question1-counter">1</span>/4</span>
+                    <span class="score">Aciertos: <span id="score1">0</span>/4</span>
+                </div>
+
+                <div class="quiz-question active" data-question="1">
+                    <div class="question-text">¿Cuál es el primer paso del ciclo del agua?</div>
+                    <label class="quiz-option" onclick="selectAnswer(1,1,this)">A) Precipitación</label>
+                    <label class="quiz-option" onclick="selectAnswer(1
