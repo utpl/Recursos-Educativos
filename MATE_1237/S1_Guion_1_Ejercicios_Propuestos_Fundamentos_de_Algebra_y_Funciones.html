@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fundamentos de Álgebra y Funciones</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: rgba(255,255,255,0.08);
+  --text: #e8eaf0;
+  --muted: #8892a4;
+  --accent1: #3b82f6;
+  --accent2: #06b6d4;
+  --accent3: #f59e0b;
+  --green: #10b981;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --pink: #ec4899;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── NOISE OVERLAY ─── */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ─── HEADER ─── */
+.hero {
+  position:relative;
+  padding: 60px 24px 40px;
+  text-align:center;
+  overflow:hidden;
+}
+
+.hero-glow {
+  position:absolute;
+  top:-80px; left:50%;
+  transform:translateX(-50%);
+  width:600px; height:400px;
+  background: radial-gradient(ellipse, rgba(59,130,246,0.18) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+.badge {
+  display:inline-block;
+  background: rgba(59,130,246,0.15);
+  border:1px solid rgba(59,130,246,0.35);
+  color: var(--accent1);
+  font-size:.75rem;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  padding:6px 16px;
+  border-radius:100px;
+  margin-bottom:20px;
+}
+
+.hero h1 {
+  font-family:'Playfair Display', serif;
+  font-size:clamp(1.8rem,5vw,3rem);
+  color:#fff;
+  line-height:1.2;
+  margin-bottom:12px;
+}
+
+.hero h1 em {
+  font-style:italic;
+  color: var(--accent2);
+}
+
+.hero-sub {
+  color: var(--muted);
+  font-size:1rem;
+  margin-bottom:32px;
+}
+
+.info-strip {
+  display:flex;
+  justify-content:center;
+  gap:32px;
+  flex-wrap:wrap;
+  font-size:.82rem;
+  color: var(--muted);
+  margin-bottom:24px;
+}
+
+.info-strip span {
+  display:flex; align-items:center; gap:6px;
+}
+
+.info-strip .dot {
+  width:6px; height:6px;
+  background:var(--accent1);
+  border-radius:50%;
+}
+
+.hint-bar {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(245,158,11,0.1);
+  border:1px dashed rgba(245,158,11,0.4);
+  color:#fbbf24;
+  font-size:.85rem;
+  font-weight:500;
+  padding:10px 24px;
+  border-radius:12px;
+}
+
+/* ─── PROGRESS BAR ─── */
+.progress-wrap {
+  max-width:900px;
+  margin:0 auto 48px;
+  padding: 0 24px;
+}
+
+.progress-label {
+  display:flex;
+  justify-content:space-between;
+  font-size:.78rem;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.progress-track {
+  height:6px;
+  background:var(--surface2);
+  border-radius:100px;
+  overflow:hidden;
+}
+
+.progress-fill {
+  height:100%;
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  border-radius:100px;
+  width:0%;
+  transition: width .6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── LAYOUT ─── */
+.container { max-width:1100px; margin:0 auto; padding:0 24px 80px; }
+
+.exercises-list {
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+/* ─── EXERCISE CARD ─── */
+.ex-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+  transition: box-shadow .3s, border-color .3s;
+}
+
+.ex-card:hover {
+  border-color: rgba(59,130,246,0.3);
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.1), 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.ex-header {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:20px 24px;
+  cursor:pointer;
+  user-select:none;
+  transition:background .2s;
+  position:relative;
+}
+
+.ex-header:hover { background: rgba(255,255,255,0.03); }
+
+.ex-num {
+  min-width:44px; height:44px;
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.85rem;
+  font-weight:700;
+  font-family:'DM Mono', monospace;
+  flex-shrink:0;
+}
+
+.ex-header-text { flex:1; }
+
+.ex-title {
+  font-size:.95rem;
+  font-weight:600;
+  color:#fff;
+  line-height:1.3;
+}
+
+.ex-subtitle {
+  font-size:.78rem;
+  color:var(--muted);
+  margin-top:2px;
+  font-style:italic;
+}
+
+.ex-arrow {
+  font-size:1.1rem;
+  color:var(--muted);
+  transition: transform .35s cubic-bezier(0.4,0,0.2,1);
+  flex-shrink:0;
+}
+
+.ex-card.open .ex-arrow { transform:rotate(180deg); }
+
+.ex-done-badge {
+  font-size:.7rem;
+  font-weight:600;
+  background:rgba(16,185,129,0.15);
+  color:var(--green);
+  border:1px solid rgba(16,185,129,0.3);
+  padding:3px 10px;
+  border-radius:100px;
+  flex-shrink:0;
+  display:none;
+}
+
+.ex-card.completed .ex-done-badge { display:block; }
+
+/* ─── BODY ─── */
+.ex-body {
+  display:none;
+  padding:0 24px 24px;
+  border-top:1px solid var(--border);
+}
+
+.ex-card.open .ex-body { display:block; }
+
+/* Enunciado */
+.enunciado-box {
+  background: var(--surface2);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent1);
+  border-radius:12px;
+  padding:20px;
+  margin:20px 0;
+}
+
+.enunciado-box .label {
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--accent1);
+  margin-bottom:10px;
+}
+
+.enunciado-box p, .enunciado-box .math-text {
+  font-size:.92rem;
+  color:#c8d0de;
+  line-height:1.75;
+}
+
+/* Table for data */
+.data-table {
+  width:100%;
+  border-collapse:collapse;
+  margin:12px 0;
+  font-size:.85rem;
+}
+
+.data-table th {
+  background:rgba(59,130,246,0.15);
+  color:var(--accent2);
+  padding:8px 14px;
+  font-weight:600;
+  text-align:center;
+  border:1px solid var(--border);
+}
+
+.data-table td {
+  padding:7px 14px;
+  text-align:center;
+  border:1px solid var(--border);
+  color:var(--text);
+}
+
+.data-table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+
+/* Steps section */
+.steps-label {
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:12px;
+  margin-top:20px;
+}
+
+.steps-grid {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.step-item {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  cursor:pointer;
+  overflow:hidden;
+  transition: border-color .25s, box-shadow .25s;
+}
+
+.step-item:hover {
+  border-color:rgba(255,255,255,0.15);
+}
+
+.step-item.active {
+  border-color:var(--accent1);
+  box-shadow:0 0 0 1px rgba(59,130,246,0.15);
+}
+
+.step-item.done {
+  border-color:rgba(16,185,129,0.3);
+}
+
+.step-trigger {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 18px;
+}
+
+.step-icon {
+  width:32px; height:32px;
+  border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem;
+  flex-shrink:0;
+  transition: background .25s;
+}
+
+.step-item.done .step-icon {
+  background:rgba(16,185,129,0.15) !important;
+}
+
+.step-key {
+  font-size:.8rem;
+  font-weight:700;
+  font-family:'DM Mono', monospace;
+  flex-shrink:0;
+  transition:color .25s;
+}
+
+.step-title-text {
+  font-size:.88rem;
+  font-weight:500;
+  color:#d1d9e6;
+  flex:1;
+  line-height:1.3;
+}
+
+.step-chevron {
+  color:var(--muted);
+  font-size:.9rem;
+  transition: transform .3s;
+  flex-shrink:0;
+}
+
+.step-item.active .step-chevron { transform:rotate(180deg); }
+
+.step-content {
+  display:none;
+  padding:0 18px 16px 64px;
+  font-size:.88rem;
+  color:#bcc5d6;
+  line-height:1.8;
+  border-top:1px solid var(--border);
+  padding-top:14px;
+}
+
+.step-item.active .step-content { display:block; }
+
+.step-content strong { color:#fff; }
+.step-content .highlight {
+  display:inline-block;
+  background:rgba(59,130,246,0.15);
+  color:var(--accent2);
+  font-family:'DM Mono', monospace;
+  font-size:.85em;
+  padding:2px 8px;
+  border-radius:6px;
+  border:1px solid rgba(59,130,246,0.25);
+}
+
+.step-content .result-box {
+  background:rgba(16,185,129,0.08);
+  border:1px solid rgba(16,185,129,0.25);
+  border-radius:10px;
+  padding:12px 16px;
+  margin-top:10px;
+  color:#6ee7b7;
+  font-size:.9rem;
+}
+
+.step-content .formula-box {
+  background:rgba(59,130,246,0.08);
+  border:1px solid rgba(59,130,246,0.2);
+  border-radius:10px;
+  padding:12px 16px;
+  margin:10px 0;
+  text-align:center;
+}
+
+.step-content .warn-box {
+  background:rgba(245,158,11,0.08);
+  border:1px solid rgba(245,158,11,0.2);
+  border-radius:10px;
+  padding:10px 14px;
+  color:#fcd34d;
+  font-size:.85rem;
+  margin-top:8px;
+}
+
+/* Number line visual */
+.number-line {
+  position:relative;
+  height:50px;
+  margin:14px 0;
+}
+
+.nl-track {
+  position:absolute;
+  top:50%; left:5%;
+  transform:translateY(-50%);
+  width:90%;
+  height:3px;
+  background:var(--border);
+  border-radius:2px;
+}
+
+.nl-fill {
+  position:absolute;
+  top:0; right:0;
+  height:100%;
+  border-radius:2px;
+  transition: width 1s ease;
+}
+
+.nl-point {
+  position:absolute;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:12px; height:12px;
+  border-radius:50%;
+  border:2px solid #fff;
+}
+
+.nl-label {
+  position:absolute;
+  top:100%;
+  transform:translateX(-50%);
+  font-size:.72rem;
+  color:var(--muted);
+  font-family:'DM Mono', monospace;
+  margin-top:6px;
+}
+
+.nl-arrow {
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:1.4rem;
+  color:var(--accent1);
+}
+
+/* Graph area */
+.graph-placeholder {
+  background:var(--surface2);
+  border:1px dashed var(--border);
+  border-radius:10px;
+  padding:14px;
+  text-align:center;
+  color:var(--muted);
+  font-size:.82rem;
+  margin-top:10px;
+}
+
+/* Tags */
+.tag {
+  display:inline-block;
+  font-size:.7rem;
+  font-weight:600;
+  padding:3px 10px;
+  border-radius:100px;
+  margin:2px;
+}
+.tag-blue { background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.25); }
+.tag-green { background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.25); }
+.tag-amber { background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid rgba(245,158,11,0.25); }
+.tag-red { background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.25); }
+
+/* ─── FOOTER ─── */
+footer {
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:40px 24px;
+  text-align:center;
+  color:var(--muted);
+  font-size:.82rem;
+  line-height:1.9;
+}
+
+footer strong { color:var(--text); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeSlideIn {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.ex-card {
+  animation: fadeSlideIn .5s ease both;
+}
+
+.ex-card:nth-child(1) { animation-delay:.05s }
+.ex-card:nth-child(2) { animation-delay:.1s }
+.ex-card:nth-child(3) { animation-delay:.15s }
+.ex-card:nth-child(4) { animation-delay:.2s }
+.ex-card:nth-child(5) { animation-delay:.25s }
+.ex-card:nth-child(6) { animation-delay:.3s }
+.ex-card:nth-child(7) { animation-delay:.35s }
+.ex-card:nth-child(8) { animation-delay:.4s }
+.ex-card:nth-child(9) { animation-delay:.45s }
+
+.mjx-container { color:inherit !important; }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <h1>Ejercicios Propuestos<br><em>Fundamentos de Álgebra y Funciones</em></h1>
+  <p class="hero-sub">Análisis Matemático para Ingeniería · Prof. Darwin Patricio Castillo Malla</p>
+  <div class="info-strip">
+    <span><span class="dot"></span>9 ejercicios propuestos</span>
+    <span><span class="dot" style="background:var(--accent2)"></span>Álgebra · Funciones · Ingeniería</span>
+    <span><span class="dot" style="background:var(--accent3)"></span>Módulo didáctico interactivo</span>
+  </div>
+  <div class="hint-bar">👆 Haga clic en cada ejercicio para expandirlo — luego en cada ítem para ver la solución</div>
+</section>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>Progreso</span>
+    <span id="prog-text">0 / 9 completados</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<div class="container">
+<div class="exercises-list" id="exercises">
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 1
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="1">
+  <div class="ex-header" onclick="toggleCard(1)">
+    <div class="ex-num" style="background:rgba(59,130,246,0.15);color:#93c5fd">01</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Álgebra básica · Intervalos y números racionales/irracionales</div>
+      <div class="ex-subtitle">Clasificación de números y resolución de desigualdades</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>Determine si la proposición \(\sqrt{4} \in \mathbb{Q}'\) es verdadera o falsa. Justifique su respuesta utilizando la definición de números racionales o irracionales. Además, resuelva la desigualdad \(-2x - 3 \geq 7\) y represente la solución en la recta numérica real.</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(59,130,246,0.15); font-size:1.2rem">🔢</div>
+          <span class="step-key" style="color:#93c5fd">A</span>
+          <span class="step-title-text">Parte A — Definición clave: número racional</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Un número es <strong>racional (\(\mathbb{Q}\))</strong> si puede expresarse como \(\dfrac{m}{n}\) con \(m, n \in \mathbb{Z}\) y \(n \neq 0\).
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(6,182,212,0.15); font-size:1.2rem">🔍</div>
+          <span class="step-key" style="color:#67e8f9">A</span>
+          <span class="step-title-text">Parte A — Análisis: ¿es \(\sqrt{4}\) irracional?</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          El número \(\sqrt{4}\) puede escribirse como <span class="highlight">2 = 2/1</span>, por lo tanto es un número <strong>racional</strong>.
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(239,68,68,0.15); font-size:1.2rem">❌</div>
+          <span class="step-key" style="color:#fca5a5">A</span>
+          <span class="step-title-text">Parte A — Conclusión de la proposición</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="result-box">La proposición es <strong>FALSA</strong>. \(\sqrt{4}\) <u>no es irracional</u> (\(\mathbb{Q}'\)), es racional.</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(245,158,11,0.15); font-size:1.2rem">📐</div>
+          <span class="step-key" style="color:#fcd34d">B</span>
+          <span class="step-title-text">Parte B — Paso 1: Sumar 3 a ambos lados</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Partimos de: \(-2x - 3 \geq 7\)
+          <div class="formula-box">\[ -2x - 3 + 3 \geq 7 + 3 \implies -2x \geq 10 \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(245,158,11,0.15); font-size:1.2rem">➗</div>
+          <span class="step-key" style="color:#fcd34d">B</span>
+          <span class="step-title-text">Parte B — Paso 2: Dividir entre −2 (invertir desigualdad)</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Al dividir por un número <strong>negativo</strong>, el sentido de la desigualdad se invierte:
+          <div class="formula-box">\[ x \leq -5 \]</div>
+          <div class="warn-box">⚠️ Regla clave: dividir por negativo → invertir signo de la desigualdad.</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15); font-size:1.2rem">📏</div>
+          <span class="step-key" style="color:#6ee7b7">B</span>
+          <span class="step-title-text">Parte B — Representación e interpretación</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Intervalo solución: <span class="highlight">(-∞, -5]</span>
+          <div style="position:relative; height:56px; margin:14px 0;">
+            <div style="position:absolute; top:50%; left:5%; width:90%; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; transform:translateY(-50%)">
+              <div style="position:absolute; top:0; right:0; width:60%; height:100%; background:linear-gradient(90deg, var(--accent1), var(--accent2)); border-radius:2px;"></div>
+            </div>
+            <div style="position:absolute; top:50%; left:40%; transform:translate(-50%,-50%); width:13px; height:13px; border-radius:50%; background:var(--accent1); border:2px solid #fff;"></div>
+            <div style="position:absolute; top:calc(50% + 12px); left:40%; transform:translateX(-50%); font-size:.72rem; color:var(--muted); font-family:'DM Mono',monospace;">-5</div>
+            <div style="position:absolute; top:50%; left:5%; transform:translateY(-50%); font-size:1.3rem; color:var(--accent1);">◀</div>
+          </div>
+          En la recta numérica: rayo que parte de −5 (punto <strong>cerrado •</strong>) y se extiende hacia la izquierda (−∞).
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-blue">Números racionales ℚ</span>
+      <span class="tag tag-amber">Desigualdades lineales</span>
+      <span class="tag tag-green">Recta numérica</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 2
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="2">
+  <div class="ex-header" onclick="toggleCard(2)">
+    <div class="ex-num" style="background:rgba(245,158,11,0.15);color:#fcd34d">02</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Notación científica</div>
+      <div class="ex-subtitle">Cálculo con magnitudes atómicas en contexto de ingeniería</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>La masa de un protón es aproximadamente \(1.67 \times 10^{-27}\) kg. Si se tiene una muestra de material con una masa total de \(3.34 \times 10^{-23}\) kg, estime el número de protones en la muestra. Exprese la respuesta en forma estándar y en notación científica.</p>
+      <p style="margin-top:8px;font-style:italic;color:var(--muted);">Sugerencia: Número de protones = masa total ÷ masa de un protón.</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(245,158,11,0.15)">⚛️</div>
+          <span class="step-key" style="color:#fcd34d">1</span>
+          <span class="step-title-text">Datos del problema</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <strong>Masa de un protón:</strong> \(m_p \approx 1.67 \times 10^{-27}\) kg<br>
+          <strong>Masa total de la muestra:</strong> \(M = 3.34 \times 10^{-23}\) kg<br><br>
+          Operación requerida: \( N = \dfrac{M}{m_p} \)
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(6,182,212,0.15)">➗</div>
+          <span class="step-key" style="color:#67e8f9">2</span>
+          <span class="step-title-text">Paso 1 — División de mantisas</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">\[ \frac{3.34}{1.67} = 2 \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(59,130,246,0.15)">🔢</div>
+          <span class="step-key" style="color:#93c5fd">3</span>
+          <span class="step-title-text">Paso 2 — Leyes de exponentes</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">\[ \frac{10^{-23}}{10^{-27}} = 10^{-23-(-27)} = 10^{4} \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">✅</div>
+          <span class="step-key" style="color:#6ee7b7">4</span>
+          <span class="step-title-text">Resultado final</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="result-box">
+            <strong>Notación científica:</strong> \(N = 2 \times 10^{4}\)<br>
+            <strong>Forma estándar (entera):</strong> \(N = 20{,}000\) protones
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-amber">Notación científica</span>
+      <span class="tag tag-blue">Leyes de exponentes</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 3
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="3">
+  <div class="ex-header" onclick="toggleCard(3)">
+    <div class="ex-num" style="background:rgba(16,185,129,0.15);color:#6ee7b7">03</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Operaciones algebraicas · Potencias y radicales</div>
+      <div class="ex-subtitle">Simplificación de expresiones algebraicas — eficiencia térmica</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>Un ingeniero analiza la variación de la eficiencia térmica \(E\) de un motor en función de la temperatura \(T\). Simplifique la siguiente expresión y escríbala con solo exponentes positivos:</p>
+      <div style="text-align:center; margin:14px 0;">
+        \[ W = \frac{\left(E \cdot T^{-3}\right)^{2}}{E^{-1} T^{4}} \]
+      </div>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">📝</div>
+          <span class="step-key" style="color:#6ee7b7">1</span>
+          <span class="step-title-text">Expresión de partida (aplicar potencia al numerador)</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Expandir el cuadrado del numerador:
+          <div class="formula-box">\[ W = \frac{E^{2} \cdot T^{-3/2}}{E^{-1} \cdot T^{4}} \]</div>
+          <small style="color:var(--muted);">Nota: \((T^{-3})^{1/2}=T^{-3/2}\) proviene del radical implícito en la expresión original.</small>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(59,130,246,0.15)">🔗</div>
+          <span class="step-key" style="color:#93c5fd">2</span>
+          <span class="step-title-text">Paso 1 — Agrupar términos semejantes</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Usar ley de cociente: \(a^x / a^y = a^{x-y}\)
+          <div class="formula-box">\[ W = E^{1-(-1)} \cdot T^{-3/2-4} \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(168,85,247,0.15)">✏️</div>
+          <span class="step-key" style="color:#d8b4fe">3</span>
+          <span class="step-title-text">Paso 2 — Simplificar exponentes</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">\[ W = E^{2} \cdot T^{-11/2} \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">✅</div>
+          <span class="step-key" style="color:#6ee7b7">4</span>
+          <span class="step-title-text">Paso 3 — Escribir con exponentes positivos</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Usar propiedad: \(a^{-x} = 1/a^x\)
+          <div class="result-box">\[ W = \frac{E^{2}}{T^{11/2}} \]</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-green">Leyes de potencias</span>
+      <span class="tag tag-blue">Exponentes negativos</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 4
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="4">
+  <div class="ex-header" onclick="toggleCard(4)">
+    <div class="ex-num" style="background:rgba(168,85,247,0.15);color:#d8b4fe">04</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Dominio de funciones</div>
+      <div class="ex-subtitle">Dominio natural de una función de eficiencia térmica</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>Determine el dominio natural de la función de eficiencia:</p>
+      <div style="text-align:center; margin:12px 0;">\[ \eta(T) = \frac{100}{T - 20} \]</div>
+      <p>donde \(T\) es la temperatura de operación en grados Celsius. Considere que, por contexto físico, la temperatura debe ser \(T \geq 0\).</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(168,85,247,0.15)">🚫</div>
+          <span class="step-key" style="color:#d8b4fe">1</span>
+          <span class="step-title-text">Restricción matemática (denominador ≠ 0)</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          El denominador no puede ser cero:
+          <div class="formula-box">\[ T - 20 \neq 0 \implies T \neq 20 \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(59,130,246,0.15)">🌡️</div>
+          <span class="step-key" style="color:#93c5fd">2</span>
+          <span class="step-title-text">Restricción física (T ≥ 0)</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Por contexto físico, la temperatura de operación es no negativa: \(T \geq 0\).
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">✅</div>
+          <span class="step-key" style="color:#6ee7b7">3</span>
+          <span class="step-title-text">Conclusión — Dominio natural</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="result-box">
+            \[ D_\eta = \{T \in \mathbb{R} \mid T \geq 0 \text{ y } T \neq 20\} \]
+            En notación de intervalos: \([0, 20) \cup (20, \infty)\)
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-blue">Dominio de funciones</span>
+      <span class="tag tag-amber">Restricciones físicas</span>
+      <span class="tag tag-red">Asíntotas verticales</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 5
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="5">
+  <div class="ex-header" onclick="toggleCard(5)">
+    <div class="ex-num" style="background:rgba(236,72,153,0.15);color:#f9a8d4">05</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Representaciones de funciones · Modelo lineal</div>
+      <div class="ex-subtitle">Modelo lineal a partir de datos experimentales de un reactor nuclear</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>Un sensor de temperatura \(T\) (en Kelvin) en un reactor nuclear registra los siguientes datos en función del tiempo \(t\) (en segundos):</p>
+      <table class="data-table" style="max-width:280px; margin:14px auto;">
+        <thead><tr><th>Tiempo \(t\) (s)</th><th>Temperatura \(T(t)\) (K)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>300</td></tr>
+          <tr><td>1</td><td>310</td></tr>
+          <tr><td>2</td><td>320</td></tr>
+          <tr><td>3</td><td>330</td></tr>
+        </tbody>
+      </table>
+      <p>(a) Determine la representación algebraica de \(T(t)\) asumiendo un modelo lineal.<br>
+      (b) ¿Cuál es la representación verbal del <strong>rango</strong> de \(T(t)\) para \(t \geq 0\)?</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(236,72,153,0.15)">📊</div>
+          <span class="step-key" style="color:#f9a8d4">a1</span>
+          <span class="step-title-text">Cálculo de la pendiente (m)</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">\[ m = \frac{310 - 300}{1 - 0} = 10 \text{ K/s} \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(59,130,246,0.15)">📌</div>
+          <span class="step-key" style="color:#93c5fd">a2</span>
+          <span class="step-title-text">Intersección (b) y representación algebraica</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          En \(t=0\), \(T=300\), por lo tanto \(b = 300\).
+          <div class="result-box">\[ T(t) = 10t + 300 \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">📝</div>
+          <span class="step-key" style="color:#6ee7b7">b</span>
+          <span class="step-title-text">Representación verbal del rango</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          La temperatura inicia en <strong>300 K</strong> y aumenta indefinidamente a razón de <strong>10 K por cada segundo</strong>.
+          <div class="result-box">Rango: \([300, \infty)\)</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-blue">Modelo lineal</span>
+      <span class="tag tag-green">Rango de funciones</span>
+      <span class="tag tag-amber">Datos experimentales</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 6
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="6">
+  <div class="ex-header" onclick="toggleCard(6)">
+    <div class="ex-num" style="background:rgba(20,184,166,0.15);color:#5eead4">06</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Funciones lineales</div>
+      <div class="ex-subtitle">Velocidad de una turbina eólica en función del tiempo</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>La velocidad de una turbina eólica, \(V\) (en RPM), disminuye a una tasa constante de \(1.2\) RPM por cada \(10\) minutos de operación \(t\). Si la velocidad inicial es de \(1500\) RPM, encuentre la función lineal \(V(t)\) (donde \(t\) está en minutos) y calcule su pendiente \(m\).</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(20,184,166,0.15)">🌬️</div>
+          <span class="step-key" style="color:#5eead4">1</span>
+          <span class="step-title-text">Datos del problema</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <strong>Velocidad inicial:</strong> \(b = 1500\) RPM<br>
+          <strong>Disminución:</strong> 1.2 RPM cada 10 min
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(245,158,11,0.15)">📉</div>
+          <span class="step-key" style="color:#fcd34d">2</span>
+          <span class="step-title-text">Cálculo de la pendiente (m)</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">\[ m = \frac{-1.2}{10} = -0.12 \text{ RPM/min} \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(59,130,246,0.15)">📐</div>
+          <span class="step-key" style="color:#93c5fd">3</span>
+          <span class="step-title-text">Función lineal</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="result-box">\[ V(t) = -0.12\,t + 1500 \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">💡</div>
+          <span class="step-key" style="color:#6ee7b7">4</span>
+          <span class="step-title-text">Interpretación de la pendiente</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          La pendiente negativa (\(m = -0.12\)) indica que la velocidad de la turbina <strong>disminuye 0.12 RPM por cada minuto</strong> de operación.
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-green">Funciones lineales</span>
+      <span class="tag tag-blue">Pendiente negativa</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 7
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="7">
+  <div class="ex-header" onclick="toggleCard(7)">
+    <div class="ex-num" style="background:rgba(249,115,22,0.15);color:#fdba74">07</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Funciones cuadráticas</div>
+      <div class="ex-subtitle">Costo promedio de producción energética</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>La función de costo promedio \(\bar{c}(q)\) (en USD/MWh) para producir \(q\) megavatios-hora está modelada por:</p>
+      <div style="text-align:center; margin:12px 0;">\[ \bar{c}(q) = 0.01q^2 - q + 30 \]</div>
+      <p>Calcule el costo promedio si la producción es de \(q = 50\) MWh y determine si la parábola se abre hacia arriba o hacia abajo.</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(249,115,22,0.15)">🔢</div>
+          <span class="step-key" style="color:#fdba74">1</span>
+          <span class="step-title-text">Cálculo para q = 50</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">
+            \[ \bar{c}(50) = 0.01(50)^2 - (50) + 30 \]
+            \[ = 0.01 \cdot 2500 - 50 + 30 = 25 - 50 + 30 \]
+          </div>
+          <div class="result-box">\[ \bar{c}(50) = 5 \text{ USD/MWh} \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(59,130,246,0.15)">📊</div>
+          <span class="step-key" style="color:#93c5fd">2</span>
+          <span class="step-title-text">Análisis de la parábola (coeficiente a)</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Dado que <span class="highlight">a = 0.01 &gt; 0</span>, la parábola <strong>abre hacia arriba</strong> (forma de "U").
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">💡</div>
+          <span class="step-key" style="color:#6ee7b7">3</span>
+          <span class="step-title-text">Significado económico</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Al abrir hacia arriba, la función tiene un <strong>valor mínimo</strong>. Esto implica que existe un nivel de producción óptimo que <strong>minimiza el costo promedio</strong> de producción energética.
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-amber">Funciones cuadráticas</span>
+      <span class="tag tag-green">Valor mínimo</span>
+      <span class="tag tag-blue">Aplicación energética</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 8
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="8">
+  <div class="ex-header" onclick="toggleCard(8)">
+    <div class="ex-num" style="background:rgba(6,182,212,0.15);color:#67e8f9">08</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Funciones exponenciales</div>
+      <div class="ex-subtitle">Crecimiento de biomasa en una biorrefinería</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>El crecimiento de biomasa \(B\) (en kg) en una biorrefinería sigue la función \(B(t) = 50 \cdot (1.05)^t\), donde \(t\) es el tiempo en días.</p>
+      <p style="margin-top:8px;">(a) ¿Cuál es el valor de la biomasa después de 5 días?<br>
+      (b) Si la base fuera \(a = 1\), ¿qué tipo de función sería \(B(t)\)?</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(6,182,212,0.15)">🌱</div>
+          <span class="step-key" style="color:#67e8f9">a</span>
+          <span class="step-title-text">Valor en t = 5 días</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">\[ B(5) = 50 \cdot (1.05)^5 \approx 50 \cdot 1.27628 \]</div>
+          <div class="result-box">\[ B(5) \approx 63.81 \text{ kg} \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(245,158,11,0.15)">🤔</div>
+          <span class="step-key" style="color:#fcd34d">b</span>
+          <span class="step-title-text">Si la base fuera a = 1</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">\[ B(t) = 50 \cdot 1^t = 50 \]</div>
+          Sería una <strong>función constante</strong> (su valor no cambia con el tiempo).
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">💡</div>
+          <span class="step-key" style="color:#6ee7b7">★</span>
+          <span class="step-title-text">Reflexión física</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Cuando la base de una función exponencial es 1, no hay crecimiento ni decrecimiento. La biomasa permanecería invariable, lo que físicamente significa que el cultivo <strong>no se reproduce</strong>.
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-blue">Funciones exponenciales</span>
+      <span class="tag tag-green">Crecimiento biológico</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     EJERCICIO 9
+════════════════════════════════════════════════════ -->
+<div class="ex-card" data-id="9">
+  <div class="ex-header" onclick="toggleCard(9)">
+    <div class="ex-num" style="background:rgba(239,68,68,0.15);color:#fca5a5">09</div>
+    <div class="ex-header-text">
+      <div class="ex-title">Funciones racionales</div>
+      <div class="ex-subtitle">Resistencia eléctrica y dominio — asíntotas verticales</div>
+    </div>
+    <span class="ex-done-badge">✓ Completado</span>
+    <div class="ex-arrow">⌄</div>
+  </div>
+  <div class="ex-body">
+    <div class="enunciado-box">
+      <div class="label">📋 Enunciado</div>
+      <p>Un modelo simplificado para la resistencia \(R\) (en Ohmios) en un circuito en función del diámetro del cable \(d\) (en cm) es:</p>
+      <div style="text-align:center; margin:12px 0;">\[ R(d) = \frac{10d + 5}{d^2 - 1} \]</div>
+      <p>Determine los valores de \(d\) que están excluidos del dominio de \(R(d)\) (es decir, dónde ocurrirían las asíntotas).</p>
+    </div>
+    <div class="steps-label">👆 Haga clic en los ítems para visualizar la solución</div>
+    <div class="steps-grid">
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(239,68,68,0.15)">⚡</div>
+          <span class="step-key" style="color:#fca5a5">1</span>
+          <span class="step-title-text">Condición — Igualar denominador a cero</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Los valores excluidos son aquellos donde \(Q(d) = 0\):
+          <div class="formula-box">\[ d^2 - 1 = 0 \]</div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(245,158,11,0.15)">🔧</div>
+          <span class="step-key" style="color:#fcd34d">2</span>
+          <span class="step-title-text">Paso 1 y 2 — Factorizar y resolver</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          <div class="formula-box">
+            \[ (d-1)(d+1) = 0 \]
+            \[ \implies d = 1 \quad \text{o} \quad d = -1 \]
+          </div>
+        </div>
+      </div>
+      <div class="step-item" onclick="toggleStep(this)">
+        <div class="step-trigger">
+          <div class="step-icon" style="background:rgba(16,185,129,0.15)">✅</div>
+          <span class="step-key" style="color:#6ee7b7">3</span>
+          <span class="step-title-text">Conclusión — Dominio y asíntotas</span>
+          <span class="step-chevron">⌄</span>
+        </div>
+        <div class="step-content">
+          Los valores <span class="highlight">d = 1</span> y <span class="highlight">d = −1</span> están excluidos del dominio. En esos puntos ocurren <strong>asíntotas verticales</strong>, lo que significa que la resistencia tiende a infinito.
+          <div class="result-box">Dominio: \(\mathbb{R} \setminus \{-1, 1\}\) = \((-\infty,-1) \cup (-1,1) \cup (1,\infty)\)</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="tag tag-red">Funciones racionales</span>
+      <span class="tag tag-amber">Asíntotas verticales</span>
+      <span class="tag tag-blue">Dominio excluido</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.exercises-list -->
+</div><!-- /.container -->
+
+<footer>
+  <div style="max-width:700px; margin:0 auto;">
+    <p style="color:#60a5fa; font-weight:600; margin-bottom:12px;">Referencias (APA 7)</p>
+    <p>Larson, R., &amp; Edwards, B. H. (2022). <em>Cálculo</em> (11.ª ed.). Cengage Learning.</p>
+    <p>Stewart, J., Redlin, L., &amp; Watson, S. (2021). <em>Precálculo: Matemáticas para el cálculo</em> (8.ª ed.). Cengage Learning.</p>
+    <p>Thomas, G. B., Weir, M. D., &amp; Hass, J. R. (2018). <em>Cálculo</em> (14.ª ed.). Pearson.</p>
+
+  </div>
+</footer>
+
+<script>
+const completed = new Set();
+const total = 9;
+
+function toggleCard(id) {
+  const card = document.querySelector(`.ex-card[data-id="${id}"]`);
+  const isOpen = card.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    card.classList.add('open');
+    // Retypeset math
+    if (window.MathJax) MathJax.typesetPromise([card]);
+  }
+}
+
+function toggleStep(el) {
+  const card = el.closest('.ex-card');
+  const wasActive = el.classList.contains('active');
+  // Close siblings
+  card.querySelectorAll('.step-item').forEach(s => {
+    s.classList.remove('active');
+  });
+  if (!wasActive) {
+    el.classList.add('active');
+    el.classList.add('done');
+    if (window.MathJax) MathJax.typesetPromise([el]);
+  }
+  // Mark card complete when all steps seen
+  const allSteps = card.querySelectorAll('.step-item');
+  const doneSteps = card.querySelectorAll('.step-item.done');
+  if (doneSteps.length >= allSteps.length) {
+    const id = parseInt(card.dataset.id);
+    if (!completed.has(id)) {
+      completed.add(id);
+      card.classList.add('completed');
+      updateProgress();
+    }
+  }
+}
+
+function updateProgress() {
+  const pct = (completed.size / total) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${completed.size} / ${total} completados`;
+}
+</script>
+</body>
+</html>
