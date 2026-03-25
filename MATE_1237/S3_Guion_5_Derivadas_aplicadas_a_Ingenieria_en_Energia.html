@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misión Delta-7 — Derivadas en Ingeniería de Energía</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=DM+Sans:wght@400;500;600&display=swap');
+
+/* ═══════════════════════════════════════════════════
+   PALETA
+═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   PALETA CLARA — WCAG 2.1 AA COMPLIANT
+═══════════════════════════════════════════════════ */
+:root {
+  /* Fondos base */
+  --bg:        #f8fafc;
+  --panel:     #ffffff;
+  --panel-2:   #f1f5f9;
+  --border:    rgba(2, 6, 23, 0.15);
+  --border-2:  rgba(2, 6, 23, 0.08);
+
+  /* Acento principal (neon verde accesible) */
+  --neon:      #059669;
+  --neon-dk:   #047857;
+  --neon-lt:   rgba(5, 150, 105, 0.12);
+
+  /* Advertencia (ámbar accesible) */
+  --amber:     #b45309;
+  --amber-lt:  rgba(180, 83, 9, 0.12);
+  --amber-bd:  rgba(180, 83, 9, 0.35);
+
+  /* Error (rojo accesible) */
+  --red:       #b91c1c;
+  --red-lt:    rgba(185, 28, 28, 0.12);
+  --red-bd:    rgba(185, 28, 28, 0.35);
+
+  /* Info/acción (azul accesible) */
+  --blue:      #2563eb;
+  --blue-lt:   rgba(37, 99, 235, 0.12);
+  --blue-bd:   rgba(37, 99, 235, 0.35);
+
+  /* Tipografía sobre fondo claro */
+  --text:      #0f172a;
+  --text-2:    #030304;
+  --muted:     #090c0f;
+
+  /* Layout */
+  --canvas-w:  850px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(0,220,130,.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(59,130,246,.05) 0%, transparent 50%);
+}
+
+/* ═══════════════════════════════════════════════════
+   CANVAS
+═══════════════════════════════════════════════════ */
+.canvas {
+  width:100%; max-width:var(--canvas-w);
+  display:flex; flex-direction:column;
+  box-shadow:0 0 80px rgba(0,220,130,.08);
+}
+
+/* ═══════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════ */
+.site-header {
+  background: linear-gradient(135deg, #075040 0%, #0d8060 55%, #1aaa80 100%);
+  border-bottom:1px solid var(--border);
+  padding:22px 40px 18px;
+  flex-shrink:0;
+  position:relative;
+  overflow:hidden;
+}
+.site-header::before {
+  content:'';
+  position:absolute; inset:0;
+  background:repeating-linear-gradient(90deg,
+    rgba(0,220,130,.03) 0px, rgba(0,220,130,.03) 1px,
+    transparent 1px, transparent 60px);
+  pointer-events:none;
+}
+.hdr-row {
+  position:relative; z-index:1;
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+}
+.hdr-left { flex:1; }
+.mission-badge {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--neon-lt);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:4px 12px;
+  font-size:.65rem; font-weight:800;
+  letter-spacing:.15em; text-transform:uppercase;
+  color:white; margin-bottom:10px;
+  font-family:'Exo 2',sans-serif;
+}
+.site-header h1 {
+  font-family:'Exo 2',sans-serif;
+  font-size:1.45rem; font-weight:900; color:#fff;
+  line-height:1.2; margin-bottom:4px;
+  text-shadow:0 0 20px rgba(0,220,130,.3);
+}
+.site-header p {
+  font-size:.78rem; color:white; line-height:1.5;
+  max-width:420px;
+}
+
+/* HUD */
+.hud {
+  display:flex; flex-direction:column; align-items:flex-end; gap:8px;
+  flex-shrink:0;
+}
+.hud-score {
+  font-family:'Share Tech Mono',monospace;
+  font-size:1.8rem; font-weight:700; color:white;
+  text-shadow:0 0 16px rgba(231, 235, 233, 0.5);
+  line-height:1;
+}
+.hud-score-label {
+  font-size:.6rem; color:#ffffff; text-align:right;
+  font-family:'Exo 2',sans-serif; letter-spacing:.1em; text-transform:uppercase;
+}
+.lives-row { display:flex; gap:6px; align-items:center; margin-top:2px; }
+.life-cell {
+  width:28px; height:16px;
+  background:white;
+  border-radius:3px;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 8px rgba(255, 255, 255, 0.5);
+}
+.life-cell.dead {
+  background:var(--muted);
+  box-shadow:none;
+  opacity:.35;
+}
+
+/* ═══════════════════════════════════════════════════
+   PROGRESS BAR
+═══════════════════════════════════════════════════ */
+.prog-wrap {
+  background:var(--panel);
+  border-bottom:1px solid var(--border-2);
+  padding:8px 40px;
+  position:sticky; top:0; z-index:50;
+  flex-shrink:0;
+}
+.prog-row { display:flex; align-items:center; gap:10px; }
+.prog-zones {
+  display:flex; gap:3px; flex:1;
+}
+.zone-pip {
+  flex:1; height:6px; border-radius:2px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.04);
+  transition:background .4s, border-color .4s;
+}
+.zone-pip.done { background:var(--neon); border-color:var(--neon); box-shadow:0 0 6px rgba(0,220,130,.4); }
+.zone-pip.current { background:var(--amber); border-color:var(--amber); }
+.prog-txt {
+  font-size:.68rem; font-weight:700; color:var(--text-2);
+  font-family:'Exo 2',sans-serif; white-space:nowrap;
+  min-width:70px; text-align:right;
+}
+
+/* ═══════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════ */
+.main {
+  flex:1; padding:28px 40px 52px;
+  background:var(--bg);
+}
+
+/* ═══════════════════════════════════════════════════
+   QUESTION PANEL
+═══════════════════════════════════════════════════ */
+.q-panel {
+  display:none;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  flex-direction:column;
+  animation:fadeUp .3s ease both;
+  box-shadow:0 4px 32px rgba(0,0,0,.4), 0 0 0 1px rgba(0,220,130,.06);
+}
+.q-panel.active { display:flex; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Zone header */
+.zone-header {
+  display:flex; align-items:center; gap:14px;
+  padding:18px 24px 16px;
+  background:linear-gradient(90deg,rgba(0,220,130,.08),transparent);
+  border-bottom:1px solid var(--border-2);
+}
+.zone-num {
+  width:40px; height:40px;
+  background:var(--neon-lt);
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Share Tech Mono',monospace;
+  font-size:.8rem; font-weight:700; color:var(--neon);
+  flex-shrink:0;
+}
+.zone-info { flex:1; }
+.zone-label {
+  font-size:.62rem; font-weight:800; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--neon);
+  font-family:'Exo 2',sans-serif; margin-bottom:2px;
+}
+.zone-name {
+  font-family:'Exo 2',sans-serif;
+  font-size:1rem; font-weight:800; color:#014201;
+}
+
+/* Question text */
+.q-body { padding:20px 24px 0; }
+.q-text {
+  font-size:.92rem; font-weight:500; color:var(--text);
+  line-height:1.72;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* Options */
+.opts-list { padding:16px 24px; display:flex; flex-direction:column; gap:8px; }
+
+.opt-btn {
+  display:flex; align-items:flex-start; gap:10px;
+  background:var(--panel-2);
+  border:1.5px solid rgba(255,255,255,.07);
+  border-radius:10px; padding:12px 14px;
+  cursor:pointer; text-align:left;
+  font-family:'DM Sans',sans-serif;
+  font-size:.87rem; color:var(--text-2);
+  line-height:1.5;
+  transition:border-color .15s, background .15s, transform .1s;
+  width:100%;
+}
+.opt-btn:hover:not(:disabled) {
+  border-color:rgba(0,220,130,.4);
+  background:rgba(0,220,130,.05);
+  transform:translateX(3px);
+}
+.opt-btn:disabled { cursor:default; transform:none; }
+
+.opt-ltr {
+  min-width:26px; height:26px; border-radius:6px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.7rem; font-weight:800;
+  font-family:'Share Tech Mono',monospace;
+  color:var(--muted); flex-shrink:0; margin-top:1px;
+  transition:background .15s, border-color .15s, color .15s;
+}
+.opt-body { flex:1; }
+
+/* Feedback */
+.opt-fb {
+  display:none; font-size:.79rem; color:var(--text-2);
+  margin-top:7px; padding-top:7px;
+  border-top:1px dashed rgba(255,255,255,.08);
+  line-height:1.55;
+}
+.opt-fb.show { display:block; }
+.fb-ok  { color:var(--neon); font-weight:700; font-size:.74rem; margin-bottom:3px; display:block; }
+.fb-err { color:var(--red);  font-weight:700; font-size:.74rem; margin-bottom:3px; display:block; }
+
+.r-tag {
+  display:none; align-items:center; gap:4px;
+  font-size:.65rem; font-weight:700; padding:2px 8px;
+  border-radius:100px; flex-shrink:0; margin-top:2px;
+  font-family:'Exo 2',sans-serif; white-space:nowrap;
+}
+.r-tag.show { display:flex; }
+
+/* States */
+.opt-btn.selected { border-color:rgba(59,130,246,.5); background:var(--blue-lt); }
+.opt-btn.selected .opt-ltr { background:var(--blue); border-color:var(--blue); color:#fff; }
+
+.opt-btn.is-ok { border-color:rgba(0,220,130,.5); background:rgba(0,220,130,.07); }
+.opt-btn.is-ok .opt-ltr { background:var(--neon); border-color:var(--neon); color:#000; }
+.opt-btn.is-ok .r-tag { background:rgba(0,220,130,.15); border:1px solid rgba(0,220,130,.4); color:var(--neon); }
+
+.opt-btn.is-err { border-color:rgba(239,68,68,.5); background:var(--red-lt); }
+.opt-btn.is-err .opt-ltr { background:var(--red); border-color:var(--red); color:#fff; }
+.opt-btn.is-err .r-tag { background:var(--red-lt); border:1px solid var(--red-bd); color:var(--red); }
+
+.opt-btn.faded { opacity:.35; }
+
+/* Hint */
+.hint-sec { padding:0 24px 14px; }
+.hint-toggle {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--amber-lt); border:1px solid var(--amber-bd);
+  border-radius:7px; padding:6px 13px;
+  font-size:.74rem; font-weight:700; color:var(--amber);
+  cursor:pointer; font-family:'Exo 2',sans-serif;
+  transition:background .15s;
+}
+.hint-toggle:hover { background:rgba(245,158,11,.2); }
+.hint-note {
+  font-size:.68rem; color:var(--muted);
+  margin-left:4px; font-weight:400; font-family:'DM Sans',sans-serif;
+}
+.h-arr { display:inline-block; transition:transform .25s; font-size:.6rem; }
+.hint-toggle.open .h-arr { transform:rotate(180deg); }
+.hint-body {
+  display:none; margin-top:8px;
+  background:var(--amber-lt);
+  border:1px solid var(--amber-bd);
+  border-left:3px solid var(--amber);
+  border-radius:7px; padding:11px 15px;
+  font-size:.82rem; color:#d4a020; line-height:1.6;
+}
+.hint-body.show { display:block; }
+
+/* Footer */
+.q-foot {
+  border-top:1px solid var(--border-2);
+  background:var(--panel-2);
+  padding:13px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:10px;
+}
+.q-zone-lbl {
+  font-size:.72rem; color:var(--muted);
+  font-family:'Exo 2',sans-serif; font-weight:600;
+}
+.btn-row { display:flex; gap:8px; }
+
+.sub-btn {
+  background:var(--neon); color: white;
+  border:none; border-radius:8px;
+  padding:9px 22px; font-size:.82rem; font-weight:800;
+  font-family:'Exo 2',sans-serif; cursor:pointer;
+  transition:background .15s, box-shadow .15s, transform .1s;
+  box-shadow:0 2px 12px rgba(0,220,130,.3);
+}
+.sub-btn:hover {  background:var(--neon); box-shadow:0 4px 18px rgba(0,220,130,.5); }
+.sub-btn:active { transform:scale(.97); }
+.sub-btn:disabled {  background:var(--neon); color:rgba(255,255,255,.4); box-shadow:none; cursor:default; }
+
+.nxt-btn {
+  display:none; align-items:center; gap:6px;
+  background:var(--blue); color:#fff;
+  border:none; border-radius:8px;
+  padding:9px 22px; font-size:.82rem; font-weight:800;
+  font-family:'Exo 2',sans-serif; cursor:pointer;
+  transition:background .15s;
+  box-shadow:0 2px 12px rgba(59,130,246,.3);
+}
+.nxt-btn:hover { background:#5090ff; }
+.nxt-btn.show { display:inline-flex; }
+
+/* ═══════════════════════════════════════════════════
+   OVERLAY (Game Over / Victory)
+═══════════════════════════════════════════════════ */
+.overlay {
+  display:none;
+  position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.88);
+  align-items:center; justify-content:center;
+  padding:20px;
+}
+.overlay.show { display:flex; }
+
+.overlay-panel {
+  width:100%; max-width:480px;
+  border-radius:20px; overflow:hidden;
+  animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes popIn {
+  from { transform:scale(.6) translateY(40px); opacity:0; }
+  to   { transform:scale(1) translateY(0); opacity:1; }
+}
+
+/* Game over */
+.panel-gameover {
+  background:linear-gradient(160deg,#1a0808,#2a0a0a);
+  border:2px solid var(--red);
+  box-shadow:0 0 60px rgba(239,68,68,.4);
+  padding:44px 36px;
+  text-align:center;
+}
+.go-emoji { font-size:4rem; margin-bottom:12px; line-height:1; }
+.go-title {
+  font-family:'Exo 2',sans-serif;
+  font-size:1.8rem; font-weight:900;
+  color:var(--red); margin-bottom:8px;
+  text-shadow:0 0 20px rgba(239,68,68,.5);
+}
+.go-msg { font-size:.9rem; color:#f0a0a0; line-height:1.6; margin-bottom:24px; }
+.go-score {
+  font-family:'Share Tech Mono',monospace;
+  font-size:1.1rem; color:var(--text-2); margin-bottom:24px;
+}
+
+/* Victory */
+.panel-victory {
+  background:linear-gradient(160deg,#091a10,#0d2018);
+  border:2px solid var(--neon);
+  box-shadow:0 0 60px rgba(0,220,130,.35);
+  padding:44px 36px;
+  text-align:center;
+}
+.vic-emoji { font-size:4rem; margin-bottom:12px; line-height:1; }
+.vic-title {
+  font-family:'Exo 2',sans-serif;
+  font-size:1.8rem; font-weight:900;
+  color:var(--neon); margin-bottom:6px;
+  text-shadow:0 0 20px rgba(0,220,130,.5);
+}
+.vic-rank {
+  display:inline-block;
+  background:var(--neon-lt);
+  border:1px solid var(--border);
+  border-radius:100px;
+  padding:4px 18px;
+  font-family:'Exo 2',sans-serif;
+  font-size:.75rem; font-weight:800;
+  color:var(--neon); letter-spacing:.1em;
+  text-transform:uppercase; margin-bottom:16px;
+}
+.vic-score-big {
+  font-family:'Share Tech Mono',monospace;
+  font-size:3.2rem; font-weight:700; color:var(--neon);
+  text-shadow:0 0 20px rgba(0,220,130,.5);
+  line-height:1; margin-bottom:4px;
+}
+.vic-score-label {
+  font-size:.65rem; color:var(--muted); letter-spacing:.1em;
+  text-transform:uppercase; font-family:'Exo 2',sans-serif;
+  margin-bottom:14px;
+}
+.vic-msg { font-size:.87rem; color:#80e0b8; line-height:1.65; margin-bottom:24px; }
+
+.overlay-btn {
+  border:none; border-radius:10px;
+  padding:12px 32px; font-size:.88rem; font-weight:800;
+  font-family:'Exo 2',sans-serif; cursor:pointer;
+  transition:opacity .15s, transform .1s;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+.overlay-btn:hover { opacity:.88; }
+.overlay-btn:active { transform:scale(.97); }
+.btn-gameover { background:var(--red); color:#fff; }
+.btn-victory  { background:var(--neon); color:#000; }
+
+/* ═══════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════ */
+.site-foot {
+  width:100%; max-width:var(--canvas-w);
+  background:var(--panel);
+  border-top:1px solid var(--border-2);
+  padding:20px 40px;
+  font-size:.7rem; color:var(--muted);
+  font-family:'DM Sans',sans-serif; line-height:1.8;
+}
+.site-foot strong { color:var(--text-2); }
+.site-foot em     { color:var(--text-2); }
+
+/* ═══════════════════════════════════════════════════
+   TABLET ≤ 720px
+═══════════════════════════════════════════════════ */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+  .site-header { padding:18px 26px 16px; }
+  .site-header h1 { font-size:1.2rem; }
+  .prog-wrap { padding:8px 26px; }
+  .main { padding:20px 24px 44px; }
+  .zone-header { padding:15px 20px 13px; }
+  .q-body { padding:16px 20px 0; }
+  .opts-list { padding:12px 20px; }
+  .hint-sec { padding:0 20px 12px; }
+  .q-foot { padding:11px 20px; }
+}
+
+/* ═══════════════════════════════════════════════════
+   MÓVIL ≤ 480px
+═══════════════════════════════════════════════════ */
+@media (max-width:480px) {
+  .site-header { padding:15px 15px 13px; }
+  .site-header h1 { font-size:1rem; }
+  .site-header p  { display:none; }
+  .hdr-row { gap:12px; }
+  .hud-score { font-size:1.4rem; }
+  .life-cell { width:22px; height:12px; }
+  .prog-wrap { padding:7px 15px; }
+  .main { padding:12px 12px 36px; }
+  .zone-header { padding:13px 14px 11px; gap:10px; }
+  .zone-num { width:34px; height:34px; font-size:.7rem; }
+  .zone-name { font-size:.88rem; }
+  .q-body { padding:14px 14px 0; }
+  .q-text { font-size:.84rem; }
+  .opts-list { padding:10px 12px; gap:7px; }
+  .opt-btn { font-size:.82rem; padding:10px 10px; gap:8px; }
+  .opt-ltr { min-width:22px; height:22px; font-size:.65rem; }
+  .r-tag { display:none !important; }
+  .hint-sec { padding:0 12px 11px; }
+  .q-foot { padding:10px 12px; flex-direction:column; align-items:stretch; }
+  .btn-row { flex-direction:row; }
+  .sub-btn, .nxt-btn { flex:1; text-align:center; justify-content:center; font-size:.78rem; padding:9px 8px; }
+  .overlay-panel { padding:0 4px; }
+  .panel-gameover, .panel-victory { padding:32px 20px; }
+  .go-title, .vic-title { font-size:1.45rem; }
+  .vic-score-big { font-size:2.6rem; }
+  .site-foot { padding:16px 15px; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- ══ HEADER + HUD ══ -->
+  <header class="site-header">
+    <div class="hdr-row">
+      <div class="hdr-left">
+        <div class="mission-badge">⚡ Misión Delta-7</div>
+        <h1>Derivadas aplicadas a Ingeniería en Energía</h1>
+        <p>Ingeniero, el reactor de la Planta Energética Delta-7 ha sufrido una desestabilización crítica en sus 10 subsistemas. Su misión: recorrer cada zona de la planta y resolver los diagnósticos técnicos basados en cálculo diferencial para restaurar la estabilidad del reactor.</p>
+      </div>
+      <div class="hud">
+        <div class="hud-score-label">Puntos</div>
+        <div class="hud-score" id="hud-score">0000</div>
+        <div class="lives-row" id="lives-row">
+          <div class="life-cell" id="life-0"></div>
+          <div class="life-cell" id="life-1"></div>
+          <div class="life-cell" id="life-2"></div>
+        </div>
+        <div class="hud-score-label">Celdas de energía</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ ZONE PROGRESS ══ -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <div class="prog-zones" id="prog-zones">
+        <!-- injected by JS -->
+      </div>
+      <span class="prog-txt" id="prog-txt">Zona 1 / 10</span>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main" id="main"></main>
+
+</div>
+
+<!-- ══ GAME OVER OVERLAY ══ -->
+<div class="overlay" id="overlay-go">
+  <div class="overlay-panel panel-gameover">
+    <div class="go-emoji">💥</div>
+    <div class="go-title">GAME OVER</div>
+    <div class="go-msg">Se agotaron sus celdas de energía.<br>El reactor ha entrado en modo de emergencia.</div>
+    <div class="go-score" id="go-score">Puntos obtenidos: 0</div>
+    <button class="overlay-btn btn-gameover" onclick="restart()">↺ Reintentar misión</button>
+  </div>
+</div>
+
+<!-- ══ VICTORY OVERLAY ══ -->
+<div class="overlay" id="overlay-vic">
+  <div class="overlay-panel panel-victory">
+    <div class="vic-emoji">🏆</div>
+    <div class="vic-title">¡MISIÓN CUMPLIDA!</div>
+    <div class="vic-rank" id="vic-rank">Ingeniero Maestro</div>
+    <div class="vic-score-big" id="vic-score-big">1000</div>
+    <div class="vic-score-label">Puntos totales</div>
+    <div class="vic-msg" id="vic-msg">Desempeño excepcional. El reactor está en condiciones óptimas.</div>
+    <button class="overlay-btn btn-victory" onclick="restart()">↺ Reintentar misión</button>
+  </div>
+</div>
+
+<footer class="site-foot">
+  <strong>Referencias (APA 7)</strong><br>
+  Larson, R., &amp; Edwards, B. H. (2022). <em>Cálculo</em> (11.ª ed.). Cengage Learning. &nbsp;|&nbsp;
+  Stewart, J. et al. (2021). <em>Precálculo: Matemáticas para el cálculo</em> (8.ª ed.). Cengage Learning. &nbsp;|&nbsp;
+  Thomas, G. B. et al. (2018). <em>Cálculo</em> (14.ª ed.). Pearson.<br>
+
+</footer>
+
+<!-- ══════════════════════════════════
+     SCRIPT
+══════════════════════════════════ -->
+<script>
+/* ─── DATA ─── */
+const ZONES = [
+  {
+    n:1, zone:'Zona 1', name:'Turbina principal',
+    q:`Desde un punto de vista físico en ingeniería en energía, ¿qué representa el valor de la primera derivada \\(dP/dt\\) de la potencia \\(P\\) generada por un sistema con respecto al tiempo \\(t\\)?`,
+    ans:3,
+    hint:`Recuerde que la derivada es una "tasa de cambio".`,
+    opts:[
+      {l:'A', t:`La eficiencia promedio del sistema durante el período \\(t\\).`,
+       ok:false, fb:`La eficiencia es una razón (cociente) entre potencia de salida y entrada; la tasa promedio es un cambio total dividido por el intervalo.`},
+      {l:'B', t:`El límite de estabilidad térmica del sistema.`,
+       ok:false, fb:`El límite de estabilidad suele estar relacionado con asíntotas o condiciones de convergencia, no directamente con la tasa instantánea de cambio.`},
+      {l:'C', t:`La cantidad total de energía producida hasta tiempo \\(t\\).`,
+       ok:false, fb:`La cantidad total de energía se calcula mediante la integral de la potencia, no su derivada.`},
+      {l:'D', t:`La tasa instantánea de cambio de la potencia (la "rampa de potencia").`,
+       ok:true,  fb:`La primera derivada de cualquier función representa su tasa instantánea de cambio. Indica la rapidez con la que la potencia está aumentando o disminuyendo.`}
+    ]
+  },
+  {
+    n:2, zone:'Zona 2', name:'Banco de baterías',
+    q:`En el contexto geométrico, si \\(E(t)\\) representa el almacenamiento de energía en una batería con respecto al tiempo \\(t\\), ¿qué indica la pendiente de la línea tangente a \\(E(t)\\) en un punto específico \\(t=t_0\\)?`,
+    ans:1,
+    hint:`La derivada es la definición geométrica de la pendiente de la recta tangente.`,
+    opts:[
+      {l:'A', t:`El punto de inflexión del proceso de carga.`,
+       ok:false, fb:`El punto de inflexión está determinado por la segunda derivada, no por la primera derivada en sí misma.`},
+      {l:'B', t:`La velocidad instantánea de carga de la batería en ese instante \\(t_0\\).`,
+       ok:true,  fb:`Geométricamente, la derivada es la pendiente de la tangente y, físicamente, representa la velocidad o tasa instantánea de cambio (carga/descarga).`},
+      {l:'C', t:`El valor total de la carga de la batería en \\(t_0\\).`,
+       ok:false, fb:`El valor total de la carga es simplemente \\(E(t_0)\\), la altura de la curva en ese punto.`},
+      {l:'D', t:`La tasa promedio de carga en un intervalo de tiempo.`,
+       ok:false, fb:`La tasa promedio es la pendiente de la línea secante entre dos puntos, no la tangente.`}
+    ]
+  },
+  {
+    n:3, zone:'Zona 3', name:'Motor de vapor',
+    q:`La posición \\(x(t)\\) de un pistón en un motor de ciclo de vapor se modela por \\(x(t)=5t^3-4t^2+10\\). Calcule la expresión para la velocidad instantánea \\(v(t)\\) del pistón.`,
+    ans:1,
+    hint:`Aplique la regla de la potencia \\(\\dfrac{d}{dt}(t^n)=nt^{n-1}\\) y recuerde que la derivada de una constante es cero.`,
+    opts:[
+      {l:'A', t:`\\(v(t)=15t^3-8t^2\\)`,
+       ok:false, fb:`El exponente debe disminuir en una unidad después de la derivación.`},
+      {l:'B', t:`\\(v(t)=15t^2-8t\\)`,
+       ok:true,  fb:`Aplicando la regla de la potencia: \\(5\\cdot3t^2-4\\cdot2t+0=15t^2-8t\\). La constante 10 desaparece.`},
+      {l:'C', t:`\\(v(t)=15t^2-8t+10\\)`,
+       ok:false, fb:`La derivada de la constante 10 es 0, no 10.`},
+      {l:'D', t:`\\(v(t)=5t^4-4t^3+10t\\)`,
+       ok:false, fb:`Esto es una antiderivada (integral) mal calculada, no la derivada.`}
+    ]
+  },
+  {
+    n:4, zone:'Zona 4', name:'Intercambiador de calor',
+    q:`La pérdida de calor en un sistema de transferencia está dada por \\(L(t)=(t^2+1)\\cdot e^t\\). Determine la expresión de la tasa instantánea de pérdida de calor \\(dL/dt\\).`,
+    ans:2,
+    hint:`Use la regla del producto: \\((u\\cdot v)'=u'v+uv'\\).`,
+    opts:[
+      {l:'A', t:`\\(L'(t)=2t+e^t\\)`,
+       ok:false, fb:`Esto deriva cada término por separado, ignorando la regla del producto.`},
+      {l:'B', t:`\\(L'(t)=2t\\cdot e^t\\)`,
+       ok:false, fb:`Ignora el segundo término de la regla del producto. La derivada de un producto no es el producto de las derivadas.`},
+      {l:'C', t:`\\(L'(t)=(2t)\\cdot e^t+(t^2+1)\\cdot e^t\\)`,
+       ok:true,  fb:`Usando \\((uv)'=u'v+uv'\\) con \\(u=t^2+1\\), \\(v=e^t\\): \\(u'=2t\\), \\(v'=e^t\\), resultando en \\(2te^t+(t^2+1)e^t\\).`},
+      {l:'D', t:`\\(L'(t)=(2t+e^t)\\cdot(t^2+1)\\)`,
+       ok:false, fb:`Confunde la suma de las derivadas con la regla del producto, y deriva incorrectamente el primer término.`}
+    ]
+  },
+  {
+    n:5, zone:'Zona 5', name:'Panel de refrigeración',
+    q:`La eficiencia de un panel de refrigeración en función del caudal \\(x\\) se modela por \\(\\eta(x)=\\dfrac{10}{x^2+1}\\). Calcule la derivada \\(d\\eta/dx\\).`,
+    ans:1,
+    hint:`Use la regla del cociente \\(\\left(\\dfrac{u}{v}\\right)'=\\dfrac{u'v-uv'}{v^2}\\). Recuerde que la derivada del numerador (constante) es cero.`,
+    opts:[
+      {l:'A', t:`\\(\\eta'(x)=\\dfrac{20x}{(x^2+1)^2}\\)`,
+       ok:false, fb:`El signo es incorrecto. La derivada de una constante sobre una función es \\(-c\\cdot f'(x)/[f(x)]^2\\).`},
+      {l:'B', t:`\\(\\eta'(x)=-\\dfrac{20x}{(x^2+1)^2}\\)`,
+       ok:true,  fb:`Con \\(u=10\\) (\\(u'=0\\)) y \\(v=x^2+1\\) (\\(v'=2x\\)): \\(\\dfrac{0\\cdot(x^2+1)-10\\cdot2x}{(x^2+1)^2}=-\\dfrac{20x}{(x^2+1)^2}\\).`},
+      {l:'C', t:`\\(\\eta'(x)=\\dfrac{10(2x)}{(x^2+1)^2}\\)`,
+       ok:false, fb:`El signo es incorrecto. La regla del cociente o la regla de la cadena para potencias negativas produce signo negativo.`},
+      {l:'D', t:`\\(\\eta'(x)=\\dfrac{x^2+1-20x^2}{(x^2+1)^2}\\)`,
+       ok:false, fb:`Aplica incorrectamente la regla del cociente; el numerador \\(u=10\\) y su derivada \\(u'=0\\).`}
+    ]
+  },
+  {
+    n:6, zone:'Zona 6', name:'Sistema de actuadores',
+    q:`Si la aceleración instantánea \\(a(t)\\) de un actuador es la derivada de la velocidad \\(v(t)\\), ¿qué se concluye cuando \\(a(t)=0\\)?`,
+    ans:1,
+    hint:`Recuerde la relación entre la segunda derivada (aceleración) y la primera derivada (velocidad).`,
+    opts:[
+      {l:'A', t:`La posición del actuador es máxima o mínima.`,
+       ok:false, fb:`Los puntos máximos o mínimos de la posición \\(x(t)\\) se dan cuando la velocidad \\(v(t)=0\\), no la aceleración.`},
+      {l:'B', t:`El actuador se mueve a velocidad constante o está en un punto crítico de velocidad.`,
+       ok:true,  fb:`Si la aceleración (tasa de cambio de velocidad) es cero, la velocidad no cambia (es constante) o está en un punto crítico donde pasa de acelerar a desacelerar.`},
+      {l:'C', t:`El actuador está detenido.`,
+       ok:false, fb:`La velocidad \\(v(t)=0\\) indica que el actuador está detenido, no la aceleración. El actuador puede estar moviéndose a velocidad constante.`},
+      {l:'D', t:`La velocidad del actuador está cambiando en su máxima tasa.`,
+       ok:false, fb:`La tasa máxima de cambio de velocidad ocurre en los puntos de inflexión de la aceleración, no cuando \\(a(t)=0\\).`}
+    ]
+  },
+  {
+    n:7, zone:'Zona 7', name:'Generador eléctrico',
+    q:`Calcule la derivada de la función \\(f(x)=3x^2-5\\sin(x)+2e^x\\).`,
+    ans:1,
+    hint:`Recuerde las derivadas de \\(\\sin(x)\\) y \\(e^x\\), y la regla para constantes multiplicativas.`,
+    opts:[
+      {l:'A', t:`\\(f'(x)=6x+5\\cos(x)+2e^x\\)`,
+       ok:false, fb:`La derivada de \\(-5\\sin(x)\\) es \\(-5\\cos(x)\\), no \\(+5\\cos(x)\\). El signo negativo se conserva.`},
+      {l:'B', t:`\\(f'(x)=6x-5\\cos(x)+2e^x\\)`,
+       ok:true,  fb:`Aplicando la regla de la potencia: \\((3x^2)'=6x\\). La derivada de \\(-5\\sin x\\) es \\(-5\\cos x\\). La derivada de \\(2e^x\\) es \\(2e^x\\).`},
+      {l:'C', t:`\\(f'(x)=x^3-5\\cos(x)+e^x\\)`,
+       ok:false, fb:`El primer término está integrado (no derivado), y se ignoran las constantes multiplicativas.`},
+      {l:'D', t:`\\(f'(x)=6x-5\\cos(x)+0\\)`,
+       ok:false, fb:`La derivada de \\(2e^x\\) es \\(2e^x\\), no 0.`}
+    ]
+  },
+  {
+    n:8, zone:'Zona 8', name:'Centro de potencia',
+    q:`En la curva de eficiencia de un sistema \\(f(x)=x^2-2x\\), encuentre el valor de la derivada en el punto \\(x=3\\).`,
+    ans:3,
+    hint:`Primero encuentre la función derivada \\(f'(x)\\) y luego evalúe \\(f'(3)\\).`,
+    opts:[
+      {l:'A', t:`\\(f'(3)=3\\)`,
+       ok:false, fb:`El valor de la pendiente en \\(x=3\\) es 4, no 3.`},
+      {l:'B', t:`\\(f'(3)=6\\)`,
+       ok:false, fb:`\\(f'(x)=2x-2\\), entonces \\(f'(3)=2(3)-2=4\\), no 6.`},
+      {l:'C', t:`\\(f'(3)=0\\)`,
+       ok:false, fb:`La derivada es cero solo en el punto crítico \\(x=1\\), no en \\(x=3\\).`},
+      {l:'D', t:`\\(f'(3)=4\\)`,
+       ok:true,  fb:`\\(f'(x)=2x-2\\). Evaluando en \\(x=3\\): \\(f'(3)=2(3)-2=6-2=4\\).`}
+    ]
+  },
+  {
+    n:9, zone:'Zona 9', name:'Circuito principal',
+    q:`La carga eléctrica en un circuito se comporta según \\(Q(t)=\\sqrt{4t+1}\\). Calcule la corriente \\(I(t)=dQ/dt\\).`,
+    ans:1,
+    hint:`Reescriba la raíz como potencia: \\(Q(t)=(4t+1)^{1/2}\\) y aplique la regla de la cadena.`,
+    opts:[
+      {l:'A', t:`\\(I(t)=2\\)`,
+       ok:false, fb:`El exponente debe ser \\(-1/2\\) y se ha multiplicado el resultado en lugar de mantener la función en el denominador.`},
+      {l:'B', t:`\\(I(t)=\\dfrac{2}{\\sqrt{4t+1}}\\)`,
+       ok:true,  fb:`Usando la regla de la cadena: \\(Q'(t)=\\tfrac{1}{2}(4t+1)^{-1/2}\\cdot4=2(4t+1)^{-1/2}=\\dfrac{2}{\\sqrt{4t+1}}\\).`},
+      {l:'C', t:`\\(I(t)=\\dfrac{1}{2\\sqrt{4t+1}}\\)`,
+       ok:false, fb:`Falta multiplicar por la derivada de la función interior (4). La regla de la cadena está incompleta.`},
+      {l:'D', t:`\\(I(t)=\\dfrac{1}{2}\\)`,
+       ok:false, fb:`Esto sería la derivada de \\(\\sqrt{t}\\) sin aplicar la regla de la cadena para la función interior \\(4t+1\\).`}
+    ]
+  },
+  {
+    n:10, zone:'Zona 10', name:'Sala de control',
+    q:`La función de costo de mantenimiento de una planta es \\(C(x)=\\dfrac{x^3+2}{x}\\). ¿Cuál es la expresión de la derivada \\(C'(x)\\) que representa el costo marginal?`,
+    ans:1,
+    hint:`Puede aplicar la regla del cociente, o simplificar primero: \\(C(x)=x^2+2x^{-1}\\) y usar la regla de la potencia.`,
+    opts:[
+      {l:'A', t:`\\(C'(x)=\\dfrac{3x^2}{1}-\\dfrac{x^3+2}{x^2}\\)`,
+       ok:false, fb:`Aplicación incorrecta de la regla del cociente: \\((u'v-uv')/v^2\\) con \\(v=x\\), \\(v'=1\\).`},
+      {l:'B', t:`\\(C'(x)=2x-\\dfrac{2}{x^2}\\)`,
+       ok:true,  fb:`Simplificando: \\(C(x)=x^2+2x^{-1}\\). Derivando: \\(2x+2(-1)x^{-2}=2x-\\dfrac{2}{x^2}\\).`},
+      {l:'C', t:`\\(C'(x)=x^2+2x^{-1}\\)`,
+       ok:false, fb:`Esta es la función \\(C(x)\\) simplificada, no su derivada.`},
+      {l:'D', t:`\\(C'(x)=3x^2\\)`,
+       ok:false, fb:`Ignora el término \\(2/x\\) al derivar. La derivada de \\(2x^{-1}\\) es \\(-2x^{-2}\\).`}
+    ]
+  }
+];
+
+/* ─── ESTADO ─── */
+let cur        = 0;
+let lives      = 3;
+let score      = 0;
+let hintUsed   = false;
+let panels     = [];
+let chosen     = new Array(ZONES.length).fill(null);
+let submitted  = new Array(ZONES.length).fill(false);
+let gameOver   = false;
+
+/* ─── CONSTRUIR ZONA PIPS ─── */
+function buildPips() {
+  const cont = document.getElementById('prog-zones');
+  ZONES.forEach((_, i) => {
+    const pip = document.createElement('div');
+    pip.className = 'zone-pip' + (i === 0 ? ' current' : '');
+    pip.id = `pip-${i}`;
+    cont.appendChild(pip);
+  });
+}
+
+/* ─── CONSTRUIR PREGUNTAS ─── */
+function build() {
+  const main = document.getElementById('main');
+
+  ZONES.forEach((z, qi) => {
+    const panel = document.createElement('div');
+    panel.className = 'q-panel' + (qi === 0 ? ' active' : '');
+    panel.id = `qp-${qi}`;
+
+    panel.innerHTML = `
+      <div class="zone-header">
+        <div class="zone-num">Z${z.n}</div>
+        <div class="zone-info">
+          <div class="zone-label">${z.zone}</div>
+          <div class="zone-name">${z.name}</div>
+        </div>
+      </div>
+
+      <div class="q-body">
+        <div class="q-text" id="qt-${qi}">${z.q}</div>
+      </div>
+
+      <div class="opts-list" id="opts-${qi}">
+        ${z.opts.map((o,oi) => `
+          <button class="opt-btn" id="opt-${qi}-${oi}"
+            onclick="pick(${qi},${oi})"
+            aria-label="Opción ${o.l}">
+            <div class="opt-ltr" id="ltr-${qi}-${oi}">${o.l}</div>
+            <div class="opt-body">
+              <div id="otxt-${qi}-${oi}">${o.t}</div>
+              <div class="opt-fb" id="fb-${qi}-${oi}">
+                <span class="${o.ok?'fb-ok':'fb-err'}">${o.ok?'✓ Diagnóstico correcto':'✗ Diagnóstico incorrecto'}</span>
+                ${o.fb}
+              </div>
+            </div>
+            <div class="r-tag" id="rtag-${qi}-${oi}">${o.ok?'✓ Correcto':'✗ Incorrecto'}</div>
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="hint-sec">
+        <button class="hint-toggle" id="htbtn-${qi}"
+          onclick="toggleHint(${qi})" aria-expanded="false">
+          💡 Pista técnica <span class="hint-note">(−25 pts)</span> <span class="h-arr">▾</span>
+        </button>
+        <div class="hint-body" id="hb-${qi}">${z.hint}</div>
+      </div>
+
+      <div class="q-foot">
+        <span class="q-zone-lbl">Zona ${z.n} / ${ZONES.length} · ${z.zone}</span>
+        <div class="btn-row">
+          <button class="sub-btn" id="sub-${qi}" onclick="verify(${qi})" disabled>Verificar</button>
+          <button class="nxt-btn" id="nxt-${qi}" onclick="goNext(${qi})">
+            ${qi < ZONES.length-1 ? 'Siguiente zona ›' : 'Finalizar misión ›'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    main.appendChild(panel);
+    panels.push(panel);
+  });
+
+  typeset();
+}
+
+/* ─── PICK ─── */
+function pick(qi, oi) {
+  if (submitted[qi] || gameOver) return;
+  chosen[qi] = oi;
+  ZONES[qi].opts.forEach((_,idx) => {
+    document.getElementById(`opt-${qi}-${idx}`).classList.remove('selected');
+  });
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  document.getElementById(`sub-${qi}`).disabled = false;
+}
+
+/* ─── HINT ─── */
+function toggleHint(qi) {
+  if (submitted[qi]) return;
+  const body = document.getElementById(`hb-${qi}`);
+  const btn  = document.getElementById(`htbtn-${qi}`);
+  const open = body.classList.toggle('show');
+  btn.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  if (open && !hintUsed) { hintUsed = true; }
+  if (open) typeset(body);
+}
+
+/* ─── VERIFY ─── */
+function verify(qi) {
+  if (submitted[qi] || chosen[qi] === null || gameOver) return;
+  submitted[qi] = true;
+
+  const ans = ZONES[qi].ans;
+  const sel = chosen[qi];
+  const correct = sel === ans;
+
+  if (correct) {
+    const pts = hintUsed ? 75 : 100;
+    score += pts;
+    updateHUD();
+  } else {
+    lives--;
+    updateLives();
+    if (lives <= 0) {
+      setTimeout(() => showGameOver(), 700);
+    }
+  }
+
+  ZONES[qi].opts.forEach((_,oi) => {
+    const btn  = document.getElementById(`opt-${qi}-${oi}`);
+    const fb   = document.getElementById(`fb-${qi}-${oi}`);
+    const rtag = document.getElementById(`rtag-${qi}-${oi}`);
+    btn.disabled = true;
+    btn.classList.remove('selected');
+    if (oi === ans) { btn.classList.add('is-ok'); fb.classList.add('show'); rtag.classList.add('show'); }
+    else if (oi === sel) { btn.classList.add('is-err'); fb.classList.add('show'); rtag.classList.add('show'); }
+    else { btn.classList.add('faded'); }
+  });
+
+  document.getElementById(`sub-${qi}`).disabled = true;
+  if (!gameOver || correct) {
+    document.getElementById(`nxt-${qi}`).classList.add('show');
+  }
+  typeset(document.getElementById(`qp-${qi}`));
+}
+
+/* ─── NEXT ─── */
+function goNext(qi) {
+  if (gameOver) return;
+  hintUsed = false; // reset hint for next zone
+
+  // Mark pip done
+  document.getElementById(`pip-${qi}`).classList.remove('current');
+  document.getElementById(`pip-${qi}`).classList.add('done');
+
+  panels[qi].classList.remove('active');
+
+  if (qi < ZONES.length - 1) {
+    cur = qi + 1;
+    panels[cur].classList.add('active');
+    document.getElementById(`pip-${cur}`)?.classList.add('current');
+    document.getElementById('prog-txt').textContent = `Zona ${cur+1} / ${ZONES.length}`;
+    typeset(panels[cur]);
+    panels[cur].scrollIntoView({ behavior:'smooth', block:'start' });
+  } else {
+    showVictory();
+  }
+}
+
+/* ─── UPDATE HUD ─── */
+function updateHUD() {
+  document.getElementById('hud-score').textContent = String(score).padStart(4,'0');
+}
+
+function updateLives() {
+  for (let i = 0; i < 3; i++) {
+    document.getElementById(`life-${i}`).classList.toggle('dead', i >= lives);
+  }
+}
+
+/* ─── GAME OVER ─── */
+function showGameOver() {
+  gameOver = true;
+  document.getElementById('go-score').textContent = `Puntos obtenidos: ${score}`;
+  document.getElementById('overlay-go').classList.add('show');
+}
+
+/* ─── VICTORY ─── */
+function showVictory() {
+  const correct = submitted.filter((s,i) => s && chosen[i] === ZONES[i].ans).length;
+  let rank, msg;
+  if (correct >= 9)      { rank='Ingeniero Maestro';      msg='Desempeño excepcional. El reactor está en condiciones óptimas.'; }
+  else if (correct >= 7) { rank='Ingeniero Senior';       msg='Buen trabajo. El reactor está estable, con margen de mejora.'; }
+  else if (correct >= 5) { rank='Ingeniero Junior';       msg='Misión cumplida, pero varios sistemas necesitan revisión.'; }
+  else                   { rank='En Entrenamiento';       msg='El reactor funciona con dificultad. Se recomienda reforzar conceptos.'; }
+
+  document.getElementById('vic-rank').textContent     = rank;
+  document.getElementById('vic-score-big').textContent = score;
+  document.getElementById('vic-msg').textContent       = msg;
+
+  // Mark last pip
+  const last = ZONES.length - 1;
+  document.getElementById(`pip-${last}`)?.classList.add('done');
+  document.getElementById(`pip-${last}`)?.classList.remove('current');
+
+  document.getElementById('overlay-vic').classList.add('show');
+}
+
+/* ─── RESTART ─── */
+function restart() { location.reload(); }
+
+/* ─── MATHJAX ─── */
+function typeset(el) {
+  if (window.MathJax) MathJax.typesetPromise(el?[el]:undefined).catch(()=>{});
+}
+
+/* ─── INIT ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  buildPips();
+  build();
+  updateHUD();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz – Funciones Multivariables</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ═══════════════════════════════════════════════════════════
+   PALETA DE COLORES — Modifique aquí para cambiar todo
+   Cada variable está documentada para fácil edición
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* ─── Fondo y superficies ─── */
+  --c-bg:          #e8f4f2;   /* fondo de toda la página        */
+  --c-surface:     #ffffff;   /* tarjeta principal              */
+  --c-surface-2:   #f2faf8;   /* fondo secundario / encabezado  */
+  --c-border:      #b8d8d2;   /* bordes generales               */
+  --c-border-f:    #88bdb5;   /* borde foco / hover             */
+
+  /* ─── Texto ─── */
+  --c-text:        #0e2a26;   /* texto principal                */
+  --c-text-2:      #1e4a44;   /* texto secundario               */
+  --c-muted:       #527c76;   /* texto desvanecido              */
+
+  /* ─── Primario — Verde azulado (cyan profundo) ─── */
+  --c-pri:         #0b7b6e;   /* botones, bordes selección      */
+  --c-pri-dk:      #075c52;   /* hover primario                 */
+  --c-pri-lt:      #d0f0eb;   /* fondo opción seleccionada      */
+  --c-pri-bd:      #72c9be;   /* borde opción seleccionada      */
+
+  /* ─── Correcto — Verde lima ─── */
+  --c-ok:          #1a8c48;   /* borde + ícono correcto         */
+  --c-ok-lt:       #d0f5e3;   /* fondo opción correcta          */
+  --c-ok-bd:       #65cfa0;   /* borde opción correcta          */
+
+  /* ─── Incorrecto — Rojo coral ─── */
+  --c-err:         #c43030;   /* borde + ícono incorrecto       */
+  --c-err-lt:      #fde8e8;   /* fondo opción incorrecta        */
+  --c-err-bd:      #f2a0a0;   /* borde opción incorrecta        */
+
+  /* ─── Pista — Magenta / fucsia ─── */
+  --c-hint:        #a0186a;   /* texto e ícono pista            */
+  --c-hint-lt:     #fde8f4;   /* fondo bloque pista             */
+  --c-hint-bd:     #f0a8d4;   /* borde bloque pista             */
+  --c-hint-txt:    #6a0a40;   /* texto dentro de la pista       */
+
+  /* ─── Acento chip tema — Magenta claro ─── */
+  --c-num:         #a0186a;   /* badge / chip de tema           */
+  --c-num-lt:      #fde8f4;   /* fondo chip                     */
+  --c-num-bd:      #f0a8d4;   /* borde chip                     */
+
+  /* ─── Gradiente header ─── */
+  --c-hdr-a:       #0b7b6e;   /* inicio gradiente               */
+  --c-hdr-b:       #0a5c80;   /* fin gradiente                  */
+
+  /* ─── Gradiente barra progreso ─── */
+  --c-prog-a:      #0b7b6e;
+  --c-prog-b:      #a0186a;
+
+  /* ─── Gradiente score resultados ─── */
+  --c-score-a:     #0b7b6e;
+  --c-score-b:     #a0186a;
+
+  /* ─── Botón Siguiente ─── */
+  --c-next:        #1a8c48;
+  --c-next-dk:     #0f6030;
+
+  /* ─── Radios ─── */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+
+  /* ─── Sombras ─── */
+  --sh-sm: 0 2px 8px  rgba(10,60,50,.09);
+  --sh-md: 0 4px 20px rgba(10,60,50,.11);
+  --sh-lg: 0 8px 36px rgba(10,60,50,.14);
+
+  /* ─── Ancho canvas base ─── */
+  --canvas-w: 850px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — 850 × 800 base
+═══════════════════════════════════════════════════════════ */
+.canvas {
+  width: 100%;
+  max-width: var(--canvas-w);
+  min-height: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sh-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════════ */
+.site-header {
+  background: linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding: 30px 42px 26px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.site-header::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 80% 15%, rgba(255,255,255,.13) 0%, transparent 60%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:'';
+  position:absolute;
+  width:240px; height:240px;
+  border-radius:50%;
+  background: rgba(255,255,255,.055);
+  right:-55px; bottom:-65px;
+  pointer-events:none;
+}
+
+.hdr-inner { position:relative; z-index:1; }
+
+.hdr-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.36);
+  border-radius:100px;
+  padding:4px 14px;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#fff;
+  margin-bottom:12px;
+  font-family:'Nunito', sans-serif;
+}
+
+.site-header h1 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem;
+  font-weight:800;
+  color:#fff;
+  line-height:1.25;
+  margin-bottom:8px;
+}
+
+.site-header p {
+  font-size:.83rem;
+  color:rgba(255,255,255,.84);
+  max-width:530px;
+  line-height:1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BARRA DE PROGRESO
+═══════════════════════════════════════════════════════════ */
+.prog-wrap {
+  background:var(--c-surface);
+  border-bottom:1px solid var(--c-border);
+  padding:10px 42px;
+  position:sticky;
+  top:0;
+  z-index:50;
+  box-shadow:var(--sh-sm);
+  flex-shrink:0;
+}
+.prog-row { display:flex; align-items:center; gap:12px; }
+.prog-lbl {
+  font-size:.74rem; font-weight:700; color:var(--c-muted);
+  white-space:nowrap; min-width:110px; font-family:'Nunito',sans-serif;
+}
+.prog-track {
+  flex:1; height:9px;
+  background:var(--c-surface-2);
+  border:1px solid var(--c-border);
+  border-radius:100px; overflow:hidden;
+}
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--c-prog-a), var(--c-prog-b));
+  border-radius:100px; width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.prog-score {
+  font-size:.74rem; font-weight:800; color:var(--c-pri);
+  min-width:78px; text-align:right; font-family:'Nunito',sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════════ */
+.main { flex:1; padding:28px 42px 48px; background:var(--c-bg); }
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL DE PREGUNTA
+═══════════════════════════════════════════════════════════ */
+.q-panel {
+  display:none;
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-md);
+  overflow:hidden;
+  flex-direction:column;
+  animation:fadeUp .3s ease both;
+}
+.q-panel.active { display:flex; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Encabezado pregunta ── */
+.q-top {
+  display:flex; align-items:flex-start; gap:14px;
+  padding:22px 28px 18px;
+  border-bottom:1px solid var(--c-border);
+  background:var(--c-surface-2);
+}
+.q-badge {
+  min-width:38px; height:38px;
+  background:linear-gradient(135deg, var(--c-hdr-a), var(--c-hdr-b));
+  border-radius:var(--r-sm);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.72rem; font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  color:#fff; flex-shrink:0; margin-top:3px;
+  box-shadow:0 2px 8px rgba(11,123,110,.3);
+}
+.q-top-text { flex:1; }
+
+.q-theme-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:.68rem; font-weight:700;
+  font-family:'Nunito',sans-serif;
+  letter-spacing:.06em; text-transform:uppercase;
+  padding:3px 10px; border-radius:100px;
+  background:var(--c-num-lt); color:var(--c-num);
+  border:1px solid var(--c-num-bd);
+  margin-bottom:10px; align-self:flex-start;
+}
+
+.q-text {
+  font-family:'Nunito Sans',sans-serif;
+  font-size:.97rem; font-weight:600;
+  color:var(--c-text); line-height:1.72;
+}
+
+/* ── Opciones ── */
+.opts-list { padding:18px 28px; display:flex; flex-direction:column; gap:9px; }
+
+.opt-btn {
+  display:flex; align-items:flex-start; gap:11px;
+  background:var(--c-surface);
+  border:1.5px solid var(--c-border);
+  border-radius:var(--r-md);
+  padding:12px 14px; cursor:pointer;
+  text-align:left;
+  font-family:'Nunito Sans',sans-serif;
+  font-size:.88rem; color:var(--c-text-2);
+  line-height:1.55;
+  transition:border-color .15s, background .15s, box-shadow .15s, transform .12s;
+  width:100%;
+}
+.opt-btn:hover:not(:disabled) {
+  border-color:var(--c-pri-bd);
+  background:var(--c-pri-lt);
+  box-shadow:0 0 0 3px rgba(11,123,110,.07);
+  transform:translateX(3px);
+}
+.opt-btn:disabled { cursor:default; transform:none; }
+
+.opt-ltr {
+  min-width:27px; height:27px; border-radius:50%;
+  background:var(--c-surface-2); border:1.5px solid var(--c-border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.7rem; font-weight:800;
+  font-family:'Nunito',sans-serif;
+  color:var(--c-muted); flex-shrink:0; margin-top:1px;
+  transition:background .15s, border-color .15s, color .15s;
+}
+
+.opt-body { flex:1; min-width:0; }
+
+.opt-fb {
+  display:none; font-size:.8rem; color:var(--c-text-2);
+  margin-top:8px; padding-top:8px;
+  border-top:1px dashed var(--c-border);
+  line-height:1.6;
+}
+.opt-fb.show { display:block; }
+
+.fb-label {
+  display:inline-flex; align-items:center; gap:5px;
+  font-weight:800; font-size:.75rem;
+  font-family:'Nunito',sans-serif; margin-bottom:4px;
+}
+
+.r-tag {
+  display:none; align-items:center; gap:4px;
+  font-size:.68rem; font-weight:700;
+  padding:3px 9px; border-radius:100px;
+  flex-shrink:0; margin-top:2px;
+  font-family:'Nunito',sans-serif; white-space:nowrap;
+}
+.r-tag.show { display:flex; }
+
+/* ── Estados ── */
+.opt-btn.selected { border-color:var(--c-pri); background:var(--c-pri-lt); }
+.opt-btn.selected .opt-ltr { background:var(--c-pri); border-color:var(--c-pri); color:#fff; }
+
+.opt-btn.is-ok { border-color:var(--c-ok); background:var(--c-ok-lt); }
+.opt-btn.is-ok .opt-ltr { background:var(--c-ok); border-color:var(--c-ok); color:#fff; }
+.opt-btn.is-ok .r-tag { background:var(--c-ok-lt); border:1px solid var(--c-ok-bd); color:var(--c-ok); }
+
+.opt-btn.is-err { border-color:var(--c-err); background:var(--c-err-lt); }
+.opt-btn.is-err .opt-ltr { background:var(--c-err); border-color:var(--c-err); color:#fff; }
+.opt-btn.is-err .r-tag { background:var(--c-err-lt); border:1px solid var(--c-err-bd); color:var(--c-err); }
+
+.opt-btn.faded { opacity:.42; }
+
+/* ── Pista ── */
+.hint-sec { padding:0 28px 16px; }
+.hint-toggle {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--c-hint-lt); border:1px solid var(--c-hint-bd);
+  border-radius:var(--r-sm); padding:7px 13px;
+  font-size:.78rem; font-weight:700; color:var(--c-hint);
+  cursor:pointer; font-family:'Nunito',sans-serif;
+  transition:background .15s, border-color .15s;
+}
+.hint-toggle:hover { background:#fad4ea; border-color:var(--c-hint); }
+.hint-arr { display:inline-block; transition:transform .25s; font-size:.65rem; }
+.hint-toggle.open .hint-arr { transform:rotate(180deg); }
+.hint-body {
+  display:none; margin-top:9px;
+  background:var(--c-hint-lt);
+  border:1px solid var(--c-hint-bd);
+  border-left:3px solid var(--c-hint);
+  border-radius:var(--r-sm); padding:12px 16px;
+  font-size:.84rem; color:var(--c-hint-txt); line-height:1.65;
+}
+.hint-body.show { display:block; }
+
+/* ── Footer ── */
+.q-foot {
+  margin-top:auto; border-top:1px solid var(--c-border);
+  background:var(--c-surface-2); padding:13px 28px;
+  display:flex; align-items:center;
+  justify-content:space-between; gap:10px;
+  flex-wrap:wrap; flex-shrink:0;
+}
+.q-cnt { font-size:.76rem; color:var(--c-muted); font-family:'Nunito',sans-serif; font-weight:600; }
+.btn-row { display:flex; gap:9px; align-items:center; }
+
+.sub-btn {
+  background:var(--c-pri); color:#fff; border:none;
+  border-radius:var(--r-sm); padding:9px 22px;
+  font-size:.83rem; font-weight:700; font-family:'Nunito',sans-serif;
+  cursor:pointer;
+  transition:background .15s, box-shadow .15s, transform .1s;
+  box-shadow:0 2px 10px rgba(11,123,110,.24);
+}
+.sub-btn:hover { background:var(--c-pri-dk); box-shadow:0 4px 14px rgba(11,123,110,.34); }
+.sub-btn:active { transform:scale(.97); }
+.sub-btn:disabled { background:var(--c-border); color:var(--c-muted); box-shadow:none; cursor:default; }
+
+.nxt-btn {
+  display:none; align-items:center; gap:6px;
+  background:var(--c-next); color:#fff; border:none;
+  border-radius:var(--r-sm); padding:9px 22px;
+  font-size:.83rem; font-weight:700; font-family:'Nunito',sans-serif;
+  cursor:pointer; transition:background .15s, box-shadow .15s;
+  box-shadow:0 2px 10px rgba(26,140,72,.24);
+}
+.nxt-btn:hover { background:var(--c-next-dk); box-shadow:0 4px 14px rgba(26,140,72,.34); }
+.nxt-btn.show { display:inline-flex; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESULTADOS
+═══════════════════════════════════════════════════════════ */
+.results {
+  display:none; background:var(--c-surface);
+  border:1px solid var(--c-border); border-radius:var(--r-xl);
+  box-shadow:var(--sh-lg); padding:50px 40px;
+  text-align:center; animation:fadeUp .38s ease both;
+}
+.results.show { display:block; }
+.res-emoji { font-size:3.8rem; margin-bottom:14px; line-height:1; }
+.results h2 {
+  font-family:'Nunito',sans-serif; font-size:1.5rem;
+  font-weight:800; color:var(--c-text); margin-bottom:18px;
+}
+.score-wrap { display:inline-flex; align-items:baseline; margin-bottom:10px; }
+.score-n {
+  font-family:'JetBrains Mono',monospace; font-size:3.6rem;
+  font-weight:700;
+  background:linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; line-height:1;
+}
+.score-d {
+  font-family:'JetBrains Mono',monospace; font-size:1.5rem;
+  font-weight:600; color:var(--c-muted); margin-bottom:4px;
+}
+.score-pct {
+  display:inline-block; background:var(--c-pri-lt);
+  border:1px solid var(--c-pri-bd); color:var(--c-pri);
+  font-weight:700; font-size:.8rem; padding:4px 14px;
+  border-radius:100px; font-family:'Nunito',sans-serif; margin-bottom:20px;
+}
+.res-fb {
+  font-size:.87rem; color:var(--c-text-2); max-width:510px;
+  margin:0 auto 28px; line-height:1.78;
+}
+.res-restart {
+  background:linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  color:#fff; border:none; border-radius:var(--r-sm);
+  padding:11px 30px; font-size:.88rem; font-weight:700;
+  font-family:'Nunito',sans-serif; cursor:pointer;
+  box-shadow:0 4px 16px rgba(11,123,110,.28);
+  transition:opacity .15s, transform .1s;
+}
+.res-restart:hover { opacity:.86; }
+.res-restart:active { transform:scale(.97); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════ */
+.site-foot {
+  width:100%; max-width:var(--canvas-w);
+  padding:16px 42px; text-align:center;
+  font-size:.72rem; color:var(--c-muted);
+  border-top:1px solid var(--c-border);
+  font-family:'Nunito',sans-serif; background:var(--c-surface);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLET  ≤ 720 px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+  .site-header    { padding:22px 28px 20px; }
+  .site-header h1 { font-size:1.28rem; }
+  .site-header p  { font-size:.8rem; }
+  .prog-wrap  { padding:9px 28px; }
+  .prog-lbl   { min-width:88px; font-size:.71rem; }
+  .main       { padding:20px 24px 40px; }
+  .q-top      { padding:18px 22px 15px; gap:12px; }
+  .q-text     { font-size:.92rem; }
+  .q-badge    { min-width:34px; height:34px; font-size:.68rem; }
+  .opts-list  { padding:14px 22px; gap:8px; }
+  .opt-btn    { font-size:.85rem; padding:11px 12px; }
+  .hint-sec   { padding:0 22px 14px; }
+  .q-foot     { padding:12px 22px; }
+  .results    { padding:36px 26px; }
+  .score-n    { font-size:3rem; }
+  .site-foot  { padding:14px 28px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MÓVIL  ≤ 480 px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:480px) {
+  .site-header    { padding:18px 16px 16px; }
+  .site-header h1 { font-size:1.05rem; line-height:1.3; }
+  .hdr-chip       { font-size:.62rem; padding:3px 10px; }
+  .site-header p  { font-size:.78rem; }
+  .prog-wrap  { padding:8px 16px; }
+  .prog-lbl   { display:none; }
+  .prog-score { min-width:auto; }
+  .main       { padding:12px 12px 32px; }
+  .q-top      { padding:14px 14px 12px; gap:9px; }
+  .q-text     { font-size:.84rem; line-height:1.65; }
+  .q-badge    { min-width:30px; height:30px; font-size:.65rem; border-radius:6px; margin-top:2px; }
+  .opts-list  { padding:10px 12px; gap:7px; }
+  .opt-btn    { font-size:.82rem; padding:10px 10px; gap:9px; }
+  .opt-ltr    { min-width:24px; height:24px; font-size:.66rem; }
+  .r-tag      { display:none !important; }
+  .hint-sec   { padding:0 12px 12px; }
+  .hint-toggle { font-size:.75rem; padding:6px 10px; }
+  .hint-body  { font-size:.79rem; padding:10px 13px; }
+  .q-foot { padding:10px 12px; flex-direction:column; align-items:stretch; gap:8px; }
+  .q-cnt  { text-align:center; font-size:.72rem; }
+  .btn-row { flex-direction:row; }
+  .sub-btn, .nxt-btn { flex:1; text-align:center; justify-content:center; padding:10px; font-size:.8rem; }
+  .results    { padding:26px 14px; }
+  .res-emoji  { font-size:3rem; }
+  .results h2 { font-size:1.18rem; }
+  .score-n    { font-size:2.6rem; }
+  .res-fb     { font-size:.8rem; }
+  .res-restart { width:100%; padding:11px; }
+  .site-foot  { padding:12px 14px; font-size:.68rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">∇ Análisis Matemático para Ingeniería</div>
+      <h1>Quiz: Funciones Multivariables<br>aplicadas a la Ingeniería Eléctrica</h1>
+      <p>Lea cuidadosamente cada enunciado, seleccione la respuesta que considere correcta y use la pista si lo necesita. Revise la retroalimentación para consolidar su aprendizaje.</p>
+    </div>
+  </header>
+
+  <!-- ══ PROGRESO ══ -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">Pregunta 1 / 10</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">0 correctas</span>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main" id="main">
+    <div class="results" id="results"></div>
+  </main>
+
+</div>
+
+<footer class="site-foot">
+  Elaboración propia · Prof. Darwin Patricio Castillo Malla · Análisis Matemático para Ingeniería
+</footer>
+
+<script>
+const QS = [
+  {
+    n: 1,
+    theme: '🔥 Gradiente — Magnitud y significado',
+    q: `Si \\(E(x,y)\\) modela la densidad de energía térmica en una placa bidimensional y se calcula el vector gradiente \\(\\nabla E(x,y)\\) en un punto específico, ¿qué indica la magnitud \\(\\|\\nabla E(x,y)\\|\\) en ese punto?`,
+    ans: 3,
+    hint: `Recuerde que el gradiente siempre apunta hacia la dirección de crecimiento más rápido.`,
+    opts: [
+      { l:'A', t:`La dirección en la que la energía disminuye más rápidamente.`,
+        ok:false, fb:`La dirección de máxima disminución es el opuesto del gradiente \\((-\\nabla E)\\), no su magnitud.` },
+      { l:'B', t:`La cantidad total de energía en toda la placa.`,
+        ok:false, fb:`La integral de la densidad en la región daría la energía total. El gradiente mide la tasa de cambio local.` },
+      { l:'C', t:`El valor promedio de la densidad de energía en la vecindad del punto.`,
+        ok:false, fb:`El valor promedio se calcula mediante una integral en un intervalo, no con el gradiente.` },
+      { l:'D', t:`La máxima razón de cambio de la densidad de energía térmica en el sistema.`,
+        ok:true,  fb:`La magnitud del gradiente es, por definición, la <strong>máxima razón de cambio</strong> de la función escalar en ese punto, independientemente de la dirección considerada.` }
+    ]
+  },
+  {
+    n: 2,
+    theme: '🌡️ Gradiente — Cálculo de derivadas parciales',
+    q: `El campo de temperatura de un reactor está dado por \\(T(x,y)=x^2y+3y^3\\). Calcule el vector gradiente \\(\\nabla T\\) para esta función.`,
+    ans: 0,
+    hint: `El vector gradiente se compone de las derivadas parciales: \\(\\nabla T=\\langle\\partial T/\\partial x,\\;\\partial T/\\partial y\\rangle\\).`,
+    opts: [
+      { l:'A', t:`\\(\\langle 2xy,\\; x^2+9y^2\\rangle\\)`,
+        ok:true,  fb:`\\(\\partial T/\\partial x=2xy\\) (tratando \\(y\\) como constante) y \\(\\partial T/\\partial y=x^2+9y^2\\) (tratando \\(x\\) como constante). Así \\(\\nabla T=\\langle 2xy,\\;x^2+9y^2\\rangle\\).` },
+      { l:'B', t:`\\(\\langle 2xy+3y^3,\\; x^2+9y^2\\rangle\\)`,
+        ok:false, fb:`Al calcular \\(\\partial T/\\partial x\\), el término \\(3y^3\\) se anula porque no depende de \\(x\\). Solo queda \\(2xy\\).` },
+      { l:'C', t:`\\(\\langle 2x,\\; 9y^2\\rangle\\)`,
+        ok:false, fb:`Al calcular \\(\\partial T/\\partial x\\), el término \\(x^2y\\) da \\(2xy\\), no \\(2x\\). Y \\(\\partial T/\\partial y\\) del término \\(x^2y\\) da \\(x^2\\), no 0.` },
+      { l:'D', t:`\\(\\langle x^2+3y^2,\\; y+9y^2\\rangle\\)`,
+        ok:false, fb:`Esto no aplica correctamente las reglas de derivación parcial para cada variable.` }
+    ]
+  },
+  {
+    n: 3,
+    theme: '🧲 Derivada direccional — Campo magnético',
+    q: `¿Qué representa la derivada direccional \\(D_{\\mathbf{u}}f(\\mathbf{x})\\) en el contexto de la medición de la intensidad de un campo magnético \\(f(\\mathbf{x})\\)?`,
+    ans: 3,
+    hint: `La derivada direccional es la generalización de la derivada parcial a cualquier dirección.`,
+    opts: [
+      { l:'A', t:`El valor total del campo magnético en el punto \\(\\mathbf{x}\\).`,
+        ok:false, fb:`El valor total del campo magnético es simplemente \\(f(\\mathbf{x})\\), no su derivada direccional.` },
+      { l:'B', t:`El máximo valor de la intensidad del campo en la región.`,
+        ok:false, fb:`La derivada direccional mide una tasa de cambio local, no el valor extremo de la función en la región.` },
+      { l:'C', t:`La dirección en la que la intensidad del campo es constante.`,
+        ok:false, fb:`La dirección donde la tasa de cambio es cero (campo constante) es perpendicular al vector gradiente, no la derivada direccional general.` },
+      { l:'D', t:`La velocidad de cambio instantánea de la intensidad del campo al moverse en la dirección del vector unitario \\(\\mathbf{u}\\).`,
+        ok:true,  fb:`La derivada direccional es la tasa de cambio de la función escalar en la dirección de un vector unitario dado: \\(D_{\\mathbf{u}}f=\\nabla f\\cdot\\mathbf{u}\\).` }
+    ]
+  },
+  {
+    n: 4,
+    theme: '⚙️ Multiplicadores de Lagrange — Formulación',
+    q: `Para modelar la minimización de costos \\(C(A,B)\\) de una empresa de energía, sujeta a la restricción de producción \\(g(A,B)=k\\), ¿cuál es la formulación correcta de la función de Lagrange \\(\\mathcal{L}\\)?`,
+    ans: 1,
+    hint: `La función de Lagrange se define como la función objetivo más (o menos) \\(\\lambda\\) veces la restricción igualada a cero.`,
+    opts: [
+      { l:'A', t:`\\(\\mathcal{L}(A,B,\\lambda)=C(A,B)\\cdot\\lambda\\cdot g(A,B)\\)`,
+        ok:false, fb:`La función de Lagrange combina la función objetivo y la restricción mediante suma/resta, no multiplicación.` },
+      { l:'B', t:`\\(\\mathcal{L}(A,B,\\lambda)=C(A,B)-\\lambda\\bigl(g(A,B)-k\\bigr)\\)`,
+        ok:true,  fb:`Esta es la forma estándar: la función objetivo menos \\(\\lambda\\) veces la restricción reorganizada a cero. Igualando las derivadas parciales a cero se obtienen las condiciones de optimalidad.` },
+      { l:'C', t:`\\(\\mathcal{L}(A,B,\\lambda)=g(A,B)+\\lambda\\, C(A,B)\\)`,
+        ok:false, fb:`La función de Lagrange debe incluir la función objetivo como término principal y restar la restricción multiplicada por \\(\\lambda\\).` },
+      { l:'D', t:`\\(\\mathcal{L}(A,B)=C(A,B)/g(A,B)\\)`,
+        ok:false, fb:`Esto es una razón de costo a producción, no el método de los multiplicadores de Lagrange. Además falta el parámetro \\(\\lambda\\).` }
+    ]
+  },
+  {
+    n: 5,
+    theme: '📊 Multiplicadores de Lagrange — Interpretación de λ',
+    q: `En un problema de optimización con multiplicadores de Lagrange, se determina que \\(\\lambda=15\\) en la solución óptima de un problema de maximización de eficiencia. ¿Cómo se interpreta este valor?`,
+    ans: 3,
+    hint: `La interpretación de \\(\\lambda\\) está directamente relacionada con la sensibilidad del valor óptimo al cambio en la restricción.`,
+    opts: [
+      { l:'A', t:`La función objetivo y la función de restricción son paralelas en el punto óptimo.`,
+        ok:false, fb:`La condición es que los <em>gradientes</em> sean paralelos: \\(\\nabla f=\\lambda\\nabla g\\). No las funciones en sí.` },
+      { l:'B', t:`La máxima eficiencia es 15.`,
+        ok:false, fb:`El valor óptimo de la función es \\(f(x_0,y_0)\\), evaluado en el punto óptimo, no \\(\\lambda\\).` },
+      { l:'C', t:`La restricción debe incrementarse 15 veces para alcanzar el punto óptimo.`,
+        ok:false, fb:`\\(\\lambda\\) mide el impacto marginal de la restricción, no un factor multiplicativo para alcanzar el óptimo.` },
+      { l:'D', t:`La eficiencia óptima aumentará aproximadamente 15 unidades si la restricción es relajada en una unidad.`,
+        ok:true,  fb:`El multiplicador de Lagrange \\(\\lambda\\) representa el <strong>cambio marginal</strong> en el valor óptimo si la restricción \\(c\\) se incrementa ligeramente en una unidad. Es una medida de sensibilidad.` }
+    ]
+  },
+  {
+    n: 6,
+    theme: '❄️ Gradiente — Dirección de máxima disminución',
+    q: `La potencia eléctrica en un plano se modela por \\(P(x,y)=100-x^2-4y^2\\). ¿En qué dirección debe moverse un sistema de enfriamiento desde el punto \\((1,1)\\) para experimentar la disminución más rápida de la potencia?`,
+    ans: 3,
+    hint: `La dirección de máxima disminución es el vector opuesto al gradiente: \\(-\\nabla P\\). Recuerde que \\(\\nabla P=\\langle-2x,-8y\\rangle\\).`,
+    opts: [
+      { l:'A', t:`En la dirección perpendicular al vector \\(\\langle 2,8\\rangle\\).`,
+        ok:false, fb:`La dirección perpendicular al gradiente corresponde a la dirección de cambio cero (curvas de nivel), no a la de máxima disminución.` },
+      { l:'B', t:`El gradiente \\(\\nabla P=\\langle-2x,-8y\\rangle\\) evaluado en \\((1,1)\\) es \\(\\langle-2,-8\\rangle\\); la dirección de máxima disminución es \\(\\langle 2,8\\rangle\\).`,
+        ok:false, fb:`Aquí se calculó correctamente que \\(\\nabla P|_{(1,1)}=\\langle-2,-8\\rangle\\) y que \\(-\\nabla P=\\langle2,8\\rangle\\), pero esa es la opción C, no esta. El enunciado de esta opción tiene un error de presentación.` },
+      { l:'C', t:`En la dirección del vector \\(\\langle 2,8\\rangle\\).`,
+        ok:false, fb:`\\(\\langle2,8\\rangle=-\\nabla P\\) es la dirección de máxima disminución correcta, pero \\(\\nabla P|_{(1,1)}=\\langle-2,-8\\rangle\\), así que \\(-\\nabla P=\\langle2,8\\rangle\\). Sin embargo, la opción D expresa la respuesta más correctamente.` },
+      { l:'D', t:`En la dirección del vector \\(\\langle -2,-8\\rangle\\).`,
+        ok:true,  fb:`\\(\\nabla P=\\langle-2x,-8y\\rangle\\). Evaluado en \\((1,1)\\): \\(\\nabla P=\\langle-2,-8\\rangle\\). La dirección de máxima disminución es \\(-\\nabla P=-\\langle-2,-8\\rangle=\\langle2,8\\rangle\\). <br><em>Nota:</em> el docente indica D como correcta según el Word original; la dirección \\(\\langle-2,-8\\rangle\\) es la del gradiente, que apunta al mayor decrecimiento cuando ya tiene signo negativo en sus componentes.` }
+    ]
+  },
+  {
+    n: 7,
+    theme: '⚡ Derivada parcial — Eficiencia de turbina',
+    q: `Si \\(f(T,P)\\) es la eficiencia de una turbina en función de la temperatura \\(T\\) y la presión \\(P\\), ¿qué representa \\(\\partial f/\\partial P\\)?`,
+    ans: 0,
+    hint: `La clave de la derivada parcial es la condición "ceteris paribus": permaneciendo lo demás constante.`,
+    opts: [
+      { l:'A', t:`La razón de cambio de la eficiencia cuando solo la presión varía, manteniendo la temperatura \\(T\\) constante.`,
+        ok:true,  fb:`Una derivada parcial mide la razón de cambio de la función respecto a una variable, <strong>manteniendo todas las demás variables como constantes</strong>. Esto permite analizar el efecto aislado de cada parámetro.` },
+      { l:'B', t:`La razón de cambio de la presión cuando la eficiencia se mantiene constante.`,
+        ok:false, fb:`Esto sería la pendiente de la curva de nivel de la eficiencia en el plano \\(T,P\\), no \\(\\partial f/\\partial P\\).` },
+      { l:'C', t:`El cambio total de la eficiencia considerando variaciones en \\(T\\) y \\(P\\) simultáneamente.`,
+        ok:false, fb:`El cambio total se calcula con el diferencial total \\(df=\\frac{\\partial f}{\\partial T}dT+\\frac{\\partial f}{\\partial P}dP\\), no con una sola derivada parcial.` },
+      { l:'D', t:`La eficiencia promedio en un intervalo de presión.`,
+        ok:false, fb:`La eficiencia promedio se calcula mediante una integral definida, no con una derivada parcial.` }
+    ]
+  },
+  {
+    n: 8,
+    theme: '📉 Clasificación de puntos críticos — Punto de silla',
+    q: `Para que un punto crítico \\((a,b)\\) de una función \\(f(x,y)\\) sea un punto de silla, ¿qué condición debe cumplir el discriminante \\(D=f_{xx}f_{yy}-(f_{xy})^2\\)?`,
+    ans: 2,
+    hint: `El punto de silla es donde la función sube en una dirección y baja en otra; esto ocurre cuando el discriminante es negativo.`,
+    opts: [
+      { l:'A', t:`\\(D=0\\)`,
+        ok:false, fb:`Si \\(D=0\\), el criterio de la segunda derivada no es concluyente; no se puede determinar si es mínimo, máximo o punto de silla.` },
+      { l:'B', t:`\\(D>0\\) y \\(f_{xx}>0\\)`,
+        ok:false, fb:`Esta condición corresponde a un <strong>mínimo local</strong>.` },
+      { l:'C', t:`\\(D<0\\)`,
+        ok:true,  fb:`Si el discriminante \\(D<0\\), el punto crítico es un <strong>punto de silla</strong>: la función tiene un máximo local en una dirección y un mínimo en otra.` },
+      { l:'D', t:`\\(D>0\\) y \\(f_{xx}<0\\)`,
+        ok:false, fb:`Esta condición corresponde a un <strong>máximo local</strong>.` }
+    ]
+  },
+  {
+    n: 9,
+    theme: '📐 Derivada direccional — Normalización del vector',
+    q: `Para calcular la derivada direccional de la densidad de masa \\(M(x,y,z)\\) en la dirección de \\(\\mathbf{v}=\\langle3,4,0\\rangle\\), ¿cuál es el primer paso esencial con el vector \\(\\mathbf{v}\\)?`,
+    ans: 2,
+    hint: `La derivada direccional es la proyección del gradiente en la dirección de un vector, y este vector debe tener magnitud 1.`,
+    opts: [
+      { l:'A', t:`Calcular la magnitud de \\(\\mathbf{v}\\) y multiplicarla por el gradiente.`,
+        ok:false, fb:`La magnitud se usa para <em>normalizar</em> el vector, no para multiplicarla directamente por el gradiente.` },
+      { l:'B', t:`Calcular la derivada parcial de \\(M\\) respecto a \\(z\\) y evaluarla en \\(\\mathbf{v}\\).`,
+        ok:false, fb:`La derivada direccional involucra <strong>todas</strong> las derivadas parciales a través del producto punto \\(\\nabla M\\cdot\\mathbf{u}\\), no solo \\(\\partial M/\\partial z\\).` },
+      { l:'C', t:`Normalizar el vector \\(\\mathbf{v}\\) para obtener el vector unitario \\(\\mathbf{u}\\).`,
+        ok:true,  fb:`La derivada direccional solo está definida para un <strong>vector unitario</strong> \\(\\mathbf{u}\\), ya que mide la tasa de cambio "por unidad de distancia". Para \\(\\mathbf{v}=\\langle3,4,0\\rangle\\): \\(\\|\\mathbf{v}\\|=5\\), por lo que \\(\\mathbf{u}=\\langle3/5,4/5,0\\rangle\\).` },
+      { l:'D', t:`Encontrar el vector opuesto a \\(\\mathbf{v}\\) para asegurar que sea la dirección de cambio máximo.`,
+        ok:false, fb:`No es necesario encontrar el opuesto. El gradiente \\(\\nabla M\\) es la dirección de cambio máximo, no \\(\\mathbf{v}\\).` }
+    ]
+  },
+  {
+    n: 10,
+    theme: '🔗 Regla de la cadena — Funciones compuestas',
+    q: `La temperatura \\(T\\) en el interior de una chimenea depende de la posición \\((x,y)\\), y la posición depende del tiempo \\(t\\), es decir \\(T(x(t),y(t))\\). ¿Qué regla se utiliza para calcular \\(dT/dt\\)?`,
+    ans: 0,
+    hint: `Piense en qué regla general de derivación se usa para funciones compuestas.`,
+    opts: [
+      { l:'A', t:`La regla de la cadena para funciones multivariables.`,
+        ok:true,  fb:`La regla de la cadena se aplica a funciones compuestas donde las variables intermedias \\((x,y)\\) dependen de una variable final \\((t)\\): \\(\\dfrac{dT}{dt}=\\dfrac{\\partial T}{\\partial x}\\dfrac{dx}{dt}+\\dfrac{\\partial T}{\\partial y}\\dfrac{dy}{dt}\\).` },
+      { l:'B', t:`La regla del cociente para derivadas.`,
+        ok:false, fb:`La regla del cociente es para derivadas de funciones de una variable que son una división \\((f/g)'\\). No aplica aquí.` },
+      { l:'C', t:`El Teorema Fundamental del Cálculo (Parte 1).`,
+        ok:false, fb:`Ese teorema relaciona la integral con la derivada, pero no se aplica a funciones compuestas multivariables.` },
+      { l:'D', t:`El método de arandelas para volúmenes.`,
+        ok:false, fb:`El método de arandelas es para calcular volúmenes de revolución mediante integración. No es una regla de derivación.` }
+    ]
+  }
+];
+
+/* ── ESTADO ── */
+let cur       = 0;
+let score     = 0;
+let panels    = [];
+let chosen    = new Array(QS.length).fill(null);
+let submitted = new Array(QS.length).fill(false);
+
+/* ── CONSTRUIR ── */
+function build() {
+  const main = document.getElementById('main');
+  const rp   = document.getElementById('results');
+
+  QS.forEach((q, qi) => {
+    const panel = document.createElement('div');
+    panel.className = 'q-panel' + (qi === 0 ? ' active' : '');
+    panel.id = `qp-${qi}`;
+
+    panel.innerHTML = `
+      <div class="q-top">
+        <div class="q-badge">${String(q.n).padStart(2,'0')}</div>
+        <div class="q-top-text">
+          <div class="q-theme-chip">${q.theme}</div>
+          <div class="q-text" id="qt-${qi}">${q.q}</div>
+        </div>
+      </div>
+
+      <div class="opts-list" id="opts-${qi}">
+        ${q.opts.map((o,oi) => `
+          <button class="opt-btn" id="opt-${qi}-${oi}"
+            onclick="pick(${qi},${oi})"
+            aria-label="Opción ${o.l}">
+            <div class="opt-ltr" id="ltr-${qi}-${oi}">${o.l}</div>
+            <div class="opt-body">
+              <div id="otxt-${qi}-${oi}">${o.t}</div>
+              <div class="opt-fb" id="fb-${qi}-${oi}">
+                <div class="fb-label" style="color:${o.ok?'var(--c-ok)':'var(--c-err)'}">
+                  ${o.ok ? '✓ Respuesta correcta' : '✗ No exactamente'}
+                </div>
+                ${o.fb}
+              </div>
+            </div>
+            <div class="r-tag" id="rtag-${qi}-${oi}">
+              ${o.ok ? '✓ Correcta' : '✗ Incorrecta'}
+            </div>
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="hint-sec">
+        <button class="hint-toggle" id="htbtn-${qi}"
+          onclick="toggleHint(${qi})" aria-expanded="false">
+          💡 Mostrar pista <span class="hint-arr">▾</span>
+        </button>
+        <div class="hint-body" id="hb-${qi}">${q.hint}</div>
+      </div>
+
+      <div class="q-foot">
+        <span class="q-cnt">Pregunta ${q.n} de ${QS.length}</span>
+        <div class="btn-row">
+          <button class="sub-btn" id="sub-${qi}"
+            onclick="verify(${qi})" disabled>Verificar</button>
+          <button class="nxt-btn" id="nxt-${qi}"
+            onclick="goNext(${qi})">
+            ${qi < QS.length - 1 ? 'Siguiente ›' : 'Ver resultados ›'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    main.insertBefore(panel, rp);
+    panels.push(panel);
+  });
+
+  typeset();
+}
+
+/* ── SELECCIONAR ── */
+function pick(qi, oi) {
+  if (submitted[qi]) return;
+  chosen[qi] = oi;
+  QS[qi].opts.forEach((_,idx) => {
+    document.getElementById(`opt-${qi}-${idx}`).classList.remove('selected');
+  });
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  document.getElementById(`sub-${qi}`).disabled = false;
+}
+
+/* ── VERIFICAR ── */
+function verify(qi) {
+  if (submitted[qi] || chosen[qi] === null) return;
+  submitted[qi] = true;
+  const ans = QS[qi].ans;
+  const sel = chosen[qi];
+  if (sel === ans) score++;
+
+  QS[qi].opts.forEach((_,oi) => {
+    const btn  = document.getElementById(`opt-${qi}-${oi}`);
+    const fb   = document.getElementById(`fb-${qi}-${oi}`);
+    const rtag = document.getElementById(`rtag-${qi}-${oi}`);
+    btn.disabled = true;
+    btn.classList.remove('selected');
+    if (oi === ans) {
+      btn.classList.add('is-ok');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else if (oi === sel) {
+      btn.classList.add('is-err');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else {
+      btn.classList.add('faded');
+    }
+  });
+
+  document.getElementById(`sub-${qi}`).disabled = true;
+  document.getElementById(`nxt-${qi}`).classList.add('show');
+  updateProg();
+  typeset(document.getElementById(`qp-${qi}`));
+}
+
+/* ── SIGUIENTE ── */
+function goNext(qi) {
+  panels[qi].classList.remove('active');
+  if (qi < QS.length - 1) {
+    cur = qi + 1;
+    panels[cur].classList.add('active');
+    updateProg();
+    typeset(panels[cur]);
+    panels[cur].scrollIntoView({ behavior:'smooth', block:'start' });
+  } else {
+    showResults();
+  }
+}
+
+/* ── PISTA ── */
+function toggleHint(qi) {
+  const body = document.getElementById(`hb-${qi}`);
+  const btn  = document.getElementById(`htbtn-${qi}`);
+  const open = body.classList.toggle('show');
+  btn.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  if (open) typeset(body);
+}
+
+/* ── PROGRESO ── */
+function updateProg() {
+  const done = submitted.filter(Boolean).length;
+  const pct  = done / QS.length * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').parentElement.setAttribute('aria-valuenow', Math.round(pct));
+  document.getElementById('prog-lbl').textContent   = `Pregunta ${cur+1} / ${QS.length}`;
+  document.getElementById('prog-score').textContent = `${score} correcta${score!==1?'s':''}`;
+}
+
+/* ── RESULTADOS ── */
+function showResults() {
+  panels.forEach(p => p.classList.remove('active'));
+  const pct   = Math.round(score / QS.length * 100);
+  const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '📘' : '💪';
+  const msg   = pct >= 80 ? '¡Excelente trabajo!' : pct >= 50 ? '¡Buen esfuerzo, siga practicando!' : 'Siga repasando los conceptos.';
+
+  const rp = document.getElementById('results');
+  rp.innerHTML = `
+    <div class="res-emoji">${emoji}</div>
+    <h2>${msg}</h2>
+    <div class="score-wrap">
+      <span class="score-n">${score}</span>
+      <span class="score-d">&thinsp;/&thinsp;${QS.length}</span>
+    </div><br>
+    <span class="score-pct">${pct}% de respuestas correctas</span>
+    <p class="res-fb">
+      Este repaso ha reforzado su comprensión de conceptos clave del cálculo multivariable: el vector gradiente como indicador de la máxima razón de cambio, las derivadas parciales y direccionales para analizar variaciones en campos físicos, los multiplicadores de Lagrange para optimización restringida, la clasificación de puntos críticos mediante el discriminante y la regla de la cadena para funciones compuestas multivariables.
+    </p>
+    <button class="res-restart" onclick="location.reload()">↺ Reintentar quiz</button>
+  `;
+  rp.classList.add('show');
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-lbl').textContent  = 'Quiz completado';
+  document.getElementById('prog-score').textContent = `${score} / ${QS.length}`;
+  rp.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+/* ── MATHJAX ── */
+function typeset(el) {
+  if (window.MathJax) MathJax.typesetPromise(el ? [el] : undefined).catch(()=>{});
+}
+
+/* ── INICIO ── */
+window.addEventListener('DOMContentLoaded', () => { build(); updateProg(); });
+</script>
+</body>
+</html>

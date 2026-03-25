@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reglas Fundamentales de Derivación</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+/* ═══════════════════════════════════════════════════════════
+   PALETA — modifique aquí para cambiar todos los colores
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* Fondos */
+  --bg:          #edf3f0;
+  --surface:     #ffffff;
+  --surface-2:   #e4ede9;
+  --border:      #c0d4cc;
+
+  /* Texto */
+  --text:        #0e2520;
+  --text-2:      #1e4038;
+  --muted:       #5a8070;
+
+  /* Primario — Verde esmeralda */
+  --pri:         #0d8060;
+  --pri-lt:      #d0f0e8;
+  --pri-bd:      #68c4a8;
+  --pri-dk:      #09604a;
+
+  /* Sección A — Azul acero */
+  --s1:          #1a5eb8;
+  --s1-lt:       #dce8ff;
+  --s1-bd:       #90b4f0;
+
+  /* Sección B — Violeta */
+  --s2:          #6c3fd6;
+  --s2-lt:       #ede8fc;
+  --s2-bd:       #c0aaef;
+
+  /* Sección C — Teal profundo */
+  --s3:          #0d7c6e;
+  --s3-lt:       #d0f0eb;
+  --s3-bd:       #6cc4ba;
+
+  /* Resultado */
+  --res:         #1a7a4a;
+  --res-lt:      #d0f5e3;
+  --res-bd:      #68cfa0;
+
+  /* Alerta / "Recuerde" — Ámbar */
+  --warn:        #a05000;
+  --warn-lt:     #fff4e0;
+  --warn-bd:     #f0c870;
+
+  /* Sombras */
+  --sh-sm: 0 2px 8px  rgba(10,50,35,.09);
+  --sh-md: 0 4px 20px rgba(10,50,35,.11);
+  --sh-lg: 0 8px 36px rgba(10,50,35,.14);
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+
+  --canvas-w: 850px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS 850px base
+═══════════════════════════════════════════════════════════ */
+.canvas {
+  width: 100%;
+  max-width: var(--canvas-w);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sh-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════════ */
+.site-header {
+  background: linear-gradient(135deg, #075040 0%, #0d8060 55%, #1aaa80 100%);
+  padding: 34px 44px 30px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.site-header::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 80% 18%, rgba(255,255,255,.13) 0%, transparent 62%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:''; position:absolute;
+  width:260px; height:260px; border-radius:50%;
+  background: rgba(255,255,255,.055);
+  right:-60px; bottom:-70px; pointer-events:none;
+}
+.hdr-inner { position:relative; z-index:1; }
+
+.hdr-eyebrow {
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:100px; padding:4px 14px;
+  font-size:.7rem; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:#fff;
+  margin-bottom:14px; font-family:'DM Sans',sans-serif;
+}
+
+.site-header h1 {
+  font-family:'Lora',Georgia,serif;
+  font-size:1.65rem; font-weight:700; color:#fff;
+  line-height:1.22; margin-bottom:10px;
+}
+
+.site-header p {
+  font-size:.84rem; color:rgba(255,255,255,.82);
+  max-width:500px; line-height:1.65; margin-bottom:18px;
+}
+
+.hint-pill {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,.15);
+  border:1px dashed rgba(255,255,255,.45);
+  border-radius:10px; padding:8px 18px;
+  font-size:.8rem; font-weight:600; color:#fff;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROGRESS
+═══════════════════════════════════════════════════════════ */
+.prog-wrap {
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:9px 44px;
+  position:sticky; top:0; z-index:50;
+  box-shadow:var(--sh-sm); flex-shrink:0;
+}
+.prog-row { display:flex; align-items:center; gap:12px; }
+.prog-lbl { font-size:.72rem; font-weight:700; color:var(--muted); white-space:nowrap; min-width:100px; font-family:'DM Sans',sans-serif; }
+.prog-track { flex:1; height:8px; background:var(--surface-2); border:1px solid var(--border); border-radius:100px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--s1),var(--s2),var(--s3)); border-radius:100px; width:0%; transition:width .5s cubic-bezier(.4,0,.2,1); }
+.prog-pct { font-size:.72rem; font-weight:800; color:var(--pri); min-width:50px; text-align:right; font-family:'DM Sans',sans-serif; }
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════════ */
+.main {
+  flex:1; padding:32px 44px 56px;
+  background:var(--bg);
+  display:flex; flex-direction:column; gap:22px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION CARD
+═══════════════════════════════════════════════════════════ */
+.sec-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-md);
+  overflow:hidden;
+  animation: cardIn .4s ease both;
+}
+.sec-card:nth-child(1) { animation-delay:.05s; }
+.sec-card:nth-child(2) { animation-delay:.12s; }
+.sec-card:nth-child(3) { animation-delay:.19s; }
+
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Card header ── */
+.sec-head {
+  display:flex; align-items:center; gap:14px;
+  padding:20px 26px 18px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer; user-select:none;
+  background:var(--surface-2);
+  transition:background .18s;
+}
+.sec-head:hover { filter:brightness(.97); }
+
+.sec-icon-wrap {
+  min-width:46px; height:46px; border-radius:13px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; flex-shrink:0;
+  box-shadow:var(--sh-sm);
+}
+
+.sec-head-text { flex:1; }
+
+.sec-title {
+  font-family:'Lora',Georgia,serif;
+  font-size:1.05rem; font-weight:700; color:var(--text); line-height:1.25;
+}
+.sec-subtitle {
+  font-size:.77rem; color:var(--muted); margin-top:3px;
+}
+
+.sec-counter {
+  font-size:.7rem; font-weight:700;
+  font-family:'DM Mono',monospace;
+  color:var(--muted);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:100px;
+  padding:3px 10px;
+  flex-shrink:0;
+}
+
+.sec-arrow {
+  font-size:1rem; color:var(--muted);
+  transition:transform .3s cubic-bezier(.4,0,.2,1); flex-shrink:0;
+}
+.sec-card.open .sec-arrow { transform:rotate(180deg); }
+
+/* ── Card body ── */
+.sec-body { display:none; padding:22px 26px 28px; }
+.sec-card.open .sec-body { display:block; }
+
+/* Intro text */
+.sec-intro {
+  font-size:.87rem; color:var(--text-2);
+  line-height:1.7; margin-bottom:18px;
+  padding:14px 16px;
+  background:var(--surface-2);
+  border-radius:var(--r-md);
+  border-left:3px solid var(--border);
+}
+
+/* Steps label */
+.steps-label {
+  font-size:.68rem; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:11px;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* Steps grid — 2 cols on desktop for rules */
+.steps-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.steps-grid.single { grid-template-columns:1fr; }
+
+/* Step item */
+.step-item {
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--r-md);
+  overflow:hidden; cursor:pointer;
+  transition:border-color .18s, box-shadow .18s;
+  grid-column: span 1;
+}
+.step-item.wide { grid-column: span 2; }
+.step-item:hover { border-color:var(--pri-bd); box-shadow:0 0 0 3px rgba(13,128,96,.06); }
+.step-item.active { border-color:var(--pri); }
+.step-item.seen { border-color:var(--res-bd); }
+
+.step-trigger {
+  display:flex; align-items:center; gap:11px; padding:13px 15px;
+}
+
+.step-icon {
+  min-width:32px; height:32px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; flex-shrink:0;
+}
+
+.step-tag {
+  font-size:.65rem; font-weight:800;
+  font-family:'DM Mono',monospace;
+  padding:2px 7px; border-radius:4px; flex-shrink:0;
+}
+
+.step-title {
+  font-size:.86rem; font-weight:700; color:var(--text-2); flex:1; line-height:1.3;
+}
+
+.step-chev {
+  font-size:.72rem; color:var(--muted); flex-shrink:0;
+  transition:transform .25s;
+}
+.step-item.active .step-chev { transform:rotate(180deg); }
+
+/* Step content */
+.step-content {
+  display:none;
+  padding:0 15px 14px 15px;
+  font-size:.86rem; color:var(--text-2);
+  line-height:1.75;
+  border-top:1px solid var(--border);
+  padding-top:13px;
+}
+.step-item.active .step-content { display:block; }
+
+.step-content strong { color:var(--text); }
+
+/* Formula display */
+.f-box {
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:10px 14px;
+  text-align:center;
+  margin:9px 0;
+  font-size:.95rem;
+}
+.f-box.primary {
+  background:var(--pri-lt);
+  border-color:var(--pri-bd);
+}
+.f-box.s1 { background:var(--s1-lt); border-color:var(--s1-bd); }
+.f-box.s2 { background:var(--s2-lt); border-color:var(--s2-bd); }
+.f-box.s3 { background:var(--s3-lt); border-color:var(--s3-bd); }
+
+.result-box {
+  background:var(--res-lt);
+  border:1px solid var(--res-bd);
+  border-left:3px solid var(--res);
+  border-radius:var(--r-sm);
+  padding:10px 15px; margin-top:10px;
+  color:#0a4a28; font-size:.84rem; line-height:1.6;
+}
+
+.example-row {
+  display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;
+}
+.ex-chip {
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:5px 12px; font-size:.8rem;
+  color:var(--text-2); font-family:'DM Mono',monospace;
+}
+
+/* Tags */
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:18px; }
+.tag {
+  font-size:.68rem; font-weight:700;
+  padding:3px 10px; border-radius:100px;
+  font-family:'DM Sans',sans-serif;
+}
+.tag-pri    { background:var(--pri-lt);  color:var(--pri);  border:1px solid var(--pri-bd); }
+.tag-s1     { background:var(--s1-lt);   color:var(--s1);   border:1px solid var(--s1-bd); }
+.tag-s2     { background:var(--s2-lt);   color:var(--s2);   border:1px solid var(--s2-bd); }
+.tag-s3     { background:var(--s3-lt);   color:var(--s3);   border:1px solid var(--s3-bd); }
+.tag-warn   { background:var(--warn-lt); color:var(--warn); border:1px solid var(--warn-bd); }
+
+/* ── "Recuerde" banner ── */
+.remember-banner {
+  background:var(--warn-lt);
+  border:1.5px solid var(--warn-bd);
+  border-left:4px solid var(--warn);
+  border-radius:var(--r-md);
+  padding:16px 20px;
+  margin-top:20px;
+  display:flex; gap:13px; align-items:flex-start;
+}
+.remember-icon {
+  min-width:36px; height:36px;
+  background:var(--warn-bd);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; flex-shrink:0;
+}
+.remember-body { flex:1; }
+.remember-label {
+  font-size:.7rem; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--warn);
+  font-family:'DM Sans',sans-serif; margin-bottom:5px;
+}
+.remember-body p {
+  font-size:.85rem; color:#6a3a00; line-height:1.65;
+}
+.remember-body strong { color:var(--warn); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════ */
+.site-foot {
+  width:100%; max-width:var(--canvas-w);
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:26px 44px;
+  font-size:.74rem; color:var(--muted);
+  font-family:'DM Sans',sans-serif; line-height:1.8;
+}
+.site-foot strong { color:var(--text-2); font-weight:700; }
+.site-foot em { color:var(--text-2); }
+
+/* ═══════════════════════════════════════════════════════════
+   TABLET  ≤ 720px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+  .site-header { padding:24px 28px 22px; }
+  .site-header h1 { font-size:1.4rem; }
+  .prog-wrap { padding:8px 28px; }
+  .main { padding:22px 28px 44px; gap:16px; }
+  .sec-head { padding:16px 20px 14px; }
+  .sec-body { padding:18px 20px 24px; }
+  .steps-grid { grid-template-columns:1fr; }
+  .step-item.wide { grid-column:span 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MÓVIL  ≤ 480px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:480px) {
+  .site-header { padding:18px 16px 16px; }
+  .site-header h1 { font-size:1.12rem; }
+  .hdr-eyebrow { font-size:.62rem; padding:3px 10px; }
+  .site-header p { font-size:.78rem; }
+  .hint-pill { font-size:.74rem; padding:7px 13px; }
+  .prog-wrap { padding:8px 16px; }
+  .prog-lbl { display:none; }
+  .main { padding:12px 12px 36px; gap:13px; }
+  .sec-head { padding:14px 14px 12px; gap:10px; }
+  .sec-icon-wrap { min-width:40px; height:40px; font-size:1.2rem; border-radius:10px; }
+  .sec-title { font-size:.94rem; }
+  .sec-body { padding:14px 13px 18px; }
+  .step-trigger { padding:11px 12px; }
+  .step-icon { min-width:28px; height:28px; font-size:.9rem; border-radius:7px; }
+  .step-title { font-size:.81rem; }
+  .step-content { font-size:.81rem; padding:12px 12px 13px; }
+  .steps-grid { grid-template-columns:1fr; }
+  .step-item.wide { grid-column:span 1; }
+  .remember-banner { padding:13px 14px; gap:10px; }
+  .remember-body p { font-size:.8rem; }
+  .site-foot { padding:20px 16px; font-size:.7rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-eyebrow">∂ Análisis Matemático para Ingeniería</div>
+      <h1>Reglas Fundamentales de Derivación</h1>
+      <p>Explore y conozca las reglas fundamentales que permiten derivar funciones algebraicas, compuestas y trascendentes de manera eficiente y precisa.</p>
+      <div class="hint-pill">👆 Haga clic en las secciones y luego en cada regla para visualizar la fórmula y ejemplos</div>
+    </div>
+  </header>
+
+  <!-- ══ PROGRESO ══ -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">0 / 13 reglas</span>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+      <span class="prog-pct" id="prog-pct">0%</span>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main">
+
+    <!-- ══════════════════════════════════════════
+         SECCIÓN A — Reglas algebraicas
+    ══════════════════════════════════════════ -->
+    <div class="sec-card" id="secA">
+      <div class="sec-head" onclick="toggleCard('secA')">
+        <div class="sec-icon-wrap" style="background:linear-gradient(135deg,var(--s1),#3a7ae8)">🔢</div>
+        <div class="sec-head-text">
+          <div class="sec-title">Reglas de derivación algebraicas</div>
+          <div class="sec-subtitle">Base del cálculo diferencial — funciones elementales</div>
+        </div>
+        <div class="sec-counter">6 reglas</div>
+        <div class="sec-arrow">⌄</div>
+      </div>
+      <div class="sec-body">
+
+        <div class="sec-intro">
+          Las siguientes reglas constituyen la base del cálculo diferencial y permiten obtener derivadas de funciones elementales de forma directa, sin necesidad de usar la definición de límite.
+        </div>
+
+        <div class="steps-label">👆 Haga clic en cada regla para ver la fórmula y un ejemplo</div>
+        <div class="steps-grid" id="gridA">
+
+          <!-- Constante -->
+          <div class="step-item" onclick="toggleStep(this,'A')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s1-lt)">🔒</div>
+              <span class="step-tag" style="background:var(--s1-lt);color:var(--s1)">R1</span>
+              <span class="step-title">Constante</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <strong>Función:</strong> \(f(x)=c\)
+              <div class="f-box s1">\[\frac{d}{dx}(c)=0\]</div>
+              <div class="result-box">La derivada de cualquier constante es cero: la función no cambia.</div>
+              <div class="example-row">
+                <span class="ex-chip">\(f(x)=7 \Rightarrow f'=0\)</span>
+                <span class="ex-chip">\(f(x)=\pi \Rightarrow f'=0\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Potencia -->
+          <div class="step-item" onclick="toggleStep(this,'A')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s1-lt)">⬆️</div>
+              <span class="step-tag" style="background:var(--s1-lt);color:var(--s1)">R2</span>
+              <span class="step-title">Potencia</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <strong>Función:</strong> \(f(x)=x^n\) (\(n\) real)
+              <div class="f-box s1">\[\frac{d}{dx}(x^n)=nx^{n-1}\]</div>
+              <div class="result-box">Baje el exponente como factor y réstele 1.</div>
+              <div class="example-row">
+                <span class="ex-chip">\(x^5 \Rightarrow 5x^4\)</span>
+                <span class="ex-chip">\(x^{1/2} \Rightarrow \tfrac{1}{2}x^{-1/2}\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Múltiplo constante -->
+          <div class="step-item" onclick="toggleStep(this,'A')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s1-lt)">✖️</div>
+              <span class="step-tag" style="background:var(--s1-lt);color:var(--s1)">R3</span>
+              <span class="step-title">Múltiplo constante</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <strong>Función:</strong> \(f(x)=c\cdot u\)
+              <div class="f-box s1">\[\frac{d}{dx}(c\cdot u)=c\frac{du}{dx}\]</div>
+              <div class="result-box">Las constantes multiplicativas "salen" de la derivada.</div>
+              <div class="example-row">
+                <span class="ex-chip">\(5x^3 \Rightarrow 5\cdot3x^2=15x^2\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suma / diferencia -->
+          <div class="step-item" onclick="toggleStep(this,'A')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s1-lt)">➕</div>
+              <span class="step-tag" style="background:var(--s1-lt);color:var(--s1)">R4</span>
+              <span class="step-title">Suma / Diferencia</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <strong>Función:</strong> \(f(x)=u\pm v\)
+              <div class="f-box s1">\[\frac{d}{dx}(u\pm v)=\frac{du}{dx}\pm\frac{dv}{dx}\]</div>
+              <div class="result-box">Se deriva término a término, manteniendo el signo.</div>
+              <div class="example-row">
+                <span class="ex-chip">\((x^3+x^2)' = 3x^2+2x\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Producto -->
+          <div class="step-item" onclick="toggleStep(this,'A')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s1-lt)">🤝</div>
+              <span class="step-tag" style="background:var(--s1-lt);color:var(--s1)">R5</span>
+              <span class="step-title">Producto</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <strong>Función:</strong> \(f(x)=u\cdot v\)
+              <div class="f-box s1">\[\frac{d}{dx}(u\cdot v)=u\frac{dv}{dx}+v\frac{du}{dx}\]</div>
+              <div class="result-box">"El primero por la derivada del segundo, más el segundo por la derivada del primero."</div>
+              <div class="example-row">
+                <span class="ex-chip">\((x^2\cdot e^x)' = x^2e^x+2xe^x\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cociente -->
+          <div class="step-item" onclick="toggleStep(this,'A')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s1-lt)">➗</div>
+              <span class="step-tag" style="background:var(--s1-lt);color:var(--s1)">R6</span>
+              <span class="step-title">Cociente (división)</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <strong>Función:</strong> \(f(x)=u/v\)
+              <div class="f-box s1">\[\frac{d}{dx}\!\left(\frac{u}{v}\right)=\frac{v\dfrac{du}{dx}-u\dfrac{dv}{dx}}{v^{2}}\]</div>
+              <div class="result-box">"Denominador por derivada del numerador, menos numerador por derivada del denominador, todo sobre el denominador al cuadrado."</div>
+              <div class="example-row">
+                <span class="ex-chip">\(\left(\dfrac{x^2}{x+1}\right)'\)</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /steps-grid -->
+
+        <div class="tags">
+          <span class="tag tag-s1">Regla de la potencia</span>
+          <span class="tag tag-s1">Regla del producto</span>
+          <span class="tag tag-s1">Regla del cociente</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SECCIÓN B — Regla de la cadena
+    ══════════════════════════════════════════ -->
+    <div class="sec-card" id="secB">
+      <div class="sec-head" onclick="toggleCard('secB')">
+        <div class="sec-icon-wrap" style="background:linear-gradient(135deg,var(--s2),#9060f0)">🔗</div>
+        <div class="sec-head-text">
+          <div class="sec-title">Regla de la cadena y funciones compuestas</div>
+          <div class="sec-subtitle">Derivar cuando una función depende de otra</div>
+        </div>
+        <div class="sec-counter">3 reglas</div>
+        <div class="sec-arrow">⌄</div>
+      </div>
+      <div class="sec-body">
+
+        <div class="sec-intro">
+          La regla de la cadena es esencial cuando una función depende de una variable que, a su vez, depende de otra. Si \(y=f(u)\) y \(u=g(x)\) son funciones derivables, entonces la derivada de la composición \(y=f(g(x))\) es el producto de las derivadas.
+        </div>
+
+        <div class="steps-label">👆 Haga clic en cada regla para ver la fórmula y un ejemplo</div>
+        <div class="steps-grid single" id="gridB">
+
+          <!-- Forma Leibniz -->
+          <div class="step-item" onclick="toggleStep(this,'B')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s2-lt)">⛓️</div>
+              <span class="step-tag" style="background:var(--s2-lt);color:var(--s2)">C1</span>
+              <span class="step-title">Regla de la cadena — Forma general (Leibniz)</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              Si \(y=f(u)\) y \(u=g(x)\):
+              <div class="f-box s2">\[\frac{dy}{dx}=\frac{dy}{du}\cdot\frac{du}{dx}\]</div>
+              <div class="result-box">Derivar la función exterior (dejando la interior intacta) y multiplicar por la derivada de la función interior.</div>
+              <div class="example-row">
+                <span class="ex-chip">\(y=(3x+1)^5\): \(u=3x+1\), \(\frac{dy}{dx}=5u^4\cdot3=15(3x+1)^4\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cadena para potencias -->
+          <div class="step-item" onclick="toggleStep(this,'B')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s2-lt)">🏋️</div>
+              <span class="step-tag" style="background:var(--s2-lt);color:var(--s2)">C2</span>
+              <span class="step-title">Cadena para potencias — Caso especial</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              Si \(u\) es una función derivable de \(x\):
+              <div class="f-box s2">\[\frac{d}{dx}(u^n)=nu^{n-1}\frac{du}{dx}\]</div>
+              <div class="result-box">Es la regla de la potencia generalizada para funciones compuestas.</div>
+              <div class="example-row">
+                <span class="ex-chip">\((x^2+1)^4 \Rightarrow 4(x^2+1)^3\cdot2x\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interpretación -->
+          <div class="step-item" onclick="toggleStep(this,'B')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s2-lt)">🔍</div>
+              <span class="step-tag" style="background:var(--s2-lt);color:var(--s2)">C3</span>
+              <span class="step-title">Identificar la función interior y exterior</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <strong>Estrategia:</strong> preguntar "¿cuál es la última operación aplicada?"
+              <div class="f-box s2">
+                \(f(g(x))\) → exterior \(f\), interior \(g\)
+              </div>
+              <div class="example-row">
+                <span class="ex-chip">\(\sin(x^2)\): exterior \(\sin\), interior \(x^2\)</span>
+                <span class="ex-chip">\(e^{3x}\): exterior \(e^u\), interior \(3x\)</span>
+              </div>
+              <div class="result-box" style="margin-top:10px;">
+                <strong>Recuerda:</strong> siempre multiplica por la derivada de la función interior al final.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-s2">Funciones compuestas</span>
+          <span class="tag tag-s2">Regla de la cadena</span>
+          <span class="tag tag-s2">Derivada interior</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SECCIÓN C — Funciones trascendentes
+    ══════════════════════════════════════════ -->
+    <div class="sec-card" id="secC">
+      <div class="sec-head" onclick="toggleCard('secC')">
+        <div class="sec-icon-wrap" style="background:linear-gradient(135deg,var(--s3),#1aaa90)">📡</div>
+        <div class="sec-head-text">
+          <div class="sec-title">Derivadas de funciones trascendentes</div>
+          <div class="sec-subtitle">Exponencial, logarítmica y trigonométricas</div>
+        </div>
+        <div class="sec-counter">4 reglas</div>
+        <div class="sec-arrow">⌄</div>
+      </div>
+      <div class="sec-body">
+
+        <div class="sec-intro">
+          Estas reglas aplican a funciones que no se expresan mediante operaciones algebraicas finitas. En todos los casos, si el argumento \(u\) es una función de \(x\), se aplica la regla de la cadena multiplicando por \(\tfrac{du}{dx}\).
+        </div>
+
+        <div class="steps-label">👆 Haga clic en cada regla para ver la fórmula y un ejemplo</div>
+        <div class="steps-grid" id="gridC">
+
+          <!-- Exponencial natural -->
+          <div class="step-item" onclick="toggleStep(this,'C')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s3-lt)">📈</div>
+              <span class="step-tag" style="background:var(--s3-lt);color:var(--s3)">T1</span>
+              <span class="step-title">Exponencial natural</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <div class="f-box s3">\[\frac{d}{dx}(e^u)=e^u\frac{du}{dx}\]</div>
+              <div class="result-box">La exponencial natural es su propia derivada (multiplicada por la derivada interior).</div>
+              <div class="example-row">
+                <span class="ex-chip">\((e^{3x})' = 3e^{3x}\)</span>
+                <span class="ex-chip">\((e^{x^2})' = 2xe^{x^2}\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logaritmo natural -->
+          <div class="step-item" onclick="toggleStep(this,'C')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s3-lt)">🪵</div>
+              <span class="step-tag" style="background:var(--s3-lt);color:var(--s3)">T2</span>
+              <span class="step-title">Logaritmo natural</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <div class="f-box s3">\[\frac{d}{dx}(\ln u)=\frac{1}{u}\frac{du}{dx}\]</div>
+              <div class="result-box">La derivada del logaritmo natural es el recíproco del argumento, por la derivada interior.</div>
+              <div class="example-row">
+                <span class="ex-chip">\((\ln(3x))' = \tfrac{1}{3x}\cdot3=\tfrac{1}{x}\)</span>
+                <span class="ex-chip">\((\ln(x^2+1))' = \tfrac{2x}{x^2+1}\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seno -->
+          <div class="step-item" onclick="toggleStep(this,'C')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s3-lt)">〰️</div>
+              <span class="step-tag" style="background:var(--s3-lt);color:var(--s3)">T3</span>
+              <span class="step-title">Seno</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <div class="f-box s3">\[\frac{d}{dx}(\sin u)=\cos u\,\frac{du}{dx}\]</div>
+              <div class="result-box">La derivada del seno es el coseno, multiplicado por la derivada interior.</div>
+              <div class="example-row">
+                <span class="ex-chip">\((\sin(2x))' = 2\cos(2x)\)</span>
+                <span class="ex-chip">\((\sin(x^2))' = 2x\cos(x^2)\)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coseno -->
+          <div class="step-item" onclick="toggleStep(this,'C')">
+            <div class="step-trigger">
+              <div class="step-icon" style="background:var(--s3-lt)">🔄</div>
+              <span class="step-tag" style="background:var(--s3-lt);color:var(--s3)">T4</span>
+              <span class="step-title">Coseno</span>
+              <span class="step-chev">⌄</span>
+            </div>
+            <div class="step-content">
+              <div class="f-box s3">\[\frac{d}{dx}(\cos u)=-\sin u\,\frac{du}{dx}\]</div>
+              <div class="result-box">La derivada del coseno es el <strong>negativo</strong> del seno, multiplicado por la derivada interior.</div>
+              <div class="example-row">
+                <span class="ex-chip">\((\cos(5x))' = -5\sin(5x)\)</span>
+                <span class="ex-chip">\((\cos(x^3))' = -3x^2\sin(x^3)\)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Banner "Recuerde" -->
+        <div class="remember-banner">
+          <div class="remember-icon">💡</div>
+          <div class="remember-body">
+            <div class="remember-label">⚠️ Importante — Técnicas adicionales</div>
+            <p>Existen otras técnicas fundamentales que complementan estas reglas:
+              <strong>Derivación implícita</strong>, necesaria cuando \(y\) no está despejada en función de \(x\); y la
+              <strong>Derivación logarítmica</strong>, útil para funciones complicadas que incluyen productos, cocientes o potencias con exponente variable.
+            </p>
+          </div>
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-s3">Exponencial</span>
+          <span class="tag tag-s3">Logaritmo</span>
+          <span class="tag tag-s3">Trigonometría</span>
+          <span class="tag tag-warn">Derivación implícita</span>
+          <span class="tag tag-warn">Derivación logarítmica</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer class="site-foot" style="max-width:var(--canvas-w);width:100%">
+  <strong>Referencias (APA 7)</strong><br><br>
+  Larson, R., &amp; Edwards, B. H. (2022). <em>Cálculo</em> (11.ª ed.). Cengage Learning.<br>
+  Stewart, J., Redlin, L., &amp; Watson, S. (2021). <em>Precálculo: Matemáticas para el cálculo</em> (8.ª ed.). Cengage Learning.<br>
+  Thomas, G. B., Weir, M. D., &amp; Hass, J. R. (2018). <em>Cálculo</em> (14.ª ed.). Pearson.<br><br>
+</footer>
+
+<script>
+/* ─── ESTADO ─── */
+const seen = new Set();
+const TOTAL = 13;   // 6 + 3 + 4
+
+/* ─── TOGGLE CARD ─── */
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.sec-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    card.classList.add('open');
+    if (window.MathJax) MathJax.typesetPromise([card]).catch(()=>{});
+  }
+}
+
+/* ─── TOGGLE STEP ─── */
+function toggleStep(el, section) {
+  const card = el.closest('.sec-card');
+  const wasActive = el.classList.contains('active');
+  card.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+  if (!wasActive) {
+    el.classList.add('active');
+    el.classList.add('seen');
+    seen.add(el);
+    updateProg();
+    if (window.MathJax) MathJax.typesetPromise([el]).catch(()=>{});
+  }
+}
+
+/* ─── PROGRESS ─── */
+function updateProg() {
+  const done = seen.size;
+  const pct  = Math.round(done / TOTAL * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-lbl').textContent  = `${done} / ${TOTAL} reglas`;
+  document.getElementById('prog-pct').textContent  = pct + '%';
+}
+
+/* ─── INIT ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  updateProg();
+  if (window.MathJax) MathJax.typesetPromise().catch(()=>{});
+});
+</script>
+</body>
+</html>

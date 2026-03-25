@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz – Derivadas en Ingeniería</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ═══════════════════════════════════════════════════════════
+   PALETA DE COLORES — Modifique aquí para cambiar todo
+   Cada variable está documentada para fácil edición
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* ─── Fondo y superficies ─── */
+  --c-bg:          #eaf0f6;   /* fondo de toda la página        */
+  --c-surface:     #ffffff;   /* tarjeta principal              */
+  --c-surface-2:   #f3f7fb;   /* fondo secundario / header card */
+  --c-border:      #c6d4e2;   /* bordes generales               */
+  --c-border-f:    #9eb8d0;   /* borde foco / hover             */
+
+  /* ─── Texto ─── */
+  --c-text:        #152133;   /* texto principal                */
+  --c-text-2:      #2e4a66;   /* texto secundario               */
+  --c-muted:       #607d96;   /* texto desvanecido              */
+
+  /* ─── Primario — Verde azulado (teal) ─── */
+  --c-pri:         #0d7c6e;   /* botones, bordes selección      */
+  --c-pri-dk:      #095c52;   /* hover primario                 */
+  --c-pri-lt:      #d6f3ee;   /* fondo opción seleccionada      */
+  --c-pri-bd:      #7eccc3;   /* borde opción seleccionada      */
+
+  /* ─── Correcto — Verde esmeralda ─── */
+  --c-ok:          #1a7a4a;   /* borde + ícono correcto         */
+  --c-ok-lt:       #d2f5e3;   /* fondo opción correcta          */
+  --c-ok-bd:       #6bcfa0;   /* borde opción correcta          */
+  --c-ok-txt:      #0a4a28;   /* texto retroalimentación ok     */
+
+  /* ─── Incorrecto — Rojo coral ─── */
+  --c-err:         #c43030;   /* borde + ícono incorrecto       */
+  --c-err-lt:      #fde8e8;   /* fondo opción incorrecta        */
+  --c-err-bd:      #f2a0a0;   /* borde opción incorrecta        */
+  --c-err-txt:     #6e0e0e;   /* texto retroalimentación err    */
+
+  /* ─── Pista — Ámbar cálido ─── */
+  --c-hint:        #a85e00;   /* texto e ícono pista            */
+  --c-hint-lt:     #fef5e0;   /* fondo bloque pista             */
+  --c-hint-bd:     #edc876;   /* borde bloque pista             */
+  --c-hint-txt:    #6b3a00;   /* texto dentro de la pista       */
+
+  /* ─── Acento violeta — badge número ─── */
+  --c-num:         #5535b8;   /* badge número pregunta          */
+  --c-num-lt:      #ebe6fa;   /* fondo chip header              */
+
+  /* ─── Gradiente header ─── */
+  --c-hdr-a:       #0d7c6e;   /* inicio gradiente               */
+  --c-hdr-b:       #0e5494;   /* fin gradiente                  */
+
+  /* ─── Gradiente barra progreso ─── */
+  --c-prog-a:      #0d7c6e;
+  --c-prog-b:      #0e5494;
+
+  /* ─── Gradiente score resultados ─── */
+  --c-score-a:     #0d7c6e;
+  --c-score-b:     #5535b8;
+
+  /* ─── Botón Siguiente ─── */
+  --c-next:        #1a7a4a;
+  --c-next-dk:     #0f5432;
+
+  /* ─── Radios ─── */
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  16px;
+  --r-xl:  20px;
+
+  /* ─── Sombras ─── */
+  --sh-sm: 0 2px 8px  rgba(15,50,80,.09);
+  --sh-md: 0 4px 20px rgba(15,50,80,.11);
+  --sh-lg: 0 8px 36px rgba(15,50,80,.14);
+
+  /* ─── Ancho canvas base 850 px ─── */
+  --canvas-w: 850px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — 850 × 800 base
+═══════════════════════════════════════════════════════════ */
+.canvas {
+  width: 100%;
+  max-width: var(--canvas-w);
+  min-height: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sh-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════════ */
+.site-header {
+  background: linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding: 30px 42px 26px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.site-header::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 80% 15%, rgba(255,255,255,.13) 0%, transparent 60%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:'';
+  position:absolute;
+  width:240px; height:240px;
+  border-radius:50%;
+  background: rgba(255,255,255,.055);
+  right:-55px; bottom:-65px;
+  pointer-events:none;
+}
+
+.hdr-inner { position:relative; z-index:1; }
+
+.hdr-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.36);
+  border-radius:100px;
+  padding:4px 14px;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#fff;
+  margin-bottom:12px;
+  font-family:'Nunito', sans-serif;
+}
+
+.site-header h1 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem;
+  font-weight:800;
+  color:#fff;
+  line-height:1.25;
+  margin-bottom:8px;
+}
+
+.site-header p {
+  font-size:.83rem;
+  color:rgba(255,255,255,.84);
+  max-width:530px;
+  line-height:1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BARRA DE PROGRESO
+═══════════════════════════════════════════════════════════ */
+.prog-wrap {
+  background:var(--c-surface);
+  border-bottom:1px solid var(--c-border);
+  padding:10px 42px;
+  position:sticky;
+  top:0;
+  z-index:50;
+  box-shadow:var(--sh-sm);
+  flex-shrink:0;
+}
+
+.prog-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.prog-lbl {
+  font-size:.74rem;
+  font-weight:700;
+  color:var(--c-muted);
+  white-space:nowrap;
+  min-width:110px;
+  font-family:'Nunito', sans-serif;
+}
+
+.prog-track {
+  flex:1;
+  height:9px;
+  background:var(--c-surface-2);
+  border:1px solid var(--c-border);
+  border-radius:100px;
+  overflow:hidden;
+}
+
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--c-prog-a), var(--c-prog-b));
+  border-radius:100px;
+  width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.prog-score {
+  font-size:.74rem;
+  font-weight:800;
+  color:var(--c-pri);
+  min-width:78px;
+  text-align:right;
+  font-family:'Nunito', sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════════ */
+.main {
+  flex:1;
+  padding:28px 42px 48px;
+  background:var(--c-bg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL DE PREGUNTA
+═══════════════════════════════════════════════════════════ */
+.q-panel {
+  display:none;
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-md);
+  overflow:hidden;
+  flex-direction:column;
+  animation:fadeUp .3s ease both;
+}
+.q-panel.active { display:flex; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Chip de tema ── */
+.q-theme-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:.68rem;
+  font-weight:700;
+  font-family:'Nunito', sans-serif;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:3px 10px;
+  border-radius:100px;
+  background:var(--c-num-lt);
+  color:var(--c-num);
+  border:1px solid rgba(85,53,184,.2);
+  margin-bottom:10px;
+  align-self:flex-start;
+}
+
+/* ── Encabezado pregunta ── */
+.q-top {
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:22px 28px 18px;
+  border-bottom:1px solid var(--c-border);
+  background:var(--c-surface-2);
+}
+
+.q-badge {
+  min-width:38px; height:38px;
+  background:linear-gradient(135deg, var(--c-pri), var(--c-hdr-b));
+  border-radius:var(--r-sm);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.72rem;
+  font-weight:800;
+  font-family:'JetBrains Mono', monospace;
+  color:#fff;
+  flex-shrink:0;
+  margin-top:3px;
+  box-shadow:0 2px 8px rgba(13,124,110,.3);
+}
+
+.q-top-text { flex:1; }
+
+.q-text {
+  font-family:'Nunito Sans', sans-serif;
+  font-size:.97rem;
+  font-weight:600;
+  color:var(--c-text);
+  line-height:1.72;
+}
+
+/* ── Opciones ── */
+.opts-list {
+  padding:18px 28px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.opt-btn {
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  background:var(--c-surface);
+  border:1.5px solid var(--c-border);
+  border-radius:var(--r-md);
+  padding:12px 14px;
+  cursor:pointer;
+  text-align:left;
+  font-family:'Nunito Sans', sans-serif;
+  font-size:.88rem;
+  color:var(--c-text-2);
+  line-height:1.55;
+  transition:border-color .15s, background .15s, box-shadow .15s, transform .12s;
+  width:100%;
+}
+
+.opt-btn:hover:not(:disabled) {
+  border-color:var(--c-pri-bd);
+  background:var(--c-pri-lt);
+  box-shadow:0 0 0 3px rgba(13,124,110,.07);
+  transform:translateX(3px);
+}
+
+.opt-btn:disabled { cursor:default; transform:none; }
+
+.opt-ltr {
+  min-width:27px; height:27px;
+  border-radius:50%;
+  background:var(--c-surface-2);
+  border:1.5px solid var(--c-border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.7rem;
+  font-weight:800;
+  font-family:'Nunito', sans-serif;
+  color:var(--c-muted);
+  flex-shrink:0;
+  margin-top:1px;
+  transition:background .15s, border-color .15s, color .15s;
+}
+
+.opt-body { flex:1; min-width:0; }
+
+/* Retroalimentación inline */
+.opt-fb {
+  display:none;
+  font-size:.8rem;
+  color:var(--c-text-2);
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px dashed var(--c-border);
+  line-height:1.6;
+}
+.opt-fb.show { display:block; }
+
+.fb-label {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-weight:800;
+  font-size:.75rem;
+  font-family:'Nunito', sans-serif;
+  margin-bottom:4px;
+}
+
+/* Badge resultado derecha */
+.r-tag {
+  display:none;
+  align-items:center;
+  gap:4px;
+  font-size:.68rem;
+  font-weight:700;
+  padding:3px 9px;
+  border-radius:100px;
+  flex-shrink:0;
+  margin-top:2px;
+  font-family:'Nunito', sans-serif;
+  white-space:nowrap;
+}
+.r-tag.show { display:flex; }
+
+/* ── Estados ── */
+.opt-btn.selected {
+  border-color:var(--c-pri);
+  background:var(--c-pri-lt);
+}
+.opt-btn.selected .opt-ltr {
+  background:var(--c-pri); border-color:var(--c-pri); color:#fff;
+}
+
+.opt-btn.is-ok {
+  border-color:var(--c-ok);
+  background:var(--c-ok-lt);
+}
+.opt-btn.is-ok .opt-ltr {
+  background:var(--c-ok); border-color:var(--c-ok); color:#fff;
+}
+.opt-btn.is-ok .r-tag {
+  background:var(--c-ok-lt); border:1px solid var(--c-ok-bd); color:var(--c-ok);
+}
+
+.opt-btn.is-err {
+  border-color:var(--c-err);
+  background:var(--c-err-lt);
+}
+.opt-btn.is-err .opt-ltr {
+  background:var(--c-err); border-color:var(--c-err); color:#fff;
+}
+.opt-btn.is-err .r-tag {
+  background:var(--c-err-lt); border:1px solid var(--c-err-bd); color:var(--c-err);
+}
+
+.opt-btn.faded { opacity:.42; }
+
+/* ── Pista ── */
+.hint-sec { padding:0 28px 16px; }
+
+.hint-toggle {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  background:var(--c-hint-lt);
+  border:1px solid var(--c-hint-bd);
+  border-radius:var(--r-sm);
+  padding:7px 13px;
+  font-size:.78rem;
+  font-weight:700;
+  color:var(--c-hint);
+  cursor:pointer;
+  font-family:'Nunito', sans-serif;
+  transition:background .15s, border-color .15s;
+}
+.hint-toggle:hover { background:#fce8b0; border-color:var(--c-hint); }
+
+.hint-arr {
+  display:inline-block;
+  transition:transform .25s;
+  font-size:.65rem;
+}
+.hint-toggle.open .hint-arr { transform:rotate(180deg); }
+
+.hint-body {
+  display:none;
+  margin-top:9px;
+  background:var(--c-hint-lt);
+  border:1px solid var(--c-hint-bd);
+  border-left:3px solid var(--c-hint);
+  border-radius:var(--r-sm);
+  padding:12px 16px;
+  font-size:.84rem;
+  color:var(--c-hint-txt);
+  line-height:1.65;
+}
+.hint-body.show { display:block; }
+
+/* ── Footer ── */
+.q-foot {
+  margin-top:auto;
+  border-top:1px solid var(--c-border);
+  background:var(--c-surface-2);
+  padding:13px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  flex-shrink:0;
+}
+
+.q-cnt {
+  font-size:.76rem;
+  color:var(--c-muted);
+  font-family:'Nunito', sans-serif;
+  font-weight:600;
+}
+
+.btn-row { display:flex; gap:9px; align-items:center; }
+
+.sub-btn {
+  background:var(--c-pri);
+  color:#fff;
+  border:none;
+  border-radius:var(--r-sm);
+  padding:9px 22px;
+  font-size:.83rem;
+  font-weight:700;
+  font-family:'Nunito', sans-serif;
+  cursor:pointer;
+  transition:background .15s, box-shadow .15s, transform .1s;
+  box-shadow:0 2px 10px rgba(13,124,110,.24);
+}
+.sub-btn:hover { background:var(--c-pri-dk); box-shadow:0 4px 14px rgba(13,124,110,.34); }
+.sub-btn:active { transform:scale(.97); }
+.sub-btn:disabled {
+  background:var(--c-border);
+  color:var(--c-muted);
+  box-shadow:none;
+  cursor:default;
+}
+
+.nxt-btn {
+  display:none;
+  align-items:center;
+  gap:6px;
+  background:var(--c-next);
+  color:#fff;
+  border:none;
+  border-radius:var(--r-sm);
+  padding:9px 22px;
+  font-size:.83rem;
+  font-weight:700;
+  font-family:'Nunito', sans-serif;
+  cursor:pointer;
+  transition:background .15s, box-shadow .15s;
+  box-shadow:0 2px 10px rgba(26,122,74,.24);
+}
+.nxt-btn:hover { background:var(--c-next-dk); box-shadow:0 4px 14px rgba(26,122,74,.34); }
+.nxt-btn.show { display:inline-flex; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESULTADOS
+═══════════════════════════════════════════════════════════ */
+.results {
+  display:none;
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-lg);
+  padding:50px 40px;
+  text-align:center;
+  animation:fadeUp .38s ease both;
+}
+.results.show { display:block; }
+
+.res-emoji { font-size:3.8rem; margin-bottom:14px; line-height:1; }
+
+.results h2 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem;
+  font-weight:800;
+  color:var(--c-text);
+  margin-bottom:18px;
+}
+
+.score-wrap {
+  display:inline-flex;
+  align-items:baseline;
+  gap:0;
+  margin-bottom:10px;
+}
+
+.score-n {
+  font-family:'JetBrains Mono', monospace;
+  font-size:3.6rem;
+  font-weight:700;
+  background:linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1;
+}
+
+.score-d {
+  font-family:'JetBrains Mono', monospace;
+  font-size:1.5rem;
+  font-weight:600;
+  color:var(--c-muted);
+  margin-bottom:4px;
+}
+
+.score-pct {
+  display:inline-block;
+  background:var(--c-pri-lt);
+  border:1px solid var(--c-pri-bd);
+  color:var(--c-pri);
+  font-weight:700;
+  font-size:.8rem;
+  padding:4px 14px;
+  border-radius:100px;
+  font-family:'Nunito', sans-serif;
+  margin-bottom:20px;
+}
+
+.res-fb {
+  font-size:.87rem;
+  color:var(--c-text-2);
+  max-width:510px;
+  margin:0 auto 28px;
+  line-height:1.78;
+}
+
+.res-restart {
+  background:linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  color:#fff;
+  border:none;
+  border-radius:var(--r-sm);
+  padding:11px 30px;
+  font-size:.88rem;
+  font-weight:700;
+  font-family:'Nunito', sans-serif;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(13,124,110,.28);
+  transition:opacity .15s, transform .1s;
+}
+.res-restart:hover { opacity:.86; }
+.res-restart:active { transform:scale(.97); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════ */
+.site-foot {
+  width:100%;
+  max-width:var(--canvas-w);
+  padding:16px 42px;
+  text-align:center;
+  font-size:.72rem;
+  color:var(--c-muted);
+  border-top:1px solid var(--c-border);
+  font-family:'Nunito', sans-serif;
+  background:var(--c-surface);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLET  ≤ 720 px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+
+  .site-header   { padding:22px 28px 20px; }
+  .site-header h1 { font-size:1.28rem; }
+  .site-header p  { font-size:.8rem; }
+
+  .prog-wrap  { padding:9px 28px; }
+  .prog-lbl   { min-width:88px; font-size:.71rem; }
+
+  .main { padding:20px 24px 40px; }
+
+  .q-top      { padding:18px 22px 15px; gap:12px; }
+  .q-text     { font-size:.92rem; }
+  .q-badge    { min-width:34px; height:34px; font-size:.68rem; }
+
+  .opts-list  { padding:14px 22px; gap:8px; }
+  .opt-btn    { font-size:.85rem; padding:11px 12px; }
+
+  .hint-sec   { padding:0 22px 14px; }
+  .q-foot     { padding:12px 22px; }
+
+  .results    { padding:36px 26px; }
+  .score-n    { font-size:3rem; }
+  .site-foot  { padding:14px 28px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MÓVIL  ≤ 480 px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:480px) {
+  .site-header   { padding:18px 16px 16px; }
+  .site-header h1  { font-size:1.05rem; line-height:1.3; }
+  .hdr-chip        { font-size:.62rem; padding:3px 10px; }
+  .site-header p   { font-size:.78rem; }
+
+  .prog-wrap  { padding:8px 16px; }
+  .prog-lbl   { display:none; }
+  .prog-score { min-width:auto; }
+
+  .main { padding:12px 12px 32px; }
+
+  .q-top   { padding:14px 14px 12px; gap:9px; }
+  .q-text  { font-size:.84rem; line-height:1.65; }
+  .q-badge { min-width:30px; height:30px; font-size:.65rem; border-radius:6px; margin-top:2px; }
+
+  .opts-list { padding:10px 12px; gap:7px; }
+  .opt-btn   { font-size:.82rem; padding:10px 10px; gap:9px; }
+  .opt-ltr   { min-width:24px; height:24px; font-size:.66rem; }
+
+  .r-tag { display:none !important; }
+
+  .hint-sec      { padding:0 12px 12px; }
+  .hint-toggle   { font-size:.75rem; padding:6px 10px; }
+  .hint-body     { font-size:.79rem; padding:10px 13px; }
+
+  .q-foot {
+    padding:10px 12px;
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+  .q-cnt { text-align:center; font-size:.72rem; }
+  .btn-row { flex-direction:row; }
+  .sub-btn, .nxt-btn {
+    flex:1;
+    text-align:center;
+    justify-content:center;
+    padding:10px 10px;
+    font-size:.8rem;
+  }
+
+  .results    { padding:26px 14px; }
+  .res-emoji  { font-size:3rem; }
+  .results h2 { font-size:1.18rem; }
+  .score-n    { font-size:2.6rem; }
+  .res-fb     { font-size:.8rem; }
+  .res-restart { width:100%; padding:11px; }
+  .site-foot  { padding:12px 14px; font-size:.68rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">⚡ Análisis Matemático para Ingeniería</div>
+      <h1>Quiz: Repaso de Conceptos y Aplicaciones de las Derivadas</h1>
+      <p>Lea cuidadosamente cada enunciado, seleccione la respuesta que considere correcta y use la pista si lo necesita. Revise la retroalimentación para consolidar su aprendizaje.</p>
+    </div>
+  </header>
+
+  <!-- ══ PROGRESO ══ -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">Pregunta 1 / 10</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">0 correctas</span>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main" id="main">
+    <div class="results" id="results"></div>
+  </main>
+
+</div>
+
+<footer class="site-foot">
+  Elaboración propia · Prof. Darwin Patricio Castillo Malla · Análisis Matemático para Ingeniería
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   DATOS
+══════════════════════════════════════════════════════ */
+const QS = [
+  {
+    n: 1,
+    theme: '📡 Derivada como razón de cambio',
+    q: `En el contexto de la física eléctrica, si \\(q(t)\\) representa la carga eléctrica que pasa por una sección transversal de un conductor en el tiempo \\(t\\), ¿qué magnitud física representa la derivada \\(\\dfrac{dq}{dt}\\)?`,
+    ans: 3,
+    hint: `Recuerde la definición de derivada como una "razón de cambio instantánea". ¿Qué magnitud mide qué tan rápido fluye la carga?`,
+    opts: [
+      { l:'A', t:`La resistencia del conductor.`,
+        ok:false, fb:`La resistencia es una propiedad del material que se opone al flujo de carga, no una tasa de cambio.` },
+      { l:'B', t:`La energía potencial eléctrica.`,
+        ok:false, fb:`La energía se relaciona con la capacidad de realizar trabajo, no directamente con la tasa de flujo de carga.` },
+      { l:'C', t:`El voltaje o diferencia de potencial.`,
+        ok:false, fb:`El voltaje es la energía por unidad de carga, no la derivada de la carga respecto al tiempo.` },
+      { l:'D', t:`La intensidad de corriente eléctrica \\((I)\\).`,
+        ok:true,  fb:`La intensidad de corriente se define como la razón de cambio instantánea de la carga con respecto al tiempo: \\(I(t)=q'(t)\\).` }
+    ]
+  },
+  {
+    n: 2,
+    theme: '💨 Regla de la potencia',
+    q: `La potencia \\(P\\) generada por una turbina eólica es proporcional al cubo de la velocidad del viento \\(v\\), dada por \\(P(v)=k\\cdot v^{3}\\). ¿Cuál es la expresión para la razón de cambio de la potencia con respecto a la velocidad del viento \\(\\dfrac{dP}{dv}\\)?`,
+    ans: 1,
+    hint: `Aplique la regla básica: baje el exponente a multiplicar y réstele uno al exponente de la variable.`,
+    opts: [
+      { l:'A', t:`\\(3k\\cdot v\\)`,
+        ok:false, fb:`El exponente resultante debe ser \\(n-1=3-1=2\\), no 1.` },
+      { l:'B', t:`\\(3k\\cdot v^{2}\\)`,
+        ok:true,  fb:`Aplicando la regla de la potencia \\(\\dfrac{d}{dv}(cv^n)=cnv^{n-1}\\): \\(k\\cdot3v^{3-1}=3kv^{2}\\). Esto indica que un pequeño aumento en la velocidad del viento genera un gran aumento en la potencia.` },
+      { l:'C', t:`\\(k\\cdot v^{2}\\)`,
+        ok:false, fb:`Faltó multiplicar por el exponente original (3).` },
+      { l:'D', t:`\\(\\dfrac{kv^{4}}{4}\\)`,
+        ok:false, fb:`Esta es la regla de integración (antiderivada), no de derivación.` }
+    ]
+  },
+  {
+    n: 3,
+    theme: '🔌 Regla del producto',
+    q: `La potencia eléctrica instantánea \\(p(t)\\) en un circuito de corriente alterna es el producto del voltaje \\(v(t)\\) y la corriente \\(i(t)\\): \\(p(t)=v(t)\\cdot i(t)\\). ¿Cómo se expresa la tasa de cambio de la potencia \\(\\dfrac{dp}{dt}\\)?`,
+    ans: 0,
+    hint: `Recuerde la fórmula: "el primero por la derivada del segundo, más el segundo por la derivada del primero".`,
+    opts: [
+      { l:'A', t:`\\(v(t)\\cdot i'(t)+i(t)\\cdot v'(t)\\)`,
+        ok:true,  fb:`La regla del producto establece: \\(\\dfrac{d}{dt}[f(t)g(t)]=f(t)g'(t)+g(t)f'(t)\\).` },
+      { l:'B', t:`\\(v'(t)+i'(t)\\)`,
+        ok:false, fb:`Esto sería la derivada de una suma, no de un producto.` },
+      { l:'C', t:`\\(v'(t)\\cdot i'(t)\\)`,
+        ok:false, fb:`La derivada de un producto <strong>NO</strong> es el producto de las derivadas.` },
+      { l:'D', t:`\\(v(t)\\cdot i'(t)-i(t)\\cdot v'(t)\\)`,
+        ok:false, fb:`Esta estructura se parece al numerador de la regla del cociente, pero con signo menos. La regla del producto usa suma.` }
+    ]
+  },
+  {
+    n: 4,
+    theme: '🌡️ Derivada implícita',
+    q: `En termodinámica, para un proceso adiabático de un gas ideal, la presión \\(P\\) y el volumen \\(V\\) se relacionan por \\(P\\cdot V^{k}=C\\) (donde \\(k\\) y \\(C\\) son constantes). ¿Cuál es la derivada \\(\\dfrac{dP}{dV}\\) obtenida implícitamente?`,
+    ans: 2,
+    hint: `Derive ambos lados respecto a \\(V\\). Como \\(P\\) es función de \\(V\\), use la regla del producto: \\(\\dfrac{d}{dV}(P\\cdot V^k)=\\dfrac{dP}{dV}V^k+P(kV^{k-1})=0\\).`,
+    opts: [
+      { l:'A', t:`\\(\\dfrac{dP}{dV}=k\\dfrac{P}{V}\\)`,
+        ok:false, fb:`El signo es incorrecto. Al despejar, el término pasa al otro lado con signo negativo.` },
+      { l:'B', t:`\\(\\dfrac{dP}{dV}=-\\dfrac{V}{kP}\\)`,
+        ok:false, fb:`Hubo un error en el despeje de la ecuación diferencial.` },
+      { l:'C', t:`\\(\\dfrac{dP}{dV}=-k\\dfrac{P}{V}\\)`,
+        ok:true,  fb:`Derivando implícitamente: \\(V^k\\dfrac{dP}{dV}+PkV^{k-1}=0\\). Despejando: \\(\\dfrac{dP}{dV}=-\\dfrac{PkV^{k-1}}{V^k}=-k\\dfrac{P}{V}\\).` },
+      { l:'D', t:`\\(\\dfrac{dP}{dV}=C-V^{k}\\)`,
+        ok:false, fb:`La derivada de la constante \\(C\\) es cero, no se mantiene en la ecuación.` }
+    ]
+  },
+  {
+    n: 5,
+    theme: '🏭 Optimización — Tanque cilíndrico',
+    q: `Se desea construir un tanque cilíndrico de almacenamiento de combustible con un volumen fijo \\(V\\). Si el costo del material de las tapas es el doble que el del material lateral, ¿qué relación debe haber entre la altura \\(h\\) y el radio \\(r\\) para minimizar el costo?`,
+    ans: 2,
+    hint: `Plantee la función de costo: \\(C=k_{\\text{tapa}}(2\\pi r^2)+k_{\\text{lado}}(2\\pi rh)\\). Con \\(k_{\\text{tapa}}=2k_{\\text{lado}}\\), minimice \\(4\\pi r^2+2\\pi rh\\) sustituyendo \\(h=V/(\\pi r^2)\\).`,
+    opts: [
+      { l:'A', t:`\\(h=r\\)`,
+        ok:false, fb:`Esta relación resultaría en un tanque demasiado "chato" y costoso por las tapas.` },
+      { l:'B', t:`\\(h=2r\\)`,
+        ok:false, fb:`Esta es la relación que minimiza la superficie total cuando el costo es uniforme (tapas y lado cuestan igual). Aquí los costos son diferentes.` },
+      { l:'C', t:`\\(h=4r\\)`,
+        ok:true,  fb:`Minimizando \\(C=2(2\\pi r^2)+1(2\\pi rh)\\) sujeto a \\(V=\\pi r^2 h\\), se obtiene que la altura óptima es \\(h=4r\\).` },
+      { l:'D', t:`\\(h=0.5r\\)`,
+        ok:false, fb:`Al minimizar el costo con la restricción del volumen, se obtiene \\(h=4r\\), no \\(0.5r\\). La altura debe ser mucho mayor que el radio.` }
+    ]
+  },
+  {
+    n: 6,
+    theme: '☀️ Criterio de la primera derivada',
+    q: `La función de eficiencia \\(\\eta(x)\\) de un panel solar respecto a su ángulo de inclinación tiene una derivada \\(\\eta'(x)\\) que cambia de positiva a negativa en \\(x=30°\\). ¿Qué ocurre en ese ángulo?`,
+    ans: 2,
+    hint: `Visualice la gráfica: si primero sube (pendiente positiva) y luego baja (pendiente negativa), ¿qué forma tiene la cúspide?`,
+    opts: [
+      { l:'A', t:`Hay un mínimo relativo de eficiencia.`,
+        ok:false, fb:`Si la derivada cambia de \\(+\\) a \\(-\\), la función sube y luego baja, lo que indica un <strong>máximo</strong>, no un mínimo.` },
+      { l:'B', t:`La eficiencia es cero.`,
+        ok:false, fb:`Que la derivada sea cero (o cambie de signo) no implica que el <em>valor</em> de la función sea cero.` },
+      { l:'C', t:`Hay un máximo relativo de eficiencia.`,
+        ok:true,  fb:`Según el criterio de la primera derivada, si \\(\\eta'\\) pasa de \\(+\\) a \\(-\\), hay una "cima" o <strong>máximo relativo</strong> en ese punto.` },
+      { l:'D', t:`Es un punto de inflexión.`,
+        ok:false, fb:`Los puntos de inflexión se analizan con la segunda derivada (cambio de concavidad), no solo con el cambio de signo de la primera.` }
+    ]
+  },
+  {
+    n: 7,
+    theme: '🛢️ Optimización — Oleoducto',
+    q: `Se desea construir un oleoducto desde una plataforma marina hasta una refinería en la costa. El costo de construcción bajo el agua es mayor que en tierra. ¿Qué principio de cálculo permite encontrar la trayectoria de costo mínimo?`,
+    ans: 0,
+    hint: `El objetivo es "minimizar" una función de costo. ¿Qué aplicación de la derivada se encarga de encontrar extremos?`,
+    opts: [
+      { l:'A', t:`Optimización (máximos y mínimos).`,
+        ok:true,  fb:`Se modela el costo total como función de la distancia \\(x\\) donde el tubo toca tierra, se deriva esa función \\(C(x)\\) y se iguala a cero para encontrar el mínimo.` },
+      { l:'B', t:`Regla de L'Hôpital.`,
+        ok:false, fb:`Esta regla es para resolver límites indeterminados (\\(0/0\\), \\(\\infty/\\infty\\)), no para optimización.` },
+      { l:'C', t:`Teorema del valor medio.`,
+        ok:false, fb:`Este teorema garantiza la existencia de una tangente paralela a la secante, pero no se usa directamente para minimizar costos.` },
+      { l:'D', t:`Derivación implícita.`,
+        ok:false, fb:`Aunque es una técnica de derivación útil, el principio fundamental aquí es la búsqueda de extremos (máximos/mínimos).` }
+    ]
+  },
+  {
+    n: 8,
+    theme: '📉 Concavidad',
+    q: `Si la gráfica de la demanda energética \\(D(t)\\) tiene una segunda derivada negativa \\((D''(t)<0)\\) en un intervalo, ¿qué forma tiene la curva?`,
+    ans: 1,
+    hint: `Asocie el signo negativo con una "cara triste" (boca hacia abajo) para recordar la dirección de la concavidad.`,
+    opts: [
+      { l:'A', t:`Cóncava hacia arriba (forma de U).`,
+        ok:false, fb:`La concavidad hacia arriba (forma de U) ocurre cuando \\(f''>0\\).` },
+      { l:'B', t:`Cóncava hacia abajo (forma de ∩).`,
+        ok:true,  fb:`Una segunda derivada negativa indica que la pendiente está disminuyendo, generando una forma de copa invertida o "triste" (∩).` },
+      { l:'C', t:`Es una línea recta.`,
+        ok:false, fb:`Una línea recta ocurriría si la segunda derivada fuera cero en todo el intervalo.` },
+      { l:'D', t:`Tiene un punto de inflexión en todo el intervalo.`,
+        ok:false, fb:`El punto de inflexión es donde <em>cambia</em> la concavidad, no en todo un intervalo con signo constante.` }
+    ]
+  },
+  {
+    n: 9,
+    theme: '📐 Recta tangente y linealización',
+    q: `¿Para qué sirve encontrar la ecuación de la recta tangente a la curva de comportamiento de un generador en un punto de operación específico?`,
+    ans: 2,
+    hint: `La recta tangente se "pega" mucho a la curva en el punto de contacto. ¿Cómo se llama usar una línea recta para aproximar una curva localmente?`,
+    opts: [
+      { l:'A', t:`Para calcular el costo total de operación.`,
+        ok:false, fb:`El costo total requeriría la función completa o integrales, no la recta tangente.` },
+      { l:'B', t:`Para determinar dónde se apaga el generador.`,
+        ok:false, fb:`La recta tangente no proporciona información sobre condiciones de apagado. Su propósito es aproximar el comportamiento local de la función cerca de un punto.` },
+      { l:'C', t:`Para linealizar la función y estimar valores cercanos al punto de operación.`,
+        ok:true,  fb:`La recta tangente es la mejor aproximación lineal de una función cerca del punto de tangencia, muy útil en el control de procesos energéticos.` },
+      { l:'D', t:`Para encontrar el volumen del generador.`,
+        ok:false, fb:`El volumen es una magnitud física del equipo, no se obtiene mediante la recta tangente. Esta es una herramienta de aproximación lineal de funciones.` }
+    ]
+  },
+  {
+    n: 10,
+    theme: '∞ Regla de L\'Hôpital',
+    q: `Al calcular el límite de la eficiencia térmica \\(\\lim_{x\\to0}\\dfrac{\\sin(x)}{x}\\) se obtiene la forma indeterminada \\(0/0\\). ¿Cómo ayuda la regla de L'Hôpital a resolverlo?`,
+    ans: 0,
+    hint: `La regla dice que el límite de las funciones es igual al límite del cociente de sus derivadas individuales.`,
+    opts: [
+      { l:'A', t:`Permite derivar numerador y denominador por separado para hallar el límite.`,
+        ok:true,  fb:`\\(\\lim\\dfrac{f(x)}{g(x)}=\\lim\\dfrac{f'(x)}{g'(x)}\\) cuando hay indeterminación \\(0/0\\) o \\(\\infty/\\infty\\). En este caso: \\(\\dfrac{(\\sin x)'}{(x)'}=\\dfrac{\\cos x}{1}\\xrightarrow{x\\to0}1\\).` },
+      { l:'B', t:`Obliga a usar la regla del cociente para derivar toda la fracción.`,
+        ok:false, fb:`Error común. L'Hôpital NO es la regla del cociente; se deriva numerador y denominador de forma <strong>independiente</strong>.` },
+      { l:'C', t:`Nos dice que el límite no existe.`,
+        ok:false, fb:`La forma indeterminada \\(0/0\\) no implica inexistencia del límite. L'Hôpital permite calcularlo.` },
+      { l:'D', t:`Indica que debemos racionalizar la expresión.`,
+        ok:false, fb:`La racionalización es otro método válido para algunos casos, pero aquí no hay raíces cuadradas y L'Hôpital es el método adecuado.` }
+    ]
+  }
+];
+
+/* ══════════════════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════════════════ */
+let cur       = 0;
+let score     = 0;
+let panels    = [];
+let chosen    = new Array(QS.length).fill(null);
+let submitted = new Array(QS.length).fill(false);
+
+/* ══════════════════════════════════════════════════════
+   CONSTRUIR
+══════════════════════════════════════════════════════ */
+function build() {
+  const main = document.getElementById('main');
+  const rp   = document.getElementById('results');
+
+  QS.forEach((q, qi) => {
+    const panel = document.createElement('div');
+    panel.className = 'q-panel' + (qi === 0 ? ' active' : '');
+    panel.id = `qp-${qi}`;
+
+    panel.innerHTML = `
+      <div class="q-top">
+        <div class="q-badge">${String(q.n).padStart(2,'0')}</div>
+        <div class="q-top-text">
+          <div class="q-theme-chip">${q.theme}</div>
+          <div class="q-text" id="qt-${qi}">${q.q}</div>
+        </div>
+      </div>
+
+      <div class="opts-list" id="opts-${qi}">
+        ${q.opts.map((o,oi)=>`
+          <button class="opt-btn" id="opt-${qi}-${oi}"
+            onclick="pick(${qi},${oi})"
+            aria-label="Opción ${o.l}">
+            <div class="opt-ltr" id="ltr-${qi}-${oi}">${o.l}</div>
+            <div class="opt-body">
+              <div id="otxt-${qi}-${oi}">${o.t}</div>
+              <div class="opt-fb" id="fb-${qi}-${oi}">
+                <div class="fb-label" style="color:${o.ok?'var(--c-ok)':'var(--c-err)'}">
+                  ${o.ok?'✓ Respuesta correcta':'✗ No exactamente'}
+                </div>
+                ${o.fb}
+              </div>
+            </div>
+            <div class="r-tag" id="rtag-${qi}-${oi}">
+              ${o.ok?'✓ Correcta':'✗ Incorrecta'}
+            </div>
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="hint-sec">
+        <button class="hint-toggle" id="htbtn-${qi}"
+          onclick="toggleHint(${qi})" aria-expanded="false">
+          💡 Mostrar pista <span class="hint-arr">▾</span>
+        </button>
+        <div class="hint-body" id="hb-${qi}">${q.hint}</div>
+      </div>
+
+      <div class="q-foot">
+        <span class="q-cnt">Pregunta ${q.n} de ${QS.length}</span>
+        <div class="btn-row">
+          <button class="sub-btn" id="sub-${qi}"
+            onclick="verify(${qi})" disabled>Verificar</button>
+          <button class="nxt-btn" id="nxt-${qi}"
+            onclick="goNext(${qi})">
+            ${qi < QS.length-1 ? 'Siguiente ›' : 'Ver resultados ›'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    main.insertBefore(panel, rp);
+    panels.push(panel);
+  });
+
+  typeset();
+}
+
+/* ── Seleccionar ── */
+function pick(qi, oi) {
+  if (submitted[qi]) return;
+  chosen[qi] = oi;
+  QS[qi].opts.forEach((_,idx) => {
+    document.getElementById(`opt-${qi}-${idx}`).classList.remove('selected');
+  });
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  document.getElementById(`sub-${qi}`).disabled = false;
+}
+
+/* ── Verificar ── */
+function verify(qi) {
+  if (submitted[qi] || chosen[qi] === null) return;
+  submitted[qi] = true;
+
+  const ans = QS[qi].ans;
+  const sel = chosen[qi];
+  if (sel === ans) score++;
+
+  QS[qi].opts.forEach((_,oi) => {
+    const btn  = document.getElementById(`opt-${qi}-${oi}`);
+    const fb   = document.getElementById(`fb-${qi}-${oi}`);
+    const rtag = document.getElementById(`rtag-${qi}-${oi}`);
+    btn.disabled = true;
+    btn.classList.remove('selected');
+
+    if (oi === ans) {
+      btn.classList.add('is-ok');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else if (oi === sel) {
+      btn.classList.add('is-err');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else {
+      btn.classList.add('faded');
+    }
+  });
+
+  document.getElementById(`sub-${qi}`).disabled = true;
+  document.getElementById(`nxt-${qi}`).classList.add('show');
+  updateProg();
+  typeset(document.getElementById(`qp-${qi}`));
+}
+
+/* ── Siguiente ── */
+function goNext(qi) {
+  panels[qi].classList.remove('active');
+  if (qi < QS.length - 1) {
+    cur = qi + 1;
+    panels[cur].classList.add('active');
+    updateProg();
+    typeset(panels[cur]);
+    panels[cur].scrollIntoView({ behavior:'smooth', block:'start' });
+  } else {
+    showResults();
+  }
+}
+
+/* ── Pista ── */
+function toggleHint(qi) {
+  const body = document.getElementById(`hb-${qi}`);
+  const btn  = document.getElementById(`htbtn-${qi}`);
+  const open = body.classList.toggle('show');
+  btn.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  if (open) typeset(body);
+}
+
+/* ── Progreso ── */
+function updateProg() {
+  const done = submitted.filter(Boolean).length;
+  const pct  = done / QS.length * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').parentElement.setAttribute('aria-valuenow', Math.round(pct));
+  document.getElementById('prog-lbl').textContent   = `Pregunta ${cur+1} / ${QS.length}`;
+  document.getElementById('prog-score').textContent  = `${score} correcta${score!==1?'s':''}`;
+}
+
+/* ── Resultados ── */
+function showResults() {
+  panels.forEach(p => p.classList.remove('active'));
+  const pct   = Math.round(score / QS.length * 100);
+  const emoji = pct>=80?'🎉':pct>=50?'📘':'💪';
+  const msg   = pct>=80?'¡Excelente trabajo!':pct>=50?'¡Buen esfuerzo, siga practicando!':'Siga repasando los conceptos.';
+
+  const rp = document.getElementById('results');
+  rp.innerHTML = `
+    <div class="res-emoji">${emoji}</div>
+    <h2>${msg}</h2>
+    <div class="score-wrap">
+      <span class="score-n">${score}</span>
+      <span class="score-d">&thinsp;/&thinsp;${QS.length}</span>
+    </div><br>
+    <span class="score-pct">${pct}% de respuestas correctas</span>
+    <p class="res-fb">
+      Este repaso fortalece la comprensión de conceptos y aplicaciones de las derivadas en Ingeniería Eléctrica: desde la regla de la potencia y del producto aplicadas al cálculo de corriente y potencia, hasta la derivación implícita en procesos termodinámicos, la optimización de costos en infraestructura, el análisis de concavidad en curvas de demanda y la regla de L'Hôpital para resolver indeterminaciones en funciones de eficiencia térmica.
+    </p>
+    <button class="res-restart" onclick="location.reload()">↺ Reintentar quiz</button>
+  `;
+  rp.classList.add('show');
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-lbl').textContent  = 'Quiz completado';
+  document.getElementById('prog-score').textContent = `${score} / ${QS.length}`;
+  rp.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+/* ── MathJax ── */
+function typeset(el) {
+  if (window.MathJax) MathJax.typesetPromise(el?[el]:undefined).catch(()=>{});
+}
+
+/* ── Inicio ── */
+window.addEventListener('DOMContentLoaded', () => { build(); updateProg(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ejercicios – Límites, Continuidad y Derivabilidad</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ═══════════════════════════════════════════════════════════
+   PALETA — Modifique aquí para cambiar todo el recurso
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* Fondo y superficies */
+  --c-bg:        #edf3fb;
+  --c-surface:   #ffffff;
+  --c-surface2:  #f4f8fd;
+  --c-border:    #c6d6ec;
+
+  /* Texto */
+  --c-text:      #0f2040;
+  --c-text2:     #2b4a70;
+  --c-muted:     #5e7d9e;
+
+  /* Primario — azul zafiro */
+  --c-pri:       #1a5fb4;
+  --c-pri-dk:    #114090;
+  --c-pri-lt:    #dce9fb;
+  --c-pri-bd:    #90b8f0;
+
+  /* Acento — verde agua */
+  --c-acc:       #0d7c6e;
+  --c-acc-lt:    #d2f0ec;
+  --c-acc-bd:    #70c4b8;
+
+  /* Correcto */
+  --c-ok:        #1a8c48;
+  --c-ok-lt:     #d2f5e2;
+  --c-ok-bd:     #68cfa0;
+
+  /* Advertencia */
+  --c-warn:      #c47a1a;
+  --c-warn-lt:   #fef4de;
+  --c-warn-bd:   #f0c878;
+
+  /* Error */
+  --c-err:       #c43030;
+  --c-err-lt:    #fde8e8;
+  --c-err-bd:    #f2a0a0;
+
+  /* Violeta — pasos intermedios */
+  --c-vio:       #6c3fd6;
+  --c-vio-lt:    #ede8fb;
+  --c-vio-bd:    #c0aaef;
+
+  /* Gradiente header y progreso */
+  --c-hdr-a:     #1a5fb4;
+  --c-hdr-b:     #0d7c6e;
+
+  --r-sm: 8px;  --r-md: 12px;  --r-lg: 16px;  --r-xl: 20px;
+  --sh-sm: 0 2px 8px  rgba(15,45,90,.08);
+  --sh-md: 0 4px 20px rgba(15,45,90,.11);
+  --sh-lg: 0 8px 36px rgba(15,45,90,.14);
+  --canvas-w: 850px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family:'Nunito Sans', sans-serif;
+  background:var(--c-bg);
+  color:var(--c-text);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+.canvas {
+  width:100%; max-width:var(--canvas-w);
+  min-height:800px; display:flex;
+  flex-direction:column; box-shadow:var(--sh-lg);
+}
+
+/* ══════ HEADER ══════ */
+.site-header {
+  background:linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding:28px 42px 24px; position:relative; overflow:hidden; flex-shrink:0;
+}
+.site-header::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 80% 15%, rgba(255,255,255,.13) 0%, transparent 60%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:''; position:absolute; width:220px; height:220px;
+  border-radius:50%; background:rgba(255,255,255,.055);
+  right:-50px; bottom:-60px; pointer-events:none;
+}
+.hdr-inner { position:relative; z-index:1; }
+
+.hdr-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.36);
+  border-radius:100px; padding:4px 14px;
+  font-size:.7rem; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:#fff; margin-bottom:12px;
+  font-family:'Nunito', sans-serif;
+}
+.site-header h1 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem; font-weight:800; color:#fff;
+  line-height:1.25; margin-bottom:8px;
+}
+.site-header p {
+  font-size:.83rem; color:rgba(255,255,255,.84);
+  max-width:530px; line-height:1.65;
+}
+
+/* ══════ PROGRESO ══════ */
+.prog-wrap {
+  background:var(--c-surface); border-bottom:1px solid var(--c-border);
+  padding:10px 42px; position:sticky; top:0; z-index:50;
+  box-shadow:var(--sh-sm); flex-shrink:0;
+}
+.prog-row { display:flex; align-items:center; gap:12px; }
+.prog-lbl {
+  font-size:.74rem; font-weight:700; color:var(--c-muted);
+  white-space:nowrap; min-width:120px; font-family:'Nunito',sans-serif;
+}
+.prog-track {
+  flex:1; height:9px; background:var(--c-surface2);
+  border:1px solid var(--c-border); border-radius:100px; overflow:hidden;
+}
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--c-hdr-a), var(--c-hdr-b));
+  border-radius:100px; width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.prog-score {
+  font-size:.74rem; font-weight:800; color:var(--c-pri);
+  min-width:70px; text-align:right; font-family:'Nunito',sans-serif;
+}
+
+/* ══════ MAIN ══════ */
+.main {
+  flex:1; padding:28px 42px 48px;
+  background:var(--c-bg);
+  display:flex; flex-direction:column; gap:22px;
+}
+
+/* ══════ TARJETA EJERCICIO ══════ */
+.ex-card {
+  background:var(--c-surface); border:1px solid var(--c-border);
+  border-radius:var(--r-xl); box-shadow:var(--sh-md); overflow:hidden;
+  animation:fadeUp .35s ease both;
+  transition:border-color .2s;
+}
+.ex-card:nth-child(2) { animation-delay:.07s; }
+.ex-card:nth-child(3) { animation-delay:.14s; }
+.ex-card.done { border-color:var(--c-ok-bd); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Cabecera */
+.ex-head {
+  display:flex; align-items:flex-start; gap:14px;
+  padding:20px 26px 16px;
+  border-bottom:1px solid var(--c-border);
+  background:var(--c-surface2);
+  cursor:pointer; user-select:none;
+  transition:background .15s;
+}
+.ex-head:hover { background:#e8f0fb; }
+
+.ex-badge {
+  min-width:40px; height:40px;
+  background:linear-gradient(135deg, var(--c-hdr-a), var(--c-hdr-b));
+  border-radius:var(--r-sm);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.72rem; font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  color:#fff; flex-shrink:0; margin-top:2px;
+  box-shadow:0 2px 8px rgba(26,95,180,.3);
+}
+.ex-head-text { flex:1; }
+
+.ex-chip {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:.67rem; font-weight:700;
+  font-family:'Nunito',sans-serif;
+  letter-spacing:.06em; text-transform:uppercase;
+  padding:2px 9px; border-radius:100px;
+  background:var(--c-pri-lt); color:var(--c-pri);
+  border:1px solid var(--c-pri-bd); margin-bottom:7px;
+}
+.ex-title {
+  font-family:'Nunito',sans-serif;
+  font-size:1rem; font-weight:800; color:var(--c-text); line-height:1.3; margin-bottom:3px;
+}
+.ex-sub { font-size:.8rem; color:var(--c-muted); font-style:italic; }
+
+.ex-done-badge {
+  display:none; align-items:center; gap:4px;
+  font-size:.68rem; font-weight:700; padding:3px 9px;
+  border-radius:100px; background:var(--c-ok-lt); color:var(--c-ok);
+  border:1px solid var(--c-ok-bd); font-family:'Nunito',sans-serif;
+  flex-shrink:0; margin-top:4px;
+}
+.ex-card.done .ex-done-badge { display:flex; }
+
+.ex-chevron {
+  font-size:1.1rem; color:var(--c-muted);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  flex-shrink:0; margin-top:4px;
+}
+.ex-card.open .ex-chevron { transform:rotate(180deg); }
+
+/* Cuerpo */
+.ex-body { display:none; }
+.ex-card.open .ex-body { display:block; }
+
+/* Enunciado */
+.enunciado {
+  margin:18px 26px 0;
+  background:var(--c-surface2);
+  border:1px solid var(--c-border);
+  border-left:3px solid var(--c-pri);
+  border-radius:var(--r-md); padding:16px 18px;
+}
+.enunc-lbl {
+  font-size:.68rem; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--c-pri);
+  font-family:'Nunito',sans-serif; margin-bottom:8px;
+}
+.enunciado p { font-size:.9rem; color:var(--c-text2); line-height:1.75; }
+.fdisplay { text-align:center; margin:10px 0; font-size:.95rem; }
+
+/* Instrucción */
+.instruc {
+  margin:10px 26px 0;
+  font-size:.77rem; color:var(--c-muted); font-style:italic;
+  font-family:'Nunito',sans-serif;
+  display:flex; align-items:center; gap:6px;
+}
+
+/* Steps */
+.steps-wrap { padding:14px 26px 18px; display:flex; flex-direction:column; gap:9px; }
+
+.step-item {
+  border:1.5px solid var(--c-border);
+  border-radius:var(--r-md); overflow:hidden; cursor:pointer;
+  background:var(--c-surface);
+  transition:border-color .15s, box-shadow .15s;
+}
+.step-item:hover { border-color:var(--c-pri-bd); box-shadow:0 0 0 3px rgba(26,95,180,.06); }
+.step-item.active { border-color:var(--c-pri); }
+.step-item.seen.active { border-color:var(--c-pri); }
+.step-item.seen:not(.active) { border-color:var(--c-acc-bd); }
+
+.step-trigger {
+  display:flex; align-items:center; gap:12px; padding:12px 14px;
+}
+.sicon {
+  min-width:32px; height:32px; border-radius:var(--r-sm);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; flex-shrink:0;
+}
+.skey {
+  font-size:.74rem; font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  flex-shrink:0; min-width:24px;
+}
+.slabel {
+  flex:1; font-size:.88rem; font-weight:600;
+  color:var(--c-text2); line-height:1.35;
+}
+.schev {
+  font-size:.8rem; color:var(--c-muted);
+  transition:transform .25s; flex-shrink:0;
+}
+.step-item.active .schev { transform:rotate(180deg); }
+
+.step-content {
+  display:none; padding:0 14px 14px 58px;
+  border-top:1px solid var(--c-border); padding-top:12px;
+  font-size:.86rem; color:var(--c-text2); line-height:1.78;
+}
+.step-item.active .step-content { display:block; }
+
+/* Cajas dentro de pasos */
+.fbox {
+  background:var(--c-pri-lt); border:1px solid var(--c-pri-bd);
+  border-radius:var(--r-sm); padding:10px 14px;
+  margin:10px 0; text-align:center; font-size:.92rem;
+}
+.rbox {
+  background:var(--c-ok-lt); border:1px solid var(--c-ok-bd);
+  border-left:3px solid var(--c-ok); border-radius:var(--r-sm);
+  padding:10px 14px; margin-top:10px;
+  color:var(--c-ok); font-size:.88rem; font-weight:600;
+}
+.wbox {
+  background:var(--c-warn-lt); border:1px solid var(--c-warn-bd);
+  border-left:3px solid var(--c-warn); border-radius:var(--r-sm);
+  padding:10px 14px; margin-top:10px;
+  color:#7a4a00; font-size:.84rem;
+}
+.ebox {
+  background:var(--c-err-lt); border:1px solid var(--c-err-bd);
+  border-left:3px solid var(--c-err); border-radius:var(--r-sm);
+  padding:10px 14px; margin-top:10px;
+  color:#7a0000; font-size:.84rem;
+}
+.step-content strong { color:var(--c-text); }
+.cod {
+  font-family:'JetBrains Mono',monospace;
+  background:var(--c-surface2); border:1px solid var(--c-border);
+  border-radius:4px; padding:1px 6px; font-size:.82em; color:var(--c-pri);
+}
+
+/* Tags */
+.ex-tags { padding:0 26px 20px; display:flex; gap:7px; flex-wrap:wrap; }
+.tag {
+  font-size:.68rem; font-weight:700; padding:3px 10px;
+  border-radius:100px; font-family:'Nunito',sans-serif;
+}
+.t-blue  { background:var(--c-pri-lt);  color:var(--c-pri);  border:1px solid var(--c-pri-bd); }
+.t-green { background:var(--c-ok-lt);   color:var(--c-ok);   border:1px solid var(--c-ok-bd); }
+.t-teal  { background:var(--c-acc-lt);  color:var(--c-acc);  border:1px solid var(--c-acc-bd); }
+.t-warn  { background:var(--c-warn-lt); color:var(--c-warn); border:1px solid var(--c-warn-bd); }
+.t-err   { background:var(--c-err-lt);  color:var(--c-err);  border:1px solid var(--c-err-bd); }
+.t-vio   { background:var(--c-vio-lt);  color:var(--c-vio);  border:1px solid var(--c-vio-bd); }
+
+/* ══════ FOOTER ══════ */
+.site-foot {
+  width:100%; max-width:var(--canvas-w);
+  padding:20px 42px; text-align:center;
+  font-size:.74rem; color:var(--c-muted);
+  border-top:1px solid var(--c-border);
+  font-family:'Nunito',sans-serif;
+  background:var(--c-surface); line-height:1.85;
+}
+.site-foot strong { color:var(--c-text2); }
+
+/* ══════ TABLET ≤ 720px ══════ */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+  .site-header    { padding:22px 28px 20px; }
+  .site-header h1 { font-size:1.28rem; }
+  .prog-wrap  { padding:9px 28px; }
+  .prog-lbl   { min-width:90px; font-size:.71rem; }
+  .main       { padding:18px 22px 38px; gap:18px; }
+  .ex-head    { padding:16px 20px 14px; }
+  .enunciado  { margin:14px 20px 0; }
+  .instruc    { margin:8px 20px 0; }
+  .steps-wrap { padding:12px 20px 18px; }
+  .step-content { padding-left:48px; }
+  .ex-tags    { padding:0 20px 16px; }
+  .site-foot  { padding:16px 28px; }
+}
+
+/* ══════ MÓVIL ≤ 480px ══════ */
+@media (max-width:480px) {
+  .site-header    { padding:16px 16px 14px; }
+  .site-header h1 { font-size:1.05rem; line-height:1.3; }
+  .hdr-chip       { font-size:.62rem; padding:3px 10px; }
+  .site-header p  { font-size:.78rem; }
+  .prog-wrap  { padding:8px 14px; }
+  .prog-lbl   { display:none; }
+  .main       { padding:12px 12px 30px; gap:14px; }
+  .ex-head    { padding:13px 13px 11px; gap:10px; }
+  .ex-badge   { min-width:34px; height:34px; font-size:.66rem; }
+  .ex-title   { font-size:.92rem; }
+  .ex-sub     { font-size:.75rem; }
+  .enunciado  { margin:10px 12px 0; padding:12px 13px; }
+  .enunciado p { font-size:.84rem; }
+  .instruc    { margin:7px 12px 0; font-size:.74rem; }
+  .steps-wrap { padding:10px 12px 15px; gap:7px; }
+  .step-trigger { padding:10px 11px; gap:9px; }
+  .sicon      { min-width:28px; height:28px; font-size:.9rem; }
+  .slabel     { font-size:.83rem; }
+  .step-content { padding-left:38px; padding-bottom:12px; font-size:.82rem; }
+  .ex-tags    { padding:0 12px 14px; }
+  .site-foot  { padding:12px 14px; font-size:.7rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">📐 Análisis Matemático para Ingeniería</div>
+      <h1>Ejercicios Propuestos: Límites, Continuidad y Derivabilidad</h1>
+      <p>Explore y comprenda cómo los límites laterales y bilaterales, el análisis en puntos críticos y las discontinuidades se aplican en situaciones prácticas de la ingeniería.</p>
+    </div>
+  </header>
+
+  <!-- PROGRESO -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">0 / 3 completados</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">👆 Explora</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ══════════════════ EJERCICIO 1 ══════════════════ -->
+    <div class="ex-card" id="ex1">
+      <div class="ex-head" onclick="toggleCard('ex1')">
+        <div class="ex-badge">01</div>
+        <div class="ex-head-text">
+          <div class="ex-chip">📊 Límites y propiedades</div>
+          <div class="ex-title">Ejercicio 1 — Límites laterales y bilaterales</div>
+          <div class="ex-sub">Función con valor absoluto definida a trozos</div>
+        </div>
+        <div class="ex-done-badge" id="d1">✓ Completado</div>
+        <div class="ex-chevron">⌄</div>
+      </div>
+
+      <div class="ex-body">
+        <div class="enunciado">
+          <div class="enunc-lbl">📋 Enunciado</div>
+          <p>Encontrar los límites laterales y bilaterales de la función \(g(x)=2+|x-3|\) cuando \(x\) tiende a \(3\). La función se define a trozos como:</p>
+          <div class="fdisplay">\[ g(x)=\begin{cases} x-1 & \text{si } x\geq3 \\ -x+5 & \text{si } x<3 \end{cases} \]</div>
+        </div>
+        <p class="instruc">👆 Haga clic en cada ítem para visualizar la información</p>
+
+        <div class="steps-wrap" id="sw1">
+
+          <div class="step-item" onclick="tap(this,'ex1')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-pri-lt)">📝</div>
+              <span class="skey" style="color:var(--c-pri)">F</span>
+              <span class="slabel">Función: verificación de la forma a trozos</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              La función \(g(x)=2+|x-3|\) se reescribe expandiendo el valor absoluto:<br><br>
+              • Si \(x\geq3\): \(|x-3|=x-3\), entonces \(g(x)=2+(x-3)=x-1\).<br>
+              • Si \(x<3\): \(|x-3|=3-x\), entonces \(g(x)=2+(3-x)=-x+5\).<br><br>
+              Por tanto la rama \(\cod{x-1}\) aplica para \(x\geq3\) y \(\cod{-x+5}\) para \(x&lt;3\).
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex1')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-vio-lt)">⬅️</div>
+              <span class="skey" style="color:var(--c-vio)">L⁻</span>
+              <span class="slabel">Límite por la izquierda \((x\to3^-)\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Para \(x&lt;3\) se usa la rama \(-x+5\):
+              <div class="fbox">\[ \lim_{x\to3^-}(-x+5)=-3+5=\mathbf{2} \]</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex1')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-acc-lt)">➡️</div>
+              <span class="skey" style="color:var(--c-acc)">L⁺</span>
+              <span class="slabel">Límite por la derecha \((x\to3^+)\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Para \(x\geq3\) se usa la rama \(x-1\):
+              <div class="fbox">\[ \lim_{x\to3^+}(x-1)=3-1=\mathbf{2} \]</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex1')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-ok-lt)">✅</div>
+              <span class="skey" style="color:var(--c-ok)">L</span>
+              <span class="slabel">Límite bilateral — Conclusión</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Como \(\lim_{x\to3^-}g(x)=\lim_{x\to3^+}g(x)=2\):
+              <div class="rbox">\(\lim_{x\to3}g(x)=\mathbf{2}\) — El límite bilateral existe y vale 2.</div>
+              <div class="wbox">💡 <strong>Criterio:</strong> el límite bilateral existe si y solo si ambos límites laterales son iguales.</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="ex-tags">
+          <span class="tag t-blue">Límites laterales</span>
+          <span class="tag t-teal">Límite bilateral</span>
+          <span class="tag t-warn">Valor absoluto</span>
+          <span class="tag t-vio">Función a trozos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ EJERCICIO 2 ══════════════════ -->
+    <div class="ex-card" id="ex2">
+      <div class="ex-head" onclick="toggleCard('ex2')">
+        <div class="ex-badge">02</div>
+        <div class="ex-head-text">
+          <div class="ex-chip">⚡ Límites en puntos críticos</div>
+          <div class="ex-title">Ejercicio 2 — Tasa de cambio de la resistencia</div>
+          <div class="ex-sub">Tasa de cambio instantánea de la resistencia de un componente</div>
+        </div>
+        <div class="ex-done-badge" id="d2">✓ Completado</div>
+        <div class="ex-chevron">⌄</div>
+      </div>
+
+      <div class="ex-body">
+        <div class="enunciado">
+          <div class="enunc-lbl">📋 Enunciado</div>
+          <p>En ingeniería eléctrica, la tasa de cambio instantánea de la resistencia \(R\) de un sensor con respecto al parámetro de diseño \(x\) se modela mediante el límite del cociente de diferencias. Si \(f(x)=k\cdot x^2\) y \(a=1\), resuelva:</p>
+          <div class="fdisplay">\[ \lim_{x\to1}\frac{kx^2-k}{x-1} \]</div>
+          <p>Utilice la técnica de factorización para simplificar y calcule el límite.</p>
+        </div>
+        <p class="instruc">👆 Haga clic en cada ítem para visualizar la información</p>
+
+        <div class="steps-wrap" id="sw2">
+
+          <div class="step-item" onclick="tap(this,'ex2')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-pri-lt)">🔍</div>
+              <span class="skey" style="color:var(--c-pri)">L</span>
+              <span class="slabel">Límite de partida — Forma indeterminada \(0/0\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              El límite a resolver:
+              <div class="fbox">\[ \lim_{x\to1}\frac{kx^2-k}{x-1} \]</div>
+              Sustitución directa \(x=1\): \(\frac{k-k}{1-1}=\frac{0}{0}\) — forma indeterminada. Se requiere factorizar.
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex2')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-vio-lt)">✏️</div>
+              <span class="skey" style="color:var(--c-vio)">P1</span>
+              <span class="slabel">Paso 1 — Factorización: diferencia de cuadrados</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Se factoriza \(k\) y luego la <strong>diferencia de cuadrados</strong>:
+              <div class="fbox">\[ \frac{k(x^2-1)}{x-1}=\frac{k(x-1)(x+1)}{x-1} \]</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex2')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-acc-lt)">✂️</div>
+              <span class="skey" style="color:var(--c-acc)">P2</span>
+              <span class="slabel">Paso 2 — Simplificación (cancelar \(x-1\))</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Se cancela \((x-1)\) ya que \(x\neq1\) en el cálculo del límite:
+              <div class="fbox">\[ \lim_{x\to1}k(x+1) \]</div>
+              <div class="wbox">⚠️ En el cálculo del límite \(x\to a\), nunca se evalúa en \(x=a\), solo se aproxima. Por eso cancelar es válido.</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex2')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-ok-lt)">🎯</div>
+              <span class="skey" style="color:var(--c-ok)">P3</span>
+              <span class="slabel">Paso 3 — Evaluación e interpretación física</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Sustitución directa \(x=1\):
+              <div class="fbox">\[ k(1+1)=2k \]</div>
+              <div class="rbox">
+                La tasa de cambio instantánea de la resistencia en \(x=1\) es <strong>\(2k\)</strong>.<br>
+                Si \(k=5\,\Omega/\text{m}^2\), la tasa de cambio es \(10\,\Omega/\text{m}\).
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="ex-tags">
+          <span class="tag t-blue">Límites en puntos críticos</span>
+          <span class="tag t-vio">Factorización</span>
+          <span class="tag t-green">Derivada — definición formal</span>
+          <span class="tag t-warn">Ingeniería eléctrica</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ EJERCICIO 3 ══════════════════ -->
+    <div class="ex-card" id="ex3">
+      <div class="ex-head" onclick="toggleCard('ex3')">
+        <div class="ex-badge">03</div>
+        <div class="ex-head-text">
+          <div class="ex-chip">🔌 Continuidad y derivabilidad</div>
+          <div class="ex-title">Ejercicio 3 — Análisis del potencial eléctrico</div>
+          <div class="ex-sub">Verificación de continuidad y derivabilidad en \(x=1\)</div>
+        </div>
+        <div class="ex-done-badge" id="d3">✓ Completado</div>
+        <div class="ex-chevron">⌄</div>
+      </div>
+
+      <div class="ex-body">
+        <div class="enunciado">
+          <div class="enunc-lbl">📋 Enunciado</div>
+          <p>La función que describe el potencial eléctrico \(V(x)\) (en Volts) en una región del espacio está dada por:</p>
+          <div class="fdisplay">\[ V(x)=\begin{cases} x^2+3x+1 & \text{si } x\leq1 \\ 4x+1 & \text{si } x>1 \end{cases} \]</div>
+          <p><strong>(a)</strong> Verifique si \(V(x)\) es continua en \(x=1\).<br>
+             <strong>(b)</strong> Si es continua, determine si es derivable en \(x=1\) y analice si la continuidad implica derivabilidad.</p>
+        </div>
+        <p class="instruc">👆 Haga clic en cada ítem para visualizar la información</p>
+
+        <div class="steps-wrap" id="sw3">
+
+          <div class="step-item" onclick="tap(this,'ex3')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-pri-lt)">📌</div>
+              <span class="skey" style="color:var(--c-pri)">a1</span>
+              <span class="slabel">Parte (a) — Valor de la función en \(x=1\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Se usa la rama \(x^2+3x+1\) (válida para \(x\leq1\)):
+              <div class="fbox">\[ V(1)=1^2+3(1)+1=1+3+1=\mathbf{5}\text{ V} \]</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex3')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-vio-lt)">⬅️</div>
+              <span class="skey" style="color:var(--c-vio)">a2</span>
+              <span class="slabel">Parte (a) — Límite por la izquierda en \(x=1\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Usando la rama \(x^2+3x+1\) con \(x&lt;1\):
+              <div class="fbox">\[ \lim_{x\to1^-}(x^2+3x+1)=1+3+1=\mathbf{5}\text{ V} \]</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex3')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-acc-lt)">➡️</div>
+              <span class="skey" style="color:var(--c-acc)">a3</span>
+              <span class="slabel">Parte (a) — Límite por la derecha en \(x=1\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Usando la rama \(4x+1\) con \(x>1\):
+              <div class="fbox">\[ \lim_{x\to1^+}(4x+1)=4(1)+1=\mathbf{5}\text{ V} \]</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex3')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-ok-lt)">✅</div>
+              <span class="skey" style="color:var(--c-ok)">a4</span>
+              <span class="slabel">Parte (a) — Conclusión de continuidad</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Las <strong>3 condiciones de continuidad</strong> se verifican:<br><br>
+              ① \(V(1)=5\) ✓ — función definida en el punto.<br>
+              ② \(\lim_{x\to1}V(x)=5\) ✓ — el límite existe (límites laterales iguales).<br>
+              ③ \(\lim_{x\to1}V(x)=V(1)\) ✓ — el límite coincide con el valor.
+              <div class="rbox">\(V(x)\) es <strong>continua</strong> en \(x=1\).</div>
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex3')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-warn-lt)">📐</div>
+              <span class="skey" style="color:var(--c-warn)">b1</span>
+              <span class="slabel">Parte (b) — Derivada lateral izquierda \((x&lt;1)\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Derivando la rama \(x^2+3x+1\):
+              <div class="fbox">\[ V'(x)=2x+3 \quad\Rightarrow\quad V'(1^-)=2(1)+3=\mathbf{5} \]</div>
+              La pendiente de la tangente desde la izquierda es <strong>5</strong>.
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex3')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-warn-lt)">📐</div>
+              <span class="skey" style="color:var(--c-warn)">b2</span>
+              <span class="slabel">Parte (b) — Derivada lateral derecha \((x>1)\)</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Derivando la rama \(4x+1\):
+              <div class="fbox">\[ V'(x)=4 \quad\Rightarrow\quad V'(1^+)=\mathbf{4} \]</div>
+              La pendiente de la tangente desde la derecha es <strong>4</strong>.
+            </div>
+          </div>
+
+          <div class="step-item" onclick="tap(this,'ex3')">
+            <div class="step-trigger">
+              <div class="sicon" style="background:var(--c-err-lt)">⚠️</div>
+              <span class="skey" style="color:var(--c-err)">b3</span>
+              <span class="slabel">Parte (b) — Conclusión: ¿continuidad implica derivabilidad?</span>
+              <span class="schev">⌄</span>
+            </div>
+            <div class="step-content">
+              Las derivadas laterales son distintas \((5\neq4)\):
+              <div class="ebox">
+                \(V(x)\) es <strong>continua</strong> pero <strong>NO derivable</strong> en \(x=1\).<br>
+                La gráfica presenta una <strong>"esquina"</strong> en ese punto — dos pendientes distintas.
+              </div>
+              <div class="wbox">
+                💡 <strong>Principio fundamental:</strong><br>
+                • Derivabilidad ⟹ Continuidad (siempre).<br>
+                • Continuidad ⟹ Derivabilidad (¡NO siempre!).<br>
+                Ejemplo clásico: \(f(x)=|x|\) es continua en \(x=0\) pero no derivable.
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="ex-tags">
+          <span class="tag t-blue">3 condiciones de continuidad</span>
+          <span class="tag t-green">Función continua</span>
+          <span class="tag t-err">No derivable — esquina</span>
+          <span class="tag t-warn">Continuidad ≠ Derivabilidad</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-foot">
+  <strong>Referencias (APA 7)</strong><br>
+  Larson, R., &amp; Edwards, B. H. (2022). <em>Cálculo</em> (11.ª ed.). Cengage Learning.<br>
+  Stewart, J., Redlin, L., &amp; Watson, S. (2021). <em>Precálculo: Matemáticas para el cálculo</em> (8.ª ed.). Cengage Learning.<br>
+  Thomas, G. B., Weir, M. D., &amp; Hass, J. R. (2018). <em>Cálculo</em> (14.ª ed.). Pearson.<br>
+  
+</footer>
+
+<script>
+/* ── ESTADO ── */
+const TOTAL = 3;
+const STEPS_REQ = { ex1:4, ex2:4, ex3:7 };
+const seen  = { ex1:new Set(), ex2:new Set(), ex3:new Set() };
+const done  = new Set();
+
+/* ── ABRIR / CERRAR CARD ── */
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  const open = card.classList.contains('open');
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('open'));
+  if (!open) {
+    card.classList.add('open');
+    typeset(card);
+  }
+}
+
+/* ── ABRIR PASO ── */
+function tap(el, exId) {
+  const wrap    = el.closest('.steps-wrap');
+  const wasOpen = el.classList.contains('active');
+
+  wrap.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+  if (!wasOpen) {
+    el.classList.add('active');
+    el.classList.add('seen');
+    typeset(el);
+
+    // Registrar
+    const idx = Array.from(wrap.querySelectorAll('.step-item')).indexOf(el);
+    seen[exId].add(idx);
+
+    // ¿Completado?
+    if (seen[exId].size >= STEPS_REQ[exId] && !done.has(exId)) {
+      done.add(exId);
+      document.getElementById(`d${exId.replace('ex','')}`).style.display = 'flex';
+      document.getElementById(exId).classList.add('done');
+      updateProg();
+    }
+  }
+}
+
+/* ── PROGRESO ── */
+function updateProg() {
+  const n   = done.size;
+  const pct = n / TOTAL * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').parentElement.setAttribute('aria-valuenow', Math.round(pct));
+  document.getElementById('prog-lbl').textContent   = `${n} / ${TOTAL} completados`;
+  document.getElementById('prog-score').textContent = n === TOTAL ? '🎉 ¡Listo!' : `${Math.round(pct)}%`;
+}
+
+/* ── MATHJAX ── */
+function typeset(el) {
+  if (window.MathJax) MathJax.typesetPromise([el]).catch(()=>{});
+}
+
+window.addEventListener('DOMContentLoaded', updateProg);
+</script>
+</body>
+</html>

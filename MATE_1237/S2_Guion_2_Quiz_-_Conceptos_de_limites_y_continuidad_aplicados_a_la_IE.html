@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz – Límites y Continuidad</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ═══════════════════════════════════════════════════════════
+   PALETA DE COLORES — Modifique aquí para cambiar todo
+   Cada variable está documentada para fácil edición
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* ─── Fondo y superficies ─── */
+  --c-bg:          #e8eef8;   /* fondo de toda la página        */
+  --c-surface:     #ffffff;   /* tarjeta principal (blanco)     */
+  --c-surface-2:   #f2f6fc;   /* fondo secundario / header card */
+  --c-border:      #c8d4e8;   /* bordes generales               */
+  --c-border-f:    #a0b4d0;   /* borde foco / hover             */
+
+  /* ─── Texto ─── */
+  --c-text:        #18293f;   /* texto principal (muy oscuro)   */
+  --c-text-2:      #374f6b;   /* texto secundario               */
+  --c-muted:       #6b82a0;   /* texto desvanecido              */
+
+  /* ─── Primario — Azul índigo ─── */
+  --c-pri:         #2b5ce6;   /* botón verificar, borde selec.  */
+  --c-pri-dk:      #1a3fb8;   /* hover del primario             */
+  --c-pri-lt:      #dce8ff;   /* fondo opción seleccionada      */
+  --c-pri-bd:      #9ab8f5;   /* borde opción seleccionada      */
+
+  /* ─── Correcto — Verde esmeralda ─── */
+  --c-ok:          #0e9455;   /* borde + ícono correcto         */
+  --c-ok-lt:       #d0f5e4;   /* fondo opción correcta          */
+  --c-ok-bd:       #6ed4a5;   /* borde opción correcta          */
+  --c-ok-txt:      #065932;   /* texto dentro de retroalim. ok  */
+
+  /* ─── Incorrecto — Rojo coral ─── */
+  --c-err:         #d43535;   /* borde + ícono incorrecto       */
+  --c-err-lt:      #fde8e8;   /* fondo opción incorrecta        */
+  --c-err-bd:      #f4a0a0;   /* borde opción incorrecta        */
+  --c-err-txt:     #7a1010;   /* texto dentro de retroalim. err */
+
+  /* ─── Pista — Ámbar cálido ─── */
+  --c-hint:        #b86a10;   /* texto e ícono de pista         */
+  --c-hint-lt:     #fef4de;   /* fondo del bloque de pista      */
+  --c-hint-bd:     #f0c87a;   /* borde del bloque de pista      */
+  --c-hint-txt:    #7a4008;   /* texto dentro de la pista       */
+
+  /* ─── Acento numérico — Violeta ─── */
+  --c-num:         #6240c8;   /* badge número de pregunta       */
+  --c-num-lt:      #ece6fb;   /* fondo chip header              */
+
+  /* ─── Gradiente header ─── */
+  --c-hdr-a:       #2b5ce6;   /* inicio del gradiente           */
+  --c-hdr-b:       #6240c8;   /* fin del gradiente              */
+
+  /* ─── Gradiente barra progreso ─── */
+  --c-prog-a:      #2b5ce6;
+  --c-prog-b:      #6240c8;
+
+  /* ─── Gradiente score (resultados) ─── */
+  --c-score-a:     #2b5ce6;
+  --c-score-b:     #6240c8;
+
+  /* ─── Siguiente (verde) ─── */
+  --c-next:        #0e9455;
+  --c-next-dk:     #097040;
+
+  /* ─── Radios ─── */
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  16px;
+  --r-xl:  20px;
+
+  /* ─── Sombras ─── */
+  --sh-sm: 0 2px 8px  rgba(20,50,100,.09);
+  --sh-md: 0 4px 20px rgba(20,50,100,.11);
+  --sh-lg: 0 8px 36px rgba(20,50,100,.14);
+
+  /* ─── Ancho canvas base ─── */
+  --canvas-w: 850px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — base 850 × 800 mínimo
+═══════════════════════════════════════════════════════════ */
+.canvas {
+  width: 100%;
+  max-width: var(--canvas-w);
+  min-height: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sh-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════════ */
+.site-header {
+  background: linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding: 30px 42px 26px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Decoración lumínica */
+.site-header::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 82% 15%, rgba(255,255,255,.14) 0%, transparent 58%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:'';
+  position:absolute;
+  width:220px; height:220px;
+  border-radius:50%;
+  background: rgba(255,255,255,.06);
+  right:-50px; bottom:-60px;
+  pointer-events:none;
+}
+
+.hdr-inner { position:relative; z-index:1; }
+
+.hdr-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.38);
+  border-radius:100px;
+  padding:4px 14px;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#fff;
+  margin-bottom:12px;
+  font-family:'Nunito', sans-serif;
+}
+
+.site-header h1 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem;
+  font-weight:800;
+  color:#fff;
+  line-height:1.25;
+  margin-bottom:8px;
+}
+
+.site-header p {
+  font-size:.83rem;
+  color:rgba(255,255,255,.84);
+  max-width:520px;
+  line-height:1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROGRESS BAR
+═══════════════════════════════════════════════════════════ */
+.prog-wrap {
+  background:var(--c-surface);
+  border-bottom:1px solid var(--c-border);
+  padding:10px 42px;
+  position:sticky;
+  top:0;
+  z-index:50;
+  box-shadow: var(--sh-sm);
+  flex-shrink:0;
+}
+
+.prog-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.prog-lbl {
+  font-size:.74rem;
+  font-weight:700;
+  color:var(--c-muted);
+  white-space:nowrap;
+  min-width:110px;
+  font-family:'Nunito', sans-serif;
+}
+
+.prog-track {
+  flex:1;
+  height:9px;
+  background:var(--c-surface-2);
+  border:1px solid var(--c-border);
+  border-radius:100px;
+  overflow:hidden;
+}
+
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--c-prog-a), var(--c-prog-b));
+  border-radius:100px;
+  width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.prog-score {
+  font-size:.74rem;
+  font-weight:800;
+  color:var(--c-pri);
+  min-width:78px;
+  text-align:right;
+  font-family:'Nunito', sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════════ */
+.main {
+  flex:1;
+  padding:28px 42px 48px;
+  background:var(--c-bg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   QUESTION PANEL
+═══════════════════════════════════════════════════════════ */
+.q-panel {
+  display:none;
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-md);
+  overflow:hidden;
+  flex-direction:column;
+  animation:fadeUp .3s ease both;
+}
+
+.q-panel.active { display:flex; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Encabezado pregunta ── */
+.q-top {
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:24px 28px 20px;
+  border-bottom:1px solid var(--c-border);
+  background:var(--c-surface-2);
+}
+
+.q-badge {
+  min-width:38px; height:38px;
+  background:linear-gradient(135deg, var(--c-pri), var(--c-num));
+  border-radius:var(--r-sm);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.72rem;
+  font-weight:800;
+  font-family:'JetBrains Mono', monospace;
+  color:#fff;
+  flex-shrink:0;
+  margin-top:3px;
+  box-shadow:0 2px 8px rgba(43,92,230,.28);
+}
+
+.q-text {
+  font-family:'Nunito Sans', sans-serif;
+  font-size:.97rem;
+  font-weight:600;
+  color:var(--c-text);
+  line-height:1.72;
+}
+
+/* ── Opciones ── */
+.opts-list {
+  padding:18px 28px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.opt-btn {
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  background:var(--c-surface);
+  border:1.5px solid var(--c-border);
+  border-radius:var(--r-md);
+  padding:12px 14px;
+  cursor:pointer;
+  text-align:left;
+  font-family:'Nunito Sans', sans-serif;
+  font-size:.88rem;
+  color:var(--c-text-2);
+  line-height:1.55;
+  transition:border-color .15s, background .15s, box-shadow .15s, transform .12s;
+  width:100%;
+  position:relative;
+}
+
+.opt-btn:hover:not(:disabled) {
+  border-color:var(--c-pri-bd);
+  background:var(--c-pri-lt);
+  box-shadow:0 0 0 3px rgba(43,92,230,.07);
+  transform:translateX(3px);
+}
+
+.opt-btn:disabled { cursor:default; transform:none; }
+
+.opt-ltr {
+  min-width:27px; height:27px;
+  border-radius:50%;
+  background:var(--c-surface-2);
+  border:1.5px solid var(--c-border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.7rem;
+  font-weight:800;
+  font-family:'Nunito', sans-serif;
+  color:var(--c-muted);
+  flex-shrink:0;
+  margin-top:1px;
+  transition:background .15s, border-color .15s, color .15s;
+}
+
+.opt-body { flex:1; min-width:0; }
+
+/* Retroalimentación inline */
+.opt-fb {
+  display:none;
+  font-size:.8rem;
+  color:var(--c-text-2);
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px dashed var(--c-border);
+  line-height:1.6;
+}
+.opt-fb.show { display:block; }
+
+.fb-label {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-weight:800;
+  font-size:.75rem;
+  font-family:'Nunito', sans-serif;
+  margin-bottom:4px;
+}
+
+/* Badge resultado (derecha) */
+.r-tag {
+  display:none;
+  align-items:center;
+  gap:4px;
+  font-size:.68rem;
+  font-weight:700;
+  padding:3px 9px;
+  border-radius:100px;
+  flex-shrink:0;
+  margin-top:2px;
+  font-family:'Nunito', sans-serif;
+  white-space:nowrap;
+}
+.r-tag.show { display:flex; }
+
+/* ── Estados de opción ── */
+.opt-btn.selected {
+  border-color:var(--c-pri);
+  background:var(--c-pri-lt);
+}
+.opt-btn.selected .opt-ltr {
+  background:var(--c-pri); border-color:var(--c-pri); color:#fff;
+}
+
+.opt-btn.is-ok {
+  border-color:var(--c-ok);
+  background:var(--c-ok-lt);
+}
+.opt-btn.is-ok .opt-ltr {
+  background:var(--c-ok); border-color:var(--c-ok); color:#fff;
+}
+.opt-btn.is-ok .r-tag {
+  background:var(--c-ok-lt); border:1px solid var(--c-ok-bd); color:var(--c-ok);
+}
+
+.opt-btn.is-err {
+  border-color:var(--c-err);
+  background:var(--c-err-lt);
+}
+.opt-btn.is-err .opt-ltr {
+  background:var(--c-err); border-color:var(--c-err); color:#fff;
+}
+.opt-btn.is-err .r-tag {
+  background:var(--c-err-lt); border:1px solid var(--c-err-bd); color:var(--c-err);
+}
+
+.opt-btn.faded { opacity:.44; }
+
+/* ── Pista ── */
+.hint-sec { padding:0 28px 16px; }
+
+.hint-toggle {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  background:var(--c-hint-lt);
+  border:1px solid var(--c-hint-bd);
+  border-radius:var(--r-sm);
+  padding:7px 13px;
+  font-size:.78rem;
+  font-weight:700;
+  color:var(--c-hint);
+  cursor:pointer;
+  font-family:'Nunito', sans-serif;
+  transition:background .15s, border-color .15s;
+}
+.hint-toggle:hover { background:#fde8b8; border-color:var(--c-hint); }
+
+.hint-arr {
+  display:inline-block;
+  transition:transform .25s;
+  font-size:.65rem;
+}
+.hint-toggle.open .hint-arr { transform:rotate(180deg); }
+
+.hint-body {
+  display:none;
+  margin-top:9px;
+  background:var(--c-hint-lt);
+  border:1px solid var(--c-hint-bd);
+  border-left:3px solid var(--c-hint);
+  border-radius:var(--r-sm);
+  padding:11px 16px;
+  font-size:.83rem;
+  color:var(--c-hint-txt);
+  line-height:1.65;
+}
+.hint-body.show { display:block; }
+
+/* ── Footer ── */
+.q-foot {
+  margin-top:auto;
+  border-top:1px solid var(--c-border);
+  background:var(--c-surface-2);
+  padding:13px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  flex-shrink:0;
+}
+
+.q-cnt {
+  font-size:.76rem;
+  color:var(--c-muted);
+  font-family:'Nunito', sans-serif;
+  font-weight:600;
+}
+
+.btn-row { display:flex; gap:9px; align-items:center; }
+
+.sub-btn {
+  background:var(--c-pri);
+  color:#fff;
+  border:none;
+  border-radius:var(--r-sm);
+  padding:9px 22px;
+  font-size:.83rem;
+  font-weight:700;
+  font-family:'Nunito', sans-serif;
+  cursor:pointer;
+  transition:background .15s, box-shadow .15s, transform .1s;
+  box-shadow:0 2px 10px rgba(43,92,230,.24);
+}
+.sub-btn:hover { background:var(--c-pri-dk); box-shadow:0 4px 14px rgba(43,92,230,.34); }
+.sub-btn:active { transform:scale(.97); }
+.sub-btn:disabled {
+  background:var(--c-border);
+  color:var(--c-muted);
+  box-shadow:none;
+  cursor:default;
+}
+
+.nxt-btn {
+  display:none;
+  align-items:center;
+  gap:6px;
+  background:var(--c-next);
+  color:#fff;
+  border:none;
+  border-radius:var(--r-sm);
+  padding:9px 22px;
+  font-size:.83rem;
+  font-weight:700;
+  font-family:'Nunito', sans-serif;
+  cursor:pointer;
+  transition:background .15s, box-shadow .15s;
+  box-shadow:0 2px 10px rgba(14,148,85,.24);
+}
+.nxt-btn:hover { background:var(--c-next-dk); box-shadow:0 4px 14px rgba(14,148,85,.34); }
+.nxt-btn.show { display:inline-flex; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESULTADOS
+═══════════════════════════════════════════════════════════ */
+.results {
+  display:none;
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-lg);
+  padding:50px 40px;
+  text-align:center;
+  animation:fadeUp .38s ease both;
+}
+.results.show { display:block; }
+
+.res-emoji { font-size:3.8rem; margin-bottom:14px; line-height:1; }
+
+.results h2 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem;
+  font-weight:800;
+  color:var(--c-text);
+  margin-bottom:18px;
+}
+
+.score-wrap {
+  display:inline-flex;
+  align-items:baseline;
+  gap:0;
+  margin-bottom:10px;
+}
+
+.score-n {
+  font-family:'JetBrains Mono', monospace;
+  font-size:3.6rem;
+  font-weight:700;
+  background:linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1;
+}
+
+.score-d {
+  font-family:'JetBrains Mono', monospace;
+  font-size:1.5rem;
+  font-weight:600;
+  color:var(--c-muted);
+  margin-bottom:4px;
+}
+
+.score-pct {
+  display:inline-block;
+  background:var(--c-pri-lt);
+  border:1px solid var(--c-pri-bd);
+  color:var(--c-pri);
+  font-weight:700;
+  font-size:.8rem;
+  padding:4px 14px;
+  border-radius:100px;
+  font-family:'Nunito', sans-serif;
+  margin-bottom:20px;
+}
+
+.res-fb {
+  font-size:.87rem;
+  color:var(--c-text-2);
+  max-width:500px;
+  margin:0 auto 28px;
+  line-height:1.78;
+}
+
+.res-restart {
+  background:linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  color:#fff;
+  border:none;
+  border-radius:var(--r-sm);
+  padding:11px 30px;
+  font-size:.88rem;
+  font-weight:700;
+  font-family:'Nunito', sans-serif;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(43,92,230,.3);
+  transition:opacity .15s, transform .1s;
+}
+.res-restart:hover { opacity:.86; }
+.res-restart:active { transform:scale(.97); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER DEL SITIO
+═══════════════════════════════════════════════════════════ */
+.site-foot {
+  width:100%;
+  max-width:var(--canvas-w);
+  padding:16px 42px;
+  text-align:center;
+  font-size:.72rem;
+  color:var(--c-muted);
+  border-top:1px solid var(--c-border);
+  font-family:'Nunito', sans-serif;
+  background:var(--c-surface);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET  ≤ 720px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:720px) {
+  :root { --canvas-w: 100%; }
+
+  .site-header   { padding:22px 28px 20px; }
+  .site-header h1 { font-size:1.28rem; }
+  .site-header p  { font-size:.8rem; }
+
+  .prog-wrap { padding:9px 28px; }
+  .prog-lbl  { min-width:88px; font-size:.71rem; }
+
+  .main { padding:20px 24px 40px; }
+
+  .q-top        { padding:20px 22px 16px; gap:12px; }
+  .q-text       { font-size:.92rem; }
+  .q-badge      { min-width:34px; height:34px; font-size:.68rem; }
+
+  .opts-list    { padding:14px 22px; gap:8px; }
+  .opt-btn      { font-size:.85rem; padding:11px 12px; }
+
+  .hint-sec  { padding:0 22px 14px; }
+  .q-foot    { padding:12px 22px; }
+
+  .results   { padding:36px 26px; }
+  .score-n   { font-size:3rem; }
+
+  .site-foot { padding:14px 28px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — MÓVIL  ≤ 480px
+═══════════════════════════════════════════════════════════ */
+@media (max-width:480px) {
+  .site-header  { padding:18px 16px 16px; }
+  .site-header h1 { font-size:1.08rem; line-height:1.3; }
+  .hdr-chip     { font-size:.62rem; padding:3px 10px; }
+  .site-header p  { font-size:.78rem; }
+
+  .prog-wrap   { padding:8px 16px; }
+  .prog-lbl    { display:none; }
+  .prog-score  { min-width:auto; }
+
+  .main { padding:12px 12px 32px; }
+
+  .q-top   { padding:14px 14px 12px; gap:9px; }
+  .q-text  { font-size:.84rem; line-height:1.65; }
+  .q-badge { min-width:30px; height:30px; font-size:.65rem; border-radius:6px; margin-top:2px; }
+
+  .opts-list { padding:10px 12px; gap:7px; }
+  .opt-btn   { font-size:.82rem; padding:10px 10px; gap:9px; }
+  .opt-ltr   { min-width:24px; height:24px; font-size:.66rem; }
+
+  /* Ocultar badge lateral en móvil (espacio) */
+  .r-tag { display:none !important; }
+
+  .hint-sec      { padding:0 12px 12px; }
+  .hint-toggle   { font-size:.75rem; padding:6px 10px; }
+  .hint-body     { font-size:.79rem; padding:10px 13px; }
+
+  .q-foot {
+    padding:10px 12px;
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+  .q-cnt { text-align:center; font-size:.72rem; }
+  .btn-row { flex-direction:row; }
+  .sub-btn, .nxt-btn {
+    flex:1;
+    text-align:center;
+    justify-content:center;
+    padding:10px 10px;
+    font-size:.8rem;
+  }
+
+  .results   { padding:26px 14px; }
+  .res-emoji { font-size:3rem; }
+  .results h2 { font-size:1.18rem; }
+  .score-n   { font-size:2.6rem; }
+  .res-fb    { font-size:.8rem; }
+  .res-restart { width:100%; padding:11px; }
+
+  .site-foot { padding:12px 14px; font-size:.68rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">📐 Análisis Matemático para Ingeniería</div>
+      <h1>Quiz: Límites y Continuidad aplicados a la Ingeniería Eléctrica</h1>
+      <p>Lea cuidadosamente cada enunciado, seleccione la respuesta que considere correcta y use la pista si lo necesita. Revise la retroalimentación para consolidar su aprendizaje.</p>
+    </div>
+  </header>
+
+  <!-- ══════════ BARRA PROGRESO ══════════ -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">Pregunta 1 / 10</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">0 correctas</span>
+    </div>
+  </div>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="main" id="main">
+    <div class="results" id="results"></div>
+  </main>
+
+</div><!-- /.canvas -->
+
+<footer class="site-foot">
+  Prof. Darwin Patricio Castillo Malla · Análisis Matemático para Ingeniería
+</footer>
+
+<!-- ══════════════════════════════════════════
+     DATOS Y LÓGICA
+══════════════════════════════════════════ -->
+<script>
+const QS = [
+  {
+    n:1,
+    q:`Si la temperatura \\(T(t)\\) de un reactor se modela por \\(T(t)=50+\\dfrac{1}{(t-5)^{2}}\\) a medida que el tiempo \\(t\\) se acerca a \\(5\\) minutos, ¿qué se puede concluir sobre la temperatura en ese instante?`,
+    ans:1,
+    hint:`Analice el comportamiento del denominador al acercarse el tiempo \\(t\\) a \\(5\\).`,
+    opts:[
+      {l:'A', t:`La temperatura se acerca a \\(50^\\circ C\\), el valor base del reactor.`,
+       ok:false, fb:`La parte \\(\\frac{1}{(t-5)^{2}}\\) domina y tiende a infinito, haciendo que la temperatura total exceda cualquier límite en \\(t=5\\).`},
+      {l:'B', t:`La temperatura aumenta sin límite \\((\\infty)\\), señalando una condición crítica.`,
+       ok:true,  fb:`El denominador \\((t-5)^{2}\\) se acerca a \\(0\\) por valores positivos. Por lo tanto, \\(\\frac{1}{(t-5)^{2}}\\) tiende a \\(+\\infty\\) y la temperatura aumenta sin límite. Esto corresponde a una <strong>asíntota vertical</strong>.`},
+      {l:'C', t:`La temperatura tiende a un valor fijo y finito, indicando estabilidad.`,
+       ok:false, fb:`El límite cuando \\(t\\to5\\) es infinito. El denominador tiende a cero y el numerador es positivo: la temperatura no converge a un valor fijo.`},
+      {l:'D', t:`El límite no existe porque los límites laterales son diferentes.`,
+       ok:false, fb:`El límite sí existe y es \\(+\\infty\\). Al estar el término elevado al cuadrado, tanto por la izquierda como por la derecha de \\(t=5\\), el resultado es positivo y tiende a infinito.`}
+    ]
+  },
+  {
+    n:2,
+    q:`Un interruptor de circuito se cierra en \\(t=5\\) s. Para que la corriente \\(I(t)\\) sea <strong>continua</strong> en \\(t=5\\) deben cumplirse las tres condiciones de continuidad. ¿Cuál de las siguientes afirmaciones es <strong>FALSA</strong>?`,
+    ans:3,
+    hint:`Recuerde que la continuidad implica que no debe haber saltos en la señal.`,
+    opts:[
+      {l:'A', t:`El límite \\(\\lim_{t\\to5}I(t)\\) debe existir.`,
+       ok:false, fb:`Esta es la <strong>primera condición</strong>: los límites laterales deben ser iguales y finitos. Es verdadera.`},
+      {l:'B', t:`El límite y el valor de la función deben ser iguales: \\(\\lim_{t\\to5}I(t)=I(5)\\).`,
+       ok:false, fb:`Esta es la <strong>tercera condición</strong>, la más importante: asegura que no haya "hueco" en ese punto. Es verdadera.`},
+      {l:'C', t:`La función \\(I(t)\\) debe estar definida en \\(t=5\\), es decir, \\(I(5)\\) debe existir.`,
+       ok:false, fb:`Esta es la <strong>segunda condición</strong>: asegura que no haya "hueco" ni asíntota en ese punto. Es verdadera.`},
+      {l:'D', t:`El límite \\(\\lim_{t\\to5}I(t)\\) debe ser <em>diferente</em> de \\(I(5)\\).`,
+       ok:true,  fb:`Para la continuidad, el límite bilateral debe ser <strong>igual</strong> al valor de la función, no diferente. Afirmar que deben ser distintos es precisamente lo <strong>falso</strong>.`}
+    ]
+  },
+  {
+    n:3,
+    q:`La señal de voltaje \\(V(t)\\) de un sistema de respaldo se define como \\(V(t)=\\begin{cases}10 & \\text{si }t<2\\\\12 & \\text{si }t\\geq2\\end{cases}\\). ¿Qué tipo de discontinuidad presenta \\(V(t)\\) en \\(t=2\\) segundos?`,
+    ans:0,
+    hint:`Compare los límites laterales: \\(\\lim_{t\\to2^-}V(t)\\) y \\(\\lim_{t\\to2^+}V(t)\\).`,
+    opts:[
+      {l:'A', t:`Discontinuidad de salto (Jump Discontinuity)`,
+       ok:true,  fb:`El límite lateral izquierdo es \\(10\\) y el derecho es \\(12\\). Al ser distintos, el límite bilateral no existe y la señal presenta un <strong>salto</strong> en \\(t=2\\).`},
+      {l:'B', t:`La función es continua`,
+       ok:false, fb:`La función no es continua en \\(t=2\\) porque el límite lateral izquierdo (10) es diferente del derecho (12).`},
+      {l:'C', t:`Discontinuidad esencial`,
+       ok:false, fb:`La categoría más precisa es <strong>discontinuidad de salto</strong>. La discontinuidad esencial es una categoría más amplia.`},
+      {l:'D', t:`Discontinuidad removible`,
+       ok:false, fb:`Una discontinuidad removible ocurre cuando el límite bilateral existe pero difiere del valor de la función. Aquí el límite bilateral no existe.`}
+    ]
+  },
+  {
+    n:4,
+    q:`La eficiencia \\(\\eta(x)\\) de una turbina eólica en función de su ángulo de inclinación \\(x\\) cerca de \\(a=3\\) se calcula mediante \\(\\eta(x)=\\dfrac{x^{2}-9}{x-3}\\). ¿Cuál es el valor de \\(\\lim_{x\\to3}\\eta(x)\\)?`,
+    ans:0,
+    hint:`Aplique diferencia de cuadrados en el numerador para resolver la indeterminación \\(\\tfrac{0}{0}\\).`,
+    opts:[
+      {l:'A', t:`6`,
+       ok:true,  fb:`Factorizando: \\(\\dfrac{(x-3)(x+3)}{x-3}=x+3\\). Sustituyendo \\(x=3\\): \\(3+3=\\mathbf{6}\\).`},
+      {l:'B', t:`El límite es indefinido (0/0)`,
+       ok:false, fb:`La forma \\(0/0\\) es indeterminada, pero el límite <em>sí puede calcularse</em> algebraicamente simplificando la expresión.`},
+      {l:'C', t:`9`,
+       ok:false, fb:`Simplificando, \\(\\eta(x)=x+3\\). En \\(x=3\\): \\(3+3=6\\), no \\(9\\).`},
+      {l:'D', t:`12`,
+       ok:false, fb:`El resultado correcto es \\(3+3=6\\), no \\(12\\).`}
+    ]
+  },
+  {
+    n:5,
+    q:`La presión de una caldera \\(P(t)\\) cerca de \\(t=4\\) min está dada por \\(P(t)=\\begin{cases}t^{2}+1 & \\text{si }t<4\\\\ 3t+k & \\text{si }t\\geq4\\end{cases}\\). Para que \\(\\lim_{t\\to4}P(t)\\) exista, ¿cuánto debe valer \\(k\\)?`,
+    ans:1,
+    hint:`Iguale \\(\\lim_{t\\to4^-}P(t)\\) con \\(\\lim_{t\\to4^+}P(t)\\) y despeje \\(k\\).`,
+    opts:[
+      {l:'A', t:`\\(k=13\\)`,
+       ok:false, fb:`Con \\(k=13\\): límite derecho \\(=3(4)+13=25\\neq17\\). Incorrecto.`},
+      {l:'B', t:`\\(k=5\\)`,
+       ok:true,  fb:`Igualando: \\(4^{2}+1=3(4)+k\\Rightarrow17=12+k\\Rightarrow k=\\mathbf{5}\\).`},
+      {l:'C', t:`\\(k=4\\)`,
+       ok:false, fb:`Con \\(k=4\\): límite derecho \\(=3(4)+4=16\\neq17\\). Incorrecto.`},
+      {l:'D', t:`\\(k=17\\)`,
+       ok:false, fb:`Con \\(k=17\\): límite derecho \\(=3(4)+17=29\\neq17\\). Incorrecto.`}
+    ]
+  },
+  {
+    n:6,
+    q:`Un sensor de potencia registra una discontinuidad removible en \\(t=10\\) s. La función es \\(P(t)=\\dfrac{(t-10)(t+5)}{t-10}\\). ¿Qué valor debe asignarse a \\(P(10)\\) para restaurar la continuidad?`,
+    ans:0,
+    hint:`Simplifique la función y calcule \\(\\lim_{t\\to10}P(t)\\).`,
+    opts:[
+      {l:'A', t:`15`,
+       ok:true,  fb:`Simplificando: \\(P(t)=t+5\\). El límite: \\(\\lim_{t\\to10}(t+5)=10+5=\\mathbf{15}\\). Para la continuidad \\(P(10)=15\\).`},
+      {l:'B', t:`10`,
+       ok:false, fb:`El límite es \\(15\\), no \\(10\\).`},
+      {l:'C', t:`0`,
+       ok:false, fb:`Simplificando a \\(P(t)=t+5\\), el límite en \\(t=10\\) es \\(15\\), no \\(0\\).`},
+      {l:'D', t:`La discontinuidad no es removible.`,
+       ok:false, fb:`El límite existe y es finito (\\(15\\)), por lo que la discontinuidad <strong>sí es removible</strong>.`}
+    ]
+  },
+  {
+    n:7,
+    q:`La degradación de un panel solar se modela por \\(D(t)=\\dfrac{5t^{2}+2t}{t^{2}-100t+500}\\), donde \\(t\\) es el tiempo en años. ¿A qué porcentaje tiende \\(D(t)\\) cuando \\(t\\to\\infty\\)?`,
+    ans:3,
+    hint:`Si numerador y denominador tienen el mismo grado, el límite al infinito es el cociente de los coeficientes líderes.`,
+    opts:[
+      {l:'A', t:`\\(0\\%\\)`,
+       ok:false, fb:`El límite es el cociente de los coeficientes principales, no \\(0\\).`},
+      {l:'B', t:`\\(2.5\\%\\)`,
+       ok:false, fb:`El cociente de los coeficientes de \\(t^{2}\\) es \\(\\frac{5}{1}=5\\), no \\(2.5\\).`},
+      {l:'C', t:`El límite es \\(\\infty\\), no tiene valor fijo.`,
+       ok:false, fb:`Los grados son iguales, por lo tanto el límite es <strong>finito</strong> e igual al cociente de los coeficientes principales.`},
+      {l:'D', t:`\\(5\\%\\)`,
+       ok:true,  fb:`\\(\\lim_{t\\to\\infty}\\dfrac{5t^{2}+2t}{t^{2}-100t+500}=\\dfrac{5}{1}=\\mathbf{5}\\).`}
+    ]
+  },
+  {
+    n:8,
+    q:`Para analizar un transitorio en el factor de potencia \\(F(x)\\), se calcula \\(\\lim_{x\\to4}\\dfrac{\\sqrt{x}-2}{x-4}\\). ¿Cuál es el valor de este límite?`,
+    ans:0,
+    hint:`Use el método del conjugado: multiplique por \\(\\dfrac{\\sqrt{x}+2}{\\sqrt{x}+2}\\) para resolver la indeterminación.`,
+    opts:[
+      {l:'A', t:`\\(\\dfrac{1}{4}\\)`,
+       ok:true,  fb:`Multiplicando por el conjugado: \\(\\dfrac{(\\sqrt{x}-2)(\\sqrt{x}+2)}{(x-4)(\\sqrt{x}+2)}=\\dfrac{x-4}{(x-4)(\\sqrt{x}+2)}=\\dfrac{1}{\\sqrt{x}+2}\\). En \\(x=4\\): \\(\\dfrac{1}{2+2}=\\mathbf{\\dfrac{1}{4}}\\).`},
+      {l:'B', t:`\\(0\\)`,
+       ok:false, fb:`El límite es \\(\\dfrac{1}{4}\\), no \\(0\\).`},
+      {l:'C', t:`Indefinido`,
+       ok:false, fb:`Aunque la forma directa es \\(\\frac{0}{0}\\), el límite <em>existe</em> y se calcula mediante racionalización.`},
+      {l:'D', t:`\\(\\dfrac{1}{2}\\)`,
+       ok:false, fb:`El resultado es \\(\\dfrac{1}{\\sqrt{4}+2}=\\dfrac{1}{4}\\), no \\(\\dfrac{1}{2}\\).`}
+    ]
+  },
+  {
+    n:9,
+    q:`La oscilación angular \\(\\theta(t)\\) de un péndulo de control cerca de \\(t=0\\) se modela por \\(\\theta(t)=\\dfrac{\\sin(4t)}{t}\\). ¿Cuál es \\(\\lim_{t\\to0}\\theta(t)\\)?`,
+    ans:2,
+    hint:`Recuerde: \\(\\lim_{x\\to0}\\dfrac{\\sin x}{x}=1\\). Reescriba \\(\\dfrac{\\sin(4t)}{t}=4\\cdot\\dfrac{\\sin(4t)}{4t}\\).`,
+    opts:[
+      {l:'A', t:`El límite no existe.`,
+       ok:false, fb:`El límite existe y es finito, igual a \\(4\\).`},
+      {l:'B', t:`0`,
+       ok:false, fb:`El límite es \\(4\\). Si fuera \\(\\frac{\\sin t}{t^{2}}\\), entonces tendería a \\(0\\).`},
+      {l:'C', t:`4`,
+       ok:true,  fb:`\\(\\dfrac{\\sin(4t)}{t}=4\\cdot\\dfrac{\\sin(4t)}{4t}\\xrightarrow{t\\to0}4\\times1=\\mathbf{4}\\).`},
+      {l:'D', t:`1`,
+       ok:false, fb:`Por el teorema \\(\\lim_{x\\to0}\\dfrac{\\sin(ax)}{x}=a\\), el límite es \\(4\\), no \\(1\\).`}
+    ]
+  },
+  {
+    n:10,
+    q:`Una gráfica muestra el flujo de refrigerante. En \\(t=8\\) s: límite lateral izquierdo \\(=10\\) L/min, límite lateral derecho \\(=10\\) L/min, pero el flujo real \\(f(8)=12\\) L/min. ¿Qué tipo de discontinuidad existe en \\(t=8\\)?`,
+    ans:3,
+    hint:`Analice las tres condiciones de continuidad. Si solo falla la tercera condición \\((\\lim f=f(c))\\), ¿qué tipo de discontinuidad es?`,
+    opts:[
+      {l:'A', t:`La función es continua.`,
+       ok:false, fb:`No es continua porque la tercera condición falla: \\(\\lim_{t\\to8}f(t)=10\\neq f(8)=12\\).`},
+      {l:'B', t:`Discontinuidad infinita (asintótica).`,
+       ok:false, fb:`No es infinita; el límite es finito (\\(10\\)).`},
+      {l:'C', t:`Discontinuidad de salto.`,
+       ok:false, fb:`No es de salto porque los límites laterales son iguales (ambos \\(10\\)), por lo que el límite bilateral sí existe.`},
+      {l:'D', t:`Discontinuidad removible.`,
+       ok:true,  fb:`El límite bilateral \\(\\lim_{t\\to8}f(t)=10\\) existe y es finito, pero difiere de \\(f(8)=12\\). Esto define exactamente una <strong>discontinuidad removible</strong>.`}
+    ]
+  }
+];
+
+/* ─── ESTADO ─── */
+let cur       = 0;
+let score     = 0;
+let panels    = [];
+let chosen    = new Array(QS.length).fill(null);
+let submitted = new Array(QS.length).fill(false);
+
+/* ─── CONSTRUIR PREGUNTAS ─── */
+function build() {
+  const main = document.getElementById('main');
+  const rp   = document.getElementById('results');
+
+  QS.forEach((q, qi) => {
+    const panel = document.createElement('div');
+    panel.className = 'q-panel' + (qi === 0 ? ' active' : '');
+    panel.id = `qp-${qi}`;
+
+    panel.innerHTML = `
+      <div class="q-top">
+        <div class="q-badge">${String(q.n).padStart(2,'0')}</div>
+        <div class="q-text" id="qt-${qi}">${q.q}</div>
+      </div>
+
+      <div class="opts-list" id="opts-${qi}">
+        ${q.opts.map((o,oi) => `
+          <button class="opt-btn" id="opt-${qi}-${oi}"
+            onclick="pick(${qi},${oi})"
+            aria-label="Opción ${o.l}">
+            <div class="opt-ltr" id="ltr-${qi}-${oi}">${o.l}</div>
+            <div class="opt-body">
+              <div id="otxt-${qi}-${oi}">${o.t}</div>
+              <div class="opt-fb" id="fb-${qi}-${oi}">
+                <div class="fb-label" style="color:${o.ok?'var(--c-ok)':'var(--c-err)'}">
+                  ${o.ok?'✓ Respuesta correcta':'✗ No exactamente'}
+                </div>
+                ${o.fb}
+              </div>
+            </div>
+            <div class="r-tag" id="rtag-${qi}-${oi}">
+              ${o.ok?'✓ Correcta':'✗ Incorrecta'}
+            </div>
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="hint-sec">
+        <button class="hint-toggle" id="htbtn-${qi}"
+          onclick="toggleHint(${qi})" aria-expanded="false">
+          💡 Mostrar pista <span class="hint-arr">▾</span>
+        </button>
+        <div class="hint-body" id="hb-${qi}">${q.hint}</div>
+      </div>
+
+      <div class="q-foot">
+        <span class="q-cnt">Pregunta ${q.n} de ${QS.length}</span>
+        <div class="btn-row">
+          <button class="sub-btn" id="sub-${qi}"
+            onclick="verify(${qi})" disabled>Verificar</button>
+          <button class="nxt-btn" id="nxt-${qi}"
+            onclick="goNext(${qi})">
+            ${qi < QS.length-1 ? 'Siguiente ›' : 'Ver resultados ›'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    main.insertBefore(panel, rp);
+    panels.push(panel);
+  });
+
+  typeset();
+}
+
+/* ─── SELECCIONAR ─── */
+function pick(qi, oi) {
+  if (submitted[qi]) return;
+  chosen[qi] = oi;
+  QS[qi].opts.forEach((_,idx) => {
+    document.getElementById(`opt-${qi}-${idx}`).classList.remove('selected');
+  });
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  document.getElementById(`sub-${qi}`).disabled = false;
+}
+
+/* ─── VERIFICAR ─── */
+function verify(qi) {
+  if (submitted[qi] || chosen[qi] === null) return;
+  submitted[qi] = true;
+
+  const ans = QS[qi].ans;
+  const sel = chosen[qi];
+  if (sel === ans) score++;
+
+  QS[qi].opts.forEach((_,oi) => {
+    const btn  = document.getElementById(`opt-${qi}-${oi}`);
+    const fb   = document.getElementById(`fb-${qi}-${oi}`);
+    const rtag = document.getElementById(`rtag-${qi}-${oi}`);
+
+    btn.disabled = true;
+    btn.classList.remove('selected');
+
+    if (oi === ans) {
+      btn.classList.add('is-ok');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else if (oi === sel) {
+      btn.classList.add('is-err');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else {
+      btn.classList.add('faded');
+    }
+  });
+
+  document.getElementById(`sub-${qi}`).disabled = true;
+  document.getElementById(`nxt-${qi}`).classList.add('show');
+  updateProg();
+  typeset(document.getElementById(`qp-${qi}`));
+}
+
+/* ─── SIGUIENTE ─── */
+function goNext(qi) {
+  panels[qi].classList.remove('active');
+  if (qi < QS.length - 1) {
+    cur = qi + 1;
+    panels[cur].classList.add('active');
+    updateProg();
+    typeset(panels[cur]);
+    panels[cur].scrollIntoView({ behavior:'smooth', block:'start' });
+  } else {
+    showResults();
+  }
+}
+
+/* ─── PISTA ─── */
+function toggleHint(qi) {
+  const body = document.getElementById(`hb-${qi}`);
+  const btn  = document.getElementById(`htbtn-${qi}`);
+  const open = body.classList.toggle('show');
+  btn.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  if (open) typeset(body);
+}
+
+/* ─── PROGRESO ─── */
+function updateProg() {
+  const done = submitted.filter(Boolean).length;
+  const pct  = done / QS.length * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').parentElement.setAttribute('aria-valuenow', pct);
+  document.getElementById('prog-lbl').textContent   = `Pregunta ${cur+1} / ${QS.length}`;
+  document.getElementById('prog-score').textContent  = `${score} correcta${score!==1?'s':''}`;
+}
+
+/* ─── RESULTADOS ─── */
+function showResults() {
+  panels.forEach(p => p.classList.remove('active'));
+  const pct   = Math.round(score / QS.length * 100);
+  const emoji = pct>=80?'🎉':pct>=50?'📘':'💪';
+  const msg   = pct>=80?'¡Excelente trabajo!':pct>=50?'¡Buen esfuerzo, siga practicando!':'Siga repasando los conceptos.';
+
+  const rp = document.getElementById('results');
+  rp.innerHTML = `
+    <div class="res-emoji">${emoji}</div>
+    <h2>${msg}</h2>
+    <div class="score-wrap">
+      <span class="score-n">${score}</span>
+      <span class="score-d">&thinsp;/&thinsp;${QS.length}</span>
+    </div><br>
+    <span class="score-pct">${pct}% de respuestas correctas</span>
+    <p class="res-fb">
+      Este repaso fortalece la comprensión de límites y continuidad aplicados a la Ingeniería Eléctrica: desde el análisis de asíntotas verticales en modelos de temperatura, hasta la clasificación de discontinuidades en señales de voltaje y la evaluación de límites en funciones racionales y trigonométricas. Estos conceptos son la base para anticipar condiciones críticas y garantizar la estabilidad de sistemas eléctricos.
+    </p>
+    <button class="res-restart" onclick="location.reload()">↺ Reintentar quiz</button>
+  `;
+  rp.classList.add('show');
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-lbl').textContent  = 'Quiz completado';
+  document.getElementById('prog-score').textContent = `${score} / ${QS.length}`;
+  rp.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+/* ─── MATHJAX ─── */
+function typeset(el) {
+  if (window.MathJax) MathJax.typesetPromise(el?[el]:undefined).catch(()=>{});
+}
+
+/* ─── INICIO ─── */
+window.addEventListener('DOMContentLoaded', () => { build(); updateProg(); });
+</script>
+</body>
+</html>

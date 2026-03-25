@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz – Métodos de Integración</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* ═══════════════════════════════════════════════════════════
+   PALETA DE COLORES — Modifique aquí para cambiar todo
+   Cada variable está documentada para fácil edición
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* ─── Fondo y superficies ─── */
+  --c-bg:          #f0edf8;   /* fondo de toda la página        */
+  --c-surface:     #ffffff;   /* tarjeta principal              */
+  --c-surface-2:   #f7f4fc;   /* fondo secundario / encabezado  */
+  --c-border:      #d4ccea;   /* bordes generales               */
+  --c-border-f:    #b0a4d8;   /* borde foco / hover             */
+
+  /* ─── Texto ─── */
+  --c-text:        #1e1535;   /* texto principal                */
+  --c-text-2:      #3b2d62;   /* texto secundario               */
+  --c-muted:       #7665a0;   /* texto desvanecido              */
+
+  /* ─── Primario — Violeta índigo ─── */
+  --c-pri:         #6c3fd6;   /* botones, bordes selección      */
+  --c-pri-dk:      #4f2cb0;   /* hover primario                 */
+  --c-pri-lt:      #ede8fc;   /* fondo opción seleccionada      */
+  --c-pri-bd:      #c0aaef;   /* borde opción seleccionada      */
+
+  /* ─── Correcto — Verde esmeralda ─── */
+  --c-ok:          #1a8f52;   /* borde + ícono correcto         */
+  --c-ok-lt:       #d1f5e2;   /* fondo opción correcta          */
+  --c-ok-bd:       #68cfa0;   /* borde opción correcta          */
+
+  /* ─── Incorrecto — Rojo coral ─── */
+  --c-err:         #c63232;   /* borde + ícono incorrecto       */
+  --c-err-lt:      #fde8e8;   /* fondo opción incorrecta        */
+  --c-err-bd:      #f2a0a0;   /* borde opción incorrecta        */
+
+  /* ─── Pista — Naranja cálido ─── */
+  --c-hint:        #b85a00;   /* texto e ícono pista            */
+  --c-hint-lt:     #fff4e6;   /* fondo bloque pista             */
+  --c-hint-bd:     #f5c880;   /* borde bloque pista             */
+  --c-hint-txt:    #7a3600;   /* texto dentro de la pista       */
+
+  /* ─── Acento chip tema — Naranja ─── */
+  --c-num:         #c25a00;   /* badge / chip de tema           */
+  --c-num-lt:      #fff0e0;   /* fondo chip                     */
+  --c-num-bd:      #f5c070;   /* borde chip                     */
+
+  /* ─── Gradiente header ─── */
+  --c-hdr-a:       #4f28b8;   /* inicio gradiente               */
+  --c-hdr-b:       #7c3aed;   /* fin gradiente                  */
+
+  /* ─── Gradiente barra progreso ─── */
+  --c-prog-a:      #6c3fd6;
+  --c-prog-b:      #c25a00;
+
+  /* ─── Gradiente score resultados ─── */
+  --c-score-a:     #6c3fd6;
+  --c-score-b:     #c25a00;
+
+  /* ─── Botón Siguiente ─── */
+  --c-next:        #1a8f52;
+  --c-next-dk:     #0f6038;
+
+  /* ─── Radios ─── */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+
+  /* ─── Sombras ─── */
+  --sh-sm: 0 2px 8px  rgba(50,20,100,.09);
+  --sh-md: 0 4px 20px rgba(50,20,100,.11);
+  --sh-lg: 0 8px 36px rgba(50,20,100,.14);
+
+  /* ─── Ancho canvas base ─── */
+  --canvas-w: 850px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS — base 850 × 800 mínimo
+═══════════════════════════════════════════════════════════ */
+.canvas {
+  width: 100%;
+  max-width: var(--canvas-w);
+  min-height: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sh-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════════ */
+.site-header {
+  background: linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding: 30px 42px 26px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.site-header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 82% 15%, rgba(255,255,255,.13) 0%, transparent 60%);
+  pointer-events: none;
+}
+.site-header::after {
+  content: '';
+  position: absolute;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.055);
+  right: -55px; bottom: -65px;
+  pointer-events: none;
+}
+
+.hdr-inner { position: relative; z-index: 1; }
+
+.hdr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.36);
+  border-radius: 100px;
+  padding: 4px 14px;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 12px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.site-header h1 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.site-header p {
+  font-size: .83rem;
+  color: rgba(255,255,255,.84);
+  max-width: 530px;
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BARRA DE PROGRESO
+═══════════════════════════════════════════════════════════ */
+.prog-wrap {
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  padding: 10px 42px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: var(--sh-sm);
+  flex-shrink: 0;
+}
+
+.prog-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prog-lbl {
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--c-muted);
+  white-space: nowrap;
+  min-width: 110px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.prog-track {
+  flex: 1;
+  height: 9px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-prog-a), var(--c-prog-b));
+  border-radius: 100px;
+  width: 0%;
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.prog-score {
+  font-size: .74rem;
+  font-weight: 800;
+  color: var(--c-pri);
+  min-width: 78px;
+  text-align: right;
+  font-family: 'Nunito', sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════════ */
+.main {
+  flex: 1;
+  padding: 28px 42px 48px;
+  background: var(--c-bg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PANEL DE PREGUNTA
+═══════════════════════════════════════════════════════════ */
+.q-panel {
+  display: none;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-md);
+  overflow: hidden;
+  flex-direction: column;
+  animation: fadeUp .3s ease both;
+}
+.q-panel.active { display: flex; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Encabezado pregunta ── */
+.q-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface-2);
+}
+
+.q-badge {
+  min-width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--c-hdr-a), var(--c-hdr-b));
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: #fff;
+  flex-shrink: 0;
+  margin-top: 3px;
+  box-shadow: 0 2px 8px rgba(108,63,214,.3);
+}
+
+.q-top-text { flex: 1; }
+
+/* Chip de tema — naranja */
+.q-theme-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .68rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: var(--c-num-lt);
+  color: var(--c-num);
+  border: 1px solid var(--c-num-bd);
+  margin-bottom: 10px;
+  align-self: flex-start;
+}
+
+.q-text {
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: .97rem;
+  font-weight: 600;
+  color: var(--c-text);
+  line-height: 1.72;
+}
+
+/* ── Opciones ── */
+.opts-list {
+  padding: 18px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.opt-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: .88rem;
+  color: var(--c-text-2);
+  line-height: 1.55;
+  transition: border-color .15s, background .15s, box-shadow .15s, transform .12s;
+  width: 100%;
+}
+.opt-btn:hover:not(:disabled) {
+  border-color: var(--c-pri-bd);
+  background: var(--c-pri-lt);
+  box-shadow: 0 0 0 3px rgba(108,63,214,.07);
+  transform: translateX(3px);
+}
+.opt-btn:disabled { cursor: default; transform: none; }
+
+.opt-ltr {
+  min-width: 27px; height: 27px;
+  border-radius: 50%;
+  background: var(--c-surface-2);
+  border: 1.5px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  color: var(--c-muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.opt-body { flex: 1; min-width: 0; }
+
+/* Retroalimentación inline */
+.opt-fb {
+  display: none;
+  font-size: .8rem;
+  color: var(--c-text-2);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--c-border);
+  line-height: 1.6;
+}
+.opt-fb.show { display: block; }
+
+.fb-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 800;
+  font-size: .75rem;
+  font-family: 'Nunito', sans-serif;
+  margin-bottom: 4px;
+}
+
+/* Badge resultado derecha */
+.r-tag {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 100px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-family: 'Nunito', sans-serif;
+  white-space: nowrap;
+}
+.r-tag.show { display: flex; }
+
+/* ── Estados ── */
+.opt-btn.selected {
+  border-color: var(--c-pri);
+  background: var(--c-pri-lt);
+}
+.opt-btn.selected .opt-ltr {
+  background: var(--c-pri); border-color: var(--c-pri); color: #fff;
+}
+
+.opt-btn.is-ok {
+  border-color: var(--c-ok);
+  background: var(--c-ok-lt);
+}
+.opt-btn.is-ok .opt-ltr {
+  background: var(--c-ok); border-color: var(--c-ok); color: #fff;
+}
+.opt-btn.is-ok .r-tag {
+  background: var(--c-ok-lt); border: 1px solid var(--c-ok-bd); color: var(--c-ok);
+}
+
+.opt-btn.is-err {
+  border-color: var(--c-err);
+  background: var(--c-err-lt);
+}
+.opt-btn.is-err .opt-ltr {
+  background: var(--c-err); border-color: var(--c-err); color: #fff;
+}
+.opt-btn.is-err .r-tag {
+  background: var(--c-err-lt); border: 1px solid var(--c-err-bd); color: var(--c-err);
+}
+
+.opt-btn.faded { opacity: .42; }
+
+/* ── Pista ── */
+.hint-sec { padding: 0 28px 16px; }
+
+.hint-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--c-hint-lt);
+  border: 1px solid var(--c-hint-bd);
+  border-radius: var(--r-sm);
+  padding: 7px 13px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--c-hint);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: background .15s, border-color .15s;
+}
+.hint-toggle:hover { background: #ffe5c0; border-color: var(--c-hint); }
+
+.hint-arr {
+  display: inline-block;
+  transition: transform .25s;
+  font-size: .65rem;
+}
+.hint-toggle.open .hint-arr { transform: rotate(180deg); }
+
+.hint-body {
+  display: none;
+  margin-top: 9px;
+  background: var(--c-hint-lt);
+  border: 1px solid var(--c-hint-bd);
+  border-left: 3px solid var(--c-hint);
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
+  font-size: .84rem;
+  color: var(--c-hint-txt);
+  line-height: 1.65;
+}
+.hint-body.show { display: block; }
+
+/* ── Footer ── */
+.q-foot {
+  margin-top: auto;
+  border-top: 1px solid var(--c-border);
+  background: var(--c-surface-2);
+  padding: 13px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.q-cnt {
+  font-size: .76rem;
+  color: var(--c-muted);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+}
+
+.btn-row { display: flex; gap: 9px; align-items: center; }
+
+.sub-btn {
+  background: var(--c-pri);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 9px 22px;
+  font-size: .83rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s, transform .1s;
+  box-shadow: 0 2px 10px rgba(108,63,214,.24);
+}
+.sub-btn:hover { background: var(--c-pri-dk); box-shadow: 0 4px 14px rgba(108,63,214,.34); }
+.sub-btn:active { transform: scale(.97); }
+.sub-btn:disabled {
+  background: var(--c-border);
+  color: var(--c-muted);
+  box-shadow: none;
+  cursor: default;
+}
+
+.nxt-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: var(--c-next);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 9px 22px;
+  font-size: .83rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s;
+  box-shadow: 0 2px 10px rgba(26,143,82,.24);
+}
+.nxt-btn:hover { background: var(--c-next-dk); box-shadow: 0 4px 14px rgba(26,143,82,.34); }
+.nxt-btn.show { display: inline-flex; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESULTADOS
+═══════════════════════════════════════════════════════════ */
+.results {
+  display: none;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-lg);
+  padding: 50px 40px;
+  text-align: center;
+  animation: fadeUp .38s ease both;
+}
+.results.show { display: block; }
+
+.res-emoji { font-size: 3.8rem; margin-bottom: 14px; line-height: 1; }
+
+.results h2 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--c-text);
+  margin-bottom: 18px;
+}
+
+.score-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.score-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.score-d {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--c-muted);
+  margin-bottom: 4px;
+}
+
+.score-pct {
+  display: inline-block;
+  background: var(--c-pri-lt);
+  border: 1px solid var(--c-pri-bd);
+  color: var(--c-pri);
+  font-weight: 700;
+  font-size: .8rem;
+  padding: 4px 14px;
+  border-radius: 100px;
+  font-family: 'Nunito', sans-serif;
+  margin-bottom: 20px;
+}
+
+.res-fb {
+  font-size: .87rem;
+  color: var(--c-text-2);
+  max-width: 510px;
+  margin: 0 auto 28px;
+  line-height: 1.78;
+}
+
+.res-restart {
+  background: linear-gradient(135deg, var(--c-score-a), var(--c-score-b));
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 11px 30px;
+  font-size: .88rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(108,63,214,.28);
+  transition: opacity .15s, transform .1s;
+}
+.res-restart:hover { opacity: .86; }
+.res-restart:active { transform: scale(.97); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════ */
+.site-foot {
+  width: 100%;
+  max-width: var(--canvas-w);
+  padding: 16px 42px;
+  text-align: center;
+  font-size: .72rem;
+  color: var(--c-muted);
+  border-top: 1px solid var(--c-border);
+  font-family: 'Nunito', sans-serif;
+  background: var(--c-surface);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLET  ≤ 720 px
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 720px) {
+  :root { --canvas-w: 100%; }
+  .site-header    { padding: 22px 28px 20px; }
+  .site-header h1 { font-size: 1.28rem; }
+  .site-header p  { font-size: .8rem; }
+  .prog-wrap  { padding: 9px 28px; }
+  .prog-lbl   { min-width: 88px; font-size: .71rem; }
+  .main       { padding: 20px 24px 40px; }
+  .q-top      { padding: 18px 22px 15px; gap: 12px; }
+  .q-text     { font-size: .92rem; }
+  .q-badge    { min-width: 34px; height: 34px; font-size: .68rem; }
+  .opts-list  { padding: 14px 22px; gap: 8px; }
+  .opt-btn    { font-size: .85rem; padding: 11px 12px; }
+  .hint-sec   { padding: 0 22px 14px; }
+  .q-foot     { padding: 12px 22px; }
+  .results    { padding: 36px 26px; }
+  .score-n    { font-size: 3rem; }
+  .site-foot  { padding: 14px 28px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MÓVIL  ≤ 480 px
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .site-header    { padding: 18px 16px 16px; }
+  .site-header h1 { font-size: 1.05rem; line-height: 1.3; }
+  .hdr-chip       { font-size: .62rem; padding: 3px 10px; }
+  .site-header p  { font-size: .78rem; }
+  .prog-wrap   { padding: 8px 16px; }
+  .prog-lbl    { display: none; }
+  .prog-score  { min-width: auto; }
+  .main        { padding: 12px 12px 32px; }
+  .q-top       { padding: 14px 14px 12px; gap: 9px; }
+  .q-text      { font-size: .84rem; line-height: 1.65; }
+  .q-badge     { min-width: 30px; height: 30px; font-size: .65rem; border-radius: 6px; margin-top: 2px; }
+  .opts-list   { padding: 10px 12px; gap: 7px; }
+  .opt-btn     { font-size: .82rem; padding: 10px 10px; gap: 9px; }
+  .opt-ltr     { min-width: 24px; height: 24px; font-size: .66rem; }
+  .r-tag       { display: none !important; }
+  .hint-sec    { padding: 0 12px 12px; }
+  .hint-toggle { font-size: .75rem; padding: 6px 10px; }
+  .hint-body   { font-size: .79rem; padding: 10px 13px; }
+  .q-foot {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .q-cnt   { text-align: center; font-size: .72rem; }
+  .btn-row { flex-direction: row; }
+  .sub-btn, .nxt-btn {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    padding: 10px 10px;
+    font-size: .8rem;
+  }
+  .results     { padding: 26px 14px; }
+  .res-emoji   { font-size: 3rem; }
+  .results h2  { font-size: 1.18rem; }
+  .score-n     { font-size: 2.6rem; }
+  .res-fb      { font-size: .8rem; }
+  .res-restart { width: 100%; padding: 11px; }
+  .site-foot   { padding: 12px 14px; font-size: .68rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">∫ Análisis Matemático para Ingeniería</div>
+      <h1>Quiz: Repaso de Conceptos<br>y Métodos de Integración</h1>
+      <p>Lea cuidadosamente cada enunciado, seleccione la respuesta que considere correcta y use la pista si lo necesita. Revise la retroalimentación para consolidar su aprendizaje.</p>
+    </div>
+  </header>
+
+  <!-- ══ PROGRESO ══ -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">Pregunta 1 / 10</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">0 correctas</span>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main" id="main">
+    <div class="results" id="results"></div>
+  </main>
+
+</div>
+
+<footer class="site-foot">
+  Elaboración propia · Prof. Darwin Patricio Castillo Malla · Análisis Matemático para Ingeniería
+</footer>
+
+<!-- ══════════════════════════════════════════
+     DATOS Y LÓGICA
+══════════════════════════════════════════ -->
+<script>
+const QS = [
+  {
+    n: 1,
+    theme: '⚡ Integral indefinida — Energía',
+    q: `En un sistema de almacenamiento de energía, la potencia instantánea \\(P(t)\\) es la derivada de la energía \\(E(t)\\). Si conocemos la función de potencia, ¿qué representa la integral indefinida \\(\\int P(t)\\,dt\\)?`,
+    ans: 1,
+    hint: `Recuerde que la integración es el proceso inverso a la derivación y siempre conlleva una constante de integración.`,
+    opts: [
+      { l:'A', t:`La tasa de cambio de la energía.`,
+        ok:false, fb:`La tasa de cambio es la derivada, que es precisamente la potencia \\(P(t)\\), no su integral.` },
+      { l:'B', t:`Una familia de funciones \\(E(t)+C\\) que describen la energía posible.`,
+        ok:true,  fb:`La integral indefinida es la operación inversa a la derivada y genera una familia de primitivas. La constante \\(C\\) representa la energía inicial almacenada \\((E_0)\\) que debe conocerse para tener una solución única.` },
+      { l:'C', t:`El promedio de potencia en el intervalo.`,
+        ok:false, fb:`El promedio se calcula con el teorema del valor medio para integrales definidas, no con la indefinida.` },
+      { l:'D', t:`La energía total almacenada en un instante específico.`,
+        ok:false, fb:`Eso sería un valor numérico (una integral definida o evaluada), no la función general.` }
+    ]
+  },
+  {
+    n: 2,
+    theme: '☀️ Fórmulas inmediatas — Carga eléctrica',
+    q: `Un panel solar genera una corriente que varía con el tiempo según \\(i(t)=4t^{3}+2e^{t}\\) amperios. Usando las fórmulas de integración inmediatas, ¿cuál es la función de carga eléctrica \\(q(t)\\)?`,
+    ans: 0,
+    hint: `Aplique la linealidad de la integral: integre \\(4t^{3}\\) y \\(2e^{t}\\) por separado usando las tablas básicas.`,
+    opts: [
+      { l:'A', t:`\\(q(t)=t^{4}+2e^{t}+C\\)`,
+        ok:true,  fb:`Usando la regla de la potencia \\(\\int x^n\\,dx=\\dfrac{x^{n+1}}{n+1}\\) para \\(4t^3\\) obtenemos \\(t^4\\), y la integral de \\(e^t\\) es ella misma: \\(\\int 2e^t\\,dt=2e^t\\).` },
+      { l:'B', t:`\\(q(t)=4t^{4}+e^{t}+C\\)`,
+        ok:false, fb:`Error en la regla de la potencia: no se dividió por el nuevo exponente. Además falta el factor 2 en la exponencial.` },
+      { l:'C', t:`\\(q(t)=\\dfrac{4}{3}t^{4}+2te^{t}+C\\)`,
+        ok:false, fb:`Error en la integral de la función exponencial; \\(\\int e^t\\,dt=e^t\\), no \\(te^t\\).` },
+      { l:'D', t:`\\(q(t)=12t^{2}+2e^{t}+C\\)`,
+        ok:false, fb:`Esto corresponde a la derivada de la función \\(i(t)\\), no a su integral.` }
+    ]
+  },
+  {
+    n: 3,
+    theme: '🔄 Sustitución simple — Trabajo en pistón',
+    q: `Se desea calcular el trabajo realizado por un gas en expansión dentro de un pistón, modelado por la integral \\(\\int 2x(x^{2}+5)^{4}\\,dx\\). ¿Qué sustitución es la más adecuada?`,
+    ans: 2,
+    hint: `Busque una parte de la función cuya derivada también esté presente en el integrando, multiplicando a \\(dx\\).`,
+    opts: [
+      { l:'A', t:`\\(u=x^{2}\\), entonces \\(du=2x\\,dx\\)`,
+        ok:false, fb:`Esta sustitución dejaría el término \\(+5\\) dentro de la potencia, complicando el desarrollo del binomio a la cuarta potencia.` },
+      { l:'B', t:`\\(u=2x\\), entonces \\(du=2\\,dx\\)`,
+        ok:false, fb:`Esta sustitución no simplifica la parte más compleja de la integral: la potencia cuarta.` },
+      { l:'C', t:`\\(u=x^{2}+5\\), entonces \\(du=2x\\,dx\\)`,
+        ok:true,  fb:`Al elegir \\(u\\) como la base de la potencia, su diferencial \\(du=2x\\,dx\\) aparece exactamente en el integrando, simplificando la integral a \\(\\int u^4\\,du\\).` },
+      { l:'D', t:`\\(u=(x^{2}+5)^{4}\\), entonces \\(du=4(x^{2}+5)^{3}\\cdot2x\\,dx\\)`,
+        ok:false, fb:`Esta elección hace que el \\(du\\) sea mucho más complejo que el resto del integrando, complicando en lugar de simplificar.` }
+    ]
+  },
+  {
+    n: 4,
+    theme: '📉 Integración por partes — Amortiguación',
+    q: `Al analizar la amortiguación en un sistema de generación eólica, surge la integral \\(\\int te^{-t}\\,dt\\). ¿Cuáles son las elecciones correctas para \\(u\\) y \\(dv\\) según la técnica de integración por partes?`,
+    ans: 3,
+    hint: `Elija \\(u\\) de manera que su derivada sea más simple (desaparezca la \\(t\\)) y \\(dv\\) sea fácil de integrar.`,
+    opts: [
+      { l:'A', t:`\\(u=te^{-t}\\) y \\(dv=dt\\)`,
+        ok:false, fb:`Esto no simplifica el problema, ya que solo mueve la complejidad a la derivada de \\(u\\).` },
+      { l:'B', t:`\\(u=1\\) y \\(dv=te^{-t}\\,dt\\)`,
+        ok:false, fb:`Integrar \\(dv=te^{-t}\\,dt\\) es precisamente el problema original que queremos resolver.` },
+      { l:'C', t:`\\(u=e^{-t}\\) y \\(dv=t\\,dt\\)`,
+        ok:false, fb:`Si \\(dv=t\\,dt\\) entonces \\(v=t^2/2\\), lo cual hace la nueva integral \\(\\int v\\,du=\\int t^2e^{-t}\\,dt/2\\) más complicada.` },
+      { l:'D', t:`\\(u=t\\) y \\(dv=e^{-t}\\,dt\\)`,
+        ok:true,  fb:`Al derivar, \\(u=t\\) da \\(du=dt\\) (simplificando el término algebraico); al integrar, \\(dv=e^{-t}\\,dt\\) da \\(v=-e^{-t}\\), resultando en la integral más sencilla \\(-te^{-t}+\\int e^{-t}\\,dt\\).` }
+    ]
+  },
+  {
+    n: 5,
+    theme: '〰️ Identidades trigonométricas — Potencia RMS',
+    q: `Para calcular la potencia eficaz (RMS) en un circuito de corriente alterna necesitamos resolver \\(\\int\\cos^{2}(x)\\,dx\\). ¿Qué identidad trigonométrica es fundamental para este caso?`,
+    ans: 3,
+    hint: `Busque la identidad que permite bajar el grado de la potencia (de cuadrado a lineal) duplicando el ángulo.`,
+    opts: [
+      { l:'A', t:`\\(\\sin(2x)=2\\sin(x)\\cos(x)\\)`,
+        ok:false, fb:`Esta identidad es para el seno del ángulo doble; no reduce la potencia del coseno cuadrado directamente.` },
+      { l:'B', t:`\\(\\cos^{2}(x)=1-\\sin^{2}(x)\\)`,
+        ok:false, fb:`Esta identidad pitagórica es útil para potencias impares, pero con potencias pares nos deja con \\(\\sin^2(x)\\) que tiene la misma dificultad de integración.` },
+      { l:'C', t:`\\(\\sec^{2}(x)=1+\\tan^{2}(x)\\)`,
+        ok:false, fb:`Esta identidad relaciona secante y tangente; no ayuda a simplificar el coseno cuadrado para integración directa.` },
+      { l:'D', t:`\\(\\cos^{2}(x)=\\dfrac{1+\\cos(2x)}{2}\\)`,
+        ok:true,  fb:`Esta identidad de reducción de potencia (ángulo doble) transforma el término cuadrático en uno lineal: \\(\\int\\dfrac{1+\\cos(2x)}{2}\\,dx\\), que se integra directamente.` }
+    ]
+  },
+  {
+    n: 6,
+    theme: '🔁 Sustitución trigonométrica — Campo magnético',
+    q: `Un ingeniero calcula el campo magnético alrededor de un cable, lo que lleva a una integral con el término \\(\\sqrt{a^2-x^2}\\). ¿Qué sustitución trigonométrica corresponde a esta forma?`,
+    ans: 0,
+    hint: `Recuerde el teorema de Pitágoras y qué identidad trigonométrica tiene la forma \\(1-\\sin^2=\\cos^2\\).`,
+    opts: [
+      { l:'A', t:`\\(x=a\\sin(\\theta)\\)`,
+        ok:true,  fb:`Al usar \\(x=a\\sin(\\theta)\\), el radical se convierte en \\(\\sqrt{a^2-a^2\\sin^2\\theta}=a\\cos(\\theta)\\), eliminando completamente la raíz cuadrada.` },
+      { l:'B', t:`\\(x=a\\tan(\\theta)\\)`,
+        ok:false, fb:`Esta sustitución se usa para formas \\(\\sqrt{a^2+x^2}\\) (suma de cuadrados), asociada a la identidad \\(1+\\tan^2=\\sec^2\\).` },
+      { l:'C', t:`\\(x=a\\sec(\\theta)\\)`,
+        ok:false, fb:`Esta sustitución se usa para formas \\(\\sqrt{x^2-a^2}\\) (variable menos constante), asociada a \\(\\sec^2-1=\\tan^2\\).` },
+      { l:'D', t:`\\(x=a\\cos^2(\\theta)\\)`,
+        ok:false, fb:`Esta no es una sustitución estándar para eliminar radicales cuadráticos de esta forma.` }
+    ]
+  },
+  {
+    n: 7,
+    theme: '🧪 Fracciones parciales — Cinética de biomasa',
+    q: `En el análisis de la cinética de un reactor de biomasa surge la integral \\(\\int\\dfrac{1}{(6-x)(4-x)}\\,dx\\). ¿Cómo se descompone correctamente esta fracción (factores lineales distintos)?`,
+    ans: 3,
+    hint: `Para factores lineales distintos en el denominador, asignamos una constante desconocida a cada factor.`,
+    opts: [
+      { l:'A', t:`\\(\\dfrac{A}{(6-x)^{2}}+\\dfrac{B}{4-x}\\)`,
+        ok:false, fb:`Esto se usaría si el factor \\((6-x)\\) estuviera elevado al cuadrado (Caso II: factores lineales repetidos).` },
+      { l:'B', t:`\\(\\dfrac{A}{6-x}+\\dfrac{Bx+C}{4-x}\\)`,
+        ok:false, fb:`El segundo denominador es lineal, por lo tanto su numerador debe ser una constante \\(B\\), no un polinomio \\(Bx+C\\) (que correspondería a factores cuadráticos).` },
+      { l:'C', t:`\\(\\dfrac{Ax+B}{(6-x)(4-x)}\\)`,
+        ok:false, fb:`Esto es simplemente la forma original generalizada, no una descomposición en fracciones más simples.` },
+      { l:'D', t:`\\(\\dfrac{A}{6-x}+\\dfrac{B}{4-x}\\)`,
+        ok:true,  fb:`Como el denominador tiene factores lineales no repetidos, se descompone en una suma de fracciones con constantes desconocidas \\(A\\) y \\(B\\) en los numeradores.` }
+    ]
+  },
+  {
+    n: 8,
+    theme: '🌡️ Selección de método — Distribución de temperatura',
+    q: `Se encuentra la integral \\(\\int xe^{x^{2}}\\,dx\\) al modelar la distribución de temperatura en una varilla. ¿Qué método es el más eficiente para resolverla?`,
+    ans: 0,
+    hint: `Observe que la derivada del exponente \\((x^2)\\) aparece multiplicando a la función exponencial en el integrando.`,
+    opts: [
+      { l:'A', t:`Sustitución simple (cambio de variable).`,
+        ok:true,  fb:`Si hacemos \\(u=x^2\\), entonces \\(du=2x\\,dx\\). El término \\(x\\,dx\\) ya está en la integral, resultando directamente en \\(\\frac{1}{2}\\int e^u\\,du=\\frac{1}{2}e^{x^2}+C\\).` },
+      { l:'B', t:`Sustitución trigonométrica.`,
+        ok:false, fb:`No hay raíces cuadradas de sumas o restas de cuadrados que sugieran este método.` },
+      { l:'C', t:`Integración por partes.`,
+        ok:false, fb:`Por partes sería útil para \\(\\int xe^x\\,dx\\), pero aquí la derivada del exponente \\((2x)\\) está presente en el integrando, haciendo la sustitución el método más eficiente.` },
+      { l:'D', t:`Fracciones parciales.`,
+        ok:false, fb:`Este método es exclusivo para funciones racionales (cocientes de polinomios), no para exponenciales.` }
+    ]
+  },
+  {
+    n: 9,
+    theme: '➕ Linealidad de la integral — Sistema híbrido',
+    q: `Un sistema híbrido recibe energía de dos fuentes modeladas por \\(f(t)\\) y \\(g(t)\\). Si la potencia total es \\(P_T(t)=3f(t)-g(t)\\), ¿qué propiedad nos permite separar la integral?`,
+    ans: 0,
+    hint: `La integral indefinida separa sumas y restas, y permite sacar los coeficientes constantes.`,
+    opts: [
+      { l:'A', t:`\\(\\displaystyle\\int[3f(t)-g(t)]\\,dt=3\\int f(t)\\,dt-\\int g(t)\\,dt\\)`,
+        ok:true,  fb:`La integral es un operador lineal: la integral de una suma/resta es la suma/resta de las integrales, y las constantes multiplicativas salen fuera de la integral.` },
+      { l:'B', t:`\\(\\displaystyle\\int[3f(t)-g(t)]\\,dt=3\\int f(t)g(t)\\,dt\\)`,
+        ok:false, fb:`No se pueden combinar las funciones multiplicándolas dentro de la integral; eso no es una propiedad válida.` },
+      { l:'C', t:`\\(\\displaystyle\\int[3f(t)-g(t)]\\,dt=\\dfrac{3\\int f(t)\\,dt}{\\int g(t)\\,dt}\\)`,
+        ok:false, fb:`La integral de una resta no es el cociente de las integrales.` },
+      { l:'D', t:`\\(\\displaystyle\\int[3f(t)-g(t)]\\,dt=\\int 3f(t)\\,dt\\cdot\\int g(t)\\,dt\\)`,
+        ok:false, fb:`La integral de una resta no es el producto de las integrales.` }
+    ]
+  },
+  {
+    n: 10,
+    theme: '➗ División de polinomios — Eficiencia de turbina',
+    q: `Al analizar la eficiencia de una turbina obtiene la integral \\(\\int\\dfrac{x^{3}+x}{x-1}\\,dx\\). Antes de integrar, ¿cuál es el primer paso algebraico necesario?`,
+    ans: 1,
+    hint: `Si el polinomio del numerador tiene mayor o igual grado que el del denominador, ¡divida primero!`,
+    opts: [
+      { l:'A', t:`Aplicar fracciones parciales inmediatamente.`,
+        ok:false, fb:`Las fracciones parciales requieren que el grado del numerador sea estrictamente menor que el del denominador. Aquí grado 3 \\(>\\) grado 1, por lo que no se puede aplicar directamente.` },
+      { l:'B', t:`Realizar la división larga de polinomios.`,
+        ok:true,  fb:`Dado que la fracción es impropia (grado del numerador \\(\\geq\\) grado del denominador), primero se realiza la división para obtener un polinomio más una fracción propia, que luego sí puede integrarse o descomponerse.` },
+      { l:'C', t:`Derivar el denominador.`,
+        ok:false, fb:`Derivar el denominador es un paso auxiliar para reconocer formas logarítmicas, pero aquí no resuelve el problema del grado del numerador.` },
+      { l:'D', t:`Usar sustitución trigonométrica.`,
+        ok:false, fb:`No hay radicales de sumas o restas de cuadrados que sugieran este método en una fracción racional.` }
+    ]
+  }
+];
+
+/* ── ESTADO ── */
+let cur       = 0;
+let score     = 0;
+let panels    = [];
+let chosen    = new Array(QS.length).fill(null);
+let submitted = new Array(QS.length).fill(false);
+
+/* ── CONSTRUIR ── */
+function build() {
+  const main = document.getElementById('main');
+  const rp   = document.getElementById('results');
+
+  QS.forEach((q, qi) => {
+    const panel = document.createElement('div');
+    panel.className = 'q-panel' + (qi === 0 ? ' active' : '');
+    panel.id = `qp-${qi}`;
+
+    panel.innerHTML = `
+      <div class="q-top">
+        <div class="q-badge">${String(q.n).padStart(2,'0')}</div>
+        <div class="q-top-text">
+          <div class="q-theme-chip">${q.theme}</div>
+          <div class="q-text" id="qt-${qi}">${q.q}</div>
+        </div>
+      </div>
+
+      <div class="opts-list" id="opts-${qi}">
+        ${q.opts.map((o,oi) => `
+          <button class="opt-btn" id="opt-${qi}-${oi}"
+            onclick="pick(${qi},${oi})"
+            aria-label="Opción ${o.l}">
+            <div class="opt-ltr" id="ltr-${qi}-${oi}">${o.l}</div>
+            <div class="opt-body">
+              <div id="otxt-${qi}-${oi}">${o.t}</div>
+              <div class="opt-fb" id="fb-${qi}-${oi}">
+                <div class="fb-label" style="color:${o.ok?'var(--c-ok)':'var(--c-err)'}">
+                  ${o.ok ? '✓ Respuesta correcta' : '✗ No exactamente'}
+                </div>
+                ${o.fb}
+              </div>
+            </div>
+            <div class="r-tag" id="rtag-${qi}-${oi}">
+              ${o.ok ? '✓ Correcta' : '✗ Incorrecta'}
+            </div>
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="hint-sec">
+        <button class="hint-toggle" id="htbtn-${qi}"
+          onclick="toggleHint(${qi})" aria-expanded="false">
+          💡 Mostrar pista <span class="hint-arr">▾</span>
+        </button>
+        <div class="hint-body" id="hb-${qi}">${q.hint}</div>
+      </div>
+
+      <div class="q-foot">
+        <span class="q-cnt">Pregunta ${q.n} de ${QS.length}</span>
+        <div class="btn-row">
+          <button class="sub-btn" id="sub-${qi}"
+            onclick="verify(${qi})" disabled>Verificar</button>
+          <button class="nxt-btn" id="nxt-${qi}"
+            onclick="goNext(${qi})">
+            ${qi < QS.length - 1 ? 'Siguiente ›' : 'Ver resultados ›'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    main.insertBefore(panel, rp);
+    panels.push(panel);
+  });
+
+  typeset();
+}
+
+/* ── SELECCIONAR ── */
+function pick(qi, oi) {
+  if (submitted[qi]) return;
+  chosen[qi] = oi;
+  QS[qi].opts.forEach((_,idx) => {
+    document.getElementById(`opt-${qi}-${idx}`).classList.remove('selected');
+  });
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  document.getElementById(`sub-${qi}`).disabled = false;
+}
+
+/* ── VERIFICAR ── */
+function verify(qi) {
+  if (submitted[qi] || chosen[qi] === null) return;
+  submitted[qi] = true;
+  const ans = QS[qi].ans;
+  const sel = chosen[qi];
+  if (sel === ans) score++;
+
+  QS[qi].opts.forEach((_,oi) => {
+    const btn  = document.getElementById(`opt-${qi}-${oi}`);
+    const fb   = document.getElementById(`fb-${qi}-${oi}`);
+    const rtag = document.getElementById(`rtag-${qi}-${oi}`);
+    btn.disabled = true;
+    btn.classList.remove('selected');
+    if (oi === ans) {
+      btn.classList.add('is-ok');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else if (oi === sel) {
+      btn.classList.add('is-err');
+      fb.classList.add('show');
+      rtag.classList.add('show');
+    } else {
+      btn.classList.add('faded');
+    }
+  });
+
+  document.getElementById(`sub-${qi}`).disabled = true;
+  document.getElementById(`nxt-${qi}`).classList.add('show');
+  updateProg();
+  typeset(document.getElementById(`qp-${qi}`));
+}
+
+/* ── SIGUIENTE ── */
+function goNext(qi) {
+  panels[qi].classList.remove('active');
+  if (qi < QS.length - 1) {
+    cur = qi + 1;
+    panels[cur].classList.add('active');
+    updateProg();
+    typeset(panels[cur]);
+    panels[cur].scrollIntoView({ behavior:'smooth', block:'start' });
+  } else {
+    showResults();
+  }
+}
+
+/* ── PISTA ── */
+function toggleHint(qi) {
+  const body = document.getElementById(`hb-${qi}`);
+  const btn  = document.getElementById(`htbtn-${qi}`);
+  const open = body.classList.toggle('show');
+  btn.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  if (open) typeset(body);
+}
+
+/* ── PROGRESO ── */
+function updateProg() {
+  const done = submitted.filter(Boolean).length;
+  const pct  = done / QS.length * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').parentElement.setAttribute('aria-valuenow', Math.round(pct));
+  document.getElementById('prog-lbl').textContent   = `Pregunta ${cur+1} / ${QS.length}`;
+  document.getElementById('prog-score').textContent = `${score} correcta${score!==1?'s':''}`;
+}
+
+/* ── RESULTADOS ── */
+function showResults() {
+  panels.forEach(p => p.classList.remove('active'));
+  const pct   = Math.round(score / QS.length * 100);
+  const emoji = pct >= 80 ? '🎉' : pct >= 50 ? '📘' : '💪';
+  const msg   = pct >= 80 ? '¡Excelente trabajo!' : pct >= 50 ? '¡Buen esfuerzo, siga practicando!' : 'Siga repasando los conceptos.';
+
+  const rp = document.getElementById('results');
+  rp.innerHTML = `
+    <div class="res-emoji">${emoji}</div>
+    <h2>${msg}</h2>
+    <div class="score-wrap">
+      <span class="score-n">${score}</span>
+      <span class="score-d">&thinsp;/&thinsp;${QS.length}</span>
+    </div><br>
+    <span class="score-pct">${pct}% de respuestas correctas</span>
+    <p class="res-fb">
+      Este repaso fortalece la comprensión de los métodos de integración aplicados a la Ingeniería Eléctrica: desde la integral indefinida y las fórmulas inmediatas para el cálculo de carga y energía, hasta la sustitución, la integración por partes, las identidades trigonométricas, la sustitución trigonométrica, las fracciones parciales y la división de polinomios como herramientas para resolver problemas de potencia, campo magnético y distribución de temperatura.
+    </p>
+    <button class="res-restart" onclick="location.reload()">↺ Reintentar quiz</button>
+  `;
+  rp.classList.add('show');
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-lbl').textContent  = 'Quiz completado';
+  document.getElementById('prog-score').textContent = `${score} / ${QS.length}`;
+  rp.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+/* ── MATHJAX ── */
+function typeset(el) {
+  if (window.MathJax) MathJax.typesetPromise(el ? [el] : undefined).catch(()=>{});
+}
+
+/* ── INICIO ── */
+window.addEventListener('DOMContentLoaded', () => { build(); updateProg(); });
+</script>
+</body>
+</html>
