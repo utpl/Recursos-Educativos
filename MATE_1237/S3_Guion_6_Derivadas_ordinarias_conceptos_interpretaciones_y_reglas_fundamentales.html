@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego — Derivadas: Unir Conceptos con Definiciones</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --c-bg:        #edf3fb;
+  --c-surface:   #ffffff;
+  --c-surface2:  #f4f8fd;
+  --c-border:    #c6d6ec;
+  --c-text:      #0f2040;
+  --c-text2:     #2b4a70;
+  --c-muted:     #5e7d9e;
+  --c-pri:       #1a5fb4;
+  --c-pri-dk:    #114090;
+  --c-pri-lt:    #dce9fb;
+  --c-pri-bd:    #90b8f0;
+  --c-acc:       #0d7c6e;
+  --c-acc-lt:    #d2f0ec;
+  --c-acc-bd:    #70c4b8;
+  --c-ok:        #1a8c48;
+  --c-ok-lt:     #d2f5e2;
+  --c-ok-bd:     #68cfa0;
+  --c-warn:      #c47a1a;
+  --c-warn-lt:   #fef4de;
+  --c-warn-bd:   #f0c878;
+  --c-err:       #c43030;
+  --c-err-lt:    #fde8e8;
+  --c-err-bd:    #f2a0a0;
+  --c-vio:       #6c3fd6;
+  --c-vio-lt:    #ede8fb;
+  --c-vio-bd:    #c0aaef;
+  --c-hdr-a:     #1a5fb4;
+  --c-hdr-b:     #0d7c6e;
+  --r-sm: 8px;  --r-md: 12px;  --r-lg: 16px;  --r-xl: 20px;
+  --sh-sm: 0 2px 8px  rgba(15,45,90,.08);
+  --sh-md: 0 4px 20px rgba(15,45,90,.11);
+  --sh-lg: 0 8px 36px rgba(15,45,90,.14);
+  --canvas-w: 1024px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family:'Nunito Sans', sans-serif;
+  background:var(--c-bg);
+  color:var(--c-text);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+.canvas {
+  width:100%; max-width:var(--canvas-w);
+  min-height:600px; display:flex;
+  flex-direction:column; box-shadow:var(--sh-lg);
+}
+
+/* ══ HEADER ══ */
+.site-header {
+  background:linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding:28px 42px 24px; position:relative; overflow:hidden; flex-shrink:0;
+}
+.site-header::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 80% 15%, rgba(255,255,255,.13) 0%, transparent 60%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:''; position:absolute; width:220px; height:220px;
+  border-radius:50%; background:rgba(255,255,255,.055);
+  right:-50px; bottom:-60px; pointer-events:none;
+}
+.hdr-inner { position:relative; z-index:1; }
+.hdr-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.36);
+  border-radius:100px; padding:4px 14px;
+  font-size:.7rem; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:#fff; margin-bottom:12px;
+  font-family:'Nunito', sans-serif;
+}
+.site-header h1 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem; font-weight:800; color:#fff;
+  line-height:1.25; margin-bottom:8px;
+}
+.site-header p {
+  font-size:.83rem; color:rgba(255,255,255,.84);
+  max-width:530px; line-height:1.65;
+}
+
+/* ══ PROGRESO ══ */
+.prog-wrap {
+  background:var(--c-surface); border-bottom:1px solid var(--c-border);
+  padding:10px 42px; position:sticky; top:0; z-index:50;
+  box-shadow:var(--sh-sm); flex-shrink:0;
+}
+.prog-row { display:flex; align-items:center; gap:12px; }
+.prog-lbl {
+  font-size:.74rem; font-weight:700; color:var(--c-muted);
+  white-space:nowrap; min-width:120px; font-family:'Nunito',sans-serif;
+}
+.prog-track {
+  flex:1; height:9px; background:var(--c-surface2);
+  border:1px solid var(--c-border); border-radius:100px; overflow:hidden;
+}
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--c-hdr-a), var(--c-hdr-b));
+  border-radius:100px; width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.prog-score {
+  font-size:.74rem; font-weight:800; color:var(--c-pri);
+  min-width:70px; text-align:right; font-family:'Nunito',sans-serif;
+}
+
+/* ══ MAIN ══ */
+.main {
+  flex:1; padding:28px 42px 28px;
+  background:var(--c-bg);
+  display:flex; flex-direction:column; gap:18px;
+}
+
+/* ══ INSTRUCCIÓN ══ */
+.instruc-card {
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-left:3px solid var(--c-pri);
+  border-radius:var(--r-md);
+  padding:14px 20px;
+  font-size:.86rem; color:var(--c-text2); line-height:1.7;
+  box-shadow:var(--sh-sm);
+}
+.instruc-card strong { color:var(--c-pri); font-family:'Nunito',sans-serif; }
+
+/* ══ TABLERO DE JUEGO ══ */
+.game-board {
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-md);
+  overflow:hidden;
+  animation:fadeUp .35s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.board-header {
+  background:linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding:14px 24px;
+  display:flex; align-items:center; gap:12px;
+}
+.board-title {
+  font-family:'Nunito',sans-serif;
+  font-size:.95rem; font-weight:800; color:#fff;
+}
+.board-subtitle {
+  font-size:.76rem; color:rgba(255,255,255,.8); margin-left:auto;
+}
+
+.cols-wrap {
+  display:grid;
+  grid-template-columns: 1fr 50px 2fr;
+  gap:0;
+  padding:20px 20px 20px;
+  position:relative;
+}
+
+/* ══ COLUMNAS ══ */
+.col-header {
+  font-family:'Nunito',sans-serif;
+  font-size:.72rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+  padding:6px 0 10px;
+}
+.col-header.left  { color:var(--c-pri); }
+.col-header.right { color:var(--c-acc); text-align:right; }
+.col-center { display:flex; align-items:center; justify-content:center; padding-top:32px; }
+
+/* ══ ITEMS ══ */
+.items-col { display:flex; flex-direction:column; gap:10px; }
+
+.concept-item {
+  background:var(--c-pri-lt);
+  border:2px solid var(--c-pri-bd);
+  border-radius:var(--r-md);
+  padding:10px 14px;
+  font-size:.84rem; font-weight:700;
+  font-family:'Nunito',sans-serif;
+  color:var(--c-pri-dk);
+  cursor:pointer;
+  user-select:none;
+  transition:all .18s;
+  position:relative;
+  min-height:46px;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:var(--sh-sm);
+}
+.concept-item:hover { border-color:var(--c-pri); background:#c8dbf8; transform:translateX(2px); }
+.concept-item.selected {
+  background:var(--c-pri);
+  border-color:var(--c-pri-dk);
+  color:#fff;
+  transform:translateX(4px);
+  box-shadow:0 4px 16px rgba(26,95,180,.35);
+}
+.concept-item.matched-ok {
+  background:var(--c-ok-lt);
+  border-color:var(--c-ok-bd);
+  color:var(--c-ok);
+  cursor:default;
+  pointer-events:none;
+}
+.concept-item.matched-err {
+  background:var(--c-err-lt);
+  border-color:var(--c-err-bd);
+  color:var(--c-err);
+  animation:shake .35s ease;
+}
+
+.def-item {
+  background:var(--c-acc-lt);
+  border:2px solid var(--c-acc-bd);
+  border-radius:var(--r-md);
+  padding:10px 14px;
+  font-size:.8rem;
+  color:var(--c-text2);
+  cursor:pointer;
+  user-select:none;
+  transition:all .18s;
+  position:relative;
+  min-height:46px;
+  display:flex; align-items:flex-start; gap:10px;
+  line-height:1.55;
+  box-shadow:var(--sh-sm);
+}
+.def-item:hover { border-color:var(--c-acc); background:#b8e8e2; transform:translateX(-2px); }
+.def-item.selected {
+  background:var(--c-acc);
+  border-color:var(--c-acc);
+  color:#fff;
+  transform:translateX(-4px);
+  box-shadow:0 4px 16px rgba(13,124,110,.35);
+}
+.def-item.matched-ok {
+  background:var(--c-ok-lt);
+  border-color:var(--c-ok-bd);
+  color:var(--c-text2);
+  cursor:default;
+  pointer-events:none;
+}
+.def-item.matched-err {
+  background:var(--c-err-lt);
+  border-color:var(--c-err-bd);
+  animation:shake .35s ease;
+}
+
+.item-key {
+  min-width:26px; height:26px;
+  border-radius:6px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem; font-weight:700;
+  flex-shrink:0;
+}
+.concept-item .item-key {
+  background:var(--c-pri);
+  color:#fff;
+}
+.concept-item.selected .item-key {
+  background:rgba(255,255,255,.3);
+  color:#fff;
+}
+.concept-item.matched-ok .item-key {
+  background:var(--c-ok);
+  color:#fff;
+}
+
+.def-item .item-key {
+  background:var(--c-acc);
+  color:#fff;
+}
+.def-item.selected .item-key {
+  background:rgba(255,255,255,.3);
+  color:#fff;
+}
+.def-item.matched-ok .item-key {
+  background:var(--c-ok);
+  color:#fff;
+}
+
+.item-text { flex:1; }
+
+/* Ícono check/cruz */
+.match-icon {
+  font-size:.9rem;
+  margin-left:auto;
+  flex-shrink:0;
+  opacity:0;
+  transition:opacity .2s;
+}
+.matched-ok .match-icon { opacity:1; }
+.matched-err .match-icon { opacity:1; }
+
+/* ══ SVG LÍNEAS ══ */
+#lines-svg {
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  overflow:visible;
+}
+.conn-line {
+  stroke-width:2.5;
+  fill:none;
+  stroke-linecap:round;
+  opacity:.85;
+}
+.conn-line.ok  { stroke: var(--c-ok); }
+.conn-line.err { stroke: var(--c-err); stroke-dasharray:5 3; }
+
+/* ══ BOTONES ACCIÓN ══ */
+.actions-row {
+  display:flex; gap:10px; justify-content:center;
+  padding:0 20px 22px; flex-wrap:wrap;
+}
+.btn {
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:'Nunito',sans-serif; font-size:.82rem; font-weight:800;
+  padding:9px 20px; border-radius:100px; border:none;
+  cursor:pointer; transition:all .18s;
+  letter-spacing:.03em;
+}
+.btn-primary {
+  background:linear-gradient(135deg, var(--c-hdr-a), var(--c-hdr-b));
+  color:#fff; box-shadow:0 3px 12px rgba(26,95,180,.3);
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 5px 18px rgba(26,95,180,.4); }
+.btn-secondary {
+  background:var(--c-surface2); color:var(--c-text2);
+  border:1.5px solid var(--c-border);
+}
+.btn-secondary:hover { background:var(--c-pri-lt); border-color:var(--c-pri-bd); color:var(--c-pri); }
+.btn:disabled { opacity:.45; pointer-events:none; }
+
+/* ══ RETROALIMENTACIÓN ══ */
+.retro-card {
+  margin:0 20px 22px;
+  background:linear-gradient(135deg, var(--c-ok-lt), #c6f4d8);
+  border:1.5px solid var(--c-ok-bd);
+  border-left:4px solid var(--c-ok);
+  border-radius:var(--r-lg);
+  padding:18px 22px;
+  display:none;
+  animation:fadeUp .4s ease both;
+}
+.retro-card.show { display:block; }
+.retro-title {
+  font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800;
+  color:var(--c-ok); margin-bottom:8px; display:flex; align-items:center; gap:8px;
+}
+.retro-card p { font-size:.84rem; color:var(--c-text2); line-height:1.72; }
+
+/* ══ CONTADOR INTENTOS ══ */
+.attempts-row {
+  display:flex; gap:8px; justify-content:center; align-items:center;
+  padding:0 20px 10px;
+  font-family:'Nunito',sans-serif; font-size:.76rem; color:var(--c-muted);
+}
+.attempt-dot {
+  width:10px; height:10px; border-radius:50%;
+  background:var(--c-border);
+  transition:background .2s;
+}
+.attempt-dot.used { background:var(--c-err); }
+.attempt-dot.ok   { background:var(--c-ok); }
+
+/* ══ TAGS ══ */
+.ex-tags { padding:0 20px 20px; display:flex; gap:7px; flex-wrap:wrap; }
+.tag {
+  font-size:.68rem; font-weight:700; padding:3px 10px;
+  border-radius:100px; font-family:'Nunito',sans-serif;
+}
+.t-blue  { background:var(--c-pri-lt);  color:var(--c-pri);  border:1px solid var(--c-pri-bd); }
+.t-green { background:var(--c-ok-lt);   color:var(--c-ok);   border:1px solid var(--c-ok-bd); }
+.t-teal  { background:var(--c-acc-lt);  color:var(--c-acc);  border:1px solid var(--c-acc-bd); }
+.t-warn  { background:var(--c-warn-lt); color:var(--c-warn); border:1px solid var(--c-warn-bd); }
+.t-err   { background:var(--c-err-lt);  color:var(--c-err);  border:1px solid var(--c-err-bd); }
+.t-vio   { background:var(--c-vio-lt);  color:var(--c-vio);  border:1px solid var(--c-vio-bd); }
+
+/* ══ FOOTER ══ */
+.site-foot {
+  width:100%; max-width:var(--canvas-w);
+  padding:20px 42px; text-align:center;
+  font-size:.74rem; color:var(--c-muted);
+  border-top:1px solid var(--c-border);
+  font-family:'Nunito',sans-serif;
+  background:var(--c-surface); line-height:1.85;
+}
+.site-foot strong { color:var(--c-text2); }
+
+/* ══ ANIMACIONES ══ */
+@keyframes shake {
+  0%,100%{ transform:translateX(0); }
+  20%    { transform:translateX(-5px); }
+  40%    { transform:translateX(5px); }
+  60%    { transform:translateX(-4px); }
+  80%    { transform:translateX(3px); }
+}
+@keyframes popIn {
+  0%   { transform:scale(.7); opacity:0; }
+  70%  { transform:scale(1.08); }
+  100% { transform:scale(1); opacity:1; }
+}
+
+/* ══ TOOLTIP SELECCIÓN ══ */
+.hint-bar {
+  margin:8px 20px 0;
+  background:var(--c-vio-lt); border:1px solid var(--c-vio-bd);
+  border-radius:var(--r-sm); padding:7px 14px;
+  font-size:.78rem; color:var(--c-vio); font-family:'Nunito',sans-serif;
+  display:none; align-items:center; gap:7px;
+}
+.hint-bar.show { display:flex; }
+
+/* ══ RESPONSIVE TABLET ══ */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+  .site-header { padding:22px 28px 20px; }
+  .site-header h1 { font-size:1.28rem; }
+  .prog-wrap { padding:9px 28px; }
+  .prog-lbl { min-width:90px; font-size:.71rem; }
+  .main { padding:18px 22px 28px; gap:14px; }
+  .cols-wrap { padding:16px 14px; }
+  .concept-item, .def-item { font-size:.8rem; padding:8px 11px; }
+  .instruc-card { font-size:.82rem; }
+}
+
+/* ══ RESPONSIVE MÓVIL ══ */
+@media (max-width:480px) {
+  .site-header { padding:16px 16px 14px; }
+  .site-header h1 { font-size:1.05rem; line-height:1.3; }
+  .hdr-chip { font-size:.62rem; padding:3px 10px; }
+  .site-header p { font-size:.78rem; }
+  .prog-wrap { padding:8px 14px; }
+  .prog-lbl { display:none; }
+  .main { padding:12px 12px 24px; gap:12px; }
+  .instruc-card { font-size:.79rem; padding:12px 14px; }
+  .cols-wrap {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .col-center { display:none; }
+  .items-col.defs { order:3; }
+  .col-header.right { text-align:left; }
+  #lines-svg { display:none; }
+  .concept-item, .def-item { font-size:.78rem; padding:8px 10px; }
+  .actions-row { padding:0 12px 18px; }
+  .ex-tags { padding:0 12px 16px; }
+  .retro-card { margin:0 12px 18px; padding:14px 15px; }
+  .hint-bar { margin:6px 12px 0; }
+  .site-foot { padding:12px 14px; font-size:.7rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">📐 Análisis Matemático para Ingeniería</div>
+      <h1>Derivadas ordinarias: conceptos, interpretaciones y reglas fundamentales</h1>
+     
+    </div>
+  </header>
+
+  <!-- PROGRESO -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">0 / 6 pares</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">👆 Comienza</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Instrucción -->
+    <div class="instruc-card">
+      <strong>📋 Instrucción:</strong> Participe en este juego uniendo con líneas cada concepto fundamental sobre derivadas con su definición o aplicación correspondiente. Reflexione sobre cómo estos elementos se relacionan entre sí y son esenciales para comprender el análisis de funciones en contextos de ingeniería en energía.
+    </div>
+
+    <!-- Tablero -->
+    <div class="game-board" id="game-board">
+    
+
+      <div class="hint-bar" id="hint-bar">
+        <span>💡</span><span id="hint-text">Selecciona un concepto para empezar.</span>
+      </div>
+
+      <div class="cols-wrap" id="cols-wrap">
+        <!-- SVG para las líneas -->
+        <svg id="lines-svg" aria-hidden="true"></svg>
+
+        <!-- Columna CONCEPTOS -->
+        <div>
+          <div class="col-header left">📌 Conceptos</div>
+          <div class="items-col" id="concepts-col">
+
+            <div class="concept-item" id="c1" data-id="1" onclick="selectConcept(this)">
+              <div class="item-key">1</div>
+              <div class="item-text">Tasa de cambio promedio</div>
+              <span class="match-icon" id="ci1"></span>
+            </div>
+
+            <div class="concept-item" id="c2" data-id="2" onclick="selectConcept(this)">
+              <div class="item-key">2</div>
+              <div class="item-text">Derivada (definición formal)</div>
+              <span class="match-icon" id="ci2"></span>
+            </div>
+
+            <div class="concept-item" id="c3" data-id="3" onclick="selectConcept(this)">
+              <div class="item-key">3</div>
+              <div class="item-text">Interpretación geométrica de la derivada</div>
+              <span class="match-icon" id="ci3"></span>
+            </div>
+
+            <div class="concept-item" id="c4" data-id="4" onclick="selectConcept(this)">
+              <div class="item-key">4</div>
+              <div class="item-text">Regla del producto</div>
+              <span class="match-icon" id="ci4"></span>
+            </div>
+
+            <div class="concept-item" id="c5" data-id="5" onclick="selectConcept(this)">
+              <div class="item-key">5</div>
+              <div class="item-text">Regla de la cadena</div>
+              <span class="match-icon" id="ci5"></span>
+            </div>
+
+            <div class="concept-item" id="c6" data-id="6" onclick="selectConcept(this)">
+              <div class="item-key">6</div>
+              <div class="item-text">Derivadas parciales</div>
+              <span class="match-icon" id="ci6"></span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Centro vacío (para las líneas) -->
+        <div class="col-center"></div>
+
+        <!-- Columna DEFINICIONES (mezcladas) -->
+        <div>
+          <div class="col-header right">📖 Definiciones</div>
+          <div class="items-col defs" id="defs-col">
+
+            <div class="def-item" id="dA" data-id="A" onclick="selectDef(this)">
+              <div class="item-key">A</div>
+              <div class="item-text">Permite derivar funciones compuestas, multiplicando la derivada de la función externa por la derivada de la función interna. Ej.: para \((3x+1)^5\) se multiplica la derivada de \(u^5\) por la de \(3x+1\).</div>
+              <span class="match-icon" id="di-A"></span>
+            </div>
+
+            <div class="def-item" id="dB" data-id="B" onclick="selectDef(this)">
+              <div class="item-key">B</div>
+              <div class="item-text">Es el valor de la pendiente de la recta tangente a la curva \(y=f(x)\) en un punto específico. Ej.: si \(f'(2)=4\), la recta tangente en \(x=2\) tiene pendiente 4.</div>
+              <span class="match-icon" id="di-B"></span>
+            </div>
+
+            <div class="def-item" id="dC" data-id="C" onclick="selectDef(this)">
+              <div class="item-key">C</div>
+              <div class="item-text">Se obtiene dividiendo \(\Delta y\) entre \(\Delta x\) en un intervalo dado. Se interpreta como la pendiente de la recta secante entre dos puntos de una curva.</div>
+              <span class="match-icon" id="di-C"></span>
+            </div>
+
+            <div class="def-item" id="dD" data-id="D" onclick="selectDef(this)">
+              <div class="item-key">D</div>
+              <div class="item-text">Miden la tasa de cambio de una función de varias variables con respecto a una de ellas, manteniendo las demás constantes. Ej.: si \(P\) depende de \(R\) e \(I\), su derivada parcial respecto a \(I\) evalúa cómo varía \(P\) al cambiar solo \(I\).</div>
+              <span class="match-icon" id="di-D"></span>
+            </div>
+
+            <div class="def-item" id="dE" data-id="E" onclick="selectDef(this)">
+              <div class="item-key">E</div>
+              <div class="item-text">Se define como el límite del cociente de diferencias cuando \(h\to 0\): \[f'(x_0)=\lim_{h\to0}\frac{f(x_0+h)-f(x_0)}{h}\] Ej.: a partir de \(f(x)=x^2\) se obtiene \(f'(x)=2x\).</div>
+              <span class="match-icon" id="di-E"></span>
+            </div>
+
+            <div class="def-item" id="dF" data-id="F" onclick="selectDef(this)">
+              <div class="item-key">F</div>
+              <div class="item-text">Se utiliza para derivar el producto de dos funciones: \[\frac{d}{dx}(u\cdot v)=u\cdot\frac{dv}{dx}+v\cdot\frac{du}{dx}\] Ej.: al derivar \(P=R\cdot I^2\) se aplica esta regla para obtener la relación entre las tasas de cambio.</div>
+              <span class="match-icon" id="di-F"></span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Intentos -->
+      <div class="attempts-row" id="attempts-row">
+        <span style="font-size:.72rem;font-weight:700;color:var(--c-muted)">Intentos:</span>
+        <div class="attempt-dot" id="dot0"></div>
+        <div class="attempt-dot" id="dot1"></div>
+        <div class="attempt-dot" id="dot2"></div>
+        <div class="attempt-dot" id="dot3"></div>
+        <div class="attempt-dot" id="dot4"></div>
+        <div class="attempt-dot" id="dot5"></div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="actions-row">
+        <button class="btn btn-primary" id="btn-check" onclick="checkPair()" disabled>✔ Verificar conexión</button>
+        <button class="btn btn-secondary" onclick="resetGame()">↺ Reiniciar</button>
+      </div>
+
+      <!-- Retroalimentación final -->
+      <div class="retro-card" id="retro">
+        <div class="retro-title">🎉 ¡Felicidades, ha completado con éxito el juego!</div>
+        <p>Ha identificado correctamente los conceptos clave de las derivadas ordinarias, desde la tasa de cambio promedio hasta la regla de la cadena, incluyendo sus interpretaciones geométrica y física. Estos conceptos son la base para modelar fenómenos reales en la ingeniería en energía, como la variación de corriente eléctrica, la potencia en circuitos y la rapidez con la que cambian las magnitudes físicas en el tiempo. ¡Continúe aplicando estas herramientas y fortalecerá su capacidad de análisis técnico!</p>
+      </div>
+
+    
+
+    </div><!-- /game-board -->
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-foot">
+  <strong>Referencias (APA 7)</strong><br>
+  Larson, R., &amp; Edwards, B. H. (2022). <em>Cálculo</em> (11.ª ed.). Cengage Learning.<br>
+  Stewart, J., Redlin, L., &amp; Watson, S. (2021). <em>Precálculo: Matemáticas para el cálculo</em> (8.ª ed.). Cengage Learning.<br>
+  Thomas, G. B., Weir, M. D., &amp; Hass, J. R. (2018). <em>Cálculo</em> (14.ª ed.). Pearson.<br>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════
+   ESTADO
+═══════════════════════════════════════ */
+const CORRECT = { '1':'C', '2':'E', '3':'B', '4':'F', '5':'A', '6':'D' };
+const TOTAL = 6;
+
+let selectedConcept = null;   // id del concepto seleccionado ('1'..'6')
+let selectedDef     = null;   // id de la def seleccionada ('A'..'F')
+let matched  = {};            // { conceptId: defId } pares correctos
+let attempts = 0;
+let wrongPairs = [];          // para feedback visual temporal
+
+/* ═══════════════════════════════════════
+   SELECCIÓN
+═══════════════════════════════════════ */
+function selectConcept(el) {
+  const id = el.dataset.id;
+  if (matched[id]) return;          // ya emparejado
+
+  // desmarcar anterior
+  document.querySelectorAll('.concept-item.selected')
+    .forEach(e => e.classList.remove('selected'));
+
+  if (selectedConcept === id) {
+    selectedConcept = null;
+    updateHint('Selecciona un concepto para empezar.');
+  } else {
+    selectedConcept = id;
+    el.classList.add('selected');
+    updateHint(`Concepto "${el.querySelector('.item-text').textContent.trim()}" seleccionado. Ahora elige su definición.`);
+  }
+  updateBtn();
+  scheduleTypeset();
+}
+
+function selectDef(el) {
+  const id = el.dataset.id;
+  // ¿ya usada?
+  if (Object.values(matched).includes(id)) return;
+
+  document.querySelectorAll('.def-item.selected')
+    .forEach(e => e.classList.remove('selected'));
+
+  if (selectedDef === id) {
+    selectedDef = null;
+    updateHint('Selecciona una definición.');
+  } else {
+    selectedDef = id;
+    el.classList.add('selected');
+    updateHint(`Definición "${id}" seleccionada. Pulsa "Verificar conexión".`);
+  }
+  updateBtn();
+  scheduleTypeset();
+}
+
+function updateBtn() {
+  document.getElementById('btn-check').disabled = !(selectedConcept && selectedDef);
+}
+
+/* ═══════════════════════════════════════
+   VERIFICAR PAR
+═══════════════════════════════════════ */
+function checkPair() {
+  if (!selectedConcept || !selectedDef) return;
+
+  const cEl = document.getElementById('c' + selectedConcept);
+  const dEl = document.getElementById('d' + selectedDef);
+  const correct = CORRECT[selectedConcept] === selectedDef;
+
+  markAttempt(correct);
+  attempts++;
+
+  if (correct) {
+    // Marcar como correctos
+    cEl.classList.remove('selected'); cEl.classList.add('matched-ok');
+    dEl.classList.remove('selected'); dEl.classList.add('matched-ok');
+    document.getElementById('ci' + selectedConcept).textContent = '✅';
+    document.getElementById('di-' + selectedDef).textContent = '✅';
+    matched[selectedConcept] = selectedDef;
+    drawLines();
+    updateProg();
+    updateHint('¡Correcto! Sigue con el siguiente par.', 'ok');
+
+    if (Object.keys(matched).length === TOTAL) {
+      setTimeout(showRetro, 600);
+    }
+  } else {
+    // Animación de error
+    cEl.classList.remove('selected'); cEl.classList.add('matched-err');
+    dEl.classList.remove('selected'); dEl.classList.add('matched-err');
+    document.getElementById('ci' + selectedConcept).textContent = '❌';
+    document.getElementById('di-' + selectedDef).textContent = '❌';
+    updateHint('Incorrecto. Vuelve a intentarlo.', 'err');
+
+    setTimeout(() => {
+      cEl.classList.remove('matched-err');
+      dEl.classList.remove('matched-err');
+      document.getElementById('ci' + selectedConcept).textContent = '';
+      document.getElementById('di-' + selectedDef).textContent = '';
+    }, 900);
+  }
+
+  selectedConcept = null;
+  selectedDef = null;
+  document.getElementById('btn-check').disabled = true;
+}
+
+/* ═══════════════════════════════════════
+   LÍNEAS SVG
+═══════════════════════════════════════ */
+function drawLines() {
+  const svg   = document.getElementById('lines-svg');
+  const board = document.getElementById('cols-wrap');
+  svg.innerHTML = '';
+
+  const boardRect = board.getBoundingClientRect();
+
+  for (const [cId, dId] of Object.entries(matched)) {
+    const cEl  = document.getElementById('c' + cId);
+    const dEl  = document.getElementById('d' + dId);
+    if (!cEl || !dEl) continue;
+
+    const cRect = cEl.getBoundingClientRect();
+    const dRect = dEl.getBoundingClientRect();
+
+    // Puntos relativos al contenedor
+    const x1 = cRect.right  - boardRect.left;
+    const y1 = cRect.top    - boardRect.top  + cRect.height / 2;
+    const x2 = dRect.left   - boardRect.left;
+    const y2 = dRect.top    - boardRect.top  + dRect.height / 2;
+
+    // Curva bezier
+    const cx = (x1 + x2) / 2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('class', 'conn-line ok');
+    path.setAttribute('d', `M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}`);
+    svg.appendChild(path);
+  }
+}
+
+// Redibujar al redimensionar
+window.addEventListener('resize', () => {
+  if (Object.keys(matched).length > 0) drawLines();
+});
+
+/* ═══════════════════════════════════════
+   PROGRESO
+═══════════════════════════════════════ */
+function updateProg() {
+  const n   = Object.keys(matched).length;
+  const pct = n / TOTAL * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').parentElement.setAttribute('aria-valuenow', Math.round(pct));
+  document.getElementById('prog-lbl').textContent   = `${n} / ${TOTAL} pares`;
+  document.getElementById('prog-score').textContent = n === TOTAL ? '🎉 ¡Perfecto!' : `${Math.round(pct)}%`;
+  document.getElementById('match-count').textContent = `${n} de ${TOTAL} correctos`;
+}
+
+/* ═══════════════════════════════════════
+   INTENTOS (puntos)
+═══════════════════════════════════════ */
+function markAttempt(ok) {
+  const dot = document.getElementById('dot' + Math.min(attempts, 5));
+  if (dot) dot.classList.add(ok ? 'ok' : 'used');
+}
+
+/* ═══════════════════════════════════════
+   HINT BAR
+═══════════════════════════════════════ */
+function updateHint(msg, type) {
+  const bar = document.getElementById('hint-bar');
+  const txt = document.getElementById('hint-text');
+  txt.textContent = msg;
+  bar.classList.add('show');
+
+  if (type === 'ok') {
+    bar.style.background = 'var(--c-ok-lt)';
+    bar.style.borderColor = 'var(--c-ok-bd)';
+    bar.style.color = 'var(--c-ok)';
+  } else if (type === 'err') {
+    bar.style.background = 'var(--c-err-lt)';
+    bar.style.borderColor = 'var(--c-err-bd)';
+    bar.style.color = 'var(--c-err)';
+  } else {
+    bar.style.background = 'var(--c-vio-lt)';
+    bar.style.borderColor = 'var(--c-vio-bd)';
+    bar.style.color = 'var(--c-vio)';
+  }
+}
+
+/* ═══════════════════════════════════════
+   RETROALIMENTACIÓN
+═══════════════════════════════════════ */
+function showRetro() {
+  document.getElementById('retro').classList.add('show');
+  document.getElementById('retro').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+/* ═══════════════════════════════════════
+   REINICIAR
+═══════════════════════════════════════ */
+function resetGame() {
+  matched = {}; selectedConcept = null; selectedDef = null; attempts = 0;
+
+  document.querySelectorAll('.concept-item').forEach(e => {
+    e.className = 'concept-item';
+    e.querySelector('.match-icon').textContent = '';
+  });
+  document.querySelectorAll('.def-item').forEach(e => {
+    e.className = 'def-item';
+    e.querySelector('.match-icon').textContent = '';
+  });
+  for (let i=0;i<6;i++) {
+    const d = document.getElementById('dot'+i);
+    if (d) { d.classList.remove('ok','used'); }
+  }
+  document.getElementById('lines-svg').innerHTML = '';
+  document.getElementById('retro').classList.remove('show');
+  document.getElementById('btn-check').disabled = true;
+  document.getElementById('hint-bar').classList.remove('show');
+  updateProg();
+}
+
+/* ═══════════════════════════════════════
+   MATHJAX
+═══════════════════════════════════════ */
+function scheduleTypeset() {
+  if (window.MathJax) MathJax.typesetPromise().catch(()=>{});
+}
+window.addEventListener('DOMContentLoaded', () => {
+  updateProg();
+  scheduleTypeset();
+});
+</script>
+</body>
+</html>
