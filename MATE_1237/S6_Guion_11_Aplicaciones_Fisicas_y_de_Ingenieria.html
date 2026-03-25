@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infografía — Aplicaciones físicas y de ingeniería con Integral Definida</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --c-bg:        #edf3fb;
+  --c-surface:   #ffffff;
+  --c-surface2:  #f4f8fd;
+  --c-border:    #c6d6ec;
+  --c-text:      #0f2040;
+  --c-text2:     #2b4a70;
+  --c-muted:     #5e7d9e;
+  --c-pri:       #1a5fb4;
+  --c-pri-dk:    #114090;
+  --c-pri-lt:    #dce9fb;
+  --c-pri-bd:    #90b8f0;
+  --c-acc:       #0d7c6e;
+  --c-acc-lt:    #d2f0ec;
+  --c-acc-bd:    #70c4b8;
+  --c-ok:        #1a8c48;
+  --c-ok-lt:     #d2f5e2;
+  --c-ok-bd:     #68cfa0;
+  --c-warn:      #c47a1a;
+  --c-warn-lt:   #fef4de;
+  --c-warn-bd:   #f0c878;
+  --c-err:       #c43030;
+  --c-err-lt:    #fde8e8;
+  --c-err-bd:    #f2a0a0;
+  --c-vio:       #6c3fd6;
+  --c-vio-lt:    #ede8fb;
+  --c-vio-bd:    #c0aaef;
+  --c-hdr-a:     #1a5fb4;
+  --c-hdr-b:     #0d7c6e;
+  --r-sm: 8px;  --r-md: 12px;  --r-lg: 16px;  --r-xl: 20px;
+  --sh-sm: 0 2px 8px  rgba(15,45,90,.08);
+  --sh-md: 0 4px 20px rgba(15,45,90,.11);
+  --sh-lg: 0 8px 36px rgba(15,45,90,.14);
+  --canvas-w: 850px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family:'Nunito Sans', sans-serif;
+  background:var(--c-bg);
+  color:var(--c-text);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+.canvas {
+  width:100%; max-width:var(--canvas-w);
+  min-height:600px; display:flex;
+  flex-direction:column; box-shadow:var(--sh-lg);
+}
+
+/* ══ HEADER ══ */
+.site-header {
+  background:linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding:28px 42px 24px; position:relative; overflow:hidden; flex-shrink:0;
+}
+.site-header::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 80% 15%, rgba(255,255,255,.13) 0%, transparent 60%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:''; position:absolute; width:220px; height:220px;
+  border-radius:50%; background:rgba(255,255,255,.055);
+  right:-50px; bottom:-60px; pointer-events:none;
+}
+.hdr-inner { position:relative; z-index:1; }
+.hdr-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.36);
+  border-radius:100px; padding:4px 14px;
+  font-size:.7rem; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:#fff; margin-bottom:12px;
+  font-family:'Nunito', sans-serif;
+}
+.site-header h1 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem; font-weight:800; color:#fff;
+  line-height:1.25; margin-bottom:8px;
+}
+.site-header p {
+  font-size:.83rem; color:rgba(255,255,255,.84);
+  max-width:530px; line-height:1.65;
+}
+
+/* ══ PROGRESO ══ */
+.prog-wrap {
+  background:var(--c-surface); border-bottom:1px solid var(--c-border);
+  padding:10px 42px; position:sticky; top:0; z-index:50;
+  box-shadow:var(--sh-sm); flex-shrink:0;
+}
+.prog-row { display:flex; align-items:center; gap:12px; }
+.prog-lbl {
+  font-size:.74rem; font-weight:700; color:var(--c-muted);
+  white-space:nowrap; min-width:120px; font-family:'Nunito',sans-serif;
+}
+.prog-track {
+  flex:1; height:9px; background:var(--c-surface2);
+  border:1px solid var(--c-border); border-radius:100px; overflow:hidden;
+}
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--c-hdr-a), var(--c-hdr-b));
+  border-radius:100px; width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.prog-score {
+  font-size:.74rem; font-weight:800; color:var(--c-pri);
+  min-width:70px; text-align:right; font-family:'Nunito',sans-serif;
+}
+
+/* ══ MAIN ══ */
+.main {
+  flex:1; padding:28px 42px 36px;
+  background:var(--c-bg);
+  display:flex; flex-direction:column; gap:20px;
+}
+
+/* ══ INSTRUCCIÓN ══ */
+.instruc-card {
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-left:3px solid var(--c-pri);
+  border-radius:var(--r-md);
+  padding:14px 20px;
+  font-size:.86rem; color:var(--c-text2); line-height:1.7;
+  box-shadow:var(--sh-sm);
+  display:flex; align-items:flex-start; gap:10px;
+}
+.instruc-card .instruc-icon { font-size:1.2rem; flex-shrink:0; margin-top:1px; }
+.instruc-card strong { color:var(--c-pri); font-family:'Nunito',sans-serif; }
+
+/* ══ HERO INFOGRAFÍA ══ */
+.infografia-hero {
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-md);
+  overflow:hidden;
+  animation:fadeUp .35s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Banda superior del hero */
+.hero-band {
+  background:linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding:22px 30px 20px;
+  position:relative; overflow:hidden;
+}
+.hero-band::after {
+  content:''; position:absolute; width:180px; height:180px;
+  border-radius:50%; background:rgba(255,255,255,.06);
+  right:-30px; bottom:-50px; pointer-events:none;
+}
+.hero-band-inner { position:relative; z-index:1; }
+.hero-eyebrow {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem; font-weight:600;
+  color:rgba(255,255,255,.7); letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:6px;
+}
+.hero-title {
+  font-family:'Nunito',sans-serif;
+  font-size:1.25rem; font-weight:800; color:#fff; line-height:1.3;
+  margin-bottom:6px;
+}
+.hero-sub {
+  font-size:.8rem; color:rgba(255,255,255,.82); line-height:1.6;
+  max-width:500px;
+}
+
+/* Diagrama central */
+.diagram-wrap {
+  padding:30px 30px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:0;
+}
+
+/* Nodo central */
+.node-center {
+  background:linear-gradient(135deg, var(--c-hdr-a), var(--c-hdr-b));
+  color:#fff;
+  border-radius:50%;
+  width:130px; height:130px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:4px;
+  box-shadow:0 6px 28px rgba(26,95,180,.35);
+  position:relative; z-index:2;
+  flex-shrink:0;
+}
+.node-center-icon { font-size:2rem; line-height:1; }
+.node-center-label {
+  font-family:'Nunito',sans-serif;
+  font-size:.68rem; font-weight:800; line-height:1.3;
+  letter-spacing:.03em; text-transform:uppercase;
+  padding:0 10px;
+}
+
+/* Conectores */
+.connectors {
+  display:flex; align-items:center; gap:0;
+  width:100%; justify-content:center;
+  position:relative; margin-top:-4px;
+}
+.connector-line {
+  height:48px; width:2px;
+  background:linear-gradient(to bottom, var(--c-pri-bd), var(--c-border));
+  flex-shrink:0;
+}
+.connector-h {
+  height:2px; flex:1; max-width:120px;
+  background:linear-gradient(to right, var(--c-border), var(--c-pri-bd));
+}
+.connector-h.rev {
+  background:linear-gradient(to left, var(--c-border), var(--c-pri-bd));
+}
+
+/* Fila de nodos item */
+.nodes-row {
+  display:flex; align-items:flex-start;
+  justify-content:center; gap:16px;
+  width:100%; padding-bottom:28px;
+}
+
+/* Nodo ítem (clickeable) */
+.item-node {
+  display:flex; flex-direction:column; align-items:center;
+  gap:0; cursor:pointer; flex:1; max-width:220px;
+  outline:none;
+}
+.item-node:focus .node-card { box-shadow:0 0 0 3px rgba(26,95,180,.3); }
+
+.node-card {
+  width:100%;
+  background:var(--c-surface);
+  border:2px solid var(--c-border);
+  border-radius:var(--r-lg);
+  padding:18px 16px 16px;
+  text-align:center;
+  transition:all .22s cubic-bezier(.4,0,.2,1);
+  box-shadow:var(--sh-sm);
+  position:relative; overflow:hidden;
+}
+.node-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--c-hdr-a), var(--c-hdr-b));
+  opacity:0; transition:opacity .22s;
+}
+.item-node:hover .node-card,
+.item-node.visited .node-card {
+  border-color:var(--c-pri-bd);
+  transform:translateY(-4px);
+  box-shadow:var(--sh-md);
+}
+.item-node:hover .node-card::before,
+.item-node.visited .node-card::before { opacity:1; }
+
+.item-node.visited .node-card {
+  border-color:var(--c-ok-bd);
+}
+.item-node.visited .node-card::before {
+  background:linear-gradient(90deg, var(--c-ok), var(--c-acc));
+}
+
+.node-icon {
+  font-size:2.2rem; line-height:1; margin-bottom:10px; display:block;
+}
+.node-name {
+  font-family:'Nunito',sans-serif;
+  font-size:.88rem; font-weight:800;
+  color:var(--c-pri); line-height:1.3; margin-bottom:6px;
+}
+.item-node.visited .node-name { color:var(--c-ok); }
+
+.node-hint {
+  font-size:.72rem; color:var(--c-muted); line-height:1.5;
+}
+.node-cta {
+  display:inline-flex; align-items:center; gap:5px;
+  margin-top:10px;
+  font-family:'Nunito',sans-serif; font-size:.7rem; font-weight:800;
+  color:var(--c-pri); letter-spacing:.04em; text-transform:uppercase;
+  background:var(--c-pri-lt); border:1px solid var(--c-pri-bd);
+  border-radius:100px; padding:3px 11px;
+  transition:background .15s;
+}
+.item-node:hover .node-cta { background:var(--c-pri); color:#fff; }
+.item-node.visited .node-cta {
+  background:var(--c-ok-lt); border-color:var(--c-ok-bd); color:var(--c-ok);
+}
+.visited-check {
+  display:none;
+  position:absolute; top:8px; right:8px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--c-ok); color:#fff;
+  font-size:.65rem; align-items:center; justify-content:center;
+}
+.item-node.visited .visited-check { display:flex; }
+
+/* Nodo tronco (línea vertical central) */
+.trunk-line {
+  width:2px; height:32px; flex-shrink:0;
+  background:linear-gradient(to bottom, var(--c-pri-bd), var(--c-border));
+  margin:0 auto;
+}
+
+/* ══ MODAL ══ */
+.modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(10,28,60,.52);
+  backdrop-filter:blur(4px);
+  z-index:200;
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+
+.modal {
+  background:var(--c-surface);
+  border-radius:var(--r-xl);
+  box-shadow:0 20px 60px rgba(10,28,60,.35);
+  width:100%; max-width:600px;
+  max-height:88vh; overflow-y:auto;
+  transform:translateY(24px) scale(.97);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}
+.modal-overlay.open .modal {
+  transform:translateY(0) scale(1);
+}
+
+.modal-header {
+  background:linear-gradient(135deg, var(--c-hdr-a), var(--c-hdr-b));
+  padding:20px 24px 18px;
+  display:flex; align-items:flex-start; gap:14px;
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  position:sticky; top:0; z-index:1;
+}
+.modal-hicon {
+  font-size:2rem; line-height:1; flex-shrink:0; margin-top:2px;
+}
+.modal-htxt { flex:1; }
+.modal-htag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.62rem; color:rgba(255,255,255,.7); letter-spacing:.1em;
+  text-transform:uppercase; margin-bottom:4px;
+}
+.modal-htitle {
+  font-family:'Nunito',sans-serif;
+  font-size:1.05rem; font-weight:800; color:#fff; line-height:1.3;
+}
+.modal-close {
+  background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3);
+  border-radius:50%; width:32px; height:32px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; color:#fff; cursor:pointer;
+  flex-shrink:0; margin-top:2px;
+  transition:background .15s;
+}
+.modal-close:hover { background:rgba(255,255,255,.35); }
+
+.modal-body {
+  padding:22px 24px 26px;
+  display:flex; flex-direction:column; gap:14px;
+}
+
+/* Bloques dentro del modal */
+.m-section {
+  background:var(--c-surface2);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-md);
+  padding:14px 16px;
+}
+.m-section-title {
+  font-family:'Nunito',sans-serif;
+  font-size:.78rem; font-weight:800;
+  letter-spacing:.07em; text-transform:uppercase;
+  color:var(--c-pri); margin-bottom:8px;
+  display:flex; align-items:center; gap:6px;
+}
+.m-section p, .m-section li {
+  font-size:.86rem; color:var(--c-text2); line-height:1.76;
+}
+.m-section ul { padding-left:18px; display:flex; flex-direction:column; gap:6px; }
+.m-section li::marker { color:var(--c-pri); }
+
+.m-formula {
+  background:var(--c-pri-lt); border:1px solid var(--c-pri-bd);
+  border-radius:var(--r-sm); padding:10px 16px;
+  text-align:center; font-size:.9rem;
+  margin:8px 0;
+}
+.m-highlight {
+  background:var(--c-warn-lt); border:1px solid var(--c-warn-bd);
+  border-left:3px solid var(--c-warn);
+  border-radius:var(--r-sm); padding:10px 14px;
+  font-size:.84rem; color:#7a4a00; line-height:1.65;
+  margin-top:6px;
+}
+.m-ok {
+  background:var(--c-ok-lt); border:1px solid var(--c-ok-bd);
+  border-left:3px solid var(--c-ok);
+  border-radius:var(--r-sm); padding:10px 14px;
+  font-size:.84rem; color:var(--c-ok); font-weight:600;
+  line-height:1.65; margin-top:6px;
+}
+.m-vio {
+  background:var(--c-vio-lt); border:1px solid var(--c-vio-bd);
+  border-left:3px solid var(--c-vio);
+  border-radius:var(--r-sm); padding:10px 14px;
+  font-size:.84rem; color:var(--c-vio); line-height:1.65;
+  margin-top:6px;
+}
+.sub-chips {
+  display:flex; flex-wrap:wrap; gap:7px; margin-top:8px;
+}
+.sub-chip {
+  font-family:'Nunito',sans-serif; font-size:.68rem; font-weight:700;
+  padding:3px 10px; border-radius:100px;
+}
+
+/* ══ TAGS ══ */
+.ex-tags { padding:0 30px 26px; display:flex; gap:7px; flex-wrap:wrap; }
+.tag {
+  font-size:.68rem; font-weight:700; padding:3px 10px;
+  border-radius:100px; font-family:'Nunito',sans-serif;
+}
+.t-blue  { background:var(--c-pri-lt);  color:var(--c-pri);  border:1px solid var(--c-pri-bd); }
+.t-green { background:var(--c-ok-lt);   color:var(--c-ok);   border:1px solid var(--c-ok-bd); }
+.t-teal  { background:var(--c-acc-lt);  color:var(--c-acc);  border:1px solid var(--c-acc-bd); }
+.t-warn  { background:var(--c-warn-lt); color:var(--c-warn); border:1px solid var(--c-warn-bd); }
+.t-err   { background:var(--c-err-lt);  color:var(--c-err);  border:1px solid var(--c-err-bd); }
+.t-vio   { background:var(--c-vio-lt);  color:var(--c-vio);  border:1px solid var(--c-vio-bd); }
+
+/* ══ FOOTER ══ */
+.site-foot {
+  width:100%; max-width:var(--canvas-w);
+  padding:20px 42px; text-align:center;
+  font-size:.74rem; color:var(--c-muted);
+  border-top:1px solid var(--c-border);
+  font-family:'Nunito',sans-serif;
+  background:var(--c-surface); line-height:1.85;
+}
+.site-foot strong { color:var(--c-text2); }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+  .site-header { padding:22px 28px 20px; }
+  .site-header h1 { font-size:1.28rem; }
+  .prog-wrap { padding:9px 28px; }
+  .prog-lbl { min-width:90px; font-size:.71rem; }
+  .main { padding:18px 22px 28px; gap:16px; }
+  .diagram-wrap { padding:22px 18px 8px; }
+  .nodes-row { gap:10px; }
+  .node-card { padding:14px 12px 12px; }
+  .node-icon { font-size:1.8rem; }
+  .node-name { font-size:.82rem; }
+  .node-hint { font-size:.68rem; }
+  .node-center { width:110px; height:110px; }
+  .site-foot { padding:16px 28px; }
+}
+@media (max-width:480px) {
+  .site-header { padding:16px 16px 14px; }
+  .site-header h1 { font-size:1.05rem; line-height:1.3; }
+  .hdr-chip { font-size:.62rem; padding:3px 10px; }
+  .site-header p { font-size:.78rem; }
+  .prog-wrap { padding:8px 14px; }
+  .prog-lbl { display:none; }
+  .main { padding:12px 12px 24px; gap:14px; }
+  .instruc-card { font-size:.79rem; padding:12px 14px; }
+  .nodes-row { flex-direction:column; align-items:center; }
+  .item-node { max-width:100%; width:100%; }
+  .node-card { display:flex; align-items:center; text-align:left; gap:14px; padding:13px 14px; }
+  .node-icon { font-size:1.6rem; margin-bottom:0; flex-shrink:0; }
+  .node-card-body { flex:1; }
+  .node-name { margin-bottom:3px; }
+  .connector-h, .connector-line { display:none; }
+  .connectors { display:none; }
+  .node-center { width:90px; height:90px; }
+  .node-center-label { font-size:.6rem; }
+  .modal { border-radius:var(--r-lg); }
+  .modal-header { padding:16px 16px 14px; }
+  .modal-body { padding:16px 16px 20px; }
+  .ex-tags { padding:0 14px 20px; }
+  .site-foot { padding:12px 14px; font-size:.7rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">📐 Análisis Matemático para Ingeniería</div>
+      <h1>Aplicaciones físicas y de ingeniería con Integral Definida</h1>
+      <p>Explore y comprenda cómo la integral definida se aplica en contextos reales de la física y la ingeniería: trabajo mecánico, energía acumulada, fuerza hidrostática y costos de producción.</p>
+    </div>
+  </header>
+
+  <!-- PROGRESO -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">0 / 3 explorados</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">👆 Explora</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Instrucción -->
+    <div class="instruc-card">
+      <div class="instruc-icon">🔍</div>
+      <div><strong>Haga clic en los ítems</strong> para visualizar la información completa sobre cada aplicación de la integral definida en física e ingeniería.</div>
+    </div>
+
+    <!-- Infografía -->
+    <div class="infografia-hero" id="infografia">
+
+    
+
+      <div class="diagram-wrap">
+
+        <!-- Fila de 3 nodos -->
+        <div class="nodes-row">
+
+          <!-- Nodo 1: Trabajo mecánico -->
+          <div class="item-node" id="node1" tabindex="0" onclick="openModal('m1')" onkeydown="if(event.key==='Enter')openModal('m1')">
+            <div class="node-card">
+              <div class="visited-check">✓</div>
+              <span class="node-icon">⚙️</span>
+              <div class="node-card-body">
+                <div class="node-name">Trabajo mecánico</div>
+                <div class="node-hint">Fuerza variable, resortes (Ley de Hooke) y bombeo de fluidos</div>
+                <div class="node-cta">Ver contenido →</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nodo 2: Energía acumulada -->
+          <div class="item-node" id="node2" tabindex="0" onclick="openModal('m2')" onkeydown="if(event.key==='Enter')openModal('m2')">
+            <div class="node-card">
+              <div class="visited-check">✓</div>
+              <span class="node-icon">⚡</span>
+              <div class="node-card-body">
+                <div class="node-name">Energía acumulada</div>
+                <div class="node-hint">Ingeniería energética — integración de potencia instantánea</div>
+                <div class="node-cta">Ver contenido →</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nodo 3: Ejercicios resueltos -->
+          <div class="item-node" id="node3" tabindex="0" onclick="openModal('m3')" onkeydown="if(event.key==='Enter')openModal('m3')">
+            <div class="node-card">
+              <div class="visited-check">✓</div>
+              <span class="node-icon">📊</span>
+              <div class="node-card-body">
+                <div class="node-name">Ejercicios resueltos</div>
+                <div class="node-hint">Energía en bombeo, fuerza hidrostática y costo variable total</div>
+                <div class="node-cta">Ver contenido →</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /nodes-row -->
+      </div><!-- /diagram-wrap -->
+
+      <div class="ex-tags">
+        <span class="tag t-blue">📐 Integral definida</span>
+        <span class="tag t-teal">⚙️ Trabajo variable</span>
+        <span class="tag t-green">⚡ Energía</span>
+        <span class="tag t-warn">💧 Fuerza hidrostática</span>
+        <span class="tag t-vio">💰 Costo marginal</span>
+      </div>
+
+    </div><!-- /infografia -->
+
+  </main>
+</div><!-- /canvas -->
+
+<!-- ══════════════ MODAL 1 — Trabajo mecánico ══════════════ -->
+<div class="modal-overlay" id="overlay-m1" onclick="closeOnOverlay(event,'m1')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle1">
+    <div class="modal-header">
+      <span class="modal-hicon">⚙️</span>
+      <div class="modal-htxt">
+        <div class="modal-htitle" id="mtitle1">Trabajo mecánico</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('m1')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="m-section">
+        <div class="m-section-title">📐 Fuerza variable — Definición general</div>
+        <p>El trabajo realizado por una fuerza variable <strong>F(x)</strong> para mover un objeto de un punto <strong>&alpha;</strong> a un punto <strong>&beta;</strong> a lo largo del eje <strong>x</strong> es:</p>
+        <div class="m-formula">
+          \[ W = \int_{a}^{b} F(x) \, dx \]
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-section-title">🌀 Resortes — Ley de Hooke</div>
+        <p>La fuerza necesaria para estirar o comprimir un es resorte </strong>F(x)=kx</strong>, donde k es la constante del resorte.</p>
+        
+        <div class="m-formula">
+          \[ W_{\text{resorte}} = \int_{a}^{b} kx \, dx  \]
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-section-title">💧 Bombeo de fluidos</div>
+        <p>Se calcula integrando el trabajo necesario para elevar “rebanadas” infinitesimales de líquido. La fuerza es el peso de la rebanada <strong>(Volumen × Densidad × Gravedad)</strong> y la distancia es la altura a la que se eleva.</p>
+    
+    </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL 2 — Energía acumulada ══════════════ -->
+<div class="modal-overlay" id="overlay-m2" onclick="closeOnOverlay(event,'m2')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle2">
+    <div class="modal-header">
+      <span class="modal-hicon">⚡</span>
+      <div class="modal-htxt">
+        <div class="modal-htitle" id="mtitle2">Energía acumulada — Ingeniería energética</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('m2')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="m-section">
+      
+        <p>En sistemas de potencia, si <strong>P(t)</strong> es la función de potencia instantánea (en kW o W) que varía con el tiempo <strong>t</strong> (en horas o segundos), la energía total acumulada o consumida en un intervalo de tiempo \([t_{1}, t_{2}]\) es la integral de la potencia:</p>
+        <div class="m-formula">
+          \[ E = \int_{t_{1}}^{t_{2}} P(t) \, dt \]
+        </div>
+        <p><strong>Unidades:</strong> Si <em>P</em> está en kW y <em>t</em> en horas, <em>E</em> estará en kWh.</p>
+        <div class="m-ok">
+          📌A continuación, se presentan ejercicios resueltos para que analice cada paso y, con esa base, se anime a resolver problemas similares por su cuenta. ¡Siga adelante y sumérjase en el mundo de la ingeniería a través de estos problemas reales a los que se enfrentará en su vida profesional
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL 3 — Ejercicios resueltos ══════════════ -->
+<div class="modal-overlay" id="overlay-m3" onclick="closeOnOverlay(event,'m3')">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle3">
+    <div class="modal-header">
+      <span class="modal-hicon">📊</span>
+      <div class="modal-htxt">
+        <div class="modal-htitle" id="mtitle3">Ejercicios resueltos</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('m3')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Ejercicio 3 -->
+      <div class="m-section">
+        <div class="m-section-title">🔧 Energía consumida en un sistema de bombeo</div>
+        <p><strong>Problema:</strong> Una bomba de agua opera con una potencia variable dada por \(P(t) = 5 + 2t\) (en kW), donde \(t\) es el tiempo en horas. Calcule la energía total consumida durante las primeras 4 horas de operación.</p>
+        <p><strong>Solución:</strong></p>
+        <p>1. <strong>Planteamiento:</strong> La energía \(E\) es la integral de la potencia respecto al tiempo.</p>
+        <div class="m-formula">
+          \[ E = \int_{0}^{4} (5 + 2t) \, dt \]
+        </div>
+        <p>2. <strong>Integración:</strong> Aplicamos la regla de la potencia.</p>
+        <div class="m-formula">
+          \[ E = \left[ 5t + t^{2} \right]_{0}^{4} \]
+        </div>
+        <p>3. <strong>Evaluación:</strong></p>
+        <div class="m-formula">
+          \[ E = (5(4) + 4^{2}) - (0) = 20 + 16 = 36 \text{ kWh} \]
+        </div>
+        <div class="m-ok">
+          ✅ <strong>Resultado:</strong> El sistema consumió 36 kWh de energía.
+        </div>
+      </div>
+
+      <!-- Ejercicio 4 -->
+      <div class="m-section">
+        <div class="m-section-title">🌊 Fuerza hidrostática en una placa de generación</div>
+        <p><strong>Problema:</strong> Una placa rectangular de un sistema de enfriamiento está sumergida verticalmente en agua. Su parte superior está a 2 metros de profundidad. Si la placa mide 3 metros de ancho y 2 metros de alto, calcule la fuerza total debida a la presión (densidad del agua \(\rho = 1000\ \text{kg/m}^{3}\), \(g = 9.8\ \text{m/s}^{2}\)).</p>
+        <p><strong>Solución:</strong></p>
+        <p>1. <strong>Planteamiento:</strong> La presión a una profundidad \(x\) es \(P(x) = \rho g x\). La placa se extiende desde \(x = 2\) hasta \(x = 4\). El ancho es constante \(w = 3\).</p>
+        <div class="m-formula">
+          \[ F = \int_{2}^{4} (1000)(9.8)(x)(3) \, dx = 29400 \int_{2}^{4} x \, dx \]
+        </div>
+        <p>2. <strong>Integración:</strong></p>
+        <div class="m-formula">
+          \[ F = 29400 \left[ \frac{x^{2}}{2} \right]_{2}^{4} \]
+        </div>
+        <p>3. <strong>Evaluación:</strong></p>
+        <div class="m-formula">
+          \[ F = 14700 (4^{2} - 2^{2}) = 14700(16 - 4) = 14700(12) = 176,400\ \text{N} \]
+        </div>
+        <div class="m-ok">
+          ✅ <strong>Resultado:</strong> La fuerza total sobre la placa es de 176,400 N.
+        </div>
+      </div>
+
+      <!-- Ejercicio 5 -->
+      <div class="m-section">
+        <div class="m-section-title">💰 Ejercicio resuelto 5 — Determinación del costo variable total</div>
+        <p>En la producción de energía o de cualquier bien, el costo marginal \(C'(q)\) es la razón de cambio del costo con respecto a la cantidad \(q\).</p>
+        <p><strong>Problema:</strong> Si \(C'(q)\) es la función de costos marginales (en dólares/unidad), y \(C(0)\) es el costo fijo, determine el Costo Variable Total (CVT) para producir \(b\) unidades.</p>
+        <p><strong>Solución:</strong></p>
+        <p>1. <strong>Planteamiento por el Teorema Fundamental del Cálculo:</strong> El cambio total en el costo \(C(b) - C(0)\) es igual a la integral de la razón de cambio \(C'(q)\):</p>
+        <div class="m-formula">
+          \[ C(b) - C(0) = \int_{0}^{b} C'(q) \, dq \]
+        </div>
+        <p>2. <strong>Costo Variable Total:</strong> El CVT es el área bajo la curva de costo marginal entre \(q = 0\) y \(q = b\):</p>
+        <div class="m-formula">
+          \[ \text{CVT} = \int_{0}^{b} C'(q) \, dq \]
+        </div>
+        <p>3. <strong>Costo Total de Producción:</strong> El costo total de producir \(b\) unidades es la suma del costo fijo y el costo variable total:</p>
+        <div class="m-formula">
+          \[ \text{Costo Total} = C(0) + \int_{0}^{b} C'(q) \, dq \]
+        </div>
+        <div class="m-ok">
+          ✅ <strong>Resultado:</strong> Esta integral proporciona la cantidad que cuesta aumentar la producción de 0 a \(b\) unidades.
+        </div>
+        
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-foot">
+  <strong>Referencias (APA 7)</strong><br>
+  Larson, R., &amp; Edwards, B. H. (2022). <em>Cálculo</em> (11.ª ed.). Cengage Learning.<br>
+  Stewart, J., Redlin, L., &amp; Watson, S. (2021). <em>Precálculo: Matemáticas para el cálculo</em> (8.ª ed.). Cengage Learning.<br>
+  Thomas, G. B., Weir, M. D., &amp; Hass, J. R. (2018). <em>Cálculo</em> (14.ª ed.). Pearson.<br>
+ 
+</footer>
+
+<script>
+/* ══ ESTADO ══ */
+const TOTAL = 3;
+const visited = new Set();
+
+/* ══ MODAL ══ */
+function openModal(id) {
+  const ov = document.getElementById('overlay-' + id);
+  ov.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Marcar nodo como visitado
+  const nIdx = id.replace('m','');
+  const node = document.getElementById('node' + nIdx);
+  if (node && !visited.has(nIdx)) {
+    visited.add(nIdx);
+    node.classList.add('visited');
+    updateProg();
+  }
+
+  // Typeset MathJax dentro del modal
+  if (window.MathJax) MathJax.typesetPromise([ov]).catch(()=>{});
+}
+
+function closeModal(id) {
+  document.getElementById('overlay-' + id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeOnOverlay(e, id) {
+  if (e.target === e.currentTarget) closeModal(id);
+}
+
+// Cerrar con ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open')
+      .forEach(ov => ov.classList.remove('open'));
+    document.body.style.overflow = '';
+  }
+});
+
+/* ══ PROGRESO ══ */
+function updateProg() {
+  const n   = visited.size;
+  const pct = n / TOTAL * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-fill').parentElement.setAttribute('aria-valuenow', Math.round(pct));
+  document.getElementById('prog-lbl').textContent   = `${n} / ${TOTAL} explorados`;
+  document.getElementById('prog-score').textContent =
+    n === TOTAL ? '🎉 ¡Completo!' : `${Math.round(pct)}%`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateProg();
+  if (window.MathJax) MathJax.typesetPromise().catch(()=>{});
+});
+</script>
+</body>
+</html>

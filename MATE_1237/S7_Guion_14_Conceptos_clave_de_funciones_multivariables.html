@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego interactivo — Conceptos de Cálculo Multivariable</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --c-bg:        #edf3fb;
+  --c-surface:   #ffffff;
+  --c-surface2:  #f4f8fd;
+  --c-border:    #c6d6ec;
+  --c-text:      #0f2040;
+  --c-text2:     #2b4a70;
+  --c-muted:     #5e7d9e;
+  --c-pri:       #1a5fb4;
+  --c-pri-dk:    #114090;
+  --c-pri-lt:    #dce9fb;
+  --c-pri-bd:    #90b8f0;
+  --c-acc:       #0d7c6e;
+  --c-acc-lt:    #d2f0ec;
+  --c-acc-bd:    #70c4b8;
+  --c-ok:        #1a8c48;
+  --c-ok-lt:     #d2f5e2;
+  --c-ok-bd:     #68cfa0;
+  --c-warn:      #c47a1a;
+  --c-warn-lt:   #fef4de;
+  --c-warn-bd:   #f0c878;
+  --c-err:       #c43030;
+  --c-err-lt:    #fde8e8;
+  --c-err-bd:    #f2a0a0;
+  --c-vio:       #6c3fd6;
+  --c-vio-lt:    #ede8fb;
+  --c-vio-bd:    #c0aaef;
+  --c-hdr-a:     #1a5fb4;
+  --c-hdr-b:     #0d7c6e;
+  --r-sm: 8px;  --r-md: 12px;  --r-lg: 16px;  --r-xl: 20px;
+  --sh-sm: 0 2px 8px  rgba(15,45,90,.08);
+  --sh-md: 0 4px 20px rgba(15,45,90,.11);
+  --sh-lg: 0 8px 36px rgba(15,45,90,.14);
+  --canvas-w: 950px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family:'Nunito Sans', sans-serif;
+  background:var(--c-bg);
+  color:var(--c-text);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+.canvas {
+  width:100%; max-width:var(--canvas-w);
+  min-height:600px; display:flex;
+  flex-direction:column; box-shadow:var(--sh-lg);
+}
+
+/* ══ HEADER ══ */
+.site-header {
+  background:linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding:28px 42px 24px; position:relative; overflow:hidden; flex-shrink:0;
+}
+.site-header::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 80% 15%, rgba(255,255,255,.13) 0%, transparent 60%);
+  pointer-events:none;
+}
+.site-header::after {
+  content:''; position:absolute; width:220px; height:220px;
+  border-radius:50%; background:rgba(255,255,255,.055);
+  right:-50px; bottom:-60px; pointer-events:none;
+}
+.hdr-inner { position:relative; z-index:1; }
+.hdr-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.36);
+  border-radius:100px; padding:4px 14px;
+  font-size:.7rem; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:#fff; margin-bottom:12px;
+  font-family:'Nunito', sans-serif;
+}
+.site-header h1 {
+  font-family:'Nunito', sans-serif;
+  font-size:1.5rem; font-weight:800; color:#fff;
+  line-height:1.25; margin-bottom:8px;
+}
+.site-header p {
+  font-size:.83rem; color:rgba(255,255,255,.84);
+  max-width:530px; line-height:1.65;
+}
+
+/* ══ PROGRESO ══ */
+.prog-wrap {
+  background:var(--c-surface); border-bottom:1px solid var(--c-border);
+  padding:10px 42px; position:sticky; top:0; z-index:50;
+  box-shadow:var(--sh-sm); flex-shrink:0;
+}
+.prog-row { display:flex; align-items:center; gap:12px; }
+.prog-lbl {
+  font-size:.74rem; font-weight:700; color:var(--c-muted);
+  white-space:nowrap; min-width:120px; font-family:'Nunito',sans-serif;
+}
+.prog-track {
+  flex:1; height:9px; background:var(--c-surface2);
+  border:1px solid var(--c-border); border-radius:100px; overflow:hidden;
+}
+.prog-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--c-hdr-a), var(--c-hdr-b));
+  border-radius:100px; width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+}
+.prog-score {
+  font-size:.74rem; font-weight:800; color:var(--c-pri);
+  min-width:70px; text-align:right; font-family:'Nunito',sans-serif;
+}
+
+/* ══ MAIN ══ */
+.main {
+  flex:1; padding:28px 42px 36px;
+  background:var(--c-bg);
+  display:flex; flex-direction:column; gap:24px;
+}
+
+/* ══ INSTRUCCIÓN ══ */
+.instruc-card {
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-left:3px solid var(--c-pri);
+  border-radius:var(--r-md);
+  padding:14px 20px;
+  font-size:.86rem; color:var(--c-text2); line-height:1.7;
+  box-shadow:var(--sh-sm);
+  display:flex; align-items:flex-start; gap:10px;
+}
+.instruc-card .instruc-icon { font-size:1.2rem; flex-shrink:0; margin-top:1px; }
+.instruc-card strong { color:var(--c-pri); font-family:'Nunito',sans-serif; }
+
+/* ══ JUEGO DRAG & DROP ══ */
+.game-container {
+  background:var(--c-surface);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-md);
+  overflow:hidden;
+  animation:fadeUp .35s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.game-header {
+  background:linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+  padding:22px 30px 20px;
+  position:relative;
+}
+.game-header-inner { position:relative; z-index:1; }
+.game-eyebrow {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem; font-weight:600;
+  color:rgba(255,255,255,.7); letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:6px;
+}
+.game-title {
+  font-family:'Nunito',sans-serif;
+  font-size:1.25rem; font-weight:800; color:#fff; line-height:1.3;
+  margin-bottom:6px;
+}
+
+/* Layout de dos columnas */
+.drag-drop-layout {
+  display:flex;
+  gap:32px;
+  padding:30px;
+  flex-wrap:wrap;
+}
+.concepts-col, .defs-col {
+  flex:1;
+  min-width:280px;
+}
+.col-title {
+  font-family:'Nunito',sans-serif;
+  font-size:.9rem;
+  font-weight:800;
+  color:var(--c-pri);
+  margin-bottom:16px;
+  padding-bottom:8px;
+  border-bottom:2px solid var(--c-pri-bd);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* Elementos arrastrables */
+.drag-item {
+  background:var(--c-surface);
+  border:2px solid var(--c-border);
+  border-radius:var(--r-lg);
+  padding:16px 18px;
+  margin-bottom:14px;
+  cursor:grab;
+  transition:all .2s ease;
+  box-shadow:var(--sh-sm);
+  position:relative;
+  font-weight:600;
+  color:var(--c-text);
+  font-family:'Nunito',sans-serif;
+}
+.drag-item:active {
+  cursor:grabbing;
+}
+.drag-item.dragging {
+  opacity:0.5;
+  cursor:grabbing;
+}
+.drag-item:hover {
+  border-color:var(--c-pri-bd);
+  transform:translateY(-2px);
+  box-shadow:var(--sh-md);
+}
+.drag-item .item-number {
+  display:inline-block;
+  background:var(--c-pri-lt);
+  color:var(--c-pri);
+  font-weight:800;
+  font-size:.7rem;
+  padding:2px 8px;
+  border-radius:100px;
+  margin-right:12px;
+}
+
+/* Elementos de destino */
+.drop-zone {
+  background:var(--c-surface2);
+  border:2px dashed var(--c-border);
+  border-radius:var(--r-lg);
+  padding:16px 18px;
+  margin-bottom:14px;
+  transition:all .2s ease;
+  min-height:82px;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.drop-zone.drag-over {
+  border-color:var(--c-pri);
+  background:var(--c-pri-lt);
+}
+.drop-zone.correct {
+  border-color:var(--c-ok);
+  background:var(--c-ok-lt);
+}
+.drop-zone .dropped-badge {
+  background:var(--c-ok);
+  color:white;
+  border-radius:100px;
+  padding:4px 12px;
+  font-size:.75rem;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.drop-zone .dropped-badge .remove-badge {
+  cursor:pointer;
+  font-weight:bold;
+  margin-left:4px;
+  background:rgba(255,255,255,.3);
+  border-radius:50%;
+  width:18px;
+  height:18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.7rem;
+}
+.drop-zone .dropped-badge .remove-badge:hover {
+  background:rgba(255,255,255,.5);
+}
+.drop-zone.empty-text {
+  color:var(--c-muted);
+  font-size:.8rem;
+}
+.def-text {
+  font-size:.9rem;
+  color:var(--c-text2);
+  line-height:1.5;
+  flex:1;
+}
+.def-letter {
+  display:inline-block;
+  background:var(--c-acc-lt);
+  color:var(--c-acc);
+  font-weight:800;
+  font-size:.7rem;
+  padding:2px 8px;
+  border-radius:100px;
+  margin-right:12px;
+}
+
+/* Botón de verificar */
+.check-btn {
+  background:linear-gradient(135deg, var(--c-hdr-a), var(--c-hdr-b));
+  color:white;
+  border:none;
+  border-radius:100px;
+  padding:12px 28px;
+  font-family:'Nunito',sans-serif;
+  font-weight:800;
+  font-size:.9rem;
+  cursor:pointer;
+  transition:transform .2s, box-shadow .2s;
+  margin:0 30px 30px auto;
+  display:inline-block;
+}
+.check-btn:hover {
+  transform:translateY(-2px);
+  box-shadow:var(--sh-md);
+}
+.check-btn:active {
+  transform:translateY(0);
+}
+
+/* Modal de resultado */
+.result-modal {
+  position:fixed;
+  inset:0;
+  background:rgba(10,28,60,.7);
+  backdrop-filter:blur(4px);
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s;
+}
+.result-modal.open {
+  opacity:1;
+  pointer-events:all;
+}
+.result-card {
+  background:var(--c-surface);
+  border-radius:var(--r-xl);
+  max-width:500px;
+  width:100%;
+  padding:28px 32px;
+  text-align:center;
+  box-shadow:var(--sh-lg);
+  transform:scale(0.95);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+.result-modal.open .result-card {
+  transform:scale(1);
+}
+.result-icon {
+  font-size:3rem;
+  margin-bottom:16px;
+}
+.result-title {
+  font-family:'Nunito',sans-serif;
+  font-size:1.3rem;
+  font-weight:800;
+  color:var(--c-text);
+  margin-bottom:12px;
+}
+.result-message {
+  font-size:.9rem;
+  color:var(--c-text2);
+  line-height:1.6;
+  margin-bottom:24px;
+}
+.result-close {
+  background:var(--c-pri);
+  color:white;
+  border:none;
+  border-radius:100px;
+  padding:10px 24px;
+  font-weight:700;
+  cursor:pointer;
+}
+.result-close:hover {
+  background:var(--c-pri-dk);
+}
+
+/* Tags */
+.ex-tags {
+  padding:0 30px 26px;
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.tag {
+  font-size:.68rem;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:100px;
+  font-family:'Nunito',sans-serif;
+}
+.t-blue  { background:var(--c-pri-lt); color:var(--c-pri); border:1px solid var(--c-pri-bd); }
+.t-green { background:var(--c-ok-lt);  color:var(--c-ok);  border:1px solid var(--c-ok-bd); }
+.t-teal  { background:var(--c-acc-lt); color:var(--c-acc); border:1px solid var(--c-acc-bd); }
+.t-warn  { background:var(--c-warn-lt); color:var(--c-warn); border:1px solid var(--c-warn-bd); }
+
+/* Footer */
+.site-foot {
+  width:100%;
+  max-width:var(--canvas-w);
+  padding:20px 42px;
+  text-align:center;
+  font-size:.74rem;
+  color:var(--c-muted);
+  border-top:1px solid var(--c-border);
+  font-family:'Nunito',sans-serif;
+  background:var(--c-surface);
+  line-height:1.85;
+}
+.site-foot strong { color:var(--c-text2); }
+
+/* Responsive */
+@media (max-width:720px) {
+  :root { --canvas-w:100%; }
+  .site-header { padding:22px 28px 20px; }
+  .site-header h1 { font-size:1.28rem; }
+  .prog-wrap { padding:9px 28px; }
+  .prog-lbl { min-width:90px; font-size:.71rem; }
+  .main { padding:18px 22px 28px; gap:18px; }
+  .drag-drop-layout { padding:20px; gap:24px; }
+  .drag-item, .drop-zone { padding:12px 14px; }
+  .site-foot { padding:16px 28px; }
+}
+@media (max-width:480px) {
+  .site-header { padding:16px 16px 14px; }
+  .site-header h1 { font-size:1.05rem; line-height:1.3; }
+  .hdr-chip { font-size:.62rem; padding:3px 10px; }
+  .site-header p { font-size:.78rem; }
+  .prog-wrap { padding:8px 14px; }
+  .prog-lbl { display:none; }
+  .main { padding:12px 12px 24px; gap:14px; }
+  .drag-drop-layout { padding:14px; flex-direction:column; }
+  .check-btn { margin:0 20px 20px auto; }
+  .site-foot { padding:12px 14px; font-size:.7rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="hdr-inner">
+      <div class="hdr-chip">📐 Análisis Matemático para Ingeniería</div>
+      <h1>Conceptos fundamentales de Cálculo Multivariable</h1>
+      <p>Arrastre y suelte cada concepto con su definición correspondiente para reforzar lo aprendido sobre funciones de varias variables y sus aplicaciones en ingeniería energética.</p>
+    </div>
+  </header>
+
+  <!-- PROGRESO -->
+  <div class="prog-wrap">
+    <div class="prog-row">
+      <span class="prog-lbl" id="prog-lbl">0 / 4 emparejados</span>
+      <div class="prog-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+      <span class="prog-score" id="prog-score">👆 Arrastra</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Instrucción -->
+    <div class="instruc-card">
+      <div class="instruc-icon">🎯</div>
+      <div><strong>Participe arrastrando y soltando</strong> cada concepto del cálculo multivariable con su definición correspondiente. Lea con atención y relacione correctamente los elementos para reforzar lo aprendido en esta semana.</div>
+    </div>
+
+    <!-- Juego Drag & Drop -->
+    <div class="game-container">
+      <div class="game-header">
+        <div class="game-header-inner">
+          <div class="game-eyebrow">📌 Juego interactivo</div>
+          <div class="game-title">Relacione concepto con definición</div>
+        </div>
+      </div>
+
+      <div class="drag-drop-layout">
+        <!-- Columna de conceptos (arrastrables) -->
+        <div class="concepts-col">
+          <div class="col-title">
+            <span>📚</span> Conceptos
+          </div>
+          <div id="concept-1" class="drag-item" draggable="true" data-concept="1" data-concept-name="Vector gradiente">
+            <span class="item-number">1</span> Vector gradiente
+          </div>
+          <div id="concept-2" class="drag-item" draggable="true" data-concept="2" data-concept-name="Derivada direccional">
+            <span class="item-number">2</span> Derivada direccional
+          </div>
+          <div id="concept-3" class="drag-item" draggable="true" data-concept="3" data-concept-name="Optimización no restringida">
+            <span class="item-number">3</span> Optimización no restringida
+          </div>
+          <div id="concept-4" class="drag-item" draggable="true" data-concept="4" data-concept-name="Multiplicador de Lagrange (λ)">
+            <span class="item-number">4</span> Multiplicador de Lagrange (λ)
+          </div>
+        </div>
+
+        <!-- Columna de definiciones (destinos) -->
+        <div class="defs-col">
+          <div class="col-title">
+            <span>📖</span> Definiciones
+          </div>
+          <div id="drop-A" class="drop-zone" data-def="A" data-expected="1">
+            <span class="def-letter">A</span>
+            <span class="def-text">Indica la dirección en la que una función crece más rápidamente y su magnitud representa la tasa máxima de cambio en ese punto.</span>
+          </div>
+          <div id="drop-B" class="drop-zone" data-def="B" data-expected="2">
+            <span class="def-letter">B</span>
+            <span class="def-text">Mide la tasa de cambio instantánea de una función en cualquier dirección dada, no solo a lo largo de los ejes coordenados.</span>
+          </div>
+          <div id="drop-C" class="drop-zone" data-def="C" data-expected="3">
+            <span class="def-letter">C</span>
+            <span class="def-text">Busca valores extremos hallando los puntos donde todas las derivadas parciales de primer orden son iguales a cero.</span>
+          </div>
+          <div id="drop-D" class="drop-zone" data-def="D" data-expected="4">
+            <span class="def-letter">D</span>
+            <span class="def-text">Representa el cambio aproximado en el valor óptimo de la función objetivo cuando la restricción se relaja marginalmente.</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="check-btn" id="checkBtn">✓ Verificar respuestas</button>
+      <div class="ex-tags">
+        <span class="tag t-blue">∇ Gradiente</span>
+        <span class="tag t-teal">↗ Derivada direccional</span>
+        <span class="tag t-green">🎯 Optimización</span>
+        <span class="tag t-warn">λ Multiplicador de Lagrange</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal de resultado -->
+<div id="resultModal" class="result-modal">
+  <div class="result-card">
+    <div class="result-icon">🏆</div>
+    <div class="result-title">¡Felicidades!</div>
+    <div class="result-message" id="resultMessage"></div>
+    <button class="result-close" onclick="closeResultModal()">Continuar</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-foot">
+  <strong>Referencias (APA 7)</strong><br>
+  Larson, R., &amp; Edwards, B. H. (2022). <em>Cálculo</em> (11.ª ed.). Cengage Learning.<br>
+  Stewart, J., Redlin, L., &amp; Watson, S. (2021). <em>Precálculo: Matemáticas para el cálculo</em> (8.ª ed.). Cengage Learning.<br>
+  Thomas, G. B., Weir, M. D., &amp; Hass, J. R. (2018). <em>Cálculo</em> (14.ª ed.). Pearson.<br>
+  Elaboración propia (2024).
+</footer>
+
+<script>
+// Estado de emparejamientos: cada drop zone guarda qué concepto (número) tiene asignado
+let assignments = {
+  A: null,
+  B: null,
+  C: null,
+  D: null
+};
+
+// Conceptos disponibles (no asignados)
+let availableConcepts = [1, 2, 3, 4];
+
+// Elementos drag and drop
+const dragItems = document.querySelectorAll('.drag-item');
+const dropZones = document.querySelectorAll('.drop-zone');
+
+// Configurar drag start
+dragItems.forEach(item => {
+  item.addEventListener('dragstart', handleDragStart);
+  item.addEventListener('dragend', handleDragEnd);
+});
+
+let draggedConcept = null;
+
+function handleDragStart(e) {
+  draggedConcept = parseInt(e.target.closest('.drag-item').getAttribute('data-concept'));
+  e.target.closest('.drag-item').classList.add('dragging');
+  e.dataTransfer.setData('text/plain', draggedConcept);
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+  e.target.closest('.drag-item').classList.remove('dragging');
+  draggedConcept = null;
+}
+
+// Configurar drop zones
+dropZones.forEach(zone => {
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    zone.classList.add('drag-over');
+  });
+  
+  zone.addEventListener('dragleave', () => {
+    zone.classList.remove('drag-over');
+  });
+  
+  zone.addEventListener('drop', handleDrop);
+});
+
+function handleDrop(e) {
+  e.preventDefault();
+  const targetZone = e.target.closest('.drop-zone');
+  if (!targetZone) return;
+  
+  targetZone.classList.remove('drag-over');
+  
+  const conceptId = draggedConcept;
+  if (conceptId === null) return;
+  
+  const defId = targetZone.getAttribute('data-def');
+  const expectedConcept = parseInt(targetZone.getAttribute('data-expected'));
+  
+  // Verificar si este concepto ya está asignado a otra zona
+  let currentAssignment = null;
+  for (const [def, assignedConcept] of Object.entries(assignments)) {
+    if (assignedConcept === conceptId) {
+      currentAssignment = def;
+      break;
+    }
+  }
+  
+  // Si ya está asignado a otra zona, removerlo de allí
+  if (currentAssignment) {
+    const prevZone = document.querySelector(`.drop-zone[data-def="${currentAssignment}"]`);
+    if (prevZone) {
+      removeBadgeFromZone(prevZone);
+      assignments[currentAssignment] = null;
+    }
+  }
+  
+  // Si esta zona ya tiene un concepto, lo liberamos
+  if (assignments[defId] !== null) {
+    removeBadgeFromZone(targetZone);
+  }
+  
+  // Asignar nuevo concepto
+  assignments[defId] = conceptId;
+  updateZoneDisplay(targetZone, conceptId);
+  
+  // Ocultar el elemento arrastrable original (visualmente)
+  const originalDragItem = document.querySelector(`.drag-item[data-concept="${conceptId}"]`);
+  if (originalDragItem) {
+    originalDragItem.style.opacity = '0.3';
+    originalDragItem.style.pointerEvents = 'none';
+  }
+  
+  updateProgress();
+}
+
+function removeBadgeFromZone(zone) {
+  const badge = zone.querySelector('.dropped-badge');
+  if (badge) {
+    const conceptId = assignments[zone.getAttribute('data-def')];
+    if (conceptId) {
+      const originalDragItem = document.querySelector(`.drag-item[data-concept="${conceptId}"]`);
+      if (originalDragItem) {
+        originalDragItem.style.opacity = '1';
+        originalDragItem.style.pointerEvents = 'auto';
+      }
+    }
+    badge.remove();
+  }
+  zone.classList.remove('correct');
+  zone.classList.add('empty-text');
+  
+  // Mostrar texto vacío si no hay otros elementos
+  const emptySpan = zone.querySelector('.empty-span');
+  if (!emptySpan && zone.querySelectorAll('.dropped-badge').length === 0) {
+    const defTextSpan = zone.querySelector('.def-text');
+    if (defTextSpan && !zone.querySelector('.empty-span')) {
+      const emptySpanElem = document.createElement('span');
+      emptySpanElem.className = 'empty-span';
+      emptySpanElem.style.color = 'var(--c-muted)';
+      emptySpanElem.style.fontSize = '.8rem';
+      emptySpanElem.style.marginLeft = 'auto';
+      emptySpanElem.textContent = '⬅️ Arrastra aquí';
+      zone.appendChild(emptySpanElem);
+    }
+  }
+}
+
+function updateZoneDisplay(zone, conceptId) {
+  // Limpiar contenido adicional
+  const existingBadge = zone.querySelector('.dropped-badge');
+  if (existingBadge) existingBadge.remove();
+  
+  const emptySpan = zone.querySelector('.empty-span');
+  if (emptySpan) emptySpan.remove();
+  
+  // Obtener nombre del concepto
+  let conceptName = '';
+  const conceptItem = document.querySelector(`.drag-item[data-concept="${conceptId}"]`);
+  if (conceptItem) {
+    conceptName = conceptItem.querySelector('.item-number')?.textContent + ' ' + conceptItem.textContent.replace(/^\d+\s*/, '');
+  }
+  
+  const badge = document.createElement('div');
+  badge.className = 'dropped-badge';
+  badge.innerHTML = `<span>📌 ${conceptName}</span><span class="remove-badge" onclick="event.stopPropagation(); removeAssignment('${zone.getAttribute('data-def')}')">✕</span>`;
+  zone.appendChild(badge);
+  zone.classList.remove('empty-text');
+  
+  // Verificar si es correcto (para estilo visual)
+  const expected = parseInt(zone.getAttribute('data-expected'));
+  if (assignments[zone.getAttribute('data-def')] === expected) {
+    zone.classList.add('correct');
+  } else {
+    zone.classList.remove('correct');
+  }
+}
+
+function removeAssignment(defId) {
+  const conceptId = assignments[defId];
+  if (conceptId) {
+    const originalDragItem = document.querySelector(`.drag-item[data-concept="${conceptId}"]`);
+    if (originalDragItem) {
+      originalDragItem.style.opacity = '1';
+      originalDragItem.style.pointerEvents = 'auto';
+    }
+    assignments[defId] = null;
+    const zone = document.querySelector(`.drop-zone[data-def="${defId}"]`);
+    if (zone) {
+      removeBadgeFromZone(zone);
+    }
+    updateProgress();
+  }
+}
+
+function updateProgress() {
+  let matched = 0;
+  for (const [def, assigned] of Object.entries(assignments)) {
+    const zone = document.querySelector(`.drop-zone[data-def="${def}"]`);
+    const expected = parseInt(zone.getAttribute('data-expected'));
+    if (assigned === expected) {
+      matched++;
+    }
+  }
+  const pct = (matched / 4) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-lbl').textContent = `${matched} / 4 emparejados`;
+  document.getElementById('prog-score').textContent = matched === 4 ? '🎉 ¡Completo!' : `${Math.round(pct)}%`;
+}
+
+function checkAnswers() {
+  let correctCount = 0;
+  let correctDetails = [];
+  
+  for (const [def, assigned] of Object.entries(assignments)) {
+    const zone = document.querySelector(`.drop-zone[data-def="${def}"]`);
+    const expected = parseInt(zone.getAttribute('data-expected'));
+    if (assigned === expected) {
+      correctCount++;
+      correctDetails.push(def);
+    }
+  }
+  
+  const modal = document.getElementById('resultModal');
+  const messageDiv = document.getElementById('resultMessage');
+  
+  if (correctCount === 4) {
+    messageDiv.innerHTML = `Ha demostrado comprender los conceptos fundamentales de las funciones multivariables y su aplicación en ingeniería en energía. Al relacionar correctamente cada concepto con su definición, confirmó que domina las herramientas del gradiente, la derivada direccional, la optimización no restringida y los multiplicadores de Lagrange. ¡Siga aplicando estos conocimientos para analizar sensibilidad en modelos energéticos y optimizar sistemas reales!`;
+    modal.classList.add('open');
+  } else {
+    messageDiv.innerHTML = `Ha relacionado ${correctCount} de 4 conceptos correctamente. Revise los emparejamientos que aún no coinciden y continúe practicando. Recuerde: el gradiente indica la dirección de máximo crecimiento, la derivada direccional mide el cambio en cualquier dirección, la optimización no restringida busca puntos críticos y el multiplicador de Lagrange se usa para optimización con restricciones.`;
+    modal.classList.add('open');
+  }
+}
+
+function closeResultModal() {
+  document.getElementById('resultModal').classList.remove('open');
+}
+
+// Event listener para botón verificar
+document.getElementById('checkBtn').addEventListener('click', checkAnswers);
+
+// Inicializar progreso
+updateProgress();
+
+// Prevenir comportamiento por defecto en drag para imágenes
+window.addEventListener('dragstart', (e) => {
+  if (!e.target.closest('.drag-item')) {
+    e.preventDefault();
+  }
+});
+</script>
+</body>
+</html>
