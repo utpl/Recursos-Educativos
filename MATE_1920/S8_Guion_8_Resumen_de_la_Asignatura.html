@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=800, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Orbita Matemática | Dashboard Interactivo</title>
     <style>
         :root {
             --color-center: #1a3c4a;
             --w1: #3498db; --w2: #9b59b6; --w3: #2ecc71; --w4: #e67e22;
             --w5: #f1c40f; --w6: #e74c3c; --w7: #1abc9c; --w8: #34495e;
-            --shadow-neu: 6px 6px 12px #d1d5d9, -6px -6px 12px #ffffff;
+            --shadow-neu: 8px 8px 16px #d1d5d9, -8px -8px 16px #ffffff;
         }
 
         * {
@@ -19,24 +19,23 @@
         }
 
         body {
-            background: linear-gradient(135deg, #e0e7ef 0%, #f5f7fa 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            overflow: hidden;
-        }
-
-        /* CONTENEDOR PRINCIPAL */
-        .universe-container {
+            background: radial-gradient(circle at center, #f8fafc 0%, #eef2f7 70%);
             width: 800px;
             height: 800px;
-            position: relative;
-            background: radial-gradient(circle at center, #f8fafc 0%, #eef2f7 70%);
-            border-radius: 40px;
-            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.2);
             overflow: hidden;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            position: relative;
+        }
+
+        /* FONDO ANIMADO SUAVE */
+        .bg-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(52, 152, 219, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(155, 89, 182, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(26, 188, 156, 0.03) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         /* SVG CONECTORES */
@@ -44,8 +43,8 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 800px;
+            height: 800px;
             pointer-events: none;
             z-index: 1;
         }
@@ -55,14 +54,19 @@
             stroke: url(#gradient-line);
             stroke-width: 2;
             stroke-dasharray: 8 4;
-            opacity: 0.3;
+            opacity: 0.4;
+            animation: dash 30s linear infinite;
         }
 
-        /* CENTRO */
+        @keyframes dash {
+            to { stroke-dashoffset: -1000; }
+        }
+
+        /* CENTRO - NÚCLEO */
         .center-hub {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 400px;
+            left: 400px;
             transform: translate(-50%, -50%);
             width: 180px;
             height: 180px;
@@ -72,19 +76,21 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-neu), 0 0 0 10px rgba(255,255,255,0.5);
+            box-shadow: var(--shadow-neu), 0 0 0 10px rgba(255,255,255,0.5), 0 10px 40px rgba(0,0,0,0.1);
             z-index: 10;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .center-hub:hover {
-            transform: translate(-50%, -50%) scale(1.05);
+            transform: translate(-50%, -50%) scale(1.08);
+            box-shadow: var(--shadow-neu), 0 0 0 15px rgba(255,255,255,0.3), 0 15px 50px rgba(0,0,0,0.15);
         }
 
         .center-icon {
-            font-size: 36px;
+            font-size: 42px;
             margin-bottom: 8px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
 
         .center-title {
@@ -104,103 +110,152 @@
             font-weight: 600;
         }
 
-        /* CONTENEDOR DE NODOS - POSICIONAMIENTO ORBITAL DESKTOP */
+        /* CONTENEDOR DE PLANETAS - POSICIONAMIENTO ABSOLUTO FIJO */
         .orbit-container {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 800px;
+            height: 800px;
             z-index: 5;
         }
 
         .planet-wrapper {
             position: absolute;
-            width: 120px;
-            height: 140px;
+            width: 140px;
+            height: 160px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 20;
+        }
+
+        .planet-wrapper:hover {
+            z-index: 30;
         }
 
         .planet-node {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             background: linear-gradient(145deg, #ffffff, #e6eaf0);
-            box-shadow: var(--shadow-neu);
+            box-shadow: var(--shadow-neu), 0 4px 20px rgba(0,0,0,0.08);
             display: flex;
             align-items: center;
             justify-content: center;
             border: 3px solid white;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
 
         .planet-wrapper:hover .planet-node {
-            transform: scale(1.15);
-            box-shadow: 0 15px 35px -10px rgba(0,0,0,0.2), 0 0 0 4px rgba(255,255,255,0.8);
+            transform: scale(1.2);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2), 0 0 0 6px rgba(255,255,255,0.8);
+            animation-play-state: paused;
         }
 
         .planet-wrapper.active .planet-node {
-            transform: scale(1.2);
-            box-shadow: 0 0 0 4px white, 0 0 0 8px var(--planet-color), 0 20px 40px rgba(0,0,0,0.2);
+            transform: scale(1.25);
+            box-shadow: 0 0 0 4px white, 0 0 0 10px var(--planet-color), 0 25px 50px rgba(0,0,0,0.2);
+            animation-play-state: paused;
+        }
+
+        /* ANILLO GIRATORIO DECORATIVO */
+        .planet-node::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--planet-color);
+            border-right-color: var(--planet-color);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .planet-wrapper:hover .planet-node::after {
+            opacity: 0.3;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .planet-icon {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             fill: var(--planet-color);
+            transition: transform 0.3s;
+        }
+
+        .planet-wrapper:hover .planet-icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .planet-number {
             position: absolute;
             bottom: -5px;
             right: -5px;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             background: var(--planet-color);
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10;
         }
 
         .planet-title {
-            margin-top: 12px;
-            font-size: 11px;
+            margin-top: 15px;
+            font-size: 12px;
             font-weight: 700;
             color: #1a3c4a;
             text-align: center;
-            background: rgba(255,255,255,0.9);
-            padding: 4px 10px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.95);
+            padding: 6px 12px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             white-space: nowrap;
             border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
         }
 
-        /* PANEL DE INFORMACIÓN */
+        .planet-wrapper:hover .planet-title {
+            transform: translateY(5px);
+            background: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        /* PANEL DE INFORMACIÓN DESLIZANTE */
         .info-panel {
             position: absolute;
             right: -400px;
             top: 0;
-            width: 380px;
-            height: 100%;
+            width: 400px;
+            height: 800px;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
-            box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+            box-shadow: -10px 0 60px rgba(0,0,0,0.15);
             z-index: 100;
-            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 30px;
+            transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 40px 30px;
             overflow-y: auto;
             border-left: 1px solid rgba(0,0,0,0.05);
         }
@@ -210,9 +265,10 @@
         }
 
         .panel-header {
-            margin-bottom: 24px;
+            margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid var(--panel-color);
+            border-bottom: 3px solid var(--panel-color);
+            position: relative;
         }
 
         .panel-badge {
@@ -221,33 +277,34 @@
             gap: 8px;
             background: var(--panel-color);
             color: white;
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 700;
             margin-bottom: 12px;
+            box-shadow: 0 4px 15px -2px var(--panel-color);
         }
 
         .panel-title {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 800;
             color: #1a3c4a;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             line-height: 1.3;
         }
 
         .panel-subtitle {
-            font-size: 12px;
-            color: #7f8c9a;
+            font-size: 13px;
+            color: #5a6c7d;
             font-weight: 600;
         }
 
         .close-panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 36px;
-            height: 36px;
+            top: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: none;
             background: rgba(0,0,0,0.05);
@@ -255,72 +312,100 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 24px;
             color: #666;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
 
         .close-panel:hover {
             background: rgba(0,0,0,0.1);
-            transform: rotate(90deg);
+            transform: rotate(90deg) scale(1.1);
         }
 
         .concept-cards {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
 
         .concept-card {
             background: linear-gradient(145deg, #f8fafc, #eef2f7);
-            border-radius: 16px;
-            padding: 16px;
-            border-left: 4px solid var(--panel-color);
+            border-radius: 20px;
+            padding: 20px;
+            border-left: 5px solid var(--panel-color);
             cursor: pointer;
             transition: all 0.3s;
             border: 1px solid rgba(0,0,0,0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .concept-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: var(--panel-color);
+            opacity: 0.05;
+            transition: width 0.3s;
+        }
+
+        .concept-card:hover::before {
+            width: 100%;
         }
 
         .concept-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 8px 20px -8px rgba(0,0,0,0.1);
+            transform: translateX(8px);
+            box-shadow: 0 12px 30px -10px rgba(0,0,0,0.15);
             background: white;
         }
 
         .card-title {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 700;
             color: #1a3c4a;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         .card-icon {
-            font-size: 16px;
+            font-size: 18px;
         }
 
         .card-text {
-            font-size: 11px;
+            font-size: 13px;
             line-height: 1.5;
             color: #5a6c7d;
+            position: relative;
+            z-index: 1;
         }
 
         .card-more {
-            margin-top: 8px;
-            font-size: 10px;
+            margin-top: 10px;
+            font-size: 11px;
             color: var(--panel-color);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            position: relative;
+            z-index: 1;
         }
 
+        /* MODAL DE DETALLE */
         .detail-modal {
             position: absolute;
             inset: 0;
-            background: rgba(26, 60, 74, 0.3);
-            backdrop-filter: blur(5px);
+            background: rgba(26, 60, 74, 0.4);
+            backdrop-filter: blur(8px);
             z-index: 200;
             display: flex;
             align-items: center;
@@ -337,90 +422,107 @@
 
         .detail-content {
             background: white;
-            width: 85%;
-            max-width: 500px;
-            max-height: 70%;
-            border-radius: 24px;
-            padding: 24px;
-            transform: scale(0.9);
+            width: 500px;
+            max-height: 600px;
+            border-radius: 30px;
+            padding: 35px;
+            transform: scale(0.9) translateY(20px);
             transition: all 0.3s;
             overflow-y: auto;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
+            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.4);
         }
 
         .detail-modal.active .detail-content {
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
 
         .detail-title {
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 800;
             color: #1a3c4a;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 3px solid var(--modal-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid var(--modal-color);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .detail-body {
-            font-size: 13px;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.7;
             color: #2c3e50;
         }
 
         .detail-close {
-            margin-top: 20px;
+            margin-top: 25px;
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
             background: var(--modal-color);
             color: white;
-            border-radius: 12px;
+            border-radius: 16px;
             font-weight: 700;
+            font-size: 15px;
             cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px -8px var(--modal-color);
         }
 
+        .detail-close:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px -10px var(--modal-color);
+        }
+
+        /* NAVEGACIÓN INFERIOR */
         .bottom-nav {
             position: absolute;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 8px;
+            gap: 10px;
             z-index: 50;
             background: rgba(255,255,255,0.9);
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
         }
 
         .nav-dot {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: #d1d8e0;
             cursor: pointer;
             transition: all 0.3s;
             border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        .nav-dot:hover, .nav-dot.active {
+        .nav-dot:hover {
+            transform: scale(1.4);
             background: var(--dot-color);
-            transform: scale(1.3);
         }
 
+        .nav-dot.active {
+            background: var(--dot-color);
+            transform: scale(1.4);
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 4px 12px var(--dot-color);
+        }
+
+        /* OVERLAY */
         .overlay {
             position: absolute;
             inset: 0;
-            background: transparent;
+            background: rgba(0,0,0,0.2);
             z-index: 50;
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s;
+            backdrop-filter: blur(2px);
         }
 
         .overlay.active {
@@ -428,368 +530,79 @@
             visibility: visible;
         }
 
+        /* REFERENCIA */
         .reference {
             position: absolute;
-            bottom: 10px;
-            right: 20px;
+            bottom: 12px;
+            right: 25px;
             font-size: 9px;
             color: #a0aec0;
             z-index: 5;
+            font-weight: 500;
         }
 
-        /* ==========================================================================
-           RESPONSIVIDAD PARA TABLETS Y MÓVILES
-           ========================================================================== */
-        
-        /* TABLETS (768px - 1024px) */
-        @media (max-width: 1024px) {
-            .universe-container {
-                width: 100vw;
-                height: 100vh;
-                border-radius: 0;
-                max-width: 800px;
-                max-height: 800px;
+        /* ANIMACIONES */
+        @keyframes planetIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0) rotate(-180deg); 
             }
-            
-            /* Reducir ligeramente el centro para dar más espacio */
-            .center-hub {
-                width: 150px;
-                height: 150px;
-                top: 15%;
-                transform: translate(-50%, 0);
-            }
-            
-            .center-hub:hover {
-                transform: translate(-50%, 0) scale(1.05);
-            }
-            
-            /* Ajustar órbita para tablets */
-            .orbit-container {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(4, 1fr);
-                gap: 20px;
-                padding: 180px 40px 100px;
-                align-items: center;
-                justify-items: center;
-            }
-            
-            .planet-wrapper {
-                position: relative !important;
-                left: auto !important;
-                top: auto !important;
-                width: 100%;
-                max-width: 200px;
-                height: auto;
-                flex-direction: row;
-                align-items: center;
-                gap: 15px;
-                padding: 15px;
-                background: rgba(255,255,255,0.6);
-                border-radius: 20px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            }
-            
-            .planet-node {
-                width: 60px;
-                height: 60px;
-                flex-shrink: 0;
-            }
-            
-            .planet-title {
-                margin-top: 0;
-                font-size: 14px;
-                text-align: left;
-                background: transparent;
-                box-shadow: none;
-                padding: 0;
-                white-space: normal;
-                font-weight: 700;
-            }
-            
-            .planet-number {
-                width: 20px;
-                height: 20px;
-                font-size: 10px;
-            }
-            
-            /* Ocultar líneas de conexión en tablets */
-            .orbit-lines {
-                opacity: 0.1;
-            }
-            
-            /* Panel lateral más angosto */
-            .info-panel {
-                width: 320px;
+            to { 
+                opacity: 1; 
+                transform: scale(1) rotate(0deg); 
             }
         }
 
-        /* MÓVILES (< 768px) */
-        @media (max-width: 768px) {
-            body {
-                background: #eef2f7;
-            }
-            
-            .universe-container {
-                width: 100vw;
-                height: 100vh;
-                border-radius: 0;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
-            
-            /* Header/Centro compacto arriba */
-            .center-hub {
-                position: relative;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 130px;
-                height: 130px;
-                margin-bottom: 30px;
-            }
-            
-            .center-hub:hover {
-                transform: translateX(-50%) scale(1.05);
-            }
-            
-            .center-icon {
-                font-size: 28px;
-            }
-            
-            .center-title {
-                font-size: 11px;
-            }
-            
-            /* Grid vertical para móviles */
-            .orbit-container {
-                position: relative;
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 12px;
-                padding: 0 20px 100px;
-                width: 100%;
-                height: auto;
-            }
-            
-            .planet-wrapper {
-                position: relative !important;
-                left: auto !important;
-                top: auto !important;
-                width: 100%;
-                height: auto;
-                flex-direction: row;
-                align-items: center;
-                gap: 15px;
-                padding: 16px 20px;
-                background: white;
-                border-radius: 16px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                border: 1px solid rgba(0,0,0,0.05);
-            }
-            
-            .planet-wrapper:active {
-                transform: scale(0.98);
-            }
-            
-            .planet-node {
-                width: 50px;
-                height: 50px;
-                border-width: 2px;
-            }
-            
-            .planet-icon {
-                width: 24px;
-                height: 24px;
-            }
-            
-            .planet-number {
-                width: 18px;
-                height: 18px;
-                font-size: 9px;
-                bottom: -3px;
-                right: -3px;
-            }
-            
-            .planet-title {
-                margin-top: 0;
-                font-size: 15px;
-                font-weight: 700;
-                color: #1a3c4a;
-                background: transparent;
-                box-shadow: none;
-                padding: 0;
-                flex: 1;
-                text-align: left;
-            }
-            
-            /* Ocultar SVG de conexiones en móvil */
-            .orbit-lines {
-                display: none;
-            }
-            
-            /* Panel de información pantalla completa */
-            .info-panel {
-                width: 100%;
-                right: -100%;
-                border-radius: 0;
-                padding: 20px;
-                padding-top: 60px;
-            }
-            
-            .panel-header {
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-            }
-            
-            .panel-title {
-                font-size: 20px;
-            }
-            
-            .concept-card {
-                padding: 18px;
-            }
-            
-            .card-title {
-                font-size: 15px;
-            }
-            
-            .card-text {
-                font-size: 13px;
-            }
-            
-            /* Modal centrado más grande */
-            .detail-content {
-                width: 90%;
-                max-height: 80%;
-                padding: 24px;
-            }
-            
-            .detail-title {
-                font-size: 18px;
-            }
-            
-            .detail-body {
-                font-size: 15px;
-            }
-            
-            /* Navegación inferior fija más grande para tacto */
-            .bottom-nav {
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                padding: 12px 24px;
-                gap: 12px;
-                border-radius: 30px;
-                background: rgba(255,255,255,0.95);
-            }
-            
-            .nav-dot {
-                width: 14px;
-                height: 14px;
-            }
-            
-            .reference {
-                display: none; /* Ocultar en móvil por espacio */
-            }
-        }
-
-        /* MÓVILES PEQUEÑOS (< 480px) */
-        @media (max-width: 480px) {
-            .center-hub {
-                width: 110px;
-                height: 110px;
-                margin-bottom: 20px;
-            }
-            
-            .center-icon {
-                font-size: 24px;
-                margin-bottom: 4px;
-            }
-            
-            .center-title {
-                font-size: 9px;
-            }
-            
-            .center-sub {
-                font-size: 8px;
-            }
-            
-            .orbit-container {
-                padding: 0 16px 100px;
-                gap: 10px;
-            }
-            
-            .planet-wrapper {
-                padding: 14px 16px;
-            }
-            
-            .planet-node {
-                width: 44px;
-                height: 44px;
-            }
-            
-            .planet-icon {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .planet-title {
-                font-size: 14px;
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .planet-wrapper {
+            animation: planetIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
     </style>
 </head>
 <body>
 
-<div class="universe-container" id="universe">
-    <svg class="orbit-lines" viewBox="0 0 800 800">
-        <defs>
-            <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.5" />
-                <stop offset="100%" style="stop-color:#e74c3c;stop-opacity:0.5" />
-            </linearGradient>
-        </defs>
-        <path class="connector-path" id="orbitPath" d="" />
-    </svg>
+<div class="bg-pattern"></div>
 
-    <div class="center-hub" onclick="resetView()">
-        <div class="center-icon">🎯</div>
-        <div class="center-title">FUNDAMENTOS<br>MATEMÁTICOS</div>
-        <div class="center-sub">8 Semanas • Explorar</div>
-    </div>
+<svg class="orbit-lines" width="800" height="800" viewBox="0 0 800 800">
+    <defs>
+        <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.6" />
+            <stop offset="50%" style="stop-color:#9b59b6;stop-opacity:0.4" />
+            <stop offset="100%" style="stop-color:#e74c3c;stop-opacity:0.6" />
+        </linearGradient>
+    </defs>
+    <path class="connector-path" d="M 625 400 A 225 225 0 1 1 624.99 400" fill="none" stroke="url(#gradient-line)" stroke-width="2" stroke-dasharray="10 5" opacity="0.3"/>
+</svg>
 
-    <div class="orbit-container" id="orbitContainer"></div>
-
-    <div class="overlay" id="overlay" onclick="closePanel()"></div>
-
-    <div class="info-panel" id="infoPanel">
-        <button class="close-panel" onclick="closePanel()">×</button>
-        <div class="panel-header">
-            <div class="panel-badge" id="panelBadge">SEMANA 1</div>
-            <h2 class="panel-title" id="panelTitle">Conjuntos Numéricos</h2>
-            <p class="panel-subtitle" id="panelSubtitle">Clasificación y representación</p>
-        </div>
-        <div class="concept-cards" id="conceptCards"></div>
-    </div>
-
-    <div class="detail-modal" id="detailModal">
-        <div class="detail-content">
-            <div class="detail-title" id="detailTitle">Título</div>
-            <div class="detail-body" id="detailBody">Contenido detallado</div>
-            <button class="detail-close" onclick="closeDetail()">Cerrar</button>
-        </div>
-    </div>
-
-    <div class="bottom-nav" id="bottomNav"></div>
-    <div class="reference">Cuenca Macas et al. (2020). Fundamentos Matemáticos. EDILOJA.</div>
+<div class="center-hub" onclick="resetView()">
+    <div class="center-icon">🎯</div>
+    <div class="center-title">FUNDAMENTOS<br>MATEMÁTICOS</div>
+    <div class="center-sub">8 Semanas • Explorar</div>
 </div>
+
+<div class="orbit-container" id="orbitContainer"></div>
+
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<div class="info-panel" id="infoPanel">
+    <button class="close-panel" onclick="closePanel()">×</button>
+    <div class="panel-header">
+        <div class="panel-badge" id="panelBadge">SEMANA 1</div>
+        <h2 class="panel-title" id="panelTitle">Conjuntos Numéricos</h2>
+        <p class="panel-subtitle" id="panelSubtitle">Clasificación y representación de números</p>
+    </div>
+    <div class="concept-cards" id="conceptCards"></div>
+</div>
+
+<div class="detail-modal" id="detailModal">
+    <div class="detail-content">
+        <div class="detail-title" id="detailTitle">Título</div>
+        <div class="detail-body" id="detailBody">Contenido detallado</div>
+        <button class="detail-close" onclick="closeDetail()">Cerrar información</button>
+    </div>
+</div>
+
+<div class="bottom-nav" id="bottomNav"></div>
+<div class="reference">Cuenca Macas et al. (2020). Fundamentos Matemáticos. EDILOJA.</div>
 
 <script>
     const weeksData = [
@@ -899,38 +712,33 @@
         }
     ];
 
-    const container = document.getElementById('universe');
     const orbitContainer = document.getElementById('orbitContainer');
     const infoPanel = document.getElementById('infoPanel');
     const overlay = document.getElementById('overlay');
     let currentWeek = 0;
-    let isMobile = window.innerWidth <= 1024;
 
     function init() {
         createPlanets();
         createNavDots();
-        if (!isMobile) drawConnectors();
     }
 
     function createPlanets() {
-        // Limpiar contenedor
-        orbitContainer.innerHTML = '';
-        
+        const centerX = 400;
+        const centerY = 400;
+        const radius = 260; // Radio de órbita
+
         weeksData.forEach((data, index) => {
+            const angle = (index * 45 - 90) * (Math.PI / 180); // -90 para empezar arriba
+            const x = centerX + radius * Math.cos(angle) - 70; // 70 = mitad de ancho wrapper
+            const y = centerY + radius * Math.sin(angle) - 80; // 80 = mitad de alto wrapper
+
             const wrapper = document.createElement('div');
             wrapper.className = 'planet-wrapper';
+            wrapper.style.left = `${x}px`;
+            wrapper.style.top = `${y}px`;
             wrapper.style.setProperty('--planet-color', data.color);
+            wrapper.style.animationDelay = `${index * 0.1}s`;
             wrapper.dataset.week = data.week;
-            
-            // Calcular posición solo para desktop
-            if (!isMobile) {
-                const angle = (index * 45) * (Math.PI / 180);
-                const radius = 250;
-                const x = 400 + radius * Math.cos(angle) - 60; // 60 = mitad de 120px
-                const y = 400 + radius * Math.sin(angle) - 70; // 70 = mitad de 140px
-                wrapper.style.left = `${x}px`;
-                wrapper.style.top = `${y}px`;
-            }
 
             wrapper.innerHTML = `
                 <div class="planet-node">
@@ -963,7 +771,6 @@
 
     function createNavDots() {
         const nav = document.getElementById('bottomNav');
-        nav.innerHTML = '';
         weeksData.forEach((data) => {
             const dot = document.createElement('div');
             dot.className = 'nav-dot';
@@ -972,29 +779,6 @@
             dot.onclick = () => openWeek(data.week);
             nav.appendChild(dot);
         });
-    }
-
-    function drawConnectors() {
-        const svg = document.getElementById('orbitPath');
-        const centerX = 400;
-        const centerY = 400;
-        const radius = 250;
-        
-        let d = '';
-        for (let i = 0; i <= weeksData.length; i++) {
-            const angle = (i * 45) * (Math.PI / 180);
-            const x = centerX + radius * Math.cos(angle);
-            const y = centerY + radius * Math.sin(angle);
-            
-            if (i === 0) d += `M ${x} ${y} `;
-            else d += `L ${x} ${y} `;
-        }
-        const firstAngle = 0;
-        const firstX = centerX + radius * Math.cos(firstAngle);
-        const firstY = centerY + radius * Math.sin(firstAngle);
-        d += `L ${firstX} ${firstY}`;
-        
-        svg.setAttribute('d', d);
     }
 
     function openWeek(weekNum) {
@@ -1013,7 +797,7 @@
         data.sections.forEach((section, idx) => {
             const card = document.createElement('div');
             card.className = 'concept-card';
-            card.style.animation = `fadeIn 0.3s ease ${idx * 0.1}s both`;
+            card.style.animationDelay = `${idx * 0.1}s`;
             card.innerHTML = `
                 <div class="card-title">
                     <span class="card-icon">${section.icon}</span>
@@ -1061,15 +845,7 @@
         document.getElementById('detailModal').classList.remove('active');
     }
 
-    // Detectar cambio de tamaño
-    window.addEventListener('resize', () => {
-        const newIsMobile = window.innerWidth <= 1024;
-        if (newIsMobile !== isMobile) {
-            isMobile = newIsMobile;
-            location.reload(); // Recargar para reorganizar elementos
-        }
-    });
-
+    // Navegación teclado
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             if (document.getElementById('detailModal').classList.contains('active')) {
