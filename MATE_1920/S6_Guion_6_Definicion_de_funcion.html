@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Quiz Interactivo | Definición de Función</title>
+    <style>
+        :root {
+            --color-bg: #fefce8;        /* Fondo crema claro */
+            --color-bg-alt: #fffbeb;    /* Variación más clara */
+            --color-green: #22c55e;     /* Verde vivo */
+            --color-green-dark: #16a34a;
+            --color-orange: #ea580c;    /* Naranja terracota */
+            --color-orange-light: #fdba74;
+            --color-yellow: #fbbf24;    /* Amarillo dorado */
+            --color-text: #1c1917;      /* Texto oscuro */
+            --color-text-muted: #57534e;
+            --shadow-soft: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--color-bg) 0%, #fff7ed 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 20px;
+        }
+
+        /* CONTENEDOR 800x800 */
+        .quiz-container {
+            width: 800px;
+            height: 800px;
+            background: var(--color-bg);
+            border-radius: 40px;
+            box-shadow: var(--shadow-soft), 0 0 0 1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* DECORACIÓN >> AMARILLOS (como en la imagen) */
+        .decor-chevrons {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            font-size: 32px;
+            color: var(--color-yellow);
+            font-weight: bold;
+            letter-spacing: -5px;
+            z-index: 10;
+        }
+
+        .decor-chevrons.bottom-right {
+            top: auto;
+            left: auto;
+            right: 30px;
+            bottom: 30px;
+            transform: rotate(180deg);
+        }
+
+        /* HEADER LIMPIO */
+        .quiz-header {
+            padding: 24px 40px 10px;
+            text-align: center;
+            position: relative;
+        }
+
+        .title-main {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--color-text);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subhead {
+            font-size: 13px;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        /* PROGRESO CON PUNTOS AMARILLOS */
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0 20px;
+            padding: 0 40px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d6d3d1;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--color-yellow);
+            transform: scale(1.3);
+        }
+
+        .dot.completed {
+            background: var(--color-green);
+        }
+
+        /* CONTENEDOR DE PREGUNTAS */
+        .questions-carousel {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            padding: 0 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+        }
+
+        /* LAYOUT PRINCIPAL: CÍRCULO IZQUIERDA + CONTENIDO DERECHA */
+        .question-layout {
+            display: flex;
+            gap: 40px;
+            height: 100%;
+            align-items: center;
+        }
+
+        /* CÍRCULO GRANDE CON NÚMERO (estilo imagen) */
+        .circle-container {
+            position: relative;
+            flex-shrink: 0;
+            width: 320px;
+            height: 320px;
+        }
+
+        .question-number {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 60px;
+            height: 60px;
+            background: var(--color-green);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .circle-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: white;
+            border: 12px solid #e7e5e4;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.05);
+        }
+
+        .circle-content {
+            text-align: center;
+            padding: 40px;
+            font-size: 72px;
+        }
+
+        /* CONTENIDO DERECHA */
+        .question-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .question-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--color-text);
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        /* OPCIONES TIPO BURBUJA/CÁPSULA */
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-letter {
+            width: 44px;
+            height: 44px;
+            background: var(--color-green);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 4px 6px rgba(34, 197, 94, 0.2);
+            transition: all 0.3s;
+        }
+
+        .option-bubble {
+            flex: 1;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            border: 3px solid var(--color-orange-light);
+            border-radius: 50px;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-text);
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .option-item:hover .option-bubble {
+            border-color: var(--color-orange);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+        }
+
+        .option-item:hover .option-letter {
+            transform: scale(1.1);
+        }
+
+        .option-item input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .option-item input:checked ~ .option-bubble {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: var(--color-green);
+            border-width: 3px;
+        }
+
+        .option-item input:checked ~ .option-letter {
+            background: var(--color-green-dark);
+            transform: scale(1.1);
+        }
+
+        /* BOTÓN VERIFICAR */
+        .btn-verify {
+            background: linear-gradient(135deg, var(--color-green) 0%, var(--color-green-dark) 100%);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            align-self: flex-start;
+            box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-verify:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* FEEDBACK ESTILO "BUEN TRABAJO" */
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(254, 252, 232, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s;
+            z-index: 100;
+            padding: 40px;
+        }
+
+        .feedback-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .feedback-card {
+            background: white;
+            border-radius: 40px;
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            border: 2px solid #e7e5e4;
+        }
+
+        .feedback-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--color-green);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            margin: 0 auto 20px;
+            animation: bounceIn 0.6s;
+        }
+
+        .feedback-icon.wrong {
+            background: #ef4444;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .feedback-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--color-text);
+            margin-bottom: 16px;
+        }
+
+        .feedback-text {
+            font-size: 18px;
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--color-yellow) 0%, #f59e0b 100%);
+            color: var(--color-text);
+            border: none;
+            padding: 16px 48px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(251, 191, 36, 0.5);
+        }
+
+        /* NAVEGACIÓN INFERIOR */
+        .nav-footer {
+            padding: 20px 40px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 2px solid #e7e5e4;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--color-text-muted);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            border-color: var(--color-orange);
+            color: var(--color-orange);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .question-counter {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            background: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid #e7e5e4;
+        }
+
+        /* RESULTADO FINAL */
+        .final-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 200;
+            transition: all 0.4s;
+        }
+
+        .final-screen.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .final-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-green) 0%, var(--color-green-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            font-weight: 800;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px -10px rgba(34, 197, 94, 0.4);
+            border: 8px solid white;
+        }
+
+        .final-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--color-text);
+            margin-bottom: 16px;
+        }
+
+        .final-text {
+            font-size: 18px;
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            max-width: 500px;
+        }
+
+        .btn-restart {
+            margin-top: 30px;
+            background: var(--color-orange);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px -5px rgba(234, 88, 12, 0.3);
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(234, 88, 12, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            body { padding: 0; }
+            .quiz-container {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .question-layout {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .circle-container {
+                width: 200px;
+                height: 200px;
+            }
+            .question-text {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-container">
+    <!-- Decoración -->
+    <div class="decor-chevrons">›››</div>
+    <div class="decor-chevrons bottom-right">‹‹‹</div>
+
+    <!-- Header -->
+    <div class="quiz-header">
+        <div class="title-main">Definición de Función</div>
+        <div class="subhead">Fundamentos Matemáticos | MATE_1920 | Prof. Luis Alberto Cuenca Macas</div>
+    </div>
+
+    <!-- Puntos de progreso -->
+    <div class="progress-dots" id="progressDots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+    </div>
+
+    <!-- Área de preguntas -->
+    <div class="questions-carousel" id="slidesContainer">
+        <!-- Las slides se generan dinámicamente -->
+    </div>
+
+    <!-- Navegación -->
+    <div class="nav-footer">
+        <button class="nav-btn" id="prevBtn" disabled>◀ Anterior</button>
+        <span class="question-counter" id="counterText">1 / 4</span>
+        <button class="nav-btn" id="nextBtn">Siguiente ▶</button>
+    </div>
+
+    <!-- Pantalla final -->
+    <div class="final-screen" id="finalScreen">
+        <div class="final-circle" id="finalScore">0/4</div>
+        <div class="final-title">¡Completado!</div>
+        <div class="final-text" id="finalMessage"></div>
+        <button class="btn-restart" onclick="resetQuiz()">⟳ Reiniciar Quiz</button>
+    </div>
+</div>
+
+<script>
+    // Datos de preguntas
+    const questionsData = [
+        {
+            text: "¿Qué es una función en matemáticas?",
+            options: [
+                "Una relación entre números sin ninguna regla.",
+                "Una relación que asigna a cada elemento del dominio un único elemento del codominio.",
+                "Un conjunto de números naturales únicamente.",
+                "Una operación que siempre produce números positivos."
+            ],
+            correct: 1,
+            feedbackCorrect: "¡Excelente! Una función es una relación especial donde cada elemento del dominio se asocia con un único elemento del codominio.",
+            feedbackWrong: "¡Oh, no! La respuesta correcta es: Una relación que asigna a cada elemento del dominio un único elemento del codominio.",
+            icon: "📊"
+        },
+        {
+            text: "En una función, ¿cómo se denomina el conjunto de valores de entrada?",
+            options: ["Rango", "Imagen", "Dominio", "Codominio parcial"],
+            correct: 2,
+            feedbackCorrect: "¡Excelente! El dominio es el conjunto de valores que pueden utilizarse como entrada en una función.",
+            feedbackWrong: "¡Oh, no! El conjunto de valores de entrada se llama Dominio. El rango o imagen es el conjunto de valores de salida.",
+            icon: "📥"
+        },
+        {
+            text: "¿Cuál de las siguientes relaciones sí representa una función?",
+            options: [
+                "Un valor de entrada tiene dos valores de salida.",
+                "Cada valor de entrada tiene exactamente un valor de salida.",
+                "Algunos valores de entrada no tienen salida.",
+                "Un valor de entrada puede tener varias imágenes."
+            ],
+            correct: 1,
+            feedbackCorrect: "¡Excelente! Para que una relación sea una función, cada elemento del dominio debe estar asociado con un único elemento del codominio.",
+            feedbackWrong: "¡Oh, no! La condición fundamental es que cada valor de entrada tenga exactamente un valor de salida.",
+            icon: "✓"
+        },
+        {
+            text: "En la expresión f(x) = 2x + 3, ¿qué representa x?",
+            options: ["La imagen", "La variable dependiente", "La variable independiente", "El rango"],
+            correct: 2,
+            feedbackCorrect: "¡Excelente! En una función, la variable x representa la variable independiente, es decir, el valor de entrada.",
+            feedbackWrong: "¡Oh, no! x es la variable independiente (entrada). La variable dependiente es f(x) o la imagen.",
+            icon: "🔢"
+        }
+    ];
+
+    let currentSlide = 0;
+    let userAnswers = [null, null, null, null];
+    let answerVerified = [false, false, false, false];
+    let correctCount = 0;
+
+    const slidesContainer = document.getElementById('slidesContainer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const counterText = document.getElementById('counterText');
+    const progressDots = document.getElementById('progressDots');
+    const finalScreen = document.getElementById('finalScreen');
+
+    function renderSlides() {
+        slidesContainer.innerHTML = '';
+        questionsData.forEach((q, idx) => {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            if (idx === 0) slide.classList.add('active');
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            let optionsHtml = '';
+            q.options.forEach((opt, optIdx) => {
+                optionsHtml += `
+                    <li class="option-item" onclick="selectOption(${idx}, ${optIdx})">
+                        <input type="radio" name="q${idx}" value="${optIdx}" id="q${idx}opt${optIdx}">
+                        <div class="option-letter">${letters[optIdx]}</div>
+                        <div class="option-bubble">${opt}</div>
+                    </li>
+                `;
+            });
+
+            slide.innerHTML = `
+                <div class="question-layout">
+                    <div class="circle-container">
+                        <div class="question-number">${idx + 1}</div>
+                        <div class="circle-frame">
+                            <div class="circle-content">${q.icon}</div>
+                        </div>
+                    </div>
+                    <div class="question-content">
+                        <div class="question-text">${q.text}</div>
+                        <ul class="options-list">
+                            ${optionsHtml}
+                        </ul>
+                        <button class="btn-verify" onclick="verifyAnswer(${idx})" id="btn${idx}">
+                            ✓ Verificar respuesta
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="feedback-overlay" id="feedback${idx}">
+                    <div class="feedback-card">
+                        <div class="feedback-icon" id="icon${idx}">✓</div>
+                        <div class="feedback-title" id="title${idx}">¡Buen trabajo!</div>
+                        <div class="feedback-text" id="text${idx}"></div>
+                        <button class="btn-next" onclick="nextQuestion()">Siguiente →</button>
+                    </div>
+                </div>
+            `;
+            
+            slidesContainer.appendChild(slide);
+        });
+    }
+
+    function selectOption(qIdx, optIdx) {
+        if (answerVerified[qIdx]) return;
+        
+        const radios = document.getElementsByName(`q${qIdx}`);
+        radios[optIdx].checked = true;
+        userAnswers[qIdx] = optIdx;
+    }
+
+    function verifyAnswer(idx) {
+        if (userAnswers[idx] === null) {
+            alert('Por favor selecciona una respuesta');
+            return;
+        }
+        
+        if (answerVerified[idx]) return;
+        
+        answerVerified[idx] = true;
+        const isCorrect = userAnswers[idx] === questionsData[idx].correct;
+        
+        if (isCorrect) correctCount++;
+        
+        const feedback = document.getElementById(`feedback${idx}`);
+        const icon = document.getElementById(`icon${idx}`);
+        const title = document.getElementById(`title${idx}`);
+        const text = document.getElementById(`text${idx}`);
+        
+        if (isCorrect) {
+            icon.textContent = '✓';
+            icon.className = 'feedback-icon';
+            title.textContent = '¡Excelente!';
+            text.textContent = questionsData[idx].feedbackCorrect;
+            updateDot(idx, 'completed');
+        } else {
+            icon.textContent = '✗';
+            icon.className = 'feedback-icon wrong';
+            title.textContent = '¡Oh, no!';
+            text.textContent = questionsData[idx].feedbackWrong;
+            updateDot(idx, 'wrong');
+        }
+        
+        feedback.classList.add('show');
+        document.getElementById(`btn${idx}`).disabled = true;
+        
+        // Deshabilitar opciones
+        const options = document.querySelectorAll(`input[name="q${idx}"]`);
+        options.forEach(opt => opt.disabled = true);
+        
+        if (idx === questionsData.length - 1 && answerVerified.every(v => v)) {
+            setTimeout(showFinal, 500);
+        }
+    }
+
+    function updateDot(idx, status) {
+        const dots = progressDots.children;
+        if (status === 'completed') {
+            dots[idx].classList.add('completed');
+        }
+    }
+
+    function nextQuestion() {
+        if (currentSlide < questionsData.length - 1) {
+            goToSlide(currentSlide + 1);
+        }
+    }
+
+    function goToSlide(idx) {
+        const slides = document.querySelectorAll('.slide');
+        slides[currentSlide].classList.remove('active');
+        currentSlide = idx;
+        slides[currentSlide].classList.add('active');
+        
+        // Actualizar dots
+        const dots = progressDots.children;
+        dots.forEach((dot, i) => {
+            dot.classList.remove('active');
+            if (i === idx) dot.classList.add('active');
+        });
+        
+        counterText.textContent = `${idx + 1} / ${questionsData.length}`;
+        prevBtn.disabled = idx === 0;
+        nextBtn.disabled = idx === questionsData.length - 1 || !answerVerified[idx];
+    }
+
+    function showFinal() {
+        const scoreEl = document.getElementById('finalScore');
+        const msgEl = document.getElementById('finalMessage');
+        
+        scoreEl.textContent = `${correctCount}/${questionsData.length}`;
+        
+        if (correctCount === questionsData.length) {
+            msgEl.textContent = "¡Felicitaciones! Demostraste comprensión completa de los conceptos fundamentales de función, identificando dominio, relación funcional y variables.";
+        } else if (correctCount >= 2) {
+            msgEl.textContent = "¡Buen trabajo! Tienes una comprensión base, pero repasa los conceptos de dominio y codominio.";
+        } else {
+            msgEl.textContent = "Necesitas repasar los conceptos básicos de funciones matemáticas. ¡Inténtalo de nuevo!";
+        }
+        
+        finalScreen.classList.add('show');
+    }
+
+    function resetQuiz() {
+        currentSlide = 0;
+        userAnswers = [null, null, null, null];
+        answerVerified = [false, false, false, false];
+        correctCount = 0;
+        
+        const dots = progressDots.children;
+        for (let dot of dots) {
+            dot.classList.remove('completed');
+        }
+        dots[0].classList.add('active');
+        
+        finalScreen.classList.remove('show');
+        renderSlides();
+        goToSlide(0);
+    }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentSlide > 0) goToSlide(currentSlide - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentSlide < questionsData.length - 1) goToSlide(currentSlide + 1);
+    });
+
+    // Inicializar
+    renderSlides();
+</script>
+</body>
+</html>

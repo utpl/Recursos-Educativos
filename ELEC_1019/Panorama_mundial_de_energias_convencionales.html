@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panorama Mundial de Energías Convencionales | ELEC_1019</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --accent: #00a19d;
+            --bg: #f4f7fa;
+            --card: #ffffff;
+            --text: #1a2a44;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 11px;
+            line-height: 1.45;
+            max-width: 800px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 25px rgba(0,0,0,0.12);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-left h1 {
+            font-size: 15.5px;
+            font-weight: 700;
+        }
+        
+        .title-main {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e6f0;
+            flex-shrink: 0;
+        }
+        
+        .intro {
+            padding: 12px 20px;
+            font-size: 11.5px;
+            background: #f0f7ff;
+            flex-shrink: 0;
+        }
+        
+        .instruction {
+            background: #e6f3ff;
+            color: var(--primary);
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 11.5px;
+            flex-shrink: 0;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            overflow-y: auto;
+        }
+        
+        .topic-card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 20px 16px;
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.12);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .topic-card:hover {
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 15px 30px rgba(0, 102, 204, 0.22);
+            border-color: var(--primary);
+        }
+        
+        .topic-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            transition: transform 0.4s ease;
+        }
+        
+        .topic-card:hover .topic-icon {
+            transform: scale(1.15);
+        }
+        
+        .topic-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 42, 68, 0.88);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 680px;
+            border-radius: 16px;
+            max-height: 88vh;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 18px 24px;
+            background: linear-gradient(90deg, var(--accent), #009988);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .modal-header .icon {
+            font-size: 42px;
+        }
+        
+        .modal-header h2 {
+            flex: 1;
+            font-size: 15.5px;
+            font-weight: 700;
+        }
+        
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.25);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 26px 28px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 11.5px;
+            line-height: 1.55;
+        }
+        
+        .modal-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+            margin: 16px 0;
+        }
+        
+        .modal-footer {
+            padding: 14px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 24px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .counter {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        footer {
+            padding: 10px 20px;
+            font-size: 9.5px;
+            color: #64748b;
+            background: #f1f5f9;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        /* RESPONSIVIDAD */
+        @media (max-width: 800px) {
+            .container {
+                border-radius: 0;
+            }
+            .content {
+                grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+                gap: 14px;
+                padding: 18px;
+            }
+            .topic-icon {
+                font-size: 42px;
+            }
+        }
+        
+        @media (max-width: 500px) {
+            header {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+            .title-main {
+                font-size: 14px;
+            }
+            .topic-title {
+                font-size: 12.5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <span style="font-size: 32px;">🌍</span>
+                <div>
+                    <h1>Panorama Mundial de Energías Convencionales</h1>
+                </div>
+            </div>
+          
+        </header>
+        
+        <div class="title-main">
+            Panorama mundial de energías convencionales
+        </div>
+        
+        <div class="intro">
+            Explore la distribución mundial de las principales fuentes convencionales de energía a través de un análisis guiado de las reservas y la producción por país, y reflexione sobre sus implicaciones geopolíticas y ambientales.
+        </div>
+        
+        <div class="instruction">
+            👆 Haga clic en los temas para visualizar la información
+        </div>
+        
+        <!-- GRID DE TEMAS -->
+        <div class="content" id="topics-grid">
+            <!-- Generado por JavaScript -->
+        </div>
+        
+        <!-- FOOTER -->
+        <footer>
+            <strong>Referencia APA 7:</strong><br>
+            Grupo Bancolombia (2025). Top 20 de países con las mayores reservas de petróleo.<br>
+            Sputnik Mundo (2025). Países con las mayores reservas probadas de gas natural.<br>
+            Marín, J. L. (2023). Principales productores de carbón del mundo. El Orden Mundial.<br>
+            Budeguer, N. (2024). Los países que más energía nuclear producen. Click Petróleo y Gas.
+        </footer>
+    </div>
+    
+    <!-- MODAL -->
+    <div class="modal" id="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="icon" id="modal-icon"></span>
+                <h2 id="modal-title"></h2>
+                <button class="close-btn" onclick="closeModal()" aria-label="Cerrar">✕</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="prevTopic()" id="btn-prev">← Anterior</button>
+                <div class="counter" id="modal-counter">1 de 4</div>
+                <button class="nav-btn" onclick="nextTopic()" id="btn-next">Siguiente →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const topics = [
+            {
+                id: 1,
+                title: "Países con las mayores reservas de petróleo al 2025",
+                icon: "🛢️",
+                content: `
+                    <p>Venezuela encabeza el ranking con <strong>304 mil millones de barriles</strong>, seguida de Arabia Saudita e Irán.</p>
+                    <p>Estos tres países concentran más reservas que los 17 restantes combinados.</p>
+                    <p>Países latinoamericanos como Ecuador (puesto 19) y Guyana (puesto 17) también aparecen en el ranking.</p>
+                    
+                    <img src="media/Figura 5.jpg" alt="Reservas de petróleo mundial 2025" style="max-width:50%; border-radius:10px; margin:16px 0;">
+                    
+                    <p><strong>Pregunta de reflexión:</strong><br>
+                    ¿Por qué Venezuela, a pesar de poseer las mayores reservas de petróleo del mundo, enfrenta una crisis económica profunda? ¿Qué factores más allá de la cantidad de reservas determinan el aprovechamiento real de los recursos energéticos?</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Países con las mayores reservas de gas natural al 2025",
+                icon: "🔥",
+                content: `
+                    <p>Rusia lidera con <strong>48.000 millones de metros cúbicos</strong>, seguida de Irán (34.000) y Catar (24.000).</p>
+                    <p>Irán aparece entre los tres primeros tanto en petróleo como en gas natural, lo que explica su relevancia geopolítica estratégica.</p>
+                    <p>Estados Unidos es un gran productor y consumidor simultáneo.</p>
+                    
+                    <img src="media/Figura 6.png" alt="Reservas de gas natural mundial 2025" style="max-width:50%; border-radius:10px; margin:16px 0;">
+                    
+                    <p><strong>Pregunta de reflexión:</strong><br>
+                    ¿Cómo puede la dependencia energética de un continente respecto a un solo proveedor convertirse en un instrumento de presión política? (Caso Nord Stream)</p>
+                `
+            },
+            {
+                id: 3,
+                title: "Países con las mayores reservas de carbón al 2021",
+                icon: "⚒️",
+                content: `
+                    <p>China domina con <strong>4.126 millones de toneladas</strong>, quintuplicando al segundo lugar (India).</p>
+                    <p>A pesar de sus inversiones en renovables, el carbón sigue siendo la columna vertebral de la matriz energética china.</p>
+                    <p>Colombia aparece en el puesto 12 con 59,6 millones de toneladas.</p>
+                    
+                    <img src="media/Figura 7.png" alt="Producción de carbón mundial 2021" style="max-width:80%; border-radius:10px; margin:16px 0;">
+                    
+                    <p><strong>Pregunta de reflexión:</strong><br>
+                    ¿Cómo se puede conciliar el desarrollo económico de países como China e India con los compromisos del Acuerdo de París?</p>
+                `
+            },
+            {
+                id: 4,
+                title: "Top de producción de energía nuclear al 2024",
+                icon: "☢️",
+                content: `
+                    <p>Estados Unidos lidera con <strong>772 TWh</strong>, seguido de China (383) y Francia (363).</p>
+                    <p>Francia obtiene aproximadamente el 70% de su electricidad de fuentes nucleares.</p>
+                    <p>Varios países europeos destacan en este ranking.</p>
+                    
+                    <img src="media/Figura 8.jpg" alt="Producción de energía nuclear mundial 2024" style="max-width:50%; border-radius:10px; margin:16px 0;">
+                    
+                    <p><strong>Pregunta de reflexión:</strong><br>
+                    ¿Debería considerarse la energía nuclear como una energía “limpia” en el contexto de la transición energética? Argumente considerando ventajas y riesgos (Chernóbil, Fukushima, residuos).</p>
+                `
+            }
+        ];
+        
+        let currentIndex = 0;
+        
+        function renderCards() {
+            const grid = document.getElementById('topics-grid');
+            grid.innerHTML = '';
+            
+            topics.forEach((topic, index) => {
+                const card = document.createElement('div');
+                card.className = 'topic-card';
+                card.innerHTML = `
+                    <div class="topic-icon">${topic.icon}</div>
+                    <div class="topic-title">${topic.title}</div>
+                    <p style="font-size:10.5px; color:#64748b; margin-top:8px;">Clic para explorar</p>
+                `;
+                card.onclick = () => openModal(index);
+                grid.appendChild(card);
+            });
+        }
+        
+        function openModal(index) {
+            currentIndex = index;
+            const topic = topics[index];
+            
+            document.getElementById('modal-icon').textContent = topic.icon;
+            document.getElementById('modal-title').textContent = topic.title;
+            document.getElementById('modal-body').innerHTML = topic.content;
+            document.getElementById('modal-counter').textContent = `${index + 1} de ${topics.length}`;
+            
+            document.getElementById('btn-prev').disabled = index === 0;
+            document.getElementById('btn-next').disabled = index === topics.length - 1;
+            
+            document.getElementById('modal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        function prevTopic() {
+            if (currentIndex > 0) openModal(currentIndex - 1);
+        }
+        
+        function nextTopic() {
+            if (currentIndex < topics.length - 1) openModal(currentIndex + 1);
+        }
+        
+        // Cerrar con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+        
+        // Inicialización
+        window.onload = () => {
+            renderCards();
+            console.log('%c✅ Infografía interactiva "Panorama Mundial de Energías Convencionales" cargada correctamente', 'color:#00a19d; font-weight:700');
+        };
+    </script>
+</body>
+</html>

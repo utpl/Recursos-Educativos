@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mitigación y descarbonización energética | ELEC_1019</title>
+<style>
+/* ══════════════════════════════════════════
+   VARIABLES & RESET
+══════════════════════════════════════════ */
+:root{
+  --primary:#0055b3;
+  --accent:#007a76;
+  --success:#166534;
+  --danger:#b91c1c;
+  --warn:#92400e;
+  --text:#1a2535;
+  --text-mid:#3a4a5c;
+  --text-light:#64748b;
+  --bg-card:#ffffff;
+  --bg-page:#eef1f5;
+  --bg-intro:#e8f1fb;
+  --bg-instr:#d0e4f7;
+  --bg-foot:#eef1f5;
+  --border:#ccd5e0;
+  --r:10px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+  width:100%;height:100%;
+  background:#c5cdd7;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:11px;color:var(--text);
+  display:flex;align-items:flex-start;justify-content:center;
+}
+
+/* ══════════════════════════════════════════
+   CONTAINER — STRICT 800 × 800
+══════════════════════════════════════════ */
+.container{
+  width:800px;height:800px;
+  max-width:800px;max-height:800px;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 4px 28px rgba(0,0,0,.18);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);
+  color:#fff;padding:10px 18px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+header .icon{font-size:22px;line-height:1;}
+header h1{font-size:15px;font-weight:700;line-height:1.2;}
+header .sub{font-size:10px;opacity:.87;margin-top:1px;}
+
+/* ── META ── */
+.meta{
+  padding:5px 18px;background:var(--bg-intro);
+  color:#0d3a6e;font-size:10.5px;
+  display:flex;gap:16px;flex-wrap:wrap;align-items:center;
+  border-bottom:1px solid #b8d4ef;flex-shrink:0;
+}
+.meta b{color:var(--primary);}
+
+/* ── STEP BAR ── */
+.step-bar{
+  display:flex;align-items:center;gap:0;
+  background:#f4f7fa;
+  border-bottom:2px solid #dde3ea;
+  flex-shrink:0;padding:0 18px;
+}
+.step-dot-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  padding:7px 0;gap:3px;flex:1;cursor:pointer;
+  transition:opacity .15s;
+}
+.step-dot-wrap:hover .step-lbl{color:var(--primary);}
+.step-circle{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--border);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--text-light);
+  transition:background .2s,border-color .2s,color .2s;
+  flex-shrink:0;
+}
+.step-dot-wrap.active   .step-circle{background:var(--primary);border-color:var(--primary);color:#fff;}
+.step-dot-wrap.done     .step-circle{background:var(--success);border-color:var(--success);color:#fff;}
+.step-dot-wrap.answered .step-circle{background:#e0f2fe;border-color:var(--primary);color:var(--primary);}
+.step-lbl{font-size:9px;color:var(--text-light);text-align:center;line-height:1.2;}
+.step-dot-wrap.active .step-lbl{color:var(--primary);font-weight:700;}
+.step-divider{width:28px;height:2px;background:var(--border);flex-shrink:0;margin-top:-14px;}
+.step-dot-wrap.done ~ .step-divider{background:var(--success);}
+
+/* ── VIEWS WRAPPER ── */
+.views{flex:1;overflow:hidden;position:relative;min-height:0;}
+.view{
+  position:absolute;inset:0;display:none;
+  flex-direction:column;overflow:hidden;
+}
+.view.active{display:flex;}
+
+.view-body{
+  flex:1;overflow-y:auto;padding:14px 18px 10px;min-height:0;
+}
+.view-body::-webkit-scrollbar{width:5px;}
+.view-body::-webkit-scrollbar-thumb{background:#c0ccd8;border-radius:4px;}
+
+/* ════════════════════════════════════════
+   VIEW 0 — PORTADA / CASO
+════════════════════════════════════════ */
+.case-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--primary);color:#fff;
+  padding:4px 12px;border-radius:20px;
+  font-size:10px;font-weight:700;margin-bottom:10px;
+}
+.case-title{
+  font-size:14px;font-weight:700;color:var(--primary);
+  margin-bottom:10px;line-height:1.3;
+}
+.case-body{
+  font-size:11px;line-height:1.65;color:var(--text-mid);
+  margin-bottom:10px;
+}
+.case-body p{margin-bottom:7px;}
+.case-body p:last-child{margin-bottom:0;}
+.case-callout{
+  background:var(--bg-instr);border-left:3px solid var(--primary);
+  padding:9px 12px;border-radius:0 var(--r) var(--r) 0;
+  font-size:11px;font-weight:700;color:var(--primary);
+  margin-top:10px;
+}
+
+/* context icons strip */
+.ctx-strip{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;
+}
+.ctx-chip{
+  display:flex;align-items:center;gap:5px;
+  background:#f0f4f8;border:1px solid var(--border);
+  border-radius:20px;padding:4px 10px;
+  font-size:10.5px;color:var(--text-mid);
+}
+.ctx-chip span{font-size:13px;}
+
+/* ════════════════════════════════════════
+   VIEWS 1–3 — PREGUNTAS
+════════════════════════════════════════ */
+.q-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--primary);color:#fff;
+  padding:3px 11px;border-radius:20px;
+  font-size:10px;font-weight:700;margin-bottom:8px;
+}
+.q-stem{
+  font-size:11.5px;font-weight:700;color:var(--text);
+  line-height:1.55;margin-bottom:12px;
+  background:#f8fafc;border:1px solid var(--border);
+  border-radius:var(--r);padding:10px 12px;
+}
+
+/* answer options */
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+
+.option-btn{
+  width:100%;text-align:left;
+  background:#fafbfc;border:2px solid var(--border);
+  border-radius:var(--r);padding:10px 14px;
+  font-size:11px;color:var(--text-mid);line-height:1.5;
+  cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.option-btn:hover:not(:disabled){
+  border-color:var(--primary);background:#eff6ff;
+  box-shadow:0 2px 8px rgba(0,85,179,.15);
+}
+.option-btn:disabled{cursor:default;}
+.option-btn.correct{border-color:#16a34a;background:#f0fdf4;}
+.option-btn.incorrect{border-color:var(--danger);background:#fff1f1;}
+
+.opt-letter{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  background:var(--border);color:var(--text);
+  font-size:10.5px;font-weight:800;margin-top:1px;
+  transition:background .18s,color .18s;
+}
+.option-btn:hover:not(:disabled) .opt-letter{background:var(--primary);color:#fff;}
+.option-btn.correct   .opt-letter{background:#16a34a;color:#fff;}
+.option-btn.incorrect .opt-letter{background:var(--danger);color:#fff;}
+
+/* ── FEEDBACK CARD (carta) ── */
+.feedback-card{
+  display:none;
+  border-radius:var(--r);
+  border:2px solid var(--border);
+  overflow:hidden;
+  margin-top:8px;
+  animation:slideDown .3s ease;
+}
+.feedback-card.show{display:block;}
+
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.fb-header{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;color:#fff;
+}
+.fb-header.ok  {background:var(--success);}
+.fb-header.err {background:#7f1d1d;}
+
+.fb-header .fb-icon{font-size:18px;line-height:1;}
+.fb-header .fb-title{font-size:11.5px;font-weight:700;}
+
+.fb-body{
+  padding:10px 14px;
+  font-size:10.5px;line-height:1.6;color:var(--text-mid);
+  background:#fff;
+}
+.fb-body.ok  {border-top:1.5px solid #bbf7d0;}
+.fb-body.err {border-top:1.5px solid #fecaca;}
+
+/* ════════════════════════════════════════
+   VIEW 4 — RESULTADO FINAL
+════════════════════════════════════════ */
+.final-icon{font-size:48px;text-align:center;margin-bottom:10px;}
+.final-title{
+  font-size:15px;font-weight:700;color:var(--success);
+  text-align:center;margin-bottom:8px;
+}
+.final-intro{
+  font-size:11px;color:var(--text-mid);line-height:1.6;
+  margin-bottom:12px;text-align:center;
+}
+.summary-list{
+  display:flex;flex-direction:column;gap:8px;margin-bottom:12px;
+}
+.summary-item{
+  display:flex;align-items:flex-start;gap:10px;
+  background:#f8fafc;border:1px solid var(--border);
+  border-radius:var(--r);padding:9px 12px;
+}
+.summary-item .si-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  background:var(--success);color:#fff;font-size:10px;font-weight:800;
+  margin-top:1px;
+}
+.summary-item p{font-size:10.5px;line-height:1.5;color:var(--text-mid);}
+.summary-item p strong{color:var(--text);}
+
+.score-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#dcfce7;color:var(--success);
+  border:1.5px solid #86efac;
+  padding:5px 16px;border-radius:20px;
+  font-size:12px;font-weight:700;
+  margin:0 auto 12px;
+}
+.final-ref{
+  font-size:9.5px;color:var(--text-light);text-align:center;
+  padding:8px 0;border-top:1px solid var(--border);line-height:1.5;
+}
+
+/* ── NAV BAR ── */
+.nav-bar{
+  padding:8px 16px;background:var(--bg-foot);
+  border-top:1px solid #d4dbe4;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:8px;flex-shrink:0;
+}
+.btn{
+  padding:7px 16px;border:none;border-radius:20px;
+  font-size:11px;font-weight:600;cursor:pointer;
+  transition:opacity .15s,transform .1s;
+  display:flex;align-items:center;gap:5px;
+}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.btn-back   {background:#546e7a;color:#fff;}
+.btn-fwd    {background:var(--primary);color:#fff;}
+.btn-restart{background:var(--accent);color:#fff;}
+.btn-case   {background:#e2e8f0;color:var(--text);}
+
+/* progress text */
+.prog-txt{
+  font-size:10.5px;font-weight:600;color:var(--text-light);
+  background:#f0f4f8;padding:4px 12px;border-radius:20px;
+}
+
+/* ── FOOTER ── */
+footer{
+  padding:5px 18px;font-size:9.5px;color:#607080;
+  background:var(--bg-foot);text-align:center;
+  flex-shrink:0;border-top:1px solid #d4dbe4;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE ≤699px
+══════════════════════════════════════════ */
+@media(max-width:699px){
+  body{align-items:flex-start;}
+  .container{
+    width:100vw;height:100dvh;
+    max-width:100vw;max-height:100dvh;border-radius:0;
+  }
+  header h1{font-size:13px;}
+  header .sub{font-size:9.5px;}
+  header .icon{font-size:19px;}
+  .nav-bar{flex-wrap:wrap;}
+  .btn{flex:1;justify-content:center;}
+  .ctx-strip{gap:6px;}
+}
+@media(max-width:400px){
+  header h1{font-size:12px;}
+  .step-lbl{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="container" role="main">
+
+  <!-- HEADER -->
+  <header>
+    <span class="icon" aria-hidden="true">🌱</span>
+    <div>
+      <h1>Mitigación y descarbonización energética</h1>
+      <div class="sub">Energía y Medioambiente</div>
+    </div>
+  </header>
+
+  <!-- META -->
+  <div class="meta">
+    <span><b>Tipo:</b> Caso práctico con quiz</span>
+    <span><b>Preguntas:</b> 3</span>
+
+  </div>
+
+  <!-- STEP BAR -->
+  <div class="step-bar" id="step-bar">
+    <div class="step-dot-wrap active" data-v="0" onclick="goTo(0)" title="Caso">
+      <div class="step-circle">📋</div>
+      <div class="step-lbl">Caso</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-dot-wrap" data-v="1" onclick="goTo(1)" title="Pregunta 1">
+      <div class="step-circle">1</div>
+      <div class="step-lbl">Pregunta 1</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-dot-wrap" data-v="2" onclick="goTo(2)" title="Pregunta 2">
+      <div class="step-circle">2</div>
+      <div class="step-lbl">Pregunta 2</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-dot-wrap" data-v="3" onclick="goTo(3)" title="Pregunta 3">
+      <div class="step-circle">3</div>
+      <div class="step-lbl">Pregunta 3</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-dot-wrap" data-v="4" onclick="goTo(4)" title="Resultado">
+      <div class="step-circle">🏁</div>
+      <div class="step-lbl">Resultado</div>
+    </div>
+  </div>
+
+  <!-- ══ VIEWS ══ -->
+  <div class="views" id="views">
+
+    <!-- ── VIEW 0: CASO ── -->
+    <div class="view active" id="view-0" role="region" aria-label="Caso de estudio">
+      <div class="view-body">
+
+        <div class="case-badge">📍 Caso de estudio práctico</div>
+        <div class="case-title">Renovación energética en la ciudad de Puerto Limpio</div>
+
+        <div class="ctx-strip">
+          <div class="ctx-chip"><span>🏙️</span> 250,000 habitantes</div>
+          <div class="ctx-chip"><span>🏭</span> 70% termoeléctrica a carbón</div>
+          <div class="ctx-chip"><span>🌫️</span> Alta contaminación atmosférica</div>
+          <div class="ctx-chip"><span>🤝</span> Compromiso Acuerdo de París</div>
+          <div class="ctx-chip"><span>🚌</span> Flota de buses a combustión</div>
+        </div>
+
+        <div class="case-body">
+          <p>La ciudad costera de <strong>Puerto Limpio</strong>, con 250,000 habitantes, depende en un
+          <strong>70 %</strong> de una central termoeléctrica a carbón para su suministro eléctrico.
+          El gobierno municipal, preocupado por los altos índices de contaminación atmosférica y el
+          compromiso del país con el <strong>Acuerdo de París</strong>, ha conformado un
+          <strong>comité de transición energética</strong>.</p>
+
+          <p>Este comité, integrado por ingenieros, ambientalistas y autoridades locales, debe tomar
+          decisiones estratégicas sobre <strong>tecnologías de mitigación</strong>, evaluación del ciclo
+          de vida y estrategias de descarbonización para transformar la matriz energética de la ciudad.</p>
+
+          <p>Adicionalmente, el comité debe evaluar la posible <strong>renovación de la flota de
+          transporte público</strong>, actualmente compuesta por buses con motor de combustión interna,
+          y analizar si la incorporación de <strong>vehículos eléctricos</strong> es la opción más
+          adecuada desde una perspectiva de ciclo de vida.</p>
+        </div>
+
+        <div class="case-callout">
+          💼 Utilice los temas trabajados para fundamentar la resolución del siguiente caso.
+          <br>¡Mucha suerte como miembro del comité!
+        </div>
+
+      </div>
+    </div><!-- /view-0 -->
+
+
+    <!-- ── VIEW 1: PREGUNTA 1 ── -->
+    <div class="view" id="view-1" role="region" aria-label="Pregunta 1">
+      <div class="view-body">
+
+        <div class="q-badge">🔩 Pregunta 1 de 3 · Tecnologías de mitigación</div>
+
+        <div class="q-stem">
+          La central termoeléctrica a carbón de Puerto Limpio emite niveles elevados de
+          <strong>SO₂, NOₓ y CO₂</strong>. El comité debe decidir qué estrategia tecnológica
+          implementar de manera prioritaria para reducir estos contaminantes <em>sin detener la
+          operación de la planta</em>. ¿Qué enfoque es más adecuado?
+        </div>
+
+        <div class="options" id="opts-1"></div>
+
+        <div class="feedback-card" id="fb-1">
+          <div class="fb-header" id="fb-1-hdr">
+            <span class="fb-icon" id="fb-1-icon"></span>
+            <span class="fb-title" id="fb-1-title"></span>
+          </div>
+          <div class="fb-body" id="fb-1-body"></div>
+        </div>
+
+      </div>
+    </div><!-- /view-1 -->
+
+
+    <!-- ── VIEW 2: PREGUNTA 2 ── -->
+    <div class="view" id="view-2" role="region" aria-label="Pregunta 2">
+      <div class="view-body">
+
+        <div class="q-badge">🚌 Pregunta 2 de 3 · Evaluación del Ciclo de Vida</div>
+
+        <div class="q-stem">
+          El comité debe decidir cómo <strong>evaluar la viabilidad ambiental</strong> de reemplazar
+          la flota de buses de combustión interna por buses eléctricos. Dos miembros del equipo proponen
+          enfoques distintos. ¿Cuál es el más apropiado?
+        </div>
+
+        <div class="options" id="opts-2"></div>
+
+        <div class="feedback-card" id="fb-2">
+          <div class="fb-header" id="fb-2-hdr">
+            <span class="fb-icon" id="fb-2-icon"></span>
+            <span class="fb-title" id="fb-2-title"></span>
+          </div>
+          <div class="fb-body" id="fb-2-body"></div>
+        </div>
+
+      </div>
+    </div><!-- /view-2 -->
+
+
+    <!-- ── VIEW 3: PREGUNTA 3 ── -->
+    <div class="view" id="view-3" role="region" aria-label="Pregunta 3">
+      <div class="view-body">
+
+        <div class="q-badge">🎯 Pregunta 3 de 3 · Estrategia de descarbonización</div>
+
+        <div class="q-stem">
+          Con los resultados del análisis previo, el comité debe definir la
+          <strong>estrategia central de descarbonización</strong> de Puerto Limpio para los próximos
+          15 años. ¿Cuál de las siguientes estrategias es la más acertada?
+        </div>
+
+        <div class="options" id="opts-3"></div>
+
+        <div class="feedback-card" id="fb-3">
+          <div class="fb-header" id="fb-3-hdr">
+            <span class="fb-icon" id="fb-3-icon"></span>
+            <span class="fb-title" id="fb-3-title"></span>
+          </div>
+          <div class="fb-body" id="fb-3-body"></div>
+        </div>
+
+      </div>
+    </div><!-- /view-3 -->
+
+
+    <!-- ── VIEW 4: RESULTADO FINAL ── -->
+    <div class="view" id="view-4" role="region" aria-label="Resultado final">
+      <div class="view-body">
+
+        <div class="final-icon">🏆</div>
+        <div class="final-title">¡Buen trabajo, miembro del comité!</div>
+        <div class="final-intro">
+          Las decisiones estratégicas adoptadas por el comité de transición energética de
+          Puerto Limpio fueron determinantes para encaminar la ciudad hacia un modelo energético sostenible.
+        </div>
+
+        <div style="display:flex;justify-content:center;">
+          <div class="score-pill" id="score-pill">✅ 0 / 3 respuestas correctas</div>
+        </div>
+
+        <div class="summary-list">
+          <div class="summary-item">
+            <div class="si-num">1</div>
+            <p>Implementar <strong>tecnologías de mitigación combinadas</strong> (FGD, FBC y CCS) permitió
+            reducir significativamente SO₂, NOₓ y CO₂ en la central a carbón sin interrumpir el suministro,
+            reconociendo la transición energética como un proceso gradual.</p>
+          </div>
+          <div class="summary-item">
+            <div class="si-num">2</div>
+            <p>Aplicar la <strong>Evaluación del Ciclo de Vida (ECV)</strong> permitió comparar los buses
+            de forma integral, identificando impactos ocultos en baterías y electricidad, conforme a
+            estándares <strong>ISO 14040/14044</strong>.</p>
+          </div>
+          <div class="summary-item">
+            <div class="si-num">3</div>
+            <p>Adoptar una estrategia basada en <strong>generación renovable, electrificación del transporte
+            y eficiencia energética</strong> abordó la descarbonización de manera integral y coherente con
+            el <strong>Acuerdo de París y los ODS 7 y 13</strong>.</p>
+          </div>
+        </div>
+
+        <div class="final-ref">
+          Elaboración propia. · UNFCCC. (2015). <em>Acuerdo de París</em>. · ISO. (2006). <em>ISO 14040/14044 Life cycle assessment</em>. ·
+          ONU. <em>ODS 7: Energía asequible y no contaminante; ODS 13: Acción por el clima</em>.
+        </div>
+
+      </div>
+    </div><!-- /view-4 -->
+
+  </div><!-- /views -->
+
+
+  <!-- NAV BAR -->
+  <div class="nav-bar">
+    <button class="btn btn-back" id="btn-back" onclick="navigate(-1)" disabled>← Anterior</button>
+    <span class="prog-txt" id="prog-txt">Caso de estudio</span>
+    <button class="btn btn-fwd"  id="btn-fwd"  onclick="navigate(1)">Siguiente →</button>
+  </div>
+
+  <footer>Prof. Jorge Luis Jaramillo Pacheco &nbsp;·&nbsp; Energía y Medioambiente &nbsp;·&nbsp; UNFCCC (2015) · ISO 14040/14044</footer>
+
+</div><!-- /container -->
+
+<script>
+/* ══════════════════════════════════════════
+   DATA
+══════════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    id: 1,
+    correct: "A",
+    options: [
+      {
+        id:"A", correct:true,
+        text:"Implementar una combinación de tecnologías de mitigación: desulfurización de gases de combustión (FGD) para reducir el SO₂, combustión en lecho fluidizado (FBC) para disminuir NOₓ y captura de carbono (CCS) para las emisiones de CO₂.",
+        fbTitle:"¡Muy bien! Respuesta correcta",
+        fbText:"La combinación de tecnologías como FGD, FBC y CCS permite reducir significativamente las emisiones de SO₂, NOₓ y CO₂ mientras la planta continúa operando. Estas tecnologías de mitigación son precisamente las que se aplican a las fuentes convencionales para lograr una transición gradual y técnicamente viable hacia una matriz más limpia."
+      },
+      {
+        id:"B", correct:false,
+        text:"Cerrar inmediatamente la central a carbón y sustituirla por completo con paneles solares, eliminando así todas las emisiones de forma definitiva.",
+        fbTitle:"Respuesta incorrecta",
+        fbText:"Aunque la eliminación total del carbón es un objetivo deseable a largo plazo, cerrar la central de forma inmediata sin una alternativa de generación equivalente pondría en riesgo el suministro eléctrico de la ciudad. La transición energética requiere un proceso gradual en el que las tecnologías de mitigación permiten reducir emisiones mientras se desarrolla la infraestructura renovable."
+      }
+    ]
+  },
+  {
+    id: 2,
+    correct: "B",
+    options: [
+      {
+        id:"A", correct:false,
+        text:"Comparar únicamente las emisiones durante la operación de ambos tipos de buses, ya que los vehículos eléctricos no producen emisiones directas y eso es suficiente para justificar el cambio.",
+        fbTitle:"Respuesta incorrecta",
+        fbText:"Limitarse a las emisiones en operación ignora impactos significativos en otras etapas del ciclo de vida. Por ejemplo, la fabricación de baterías de litio tiene una huella de carbono considerable, y si la electricidad para cargar los buses proviene de fuentes fósiles, el beneficio ambiental se reduce. La ECV revela estos impactos ocultos y permite tomar decisiones verdaderamente informadas."
+      },
+      {
+        id:"B", correct:true,
+        text:"Realizar una Evaluación del Ciclo de Vida (ECV) completa, que considere desde la extracción de materias primas y fabricación de baterías, hasta la operación, el mantenimiento y la disposición final de los vehículos, incluyendo la fuente de electricidad para la carga.",
+        fbTitle:"¡Exacto! Respuesta correcta",
+        fbText:"La ECV proporciona una visión integral del impacto ambiental en todas las etapas: extracción, manufactura, transporte, operación y disposición final. Si bien los vehículos eléctricos no generan emisiones directas, la fabricación de baterías es intensiva en carbono, y la huella total depende de la matriz energética utilizada para la carga. Una ECV permite una comparación objetiva basada en evidencia."
+      }
+    ]
+  },
+  {
+    id: 3,
+    correct: "B",
+    options: [
+      {
+        id:"A", correct:false,
+        text:"Concentrar toda la inversión exclusivamente en la electrificación del transporte público, ya que este sector es un gran emisor de GEI y el cambio a buses eléctricos resolvería el problema de contaminación.",
+        fbTitle:"Respuesta incorrecta",
+        fbText:"Concentrarse únicamente en la electrificación del transporte es insuficiente. Si la electricidad que alimenta los buses proviene de la misma central a carbón, las emisiones simplemente se trasladan de los tubos de escape a la chimenea de la planta. La descarbonización requiere un enfoque integral que combine generación limpia, electrificación de sectores clave y eficiencia energética."
+      },
+      {
+        id:"B", correct:true,
+        text:"Implementar una estrategia basada en las tres palancas de descarbonización: generación de electricidad sin carbono (incorporar energía solar y eólica a la matriz), uso de vectores energéticos de baja emisión (electrificación del transporte) y mejora de la eficiencia energética en edificaciones e industria.",
+        fbTitle:"¡Correcto! Respuesta correcta",
+        fbText:"La descarbonización efectiva requiere actuar simultáneamente sobre las tres grandes palancas: generar electricidad sin carbono, utilizar vectores energéticos de baja emisión y mejorar la eficiencia energética. Electrificar el transporte sin descarbonizar la matriz eléctrica tendría un impacto limitado. Además, la eficiencia energética es la palanca más accesible a cualquier presupuesto y complementa las otras dos."
+      }
+    ]
+  }
+];
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+const TOTAL    = 4; // views 0-4
+let current    = 0;
+let answered   = {}; // qId → chosen letter
+let score      = 0;
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+/* ══════════════════════════════════════════
+   BUILD QUESTIONS (shuffled options)
+══════════════════════════════════════════ */
+function buildQuestions(){
+  QUESTIONS.forEach(q=>{
+    const optContainer = document.getElementById('opts-'+q.id);
+    const shuffled = shuffle(q.options);
+    // Re-label shuffled options with display letters
+    const labels = ['A','B','C','D'];
+    shuffled.forEach((opt,i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.dataset.qid = q.id;
+      btn.dataset.oid = opt.id;       // real id
+      btn.dataset.correct = opt.correct;
+      btn.innerHTML = `<span class="opt-letter">${labels[i]}</span><span>${opt.text}</span>`;
+      btn.addEventListener('click', ()=> handleAnswer(q.id, btn, opt));
+      optContainer.appendChild(btn);
+    });
+  });
+}
+
+/* ══════════════════════════════════════════
+   HANDLE ANSWER
+══════════════════════════════════════════ */
+function handleAnswer(qId, btn, opt){
+  if(answered[qId] !== undefined) return; // already answered
+  answered[qId] = opt.id;
+  if(opt.correct) score++;
+
+  // style all buttons
+  const container = document.getElementById('opts-'+qId);
+  container.querySelectorAll('.option-btn').forEach(b=>{
+    b.disabled = true;
+    if(b.dataset.correct === 'true') b.classList.add('correct');
+  });
+  if(!opt.correct) btn.classList.add('incorrect');
+
+  // show feedback card
+  const card  = document.getElementById('fb-'+qId);
+  const hdr   = document.getElementById('fb-'+qId+'-hdr');
+  const icon  = document.getElementById('fb-'+qId+'-icon');
+  const title = document.getElementById('fb-'+qId+'-title');
+  const body  = document.getElementById('fb-'+qId+'-body');
+
+  if(opt.correct){
+    hdr.className  = 'fb-header ok';
+    body.className = 'fb-body ok';
+    icon.textContent  = '✅';
+  } else {
+    hdr.className  = 'fb-header err';
+    body.className = 'fb-body err';
+    icon.textContent  = '❌';
+  }
+  title.textContent = opt.fbTitle;
+  body.textContent  = opt.fbText;
+  card.classList.add('show');
+
+  // mark step as answered
+  const stepDot = document.querySelector(`.step-dot-wrap[data-v="${qId}"]`);
+  if(stepDot) stepDot.classList.add('answered');
+
+  // unlock next button
+  updateNav();
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function goTo(n){
+  if(n < 0 || n > TOTAL) return;
+  // block going to unanswered question directly (allow case + answered + final)
+  if(n >= 1 && n <= 3 && n > 1 && answered[n-1] === undefined) return;
+
+  document.getElementById('view-'+current).classList.remove('active');
+  current = n;
+  document.getElementById('view-'+current).classList.add('active');
+
+  // if going to final, update score
+  if(current === 4) updateFinal();
+
+  updateStepBar();
+  updateNav();
+}
+
+function navigate(dir){
+  const next = current + dir;
+  // prevent going to next question if current not answered
+  if(dir > 0 && current >= 1 && current <= 3 && answered[current] === undefined) return;
+  goTo(next);
+}
+
+function updateNav(){
+  document.getElementById('btn-back').disabled = (current === 0);
+
+  const fwd = document.getElementById('btn-fwd');
+  // block forward on unanswered question
+  const blocked = (current >= 1 && current <= 3 && answered[current] === undefined);
+  fwd.disabled = (current === TOTAL) || blocked;
+  fwd.textContent = current === TOTAL ? '— Fin —' : 'Siguiente →';
+
+  // prog text
+  const labels = ['Caso de estudio','Pregunta 1 / 3','Pregunta 2 / 3','Pregunta 3 / 3','Resultado final'];
+  document.getElementById('prog-txt').textContent = labels[current];
+}
+
+function updateStepBar(){
+  document.querySelectorAll('.step-dot-wrap').forEach(d=>{
+    const v = parseInt(d.dataset.v);
+    d.classList.remove('active');
+    if(v === current) d.classList.add('active');
+  });
+  // mark done if all questions answered and viewing final
+  if(current === 4){
+    document.querySelectorAll('.step-dot-wrap').forEach(d=>{
+      d.classList.remove('active');
+      if(parseInt(d.dataset.v) < 4) d.classList.add('done');
+    });
+    document.querySelector('.step-dot-wrap[data-v="4"]').classList.add('active');
+  }
+}
+
+function updateFinal(){
+  document.getElementById('score-pill').innerHTML =
+    `${score===3?'🏆':'✅'} ${score} / 3 respuestas correctas`;
+}
+
+/* ══════════════════════════════════════════
+   RESTART
+══════════════════════════════════════════ */
+function restart(){
+  answered = {};
+  score    = 0;
+  // clear option states
+  QUESTIONS.forEach(q=>{
+    const c = document.getElementById('opts-'+q.id);
+    c.innerHTML = '';
+    document.getElementById('fb-'+q.id).classList.remove('show');
+  });
+  document.querySelectorAll('.step-dot-wrap').forEach(d=>{
+    d.classList.remove('active','done','answered');
+  });
+  document.querySelector('.step-dot-wrap[data-v="0"]').classList.add('active');
+  buildQuestions();
+  goTo(0);
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  buildQuestions();
+  updateNav();
+});
+</script>
+</body>
+</html>

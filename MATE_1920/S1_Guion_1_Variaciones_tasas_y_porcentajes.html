@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Quiz | Variaciones, Tasas y Porcentajes</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:        #F5F7FA;
+            --surface:   #FFFFFF;
+            --border:    #E4E9F0;
+            --primary:   #2563EB;
+            --primary-d: #1D4ED8;
+            --primary-l: #EFF6FF;
+            --accent:    #0EA5E9;
+            --success:   #16A34A;
+            --success-l: #DCFCE7;
+            --error:     #DC2626;
+            --error-l:   #FEE2E2;
+            --warn:      #D97706;
+            --warn-l:    #FEF3C7;
+            --text:      #0F172A;
+            --muted:     #64748B;
+            --light:     #94A3B8;
+            --radius:    14px;
+            --shadow:    0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,.05), 0 10px 30px rgba(0,0,0,.10);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* ===================== SHELL ===================== */
+        .shell {
+            width: 100%;
+            max-width: 800px;
+            height: 800px;
+            max-height: 90vh;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ===================== SCREEN SYSTEM ===================== */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .35s ease, transform .35s ease;
+            transform: translateY(12px);
+        }
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+            position: relative;
+            flex: 1;
+        }
+
+        /* ===================== WELCOME SCREEN ===================== */
+        .welcome-screen {
+            background: linear-gradient(160deg, #F8FAFF 0%, #EFF6FF 60%, #F0F9FF 100%);
+            padding: 0;
+            justify-content: space-between;
+            overflow-y: auto;
+        }
+
+        .welcome-header {
+            padding: 36px 40px 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-l);
+            color: var(--primary);
+            border: 1px solid #BFDBFE;
+            padding: 5px 14px;
+            border-radius: 100px;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: .3px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.15;
+            letter-spacing: -.5px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-title span {
+            color: var(--primary);
+        }
+
+        .welcome-sub {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+            max-width: 480px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            padding: 28px 40px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .stat-card:nth-child(2)::before { background: var(--accent); }
+        .stat-card:nth-child(3)::before { background: var(--success); }
+
+        .stat-num {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 4px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 11.5px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .topics-section {
+            padding: 0 40px 24px;
+        }
+
+        .topics-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--light);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .topic-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        .topic-chip .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .welcome-footer {
+            padding: 0 40px 36px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-start {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -.1px;
+        }
+
+        .btn-start:hover {
+            background: var(--primary-d);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(37,99,235,.25);
+        }
+
+        .btn-start:active { transform: translateY(0); }
+
+        .start-note {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* ===================== QUIZ SCREEN ===================== */
+        .quiz-screen {
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* QUIZ HEADER */
+        .quiz-top {
+            flex-shrink: 0;
+            padding: 0 28px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quiz-top-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0 12px;
+        }
+
+        .quiz-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quiz-logo-icon {
+            width: 34px; height: 34px;
+            background: var(--primary-l);
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .quiz-logo-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .quiz-logo-sub {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .score-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--success-l);
+            color: var(--success);
+            border: 1px solid #BBF7D0;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* PROGRESS */
+        .progress-bar-wrap {
+            flex-shrink: 0;
+            padding: 0 28px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .progress-track {
+            height: 5px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width .4s cubic-bezier(.4,0,.2,1);
+            border-radius: 10px;
+        }
+
+        /* CAROUSEL - FIXED */
+        .carousel-wrap {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .slides-container {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .3s ease, transform .3s ease;
+            transform: translateX(30px);
+            overflow-y: auto;
+            padding: 24px 28px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 5;
+            transform: translateX(0);
+        }
+
+        /* QUESTION CARD */
+        .q-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .q-num-bar {
+            background: var(--primary-l);
+            border-bottom: 1px solid #BFDBFE;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .q-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .q-body {
+            padding: 20px 22px 22px;
+        }
+
+        .q-text {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.55;
+            margin-bottom: 20px;
+        }
+
+        /* OPTIONS */
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            position: relative;
+        }
+
+        .option-item input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 11px;
+            cursor: pointer;
+            font-size: 12.5px;
+            color: var(--text);
+            line-height: 1.45;
+            transition: all .18s;
+            background: var(--surface);
+        }
+
+        .option-label:hover {
+            border-color: #93C5FD;
+            background: var(--primary-l);
+        }
+
+        .option-radio {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 1px;
+            transition: all .18s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option-radio::after {
+            content: '';
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: 0;
+            transform: scale(0);
+            transition: all .18s;
+        }
+
+        input[type="radio"]:checked + .option-label {
+            border-color: var(--primary);
+            background: var(--primary-l);
+        }
+
+        input[type="radio"]:checked + .option-label .option-radio {
+            border-color: var(--primary);
+        }
+
+        input[type="radio"]:checked + .option-label .option-radio::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* BUTTONS */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-hint {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--warn-l);
+            color: var(--warn);
+            border: 1px solid #FDE68A;
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .18s;
+        }
+
+        .btn-hint:hover {
+            background: #FEF0C7;
+            transform: translateY(-1px);
+        }
+
+        .btn-verify {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 22px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .18s;
+        }
+
+        .btn-verify:hover {
+            background: var(--primary-d);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37,99,235,.2);
+        }
+
+        /* FEEDBACK */
+        .feedback-box {
+            display: none;
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 12.5px;
+            line-height: 1.55;
+            border: 1px solid;
+            animation: feedIn .25s ease;
+        }
+
+        @keyframes feedIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback-box.show { display: block; }
+
+        .feedback-box.correct {
+            background: var(--success-l);
+            border-color: #86EFAC;
+            color: #14532D;
+        }
+
+        .feedback-box.wrong {
+            background: var(--error-l);
+            border-color: #FCA5A5;
+            color: #7F1D1D;
+        }
+
+        .feedback-box.warn {
+            background: var(--warn-l);
+            border-color: #FDE68A;
+            color: #78350F;
+        }
+
+        /* BOTTOM NAV */
+        .quiz-bottom {
+            flex-shrink: 0;
+            padding: 14px 28px;
+            border-top: 1px solid var(--border);
+            background: #FAFBFC;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            padding: 9px 20px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            transition: all .18s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-l);
+        }
+
+        .nav-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        .q-counter {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            background: var(--bg);
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-family: 'DM Mono', monospace;
+            border: 1px solid var(--border);
+        }
+
+        .btn-reset {
+            background: none;
+            border: 1.5px solid var(--border);
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            transition: all .18s;
+        }
+
+        .btn-reset:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        /* ===================== RESULTS SCREEN ===================== */
+        .results-screen {
+            background: var(--bg);
+            padding: 40px;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .results-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 520px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .results-icon {
+            font-size: 52px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .results-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -.4px;
+            margin-bottom: 8px;
+        }
+
+        .results-sub {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        .score-ring-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+
+        .score-big {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 0deg, var(--border) 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .score-big::before {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            background: var(--surface);
+        }
+
+        .score-num {
+            position: relative;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+        }
+
+        .results-stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .res-stat {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .res-stat.ok  { background: var(--success-l); border-color: #86EFAC; }
+        .res-stat.bad { background: var(--error-l); border-color: #FCA5A5; }
+
+        .res-stat-num {
+            font-size: 22px;
+            font-weight: 700;
+            font-family: 'DM Mono', monospace;
+            color: var(--text);
+        }
+
+        .res-stat.ok  .res-stat-num { color: var(--success); }
+        .res-stat.bad .res-stat-num { color: var(--error); }
+
+        .res-stat-label {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .results-msg {
+            background: var(--primary-l);
+            border: 1px solid #BFDBFE;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 12.5px;
+            color: #1E40AF;
+            line-height: 1.55;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .btn-retry {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 13px 32px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .2s;
+        }
+
+        .btn-retry:hover {
+            background: var(--primary-d);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(37,99,235,.25);
+        }
+
+        /* ===================== MODAL ===================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-card {
+            background: var(--surface);
+            width: 90%;
+            max-width: 360px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,.2);
+            transform: scale(.94) translateY(10px);
+            transition: transform .25s;
+        }
+
+        .modal-overlay.open .modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-top {
+            background: var(--warn-l);
+            border-bottom: 1px solid #FDE68A;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-top span {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--warn);
+        }
+
+        .modal-body {
+            padding: 20px;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 0 20px 20px;
+            text-align: right;
+        }
+
+        .modal-close {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 22px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 800px) {
+            .shell { max-height: 100vh; height: 100vh; border-radius: 0; }
+            body { padding: 0; }
+            .welcome-header, .stats-row, .topics-section, .welcome-footer { padding-left: 24px; padding-right: 24px; }
+            .welcome-title { font-size: 26px; }
+            .stats-row { flex-wrap: wrap; }
+            .stat-card { min-width: calc(50% - 8px); }
+            .quiz-top, .progress-bar-wrap, .quiz-bottom { padding-left: 20px; padding-right: 20px; }
+            .slide { padding: 18px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- ============ WELCOME SCREEN ============ -->
+    <div class="screen welcome-screen active" id="screen-welcome">
+        <div class="welcome-header">
+            <div class="badge">📊 Fundamentos Matemáticos</div>
+            <h1 class="welcome-title">Variaciones, Tasas<br>y <span>Porcentajes</span></h1>
+            <p class="welcome-sub">Evalúa tus conocimientos en razones, tasas de variación y análisis porcentual aplicados a contextos institucionales reales.</p>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num">10</div>
+                <div class="stat-label">Preguntas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">~8</div>
+                <div class="stat-label">Minutos estimados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">💡</div>
+                <div class="stat-label">Pistas disponibles</div>
+            </div>
+        </div>
+
+        <div class="topics-section">
+            <div class="topics-label">Temas que cubre este quiz</div>
+            <div class="topics-grid">
+                <div class="topic-chip"><span class="dot"></span>Razones de liquidez</div>
+                <div class="topic-chip"><span class="dot" style="background:var(--accent)"></span>Proporciones directas</div>
+                <div class="topic-chip"><span class="dot" style="background:var(--success)"></span>Ejecución presupuestaria</div>
+                <div class="topic-chip"><span class="dot" style="background:var(--warn)"></span>Tasas de variación</div>
+                <div class="topic-chip"><span class="dot"></span>Descuentos y porcentajes</div>
+                <div class="topic-chip"><span class="dot" style="background:#8B5CF6"></span>Interés simple</div>
+            </div>
+        </div>
+
+        <div class="welcome-footer">
+            <button class="btn-start" id="startBtn">
+                Comenzar Quiz <span>→</span>
+            </button>
+            <span class="start-note">Puedes usar pistas cuando lo necesites</span>
+        </div>
+    </div>
+
+    <!-- ============ QUIZ SCREEN ============ -->
+    <div class="screen quiz-screen" id="screen-quiz">
+        <div class="quiz-top">
+            <div class="quiz-top-inner">
+                <div class="quiz-logo">
+                    <div class="quiz-logo-icon">📊</div>
+                    <div>
+                        <div class="quiz-logo-text">Quiz Interactivo</div>
+                        <div class="quiz-logo-sub">Variaciones, Tasas y Porcentajes</div>
+                    </div>
+                </div>
+                <div class="score-pill" id="scorePill">✓ 0 / 10</div>
+            </div>
+        </div>
+
+        <div class="progress-bar-wrap">
+            <div class="progress-meta">
+                <span id="progressLabel">Progreso</span>
+                <span id="progressPct">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="carousel-wrap">
+            <div class="slides-container" id="slidesContainer"></div>
+        </div>
+
+        <div class="quiz-bottom">
+            <button class="nav-btn" id="prevBtn" disabled>← Anterior</button>
+            <span class="q-counter" id="counterText">1 / 10</span>
+            <button class="nav-btn" id="nextBtn">Siguiente →</button>
+            <button class="btn-reset" id="resetBtn">⟳ Reiniciar</button>
+        </div>
+    </div>
+
+    <!-- ============ RESULTS SCREEN ============ -->
+    <div class="screen results-screen" id="screen-results">
+        <div class="results-card">
+            <span class="results-icon" id="resultsIcon">🎉</span>
+            <h2 class="results-title" id="resultsTitle">¡Excelente trabajo!</h2>
+            <p class="results-sub" id="resultsSub">Has completado el quiz</p>
+            <div class="score-ring-wrap">
+                <div class="score-big" id="scoreRing">
+                    <span class="score-num" id="scoreRingNum">0/10</span>
+                </div>
+            </div>
+            <div class="results-stats">
+                <div class="res-stat ok">
+                    <div class="res-stat-num" id="correctCount">0</div>
+                    <div class="res-stat-label">Correctas</div>
+                </div>
+                <div class="res-stat bad">
+                    <div class="res-stat-num" id="wrongCount">0</div>
+                    <div class="res-stat-label">Incorrectas</div>
+                </div>
+            </div>
+            <div class="results-msg" id="resultsMsg"></div>
+            <button class="btn-retry" id="retryBtn">⟳ Intentar de nuevo</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- HINT MODAL -->
+<div class="modal-overlay" id="hintModal">
+    <div class="modal-card">
+        <div class="modal-top">
+            <span>💡</span>
+            <strong style="font-size:13px; color:#92400E;">Pista</strong>
+        </div>
+        <div class="modal-body" id="modalText"></div>
+        <div class="modal-footer">
+            <button class="modal-close" id="modalCloseBtn">Entendido</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const rawQuestions = [
+    { text:"Un municipio tiene activos corrientes por valor de $500,000 y pasivos corrientes de $250,000. Calcule la razón de liquidez corriente e interprete el resultado.",
+      options:["2.0; El municipio tiene $2.00 de activos por cada $1.00 de deuda a corto plazo.","0.5; El municipio tiene $0.50 de activos por cada $1.00 de deuda a corto plazo.","2.0; El municipio tiene $2.00 de deuda por cada $1.00 de activo.","$250,000; Es el capital de trabajo neto del municipio."],
+      correct:0, hint:"La fórmula de la razón de liquidez es: Activo corriente / Pasivo corriente.", feedback:"La razón de liquidez se calcula dividiendo los activos corrientes entre los pasivos corrientes ($500,000 / $250,000 = 2). Esto indica la capacidad de pago a corto plazo." },
+    { text:"Se asigna un fondo de $100,000 para obras públicas que debe repartirse entre dos distritos en proporción directa a su población. Distrito A: 10,000 hab, Distrito B: 40,000 hab. ¿Cuánto dinero recibe el Distrito B?",
+      options:["$50,000","$60,000","$80,000","$20,000"],
+      correct:2, hint:"Primero calcule la población total y determine qué fracción del total representa el Distrito B.", feedback:"La población total es 50,000. El Distrito B representa 40,000/50,000 = 4/5 del total. Por tanto, recibe 4/5 de $100,000 = $80,000." },
+    { text:"El presupuesto anual asignado a una entidad pública fue de $2,500,000. Al finalizar el año, se reportó un gasto total (ejecución) de $2,000,000. ¿Cuál fue el porcentaje de ejecución presupuestaria?",
+      options:["80%","125%","20%","75%"],
+      correct:0, hint:"Compare la parte gastada contra el total asignado utilizando una división.", feedback:"Se divide lo ejecutado entre lo asignado ($2,000,000 / $2,500,000 = 0.80) y se multiplica por 100 para obtener el 80%." },
+    { text:"La recaudación de impuestos prediales aumentó de $8,000,000 en 2022 a $8,400,000 en 2023. ¿Cuál fue la tasa de variación porcentual?",
+      options:["4.76%","5%","4%","105%"],
+      correct:1, hint:"Calcule la diferencia entre los dos años y divídala por el valor del año inicial (2022).", feedback:"El aumento absoluto es $400,000. Al dividir $400,000 entre $8,000,000 = 0.05 = 5%." },
+    { text:"Para incentivar el pago temprano de multas de tránsito, se ofrece un descuento del 15% si se paga dentro de los primeros 5 días. Si una multa es de $200, ¿cuánto debe pagar el ciudadano aprovechando el descuento?",
+      options:["$185","$170","$230","$30"],
+      correct:1, hint:"Calcule cuánto dinero representa el 15% de 200 y réstelo del total.", feedback:"El descuento es 15% de $200 = $30. Monto a pagar: $200 - $30 = $170." },
+    { text:"Un proyecto gubernamental requiere una relación de supervisores a trabajadores de campo de 1:12. Si se contratan 156 trabajadores de campo, ¿cuántos supervisores se necesitan?",
+      options:["144 supervisores","13 supervisores","12 supervisores","1872 supervisores"],
+      correct:1, hint:"Divida el total de trabajadores entre el número de trabajadores que puede manejar cada supervisor.", feedback:"Relación 1:12 implica 156 / 12 = 13 supervisores." },
+    { text:"El departamento de salud recibió el 35% del presupuesto total de un municipio. Si el monto recibido por salud fue de $7,000,000, ¿cuál era el presupuesto total del municipio?",
+      options:["$10,000,000","$2,450,000","$20,000,000","$24,500,000"],
+      correct:2, hint:"Conoce la parte ($7M) y el porcentaje (35%). Encuentre el total dividiendo la parte por el decimal del porcentaje.", feedback:"Si 35% = $7,000,000, entonces total = $7,000,000 / 0.35 = $20,000,000." },
+    { text:"En un análisis financiero, la razón deuda/patrimonio de una empresa estatal es de 0.8. Si el patrimonio es de $500,000, ¿a cuánto asciende la deuda?",
+      options:["$500,000","$400,000","$625,000","$900,000"],
+      correct:1, hint:"Despeje la 'Deuda' de la fórmula: Razón = Deuda / Patrimonio.", feedback:"Deuda = 0.8 * $500,000 = $400,000." },
+    { text:"Se invirtió un fondo de contingencia de $50,000 en bonos del tesoro que rinden un interés simple anual del 6%. ¿Cuánto dinero por concepto de interés se habrá generado al cabo de 2 años?",
+      options:["$3,000","$6,180","$56,000","$6,000"],
+      correct:3, hint:"La fórmula de interés simple es: Interés = Capital * Tasa * Tiempo.", feedback:"Interés anual: $50,000 * 0.06 = $3,000. En 2 años: $6,000." },
+    { text:"Compare la eficiencia de gasto en educación: Municipio X gasta $200,000 para atender a 500 estudiantes. Municipio Y gasta $300,000 para atender a 800 estudiantes. ¿Cuál es el gasto por estudiante en cada caso?",
+      options:["X: $375/est; Y: $400/est","X: $400/est; Y: $400/est","X: $250/est; Y: $266/est","X: $400/est; Y: $375/est"],
+      correct:3, hint:"Divida el presupuesto total de educación entre el número de estudiantes para cada municipio.", feedback:"Municipio X: 200,000/500 = 400. Municipio Y: 300,000/800 = 375." }
+];
+
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length-1; i>0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+}
+
+function buildQuestions() {
+    return rawQuestions.map((q, idx) => {
+        const opts = q.options.map((t,i) => ({text:t, orig:i}));
+        const shuffled = shuffle(opts);
+        return { id:idx, text:q.text, options:shuffled.map(o=>o.text),
+            correctIndex: shuffled.findIndex(o=>o.orig===q.correct),
+            hint:q.hint, feedback:q.feedback,
+            userAnswer:null, isCorrect:false, verified:false };
+    });
+}
+
+// ==================== STATE ====================
+let questions = buildQuestions();
+let currentSlide = 0;
+const total = questions.length;
+
+// ==================== DOM REFS ====================
+const screenWelcome = document.getElementById('screen-welcome');
+const screenQuiz    = document.getElementById('screen-quiz');
+const screenResults = document.getElementById('screen-results');
+const slidesContainer = document.getElementById('slidesContainer');
+const prevBtn  = document.getElementById('prevBtn');
+const nextBtn  = document.getElementById('nextBtn');
+const counterText  = document.getElementById('counterText');
+const progressFill = document.getElementById('progressFill');
+const progressPct  = document.getElementById('progressPct');
+const progressLabel= document.getElementById('progressLabel');
+const scorePill    = document.getElementById('scorePill');
+const resetBtn     = document.getElementById('resetBtn');
+const hintModal    = document.getElementById('hintModal');
+const modalText    = document.getElementById('modalText');
+const modalCloseBtn= document.getElementById('modalCloseBtn');
+const startBtn     = document.getElementById('startBtn');
+const retryBtn     = document.getElementById('retryBtn');
+
+// ==================== SCREEN NAV ====================
+function showScreen(id) {
+    [screenWelcome, screenQuiz, screenResults].forEach(s => {
+        s.classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
+}
+
+// ==================== UPDATE UI ====================
+function updateProgress() {
+    const correct = questions.filter(q=>q.isCorrect).length;
+    const verified = questions.filter(q=>q.verified).length;
+    const pct = total > 0 ? Math.round((correct/total)*100) : 0;
+    progressFill.style.width = pct + '%';
+    progressPct.innerText = pct + '%';
+    progressLabel.innerText = `${verified} de ${total} respondidas`;
+    scorePill.innerHTML = `✓ ${correct} / ${total}`;
+
+    if (verified === total) showResults(correct);
+}
+
+function updateCounter() {
+    counterText.innerText = `${currentSlide+1} / ${total}`;
+    prevBtn.disabled = currentSlide === 0;
+    nextBtn.disabled = currentSlide === total-1;
+}
+
+function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ==================== RENDER SLIDES ====================
+function renderSlides() {
+    slidesContainer.innerHTML = '';
+    questions.forEach((q, idx) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide' + (idx===0 ? ' active' : '');
+        slide.setAttribute('data-idx', idx);
+
+        let optsHtml = '';
+        q.options.forEach((opt, oi) => {
+            const checked = q.userAnswer === oi ? 'checked' : '';
+            optsHtml += `
+            <li class="option-item">
+                <input type="radio" name="q${idx}" id="q${idx}o${oi}" value="${oi}" ${checked}>
+                <label class="option-label" for="q${idx}o${oi}">
+                    <span class="option-radio"></span>
+                    <span>${esc(opt)}</span>
+                </label>
+            </li>`;
+        });
+
+        let fbClass='', fbHtml='';
+        if (q.verified) {
+            fbClass = q.isCorrect ? 'correct' : 'wrong';
+            fbHtml = q.isCorrect
+                ? `✅ <strong>Correcto.</strong> ${esc(q.feedback)}`
+                : `❌ <strong>Incorrecto.</strong> La respuesta correcta es: <em>${esc(q.options[q.correctIndex])}</em>.<br><br>${esc(q.feedback)}`;
+        }
+
+        slide.innerHTML = `
+        <div class="q-card">
+            <div class="q-num-bar">
+                <span class="q-num">Pregunta ${idx+1} de ${total}</span>
+            </div>
+            <div class="q-body">
+                <div class="q-text">${esc(q.text)}</div>
+                <ul class="options-list">${optsHtml}</ul>
+                <div class="btn-row">
+                    <button class="btn-hint" data-hint="${esc(q.hint)}">💡 Pista</button>
+                    <button class="btn-verify" data-idx="${idx}">✔ Verificar</button>
+                </div>
+                <div class="feedback-box ${q.verified?'show':''} ${fbClass}">${fbHtml}</div>
+            </div>
+        </div>`;
+        slidesContainer.appendChild(slide);
+    });
+    attachEvents();
+}
+
+// ==================== GLOBAL EVENT ATTACHMENT ====================
+function attachEvents() {
+    document.querySelectorAll('.btn-verify').forEach(btn => {
+        btn.removeEventListener('click', verifyHandler);
+        btn.addEventListener('click', verifyHandler);
+    });
+    document.querySelectorAll('.btn-hint').forEach(btn => {
+        btn.removeEventListener('click', hintHandler);
+        btn.addEventListener('click', hintHandler);
+    });
+    slidesContainer.removeEventListener('change', radioChangeHandler);
+    slidesContainer.addEventListener('change', radioChangeHandler);
+}
+
+function verifyHandler(e) {
+    const btn = e.currentTarget;
+    const qIdx = parseInt(btn.dataset.idx);
+    verifyQ(qIdx);
+}
+
+function hintHandler(e) {
+    const hintText = e.currentTarget.dataset.hint;
+    openModal(hintText);
+}
+
+function radioChangeHandler(e) {
+    const target = e.target;
+    if (target && target.type === 'radio') {
+        const name = target.name;
+        const qIdx = parseInt(name.replace('q',''));
+        const selectedVal = parseInt(target.value);
+        const q = questions[qIdx];
+        if (q && q.userAnswer !== selectedVal) {
+            q.userAnswer = selectedVal;
+            if (q.verified) {
+                q.verified = false;
+                q.isCorrect = false;
+                const slide = document.querySelector(`.slide[data-idx="${qIdx}"]`);
+                if (slide) {
+                    const fb = slide.querySelector('.feedback-box');
+                    if (fb) {
+                        fb.classList.remove('show', 'correct', 'wrong');
+                        fb.innerHTML = '';
+                    }
+                }
+                updateProgress();
+            }
+        }
+    }
+}
+
+function verifyQ(qIdx) {
+    const q = questions[qIdx];
+    const slide = document.querySelector(`.slide[data-idx="${qIdx}"]`);
+    if (!slide) return;
+    const fb = slide.querySelector('.feedback-box');
+    const sel = slide.querySelector(`input[name="q${qIdx}"]:checked`);
+
+    if (!sel) {
+        fb.className = 'feedback-box show warn';
+        fb.innerHTML = '⚠️ Por favor selecciona una respuesta antes de verificar.';
+        return;
+    }
+
+    const val = parseInt(sel.value);
+    q.userAnswer = val;
+    q.isCorrect  = val === q.correctIndex;
+    q.verified   = true;
+
+    if (q.isCorrect) {
+        fb.className = 'feedback-box show correct';
+        fb.innerHTML = `✅ <strong>Correcto.</strong> ${esc(q.feedback)}`;
+    } else {
+        fb.className = 'feedback-box show wrong';
+        fb.innerHTML = `❌ <strong>Incorrecto.</strong> La respuesta correcta es: <em>${esc(q.options[q.correctIndex])}</em>.<br><br>${esc(q.feedback)}`;
+    }
+    updateProgress();
+}
+
+// ==================== CAROUSEL ====================
+function goTo(idx) {
+    if (idx < 0 || idx >= total) return;
+    const slides = document.querySelectorAll('.slide');
+    if (!slides.length) return;
+    slides[currentSlide].classList.remove('active');
+    currentSlide = idx;
+    slides[currentSlide].classList.add('active');
+    updateCounter();
+}
+
+// ==================== RESULTS ====================
+function showResults(correct) {
+    const wrong = total - correct;
+    document.getElementById('scoreRingNum').innerText = `${correct}/${total}`;
+    document.getElementById('correctCount').innerText  = correct;
+    document.getElementById('wrongCount').innerText    = wrong;
+    const deg = Math.round((correct/total)*360);
+    document.getElementById('scoreRing').style.background =
+        `conic-gradient(var(--primary) ${deg}deg, var(--border) ${deg}deg)`;
+
+    let icon, title, sub, msg;
+    const pct = (correct/total)*100;
+    if (pct === 100) {
+        icon='🏆'; title='¡Perfecto!'; sub='Dominas el tema completamente';
+        msg='Excelente dominio de razones, tasas y variaciones aplicadas a contextos institucionales. ¡Trabajo sobresaliente!';
+    } else if (pct >= 70) {
+        icon='🎉'; title='¡Buen trabajo!'; sub='Tienes un sólido entendimiento';
+        msg='Tienes un buen manejo del tema. Repasa los ejercicios que fallaste para consolidar tu comprensión.';
+    } else {
+        icon='📚'; title='¡Sigue practicando!'; sub='Hay margen de mejora';
+        msg='Revisa los conceptos de razones y proporciones, tasas de variación y cálculo porcentual. ¡Inténtalo de nuevo!';
+    }
+
+    document.getElementById('resultsIcon').textContent  = icon;
+    document.getElementById('resultsTitle').textContent = title;
+    document.getElementById('resultsSub').textContent   = sub;
+    document.getElementById('resultsMsg').textContent   = msg;
+
+    showScreen('screen-results');
+}
+
+// ==================== MODAL ====================
+function openModal(txt) {
+    modalText.textContent = txt;
+    hintModal.classList.add('open');
+}
+modalCloseBtn.addEventListener('click', () => hintModal.classList.remove('open'));
+hintModal.addEventListener('click', e => { if(e.target===hintModal) hintModal.classList.remove('open'); });
+
+// ==================== BUTTONS ====================
+startBtn.addEventListener('click', () => {
+    showScreen('screen-quiz');
+});
+
+prevBtn.addEventListener('click', () => goTo(currentSlide-1));
+nextBtn.addEventListener('click', () => goTo(currentSlide+1));
+
+resetBtn.addEventListener('click', () => {
+    questions = buildQuestions();
+    currentSlide = 0;
+    renderSlides();
+    updateProgress();
+    updateCounter();
+    showScreen('screen-quiz');
+});
+
+retryBtn.addEventListener('click', () => {
+    questions = buildQuestions();
+    currentSlide = 0;
+    renderSlides();
+    updateProgress();
+    updateCounter();
+    showScreen('screen-quiz');
+});
+
+// ==================== INIT ====================
+renderSlides();
+updateProgress();
+updateCounter();
+</script>
+</body>
+</html>

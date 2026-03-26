@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Energía, Clima y Civilización | ELEC_1019</title>
+    <style>
+        /* ══════════════════════════════════════════
+           VARIABLES
+        ══════════════════════════════════════════ */
+        :root {
+            --primary:  #0055b3;   /* WCAG AA sobre blanco */
+            --accent:   #007a76;
+            --success:  #166534;
+            --danger:   #b91c1c;
+            --bg-intro: #e8f1fb;
+            --bg-instr: #d0e4f7;
+            --bg-foot:  #eef1f5;
+            --text:     #1a2535;
+            --text-mid: #3a4a5c;
+            --border:   #b0bec5;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        /* ══════════════════════════════════════════
+           OUTER — centra la caja en la pantalla
+        ══════════════════════════════════════════ */
+        html, body {
+            width: 100%; height: 100%;
+            background: #dde3ea;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 11px;
+            color: var(--text);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        /* ══════════════════════════════════════════
+           CONTENEDOR PRINCIPAL — ESTRICTO 800×800
+        ══════════════════════════════════════════ */
+        .container {
+            width:      800px;
+            height:     800px;
+            max-width:  800px;
+            max-height: 800px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 4px 28px rgba(0,0,0,.18);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: #fff;
+            padding: 11px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        header .icon { font-size: 24px; line-height:1; }
+        header h1    { font-size: 15px; font-weight: 700; line-height: 1.2; }
+        header .sub  { font-size: 10.5px; opacity: .87; margin-top: 1px; }
+
+        /* ── INTRO ── */
+        .intro {
+            padding: 8px 20px;
+            background: var(--bg-intro);
+            color: #0d3a6e;
+            font-size: 11px;
+            line-height: 1.5;
+            flex-shrink: 0;
+            border-bottom: 1px solid #b8d4ef;
+        }
+
+        /* ── INSTRUCTION BAR ── */
+        .instruction {
+            padding: 6px 20px;
+            background: var(--bg-instr);
+            color: var(--primary);
+            font-size: 11.5px;
+            font-weight: 700;
+            text-align: center;
+            flex-shrink: 0;
+            border-bottom: 1px solid #9bbfe0;
+        }
+
+        /* ══════════════════════════════════════════
+           GAME AREA — flex row, scroll interno
+        ══════════════════════════════════════════ */
+        .game-area {
+            flex: 1;
+            display: flex;
+            gap: 14px;
+            padding: 13px 16px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* ── COLUMNA IZQUIERDA (conceptos) — ancho fijo ── */
+        .left-col {
+            width: 185px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+        }
+
+        /* ── COLUMNA DERECHA (definiciones) — rest space ── */
+        .right-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+            min-width: 0;
+        }
+
+        /* thin scrollbars */
+        .left-col::-webkit-scrollbar,
+        .right-col::-webkit-scrollbar { width: 4px; }
+        .left-col::-webkit-scrollbar-thumb,
+        .right-col::-webkit-scrollbar-thumb { background: #c0ccd8; border-radius: 4px; }
+
+        /* ── CONCEPT CARDS ── */
+        .concept-item {
+            background: #f4f8ff;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: grab;
+            user-select: none;
+            line-height: 1.35;
+            transition: border-color .18s, box-shadow .18s, background .18s;
+        }
+        .concept-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,85,179,.18);
+        }
+        .concept-item.dragging {
+            opacity: .45;
+            cursor: grabbing;
+        }
+        .concept-item.selected {
+            border-color: var(--primary);
+            background: #dceeff;
+            box-shadow: 0 0 0 3px rgba(0,85,179,.22);
+        }
+
+        /* ── DEFINITION CARDS ── */
+        .definition-item {
+            background: #fafbfc;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 10.5px;
+            color: var(--text-mid);
+            line-height: 1.45;
+            position: relative;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+        }
+        .definition-item.drag-over {
+            border-color: var(--primary);
+            background: #e8f1fb;
+            box-shadow: 0 0 0 3px rgba(0,85,179,.18);
+        }
+        .definition-item.matched {
+            border-style: solid;
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+        .definition-item.wrong-flash {
+            border-color: var(--danger);
+            background: #fff1f1;
+            animation: shake .3s ease;
+        }
+        @keyframes shake {
+            0%,100%{ transform:translateX(0); }
+            25%    { transform:translateX(-5px); }
+            75%    { transform:translateX(5px); }
+        }
+        .match-badge {
+            display: block;
+            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* ── CONTROLS ── */
+        .controls {
+            padding: 9px 18px;
+            background: var(--bg-foot);
+            border-top: 1px solid #d4dbe4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .btn {
+            padding: 7px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .15s, transform .1s;
+        }
+        .btn:active { transform: scale(.97); }
+        .btn-check  { background: var(--accent); color:#fff; }
+        .btn-reset  { background: #546e7a;        color:#fff; }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 5px 20px;
+            font-size: 9.5px;
+            color: #607080;
+            background: var(--bg-foot);
+            text-align: center;
+            flex-shrink: 0;
+            border-top: 1px solid #d4dbe4;
+        }
+
+        /* ══════════════════════════════════════════
+           MODAL
+        ══════════════════════════════════════════ */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,20,40,.75);
+            align-items: center;
+            justify-content: center;
+            z-index: 9000;
+            padding: 20px;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 460px;
+            padding: 30px 26px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,.22);
+        }
+        .modal-box .m-icon  { font-size: 52px; margin-bottom: 12px; }
+        .modal-box h2       { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .modal-box p        { font-size: 11.5px; line-height: 1.65; color: var(--text-mid); margin-bottom: 18px; }
+        .btn-again {
+            background: var(--primary); color:#fff;
+            border:none; padding:9px 26px;
+            border-radius:20px; font-size:12px;
+            font-weight:600; cursor:pointer;
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE — TABLET (≤699px)
+           El contenedor ocupa toda la pantalla.
+        ══════════════════════════════════════════ */
+        @media (max-width:699px) {
+            body { align-items: flex-start; }
+
+            .container {
+                width:      100vw;
+                height:     100dvh;
+                max-width:  100vw;
+                max-height: 100dvh;
+                border-radius: 0;
+            }
+
+            header h1   { font-size: 13px; }
+            header .sub { font-size: 10px; }
+            header .icon{ font-size: 21px; }
+
+            /* columnas apiladas, scroll global en game-area */
+            .game-area {
+                flex-direction: column;
+                overflow-y: auto;
+                padding: 12px 13px 16px;
+                gap: 12px;
+            }
+
+            .left-col {
+                width: 100%;
+                overflow: visible;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .left-col .concept-item {
+                flex: 1 1 calc(50% - 4px);
+                min-width: 130px;
+            }
+
+            .right-col { width:100%; overflow:visible; }
+
+            .controls { flex-wrap:wrap; }
+            .btn      { flex:1; text-align:center; }
+        }
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE — MOBILE (≤400px)
+        ══════════════════════════════════════════ */
+        @media (max-width:400px) {
+            .left-col .concept-item { flex:1 1 100%; }
+            header h1 { font-size:12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" role="main">
+
+    <header>
+        <span class="icon" aria-hidden="true">🔗</span>
+        <div>
+            <h1>Energía, Clima y Civilización</h1>
+       
+        </div>
+    </header>
+
+    <div class="intro" role="note">
+        Estimado estudiante: una cada concepto relacionado con el cambio climático, el sector energético y las fases ecológicas de la humanidad con su definición correspondiente.
+    </div>
+
+    <div class="instruction" id="instruction-bar" aria-live="polite">
+        👆 Arrastra cada concepto hacia la definición correspondiente en la columna derecha
+    </div>
+
+    <div class="game-area" id="game-area" aria-label="Área de juego">
+        <div class="left-col"  id="left-col"  aria-label="Conceptos"></div>
+        <div class="right-col" id="right-col" aria-label="Definiciones"></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-reset" onclick="resetGame()">↺ Reiniciar</button>
+        <button class="btn btn-check" onclick="checkAnswers()">✓ Verificar conexiones</button>
+    </div>
+
+    <footer>Prof. Jorge Luis Jaramillo Pacheco &nbsp;·&nbsp; Energía y Medioambiente</footer>
+</div>
+
+<div class="modal" id="result-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+        <div class="m-icon" id="modal-icon" aria-hidden="true">🎉</div>
+        <h2 id="modal-title">¡Felicidades!</h2>
+        <p  id="modal-text"></p>
+        <button class="btn-again" onclick="restartGame()">Jugar de nuevo</button>
+    </div>
+</div>
+
+<script>
+/* ══ DATOS ══ */
+const CONCEPTS = [
+    {id:1,text:"1. Huella ecológica"},
+    {id:2,text:"2. Antropoceno"},
+    {id:3,text:"3. Fase de recolección y caza"},
+    {id:4,text:"4. Fase industrial"},
+    {id:5,text:"5. Fase sostenible"},
+    {id:6,text:"6. Biocombustibles de 2.ª generación"},
+    {id:7,text:"7. Economía del hidrógeno"},
+    {id:8,text:"8. Acuerdo de París"}
+];
+
+const DEFINITIONS = [
+    {id:"A",text:"A. Fase ecológica en que el ser humano es nómada, aprovecha los recursos naturales sin transformación significativa y mantiene una interacción armoniosa con la naturaleza, usando únicamente energía humana y biomasa (~100 W)."},
+    {id:"B",text:"B. Indicador del impacto ambiental que representa el área de tierra o agua ecológicamente productiva y el volumen de aire necesarios para generar recursos y asimilar residuos de una población. La biocapacidad del planeta es de 1,8 ha/habitante."},
+    {id:"C",text:"C. Término propuesto para el intervalo geológico actual que enfatiza el papel central de la humanidad como agente transformador de la dinámica terrestre y su impacto sobre el clima y los ecosistemas."},
+    {id:"D",text:"D. Compromiso internacional que obliga a los países a reformar sus sectores energéticos para cumplir metas de descarbonización, mediante impuestos al carbono, mercados de carbono, subsidios a renovables y eliminación de subsidios a fósiles."},
+    {id:"E",text:"E. Fase ecológica caracterizada por la explotación intensiva de recursos, emisiones de GEI y uso de carbón, petróleo y gas como fuentes principales, marcando el inicio de la revolución energética con combustibles fósiles."},
+    {id:"F",text:"F. Paradigma en construcción que busca el equilibrio entre desarrollo humano y conservación ecológica: descarbonización, economía circular, justicia ambiental y resiliencia climática, priorizando renovables y almacenamiento energético."},
+    {id:"G",text:"G. Combustibles obtenidos a baja temperatura de la materia fibrosa de las plantas (celulosa), aprovechando residuos agrícolas y forestales sin competir con la producción alimentaria, a diferencia de los de 1.ª generación."},
+    {id:"H",text:"H. Modelo económico emergente basado en el hidrógeno como vector energético limpio, producido mediante celdas de combustible que generan electricidad a partir de H₂ y O₂, cuyo subproducto principal es agua."}
+];
+
+const CORRECT = {1:"B",2:"C",3:"A",4:"E",5:"F",6:"G",7:"H",8:"D"};
+
+/* ══ ESTADO ══ */
+let connections = {};
+let selectedConcept = null;
+
+/* ══ UTILIDADES ══ */
+function isMobile(){ return window.matchMedia("(max-width:699px)").matches; }
+
+/* ══ RENDER ══ */
+function renderGame(){
+    const left  = document.getElementById('left-col');
+    const right = document.getElementById('right-col');
+    left.innerHTML = right.innerHTML = '';
+
+    document.getElementById('instruction-bar').textContent = isMobile()
+        ? "👆 Toca un concepto para seleccionarlo, luego toca su definición"
+        : "👆 Arrastra cada concepto hacia la definición correspondiente en la columna derecha";
+
+    CONCEPTS.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'concept-item';
+        el.draggable = true;
+        el.dataset.id = c.id;
+        el.textContent = c.text;
+        el.setAttribute('role','button');
+        el.setAttribute('tabindex','0');
+        el.addEventListener('dragstart', onDragStart);
+        el.addEventListener('dragend',   onDragEnd);
+        el.addEventListener('click',     onTapConcept);
+        el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') onTapConcept(e); });
+        left.appendChild(el);
+    });
+
+    DEFINITIONS.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'definition-item';
+        el.dataset.id = d.id;
+
+        const txt   = document.createElement('span');
+        txt.textContent = d.text;
+
+        const badge = document.createElement('span');
+        badge.className = 'match-badge';
+        badge.id = 'badge-'+d.id;
+
+        el.appendChild(txt);
+        el.appendChild(badge);
+
+        el.addEventListener('dragover',  onDragOver);
+        el.addEventListener('dragleave', onDragLeave);
+        el.addEventListener('drop',      onDrop);
+        el.addEventListener('click',     onTapDefinition);
+        right.appendChild(el);
+    });
+}
+
+/* ══ DRAG & DROP ══ */
+let draggingId = null;
+
+function onDragStart(e){
+    draggingId = parseInt(e.currentTarget.dataset.id);
+    e.dataTransfer.setData('text/plain', draggingId);
+    setTimeout(()=>e.currentTarget.classList.add('dragging'),0);
+}
+function onDragEnd(e){ e.currentTarget.classList.remove('dragging'); }
+function onDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e){
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    applyMatch(parseInt(e.dataTransfer.getData('text/plain')), e.currentTarget.dataset.id);
+}
+
+/* ══ TAP-TO-MATCH ══ */
+function onTapConcept(e){
+    if(!isMobile()) return;
+    const id = parseInt(e.currentTarget.dataset.id);
+    if(selectedConcept===id){ selectedConcept=null; clearSel(); return; }
+    selectedConcept=id; clearSel(); e.currentTarget.classList.add('selected');
+}
+function onTapDefinition(e){
+    if(!isMobile()||selectedConcept===null) return;
+    applyMatch(selectedConcept, e.currentTarget.dataset.id);
+    selectedConcept=null; clearSel();
+}
+function clearSel(){ document.querySelectorAll('.concept-item').forEach(el=>el.classList.remove('selected')); }
+
+/* ══ MATCH LOGIC ══ */
+function applyMatch(cId, dId){
+    delete connections[cId];
+    for(const k in connections){ if(connections[k]===dId) delete connections[k]; }
+    connections[cId]=dId;
+    refreshVisuals();
+}
+
+function refreshVisuals(){
+    document.querySelectorAll('.definition-item').forEach(def=>{
+        def.classList.remove('matched');
+        const dId  = def.dataset.id;
+        const badge= document.getElementById('badge-'+dId);
+        const cId  = Object.keys(connections).find(k=>connections[k]===dId);
+        if(cId){ def.classList.add('matched'); badge.textContent='✓ Concepto '+cId; }
+        else   { badge.textContent=''; }
+    });
+}
+
+/* ══ VERIFICAR ══ */
+function checkAnswers(){
+    const total   = Object.keys(CORRECT).length;
+    let   correct = 0;
+    for(const cid in CORRECT){ if(connections[cid]===CORRECT[cid]) correct++; }
+
+    const modal = document.getElementById('result-modal');
+    const icon  = document.getElementById('modal-icon');
+    const title = document.getElementById('modal-title');
+    const text  = document.getElementById('modal-text');
+
+    if(correct===total){
+        icon.textContent='🎉'; title.textContent='¡Felicidades!'; title.style.color='#166534';
+        text.innerHTML=`Has completado el juego con éxito.<br><br>
+            Identificaste correctamente cómo la huella ecológica, el Antropoceno, las fases ecológicas,
+            las tecnologías emergentes y los acuerdos internacionales se interrelacionan en la relación
+            energía–clima–civilización.<br><br>
+            <strong>Comprender estas conexiones es fundamental para avanzar hacia un modelo energético sostenible.</strong>`;
+    } else {
+        icon.textContent='📊'; title.textContent='Resultado'; title.style.color='#1a2535';
+        text.innerHTML=`Has acertado <strong>${correct} de ${total}</strong> conexiones.<br><br>
+            Revisa las relaciones entre los conceptos y vuelve a intentarlo.<br>
+            Estas ideas son clave para entender la evolución de la relación energía–naturaleza–sociedad.`;
+    }
+    modal.style.display='flex';
+}
+
+/* ══ RESET ══ */
+function resetGame(){
+    connections={}; selectedConcept=null;
+    document.querySelectorAll('.definition-item').forEach(def=>{
+        def.classList.remove('matched','wrong-flash','drag-over');
+        const b=document.getElementById('badge-'+def.dataset.id);
+        if(b) b.textContent='';
+    });
+    clearSel();
+}
+function restartGame(){
+    document.getElementById('result-modal').style.display='none';
+    resetGame();
+}
+
+/* ══ INIT ══ */
+window.addEventListener('load',()=>{
+    renderGame();
+    let t;
+    window.addEventListener('resize',()=>{
+        clearTimeout(t);
+        t=setTimeout(()=>{
+            const bar=document.getElementById('instruction-bar');
+            if(bar) bar.textContent=isMobile()
+                ?"👆 Toca un concepto para seleccionarlo, luego toca su definición"
+                :"👆 Arrastra cada concepto hacia la definición correspondiente en la columna derecha";
+        },200);
+    });
+});
+</script>
+</body>
+</html>

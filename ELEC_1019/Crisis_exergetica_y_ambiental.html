@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caso: Crisis Exergética y Ambiental</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --accent: #00a19d;
+            --bg: #f8f9fc;
+            --card: #ffffff;
+            --text: #1e2937;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+        
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: #000;
+            font-size: 12px;
+            line-height: 1.45;
+            max-width: 800px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 800px;
+            height: 800px;
+            background: white;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 25px rgba(0,0,0,0.12);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .header-title span {
+            font-size: 32px;
+        }
+        
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .progress {
+            font-size: 13px;
+            background: rgba(255,255,255,0.25);
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        /* ESCENA INICIAL */
+        #scene-intro {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 32px 40px;
+            text-align: center;
+            background: linear-gradient(to bottom, #f0f7ff, #e0f0ff);
+        }
+        
+        #scene-intro h2 {
+            font-size: 20px;
+            margin-bottom: 18px;
+            color: #1e40af;
+        }
+        
+        #scene-intro .city-icon {
+            font-size: 82px;
+            margin: 12px 0 20px;
+        }
+        
+        .btn-start {
+            margin: 30px auto 0;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px 42px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,161,157,0.3);
+            transition: all 0.3s;
+        }
+        
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,161,157,0.4);
+        }
+        
+        /* PREGUNTA */
+        .question-card {
+            flex: 1;
+            padding: 28px 36px;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .question-number {
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .question-text {
+            font-size: 13.5px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .option-btn {
+            background: var(--card);
+            border: 2px solid #cbd5e1;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 12.5px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+        }
+        
+        .option-btn:hover {
+            border-color: var(--primary);
+            transform: translateX(6px);
+        }
+        
+        .option-btn.selected {
+            border-color: var(--accent);
+            background: #f0fdf4;
+        }
+        
+        /* RETROALIMENTACIÓN (estilo carta) */
+        .feedback-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 92%;
+            max-width: 620px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        .feedback-header {
+            padding: 16px 24px;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+        
+        .feedback-header.wrong {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+        
+        .feedback-body {
+            padding: 24px;
+            font-size: 11.5px;
+            line-height: 1.5;
+            flex: 1;
+        }
+        
+        .feedback-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 30px;
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        @keyframes popIn {
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        /* NAVEGACIÓN */
+        .navigation {
+            padding: 14px 24px;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .nav-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        footer {
+            padding: 10px 24px;
+            font-size: 9.5px;
+            color: #64748b;
+            background: #f8fafc;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="header-title">
+                <span>🏭</span>
+                <div>
+                    <h1>Crisis Exergética y Ambiental</h1>
+                    <div style="font-size:10px; opacity:0.9;">Puerto Santarén • Caso Práctico</div>
+                </div>
+            </div>
+            <div class="progress" id="progress">1 de 3</div>
+        </header>
+        
+        <div class="main-content">
+            
+            <!-- ESCENA INTRODUCTORIA -->
+            <div id="scene-intro">
+                <div class="icon">🌊🏙️</div>
+                <h2>La encrucijada energética de Puerto Santarén</h2>
+                <p style="max-width:620px; margin:0 auto 20px; font-size:14px;">
+                    Puerto Santarén, ciudad costera de 250.000 habitantes, enfrenta una grave crisis: alta contaminación, caída en la pesca y aumento del 35% en el costo de la electricidad.<br><br>
+                    Usted ha sido nombrado <strong>asesor técnico</strong> del Comité de Transición Energética (CTE).<br>
+                    Su misión: tomar decisiones clave basadas en los conceptos de <strong>exergía</strong>, eficiencia y sostenibilidad.
+                </p>
+                <button class="btn-start" onclick="startCase()">INICIAR EL CASO →</button>
+            </div>
+            
+            <!-- PREGUNTAS -->
+            <div class="question-card" id="q1">
+                <div class="question-number">Pregunta 1 de 3</div>
+                <div class="question-text">
+                    El CTE discute la raíz del problema ambiental. Un miembro dice: “El problema es que se consume demasiada energía”. Otro responde: “No es cuánta energía consumimos, sino cómo la producimos y qué tan eficientemente la aprovechamos”.<br><br>
+                    ¿Qué enfoque debe adoptar el CTE?
+                </div>
+                <div class="options" id="options-q1"></div>
+            </div>
+            
+            <div class="question-card" id="q2">
+                <div class="question-number">Pregunta 2 de 3</div>
+                <div class="question-text">
+                    El CTE debe elegir una estrategia para reemplazar la central termoeléctrica a carbón. La ciudad cuenta con alta radiación solar (5,2 kWh/m²/día), vientos costeros y un río con caudal estable.<br><br>
+                    ¿Qué estrategia recomendaría usted?
+                </div>
+                <div class="options" id="options-q2"></div>
+            </div>
+            
+            <div class="question-card" id="q3">
+                <div class="question-number">Pregunta 3 de 3</div>
+                <div class="question-text">
+                    Al presentar el plan ante la asamblea ciudadana, algunos sectores temen la pérdida de empleos. ¿Qué argumento central debe liderar la presentación?
+                </div>
+                <div class="options" id="options-q3"></div>
+            </div>
+            
+            <!-- RETROALIMENTACIÓN (CARTA) -->
+            <div class="feedback-card" id="feedback">
+                <div class="feedback-header" id="fb-header">
+                    <span id="fb-icon"></span>
+                    <span id="fb-title"></span>
+                </div>
+                <div class="feedback-body" id="fb-body"></div>
+                <div class="feedback-footer">
+                    <button class="btn-next" onclick="continueAfterFeedback()" id="btn-continue">Continuar →</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NAVEGACIÓN -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="prevQuestion()" id="btn-prev">← Anterior</button>
+            <button class="nav-btn" onclick="restartCase()" id="btn-restart" style="display:none;">Reiniciar caso</button>
+            <button class="nav-btn" onclick="nextQuestion()" id="btn-next" disabled>Siguiente →</button>
+        </div>
+        
+        <!-- FOOTER -->
+        <footer>
+           
+            <strong>Referencia APA 7:</strong> Jaramillo Pacheco, J. L. (s. f.). <em>Crisis exergética y ambiental: Caso práctico Puerto Santarén</em>
+        </footer>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let selectedAnswers = [-1, -1, -1];   // índice de la opción elegida en cada pregunta
+        
+        const questions = [
+            {
+                id: 1,
+                text: "El CTE discute la raíz del problema ambiental. Un miembro dice: “El problema es que se consume demasiada energía”. Otro responde: “No es cuánta energía consumimos, sino cómo la producimos y qué tan eficientemente la aprovechamos”.<br><br>¿Qué enfoque debe adoptar el CTE?",
+                options: [
+                    {
+                        text: "Reducir drásticamente el consumo energético total de la ciudad, incluyendo restricciones a la industria y el comercio.",
+                        isCorrect: false,
+                        feedback: "❌ Reducir el consumo sin evaluar la eficiencia podría paralizar la economía local sin resolver el problema de fondo. La clave está en mejorar la <strong>exergía</strong> del sistema: aprovechar mejor la energía disponible en lugar de simplemente consumir menos."
+                    },
+                    {
+                        text: "Evaluar la exergía del sistema energético actual para identificar cuánta energía útil se desperdicia y redirigir la matriz hacia fuentes más eficientes y limpias.",
+                        isCorrect: true,
+                        feedback: "✅ ¡Excelente decisión! No enfrentamos una crisis energética, sino una <strong>crisis exergética</strong>. Evaluar la exergía permite identificar el desperdicio de energía útil y tomar decisiones técnicas fundamentadas en eficiencia y sostenibilidad."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                text: "El CTE debe elegir una estrategia para reemplazar la central termoeléctrica a carbón. La ciudad cuenta con alta radiación solar (5,2 kWh/m²/día), vientos costeros y un río con caudal estable.<br><br>¿Qué estrategia recomendaría usted?",
+                options: [
+                    {
+                        text: "Construir una central nuclear de última generación, ya que es una fuente de baja emisión de GEI y produce grandes cantidades de energía.",
+                        isCorrect: false,
+                        feedback: "❌ La energía nuclear, aunque de baja emisión durante su operación, implica altos costos iniciales, residuos peligrosos y requiere infraestructura centralizada compleja. Para Puerto Santarén no es la opción más viable."
+                    },
+                    {
+                        text: "Diseñar una matriz energética diversificada que combine energía solar fotovoltaica, eólica a pequeña escala y microhidráulica, aprovechando los recursos renovables locales.",
+                        isCorrect: true,
+                        feedback: "✅ ¡Muy bien! La diversificación con renovables locales es la estrategia más alineada con la <strong>clasificación moderna</strong> de fuentes energéticas: limpias, descentralizadas, competitivas y sostenibles."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                text: "Al presentar el plan ante la asamblea ciudadana, algunos sectores temen la pérdida de empleos. ¿Qué argumento central debe liderar la presentación?",
+                options: [
+                    {
+                        text: "Argumentar que las energías renovables están de moda a nivel mundial y que la ciudad debe subirse a esa tendencia para mejorar su imagen internacional.",
+                        isCorrect: false,
+                        feedback: "❌ Apelar solo a modas globales sin fundamento técnico no genera credibilidad. La comunidad necesita argumentos basados en datos ambientales y principios de sostenibilidad."
+                    },
+                    {
+                        text: "Explicar que la producción y uso de energía fósil causa los principales problemas ambientales (cambio climático, contaminación, pérdida de biodiversidad) y que la transición hacia fuentes limpias protege tanto el medioambiente como la economía a largo plazo.",
+                        isCorrect: true,
+                        feedback: "✅ ¡Correcto! La justificación técnica y ambiental es sólida. Los principios de eficiencia energética, transición, igualdad y reducción de la huella ecológica dan credibilidad al plan y demuestran que el cambio es necesario y beneficioso."
+                    }
+                ]
+            }
+        ];
+        
+        function shuffleOptions() {
+            questions.forEach(q => {
+                q.options.sort(() => Math.random() - 0.5);
+            });
+        }
+        
+        function renderQuestion(index) {
+            currentQuestion = index;
+            document.getElementById('progress').textContent = `${index + 1} de 3`;
+            
+            // Ocultar todo
+            document.querySelectorAll('.question-card').forEach(q => q.style.display = 'none');
+            document.getElementById('feedback').style.display = 'none';
+            
+            const qContainer = document.getElementById(`q${index + 1}`);
+            qContainer.style.display = 'flex';
+            
+            const optionsDiv = document.getElementById(`options-q${index + 1}`);
+            optionsDiv.innerHTML = '';
+            
+            questions[index].options.forEach((option, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.textContent = option.text;
+                btn.onclick = () => selectAnswer(index, i);
+                optionsDiv.appendChild(btn);
+            });
+            
+            document.getElementById('btn-prev').disabled = index === 0;
+            document.getElementById('btn-next').disabled = true;
+        }
+        
+        function selectAnswer(qIndex, optIndex) {
+            selectedAnswers[qIndex] = optIndex;
+            
+            // Deshabilitar todas las opciones y resaltar la seleccionada
+            const optionBtns = document.querySelectorAll(`#options-q${qIndex + 1} .option-btn`);
+            optionBtns.forEach((btn, i) => {
+                btn.style.pointerEvents = 'none';
+                if (i === optIndex) btn.classList.add('selected');
+            });
+            
+            const selectedOption = questions[qIndex].options[optIndex];
+            showFeedback(selectedOption);
+        }
+        
+        function showFeedback(option) {
+            const fb = document.getElementById('feedback');
+            const header = document.getElementById('fb-header');
+            
+            header.classList.toggle('wrong', !option.isCorrect);
+            document.getElementById('fb-icon').innerHTML = option.isCorrect ? '✅' : '❌';
+            document.getElementById('fb-title').textContent = option.isCorrect ? '¡Muy bien!' : 'Esta decisión no es la más adecuada';
+            document.getElementById('fb-body').innerHTML = option.feedback;
+            
+            fb.style.display = 'flex';
+        }
+        
+        function continueAfterFeedback() {
+            document.getElementById('feedback').style.display = 'none';
+            
+            if (currentQuestion < 2) {
+                renderQuestion(currentQuestion + 1);
+            } else {
+                showFinalResult();
+            }
+        }
+        
+        function nextQuestion() {
+            // Solo se usa si el usuario quiere saltar (no recomendado)
+            if (currentQuestion < 2) renderQuestion(currentQuestion + 1);
+        }
+        
+        function prevQuestion() {
+            if (currentQuestion > 0) renderQuestion(currentQuestion - 1);
+        }
+        
+        function showFinalResult() {
+            document.querySelectorAll('.question-card').forEach(q => q.style.display = 'none');
+            document.getElementById('feedback').style.display = 'none';
+            
+            // Contar respuestas correctas
+            let correctCount = 0;
+            selectedAnswers.forEach((answer, i) => {
+                if (answer !== -1 && questions[i].options[answer].isCorrect) correctCount++;
+            });
+            
+            const passed = correctCount === 3;
+            
+            let finalHTML = `
+                <div style="flex:1; padding:40px 36px; text-align:center; background:linear-gradient(to bottom, #ecfdf5, #f0fdf4); display:flex; flex-direction:column; justify-content:center; overflow-y:auto;">
+                    <div style="font-size:72px; margin-bottom:16px;">${passed ? '🎉' : '😔'}</div>
+                    <h2 style="font-size:18px; color:${passed ? '#10b981' : '#ef4444'}; margin-bottom:12px;">
+                        ${passed ? '¡Felicitaciones!' : 'Lo sentimos, no aprobaste el caso'}
+                    </h2>
+                    <p style="font-size:13.5px; margin-bottom:24px;">
+                        Obtuviste <strong>${correctCount} de 3</strong> decisiones correctas.
+                    </p>
+            `;
+            if (!passed) {
+                finalHTML += `
+                    <div style="background:#fee2e2; border-radius:12px; padding:18px; margin:0 auto 24px; max-width:520px; text-align:left; font-size:11.5px;">
+                        <strong>Recomendación:</strong> Revisa nuevamente los conceptos de <strong>exergía</strong>, clasificación moderna de fuentes de energía y principios de sostenibilidad. 
+                        Inténtalo de nuevo para fortalecer tu comprensión.
+                    </div>
+                `;
+            } else {
+                finalHTML += `
+                    <div style="background:white; border-radius:12px; padding:20px; text-align:left; max-width:520px; margin:0 auto 24px; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+                        <strong>Resumen de tu excelente desempeño:</strong><br><br>
+                        1. Evaluaste correctamente la <strong>exergía</strong>.<br>
+                        2. Elegiste una matriz diversificada con renovables locales.<br>
+                        3. Fundamentaste la transición en impactos ambientales reales.
+                    </div>
+                `;
+            }
+            
+            finalHTML += `
+                    <p style="font-size:11.5px; color:#334155; max-width:520px; margin:0 auto;">
+                        ${passed ? 
+                        'Tus decisiones guiaron a Puerto Santarén hacia un modelo energético sostenible, eficiente y responsable.' : 
+                        'La transición energética requiere decisiones técnicas fundamentadas. ¡Vuelve a intentarlo!'}
+                    </p>
+                </div>
+            `;
+            
+            const finalScreen = document.createElement('div');
+            finalScreen.className = 'question-card';
+            finalScreen.style.display = 'flex';
+            finalScreen.innerHTML = finalHTML;
+            document.querySelector('.main-content').appendChild(finalScreen);
+            
+            document.getElementById('btn-next').style.display = 'none';
+            document.getElementById('btn-restart').style.display = 'block';
+        }
+        
+        function startCase() {
+            document.getElementById('scene-intro').style.display = 'none';
+            shuffleOptions();
+            renderQuestion(0);
+        }
+        
+        function restartCase() {
+            location.reload();
+        }
+        
+        // Inicialización
+        window.onload = () => {
+            console.log('%c✅ Caso interactivo corregido - Ahora evalúa correctamente las respuestas', 'color:#10b981; font-weight:700');
+        };
+    </script>
+</body>
+</html>

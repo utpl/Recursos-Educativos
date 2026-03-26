@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Impactos ambientales de fuentes convencionales | ELEC_1019</title>
+<style>
+/* ══════════════════════════════════════════
+   VARIABLES & RESET
+══════════════════════════════════════════ */
+:root{
+  --primary:#0055b3;
+  --accent:#007a76;
+  --success:#166534;
+  --danger:#b91c1c;
+  --warn:#b45309;
+  --bg-intro:#e8f1fb;
+  --bg-instr:#d0e4f7;
+  --bg-foot:#eef1f5;
+  --text:#1a2535;
+  --text-mid:#3a4a5c;
+  --border:#b0bec5;
+  --r:8px;
+  /* fuente‑color map */
+  --c-oil:#7c3aed;
+  --c-gas:#0891b2;
+  --c-coal:#374151;
+  --c-nuc:#b45309;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+  width:100%;height:100%;
+  background:#cdd4dc;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:11px;color:var(--text);
+  display:flex;align-items:flex-start;justify-content:center;
+}
+
+/* ══════════════════════════════════════════
+   CONTENEDOR ESTRICTO 800 × 800
+══════════════════════════════════════════ */
+.container{
+  width:800px;height:800px;
+  max-width:800px;max-height:800px;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 4px 28px rgba(0,0,0,.18);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);
+  color:#fff;padding:10px 18px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+header .icon{font-size:22px;line-height:1;}
+header h1{font-size:15px;font-weight:700;line-height:1.2;}
+header .sub{font-size:10px;opacity:.87;margin-top:1px;}
+
+/* ── META BAR ── */
+.meta{
+  padding:5px 18px;background:var(--bg-intro);
+  color:#0d3a6e;font-size:10.5px;
+  display:flex;gap:16px;flex-wrap:wrap;
+  border-bottom:1px solid #b8d4ef;flex-shrink:0;
+}
+.meta span b{color:var(--primary);}
+
+/* ── ROUND TABS ── */
+.tabs{
+  display:flex;gap:0;flex-shrink:0;
+  border-bottom:2px solid #dde3ea;
+  background:#f4f7fa;
+}
+.tab{
+  flex:1;padding:7px 6px;
+  font-size:11px;font-weight:600;
+  text-align:center;cursor:pointer;
+  color:var(--text-mid);
+  border-right:1px solid #dde3ea;
+  transition:background .18s,color .18s;
+  user-select:none;
+  line-height:1.3;
+}
+.tab:last-child{border-right:none;}
+.tab.active{
+  background:#fff;color:var(--primary);
+  border-bottom:2px solid var(--primary);
+  margin-bottom:-2px;
+}
+.tab.done{color:var(--success);}
+.tab .chip{
+  display:inline-block;
+  font-size:9.5px;font-weight:700;
+  margin-left:4px;padding:1px 5px;
+  border-radius:10px;
+  background:#e8f1fb;color:var(--primary);
+  vertical-align:middle;
+}
+.tab.done .chip{background:#dcfce7;color:var(--success);}
+
+/* ── INSTRUCTION STRIP ── */
+.instruction{
+  padding:6px 18px;background:var(--bg-instr);
+  color:var(--primary);font-size:11px;font-weight:700;
+  text-align:center;flex-shrink:0;
+  border-bottom:1px solid #9bbfe0;
+  line-height:1.4;
+}
+
+/* ══════════════════════════════════════════
+   GAME AREA
+══════════════════════════════════════════ */
+.game-area{
+  flex:1;display:flex;gap:12px;
+  padding:10px 14px;overflow:hidden;min-height:0;
+}
+
+/* ── LEFT: impactos arrastrables ── */
+.left-col{
+  width:220px;flex-shrink:0;
+  display:flex;flex-direction:column;gap:6px;
+  overflow-y:auto;
+}
+.left-col::-webkit-scrollbar{width:4px;}
+.left-col::-webkit-scrollbar-thumb{background:#c0ccd8;border-radius:4px;}
+
+.impact-tag{
+  background:#f4f8ff;
+  border:2px solid var(--border);
+  border-radius:var(--r);
+  padding:8px 10px;
+  font-size:10.5px;color:var(--text);
+  cursor:grab;user-select:none;
+  line-height:1.4;
+  transition:border-color .18s,box-shadow .18s,opacity .18s;
+}
+.impact-tag:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(0,85,179,.18);}
+.impact-tag.dragging{opacity:.4;cursor:grabbing;}
+.impact-tag.used{opacity:.3;pointer-events:none;}
+.impact-tag.selected{border-color:var(--primary);background:#dceeff;box-shadow:0 0 0 3px rgba(0,85,179,.22);}
+
+/* ── RIGHT: fuentes (drop zones) ── */
+.right-col{
+  flex:1;display:flex;flex-direction:column;gap:8px;
+  overflow-y:auto;min-width:0;
+}
+.right-col::-webkit-scrollbar{width:4px;}
+.right-col::-webkit-scrollbar-thumb{background:#c0ccd8;border-radius:4px;}
+
+.source-card{
+  border:2px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+  transition:box-shadow .2s;
+}
+
+/* colored header strip */
+.source-header{
+  padding:6px 10px;
+  font-size:11px;font-weight:700;color:#fff;
+  display:flex;align-items:center;gap:6px;
+  line-height:1;
+}
+.source-card[data-src="1"] .source-header{background:var(--c-oil);}
+.source-card[data-src="2"] .source-header{background:var(--c-gas);}
+.source-card[data-src="3"] .source-header{background:var(--c-coal);}
+.source-card[data-src="4"] .source-header{background:var(--c-nuc);}
+
+/* drop zone */
+.drop-zone{
+  min-height:52px;
+  background:#fafbfc;
+  border-top:1.5px dashed var(--border);
+  padding:7px 9px;
+  font-size:10.5px;color:#94a3b8;
+  display:flex;align-items:center;
+  gap:6px;flex-wrap:wrap;
+  transition:background .18s,border-color .18s;
+  cursor:pointer;
+}
+.drop-zone.drag-over{background:#e8f1fb;border-color:var(--primary);}
+.drop-zone.filled{color:var(--text);font-size:10.5px;line-height:1.4;}
+.drop-zone.correct{background:#f0fdf4;border-top-color:#16a34a;}
+.drop-zone.incorrect{background:#fff1f1;border-top-color:var(--danger);animation:shake .32s ease;}
+
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-5px);}
+  75%{transform:translateX(5px);}
+}
+
+/* placed tag inside drop zone */
+.placed-tag{
+  background:#e0eeff;border:1.5px solid var(--primary);
+  border-radius:5px;padding:3px 7px;
+  font-size:10px;font-weight:600;color:var(--text);
+  cursor:pointer;
+  transition:background .15s;
+}
+.placed-tag:hover{background:#c7dcff;}
+.correct .placed-tag{background:#dcfce7;border-color:#16a34a;color:var(--success);}
+.incorrect .placed-tag{background:#fee2e2;border-color:var(--danger);color:var(--danger);}
+
+/* feedback under zone */
+.zone-fb{
+  display:none;font-size:9.5px;
+  padding:4px 9px;line-height:1.4;
+}
+.zone-fb.show{display:block;}
+.zone-fb.ok{background:#f0fdf4;color:var(--success);}
+.zone-fb.err{background:#fff1f1;color:var(--danger);}
+
+/* ── CONTROLS ── */
+.controls{
+  padding:8px 16px;background:var(--bg-foot);
+  border-top:1px solid #d4dbe4;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;flex-shrink:0;
+}
+.btn{
+  padding:7px 18px;border:none;border-radius:20px;
+  font-size:11.5px;font-weight:600;cursor:pointer;
+  transition:opacity .15s,transform .1s;
+}
+.btn:active{transform:scale(.97);}
+.btn-check{background:var(--accent);color:#fff;}
+.btn-reset{background:#546e7a;color:#fff;}
+.btn-next{background:var(--primary);color:#fff;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+.round-badge{
+  font-size:11px;font-weight:700;color:var(--primary);
+  background:#e8f1fb;padding:4px 12px;border-radius:20px;
+}
+
+/* ── FOOTER ── */
+footer{
+  padding:5px 18px;font-size:9.5px;color:#607080;
+  background:var(--bg-foot);text-align:center;
+  flex-shrink:0;border-top:1px solid #d4dbe4;
+}
+
+/* ══════════════════════════════════════════
+   MODALS (ronda + final)
+══════════════════════════════════════════ */
+.modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,20,40,.76);
+  align-items:center;justify-content:center;
+  z-index:9000;padding:20px;
+}
+.modal-box{
+  background:#fff;border-radius:14px;
+  width:100%;max-width:460px;
+  padding:26px 24px;text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.22);
+}
+.modal-box .m-icon{font-size:48px;margin-bottom:10px;}
+.modal-box h2{font-size:15px;font-weight:700;margin-bottom:8px;}
+.modal-box p{font-size:11px;line-height:1.65;color:var(--text-mid);margin-bottom:16px;}
+.modal-box .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-modal-next{background:var(--primary);color:#fff;border:none;padding:9px 24px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-modal-again{background:#546e7a;color:#fff;border:none;padding:9px 22px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — tablet / mobile ≤699px
+══════════════════════════════════════════ */
+@media(max-width:699px){
+  body{align-items:flex-start;}
+  .container{
+    width:100vw;height:100dvh;
+    max-width:100vw;max-height:100dvh;
+    border-radius:0;
+  }
+  header h1{font-size:13px;}
+  header .sub{font-size:9.5px;}
+  header .icon{font-size:19px;}
+  .game-area{
+    flex-direction:column;
+    overflow-y:auto;padding:10px 12px 14px;gap:10px;
+  }
+  .left-col{
+    width:100%;overflow:visible;
+    flex-direction:row;flex-wrap:wrap;gap:5px;
+  }
+  .left-col .impact-tag{flex:1 1 calc(50% - 3px);min-width:130px;}
+  .right-col{width:100%;overflow:visible;}
+  .controls{flex-wrap:wrap;}
+  .btn{flex:1;text-align:center;}
+  .tab .chip{display:none;}
+}
+@media(max-width:400px){
+  .left-col .impact-tag{flex:1 1 100%;}
+  header h1{font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="container" role="main">
+
+  <!-- HEADER -->
+  <header>
+    <span class="icon" aria-hidden="true">⚡</span>
+    <div>
+      <h1>Impactos ambientales de fuentes convencionales de energía</h1>
+    
+    </div>
+  </header>
+
+  <!-- META -->
+  <div class="meta">
+    <span><b>Tipo:</b> Arrastrar y soltar (3 rondas)</span>
+    
+  </div>
+
+  <!-- ROUND TABS -->
+  <div class="tabs" role="tablist">
+    <div class="tab active" id="tab-1" role="tab" aria-selected="true"  onclick="goToRound(1)">
+      🔩 Ronda 1 <span class="chip" id="chip-1">Extracción</span>
+    </div>
+    <div class="tab"        id="tab-2" role="tab" aria-selected="false" onclick="goToRound(2)">
+      🏭 Ronda 2 <span class="chip" id="chip-2">Transformación</span>
+    </div>
+    <div class="tab"        id="tab-3" role="tab" aria-selected="false" onclick="goToRound(3)">
+      🔌 Ronda 3 <span class="chip" id="chip-3">Uso energético</span>
+    </div>
+  </div>
+
+  <!-- INSTRUCTION -->
+  <div class="instruction" id="instr-bar">
+    👆 Arrastra cada impacto ambiental a la fuente de energía que le corresponde
+  </div>
+
+  <!-- GAME AREA -->
+  <div class="game-area" id="game-area">
+    <div class="left-col"  id="left-col"  aria-label="Impactos arrastrables"></div>
+    <div class="right-col" id="right-col" aria-label="Fuentes de energía"></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="btn btn-reset" onclick="resetRound()">↺ Reiniciar ronda</button>
+    <span class="round-badge" id="round-badge">Ronda 1 / 3</span>
+    <button class="btn btn-check" id="btn-check" onclick="checkRound()">✓ Verificar</button>
+  </div>
+
+  <footer>Prof. Jorge Luis Jaramillo Pacheco &nbsp;·&nbsp; Energía y Medioambiente</footer>
+</div>
+
+<!-- ROUND RESULT MODAL -->
+<div class="modal" id="round-modal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="m-icon" id="rm-icon">✅</div>
+    <h2  id="rm-title"></h2>
+    <p   id="rm-text"></p>
+    <div class="btn-row">
+      <button class="btn-modal-next"  id="rm-btn-next"  onclick="nextRound()">Siguiente ronda →</button>
+      <button class="btn-modal-again" id="rm-btn-again" onclick="retryRound()">Reintentar</button>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL MODAL -->
+<div class="modal" id="final-modal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="m-icon" id="fm-icon">🏆</div>
+    <h2  id="fm-title"></h2>
+    <p   id="fm-text"></p>
+    <div class="btn-row">
+      <button class="btn-modal-next"  onclick="restartAll()">🔄 Jugar de nuevo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATOS DE LAS 3 RONDAS
+══════════════════════════════════════════ */
+const ROUNDS = [
+  {
+    id: 1,
+    phase: "Extracción",
+    instruction: "Arrastra cada impacto ambiental de la fase de <strong>extracción</strong> a la fuente de energía que le corresponde.",
+    sources: [
+      { id:1, name:"🛢️ Petróleo",        color:"#7c3aed" },
+      { id:2, name:"💨 Gas natural",      color:"#0891b2" },
+      { id:3, name:"⛏️ Carbón",           color:"#374151" },
+      { id:4, name:"☢️ Energía nuclear",  color:"#b45309" }
+    ],
+    impacts: [
+      { id:"A", text:"Riesgos de sismos inducidos por fracking, contaminación de aguas subterráneas y liberación de metano (84× más potente que el CO₂ a 20 años)." },
+      { id:"B", text:"Derrames de crudo con daños ecológicos severos, fragmentación de hábitats por oleoductos y contaminación de acuíferos." },
+      { id:"C", text:"Contaminación radiactiva y residuos tóxicos en comunidades cercanas, con impactos en la salud de trabajadores y habitantes." },
+      { id:"D", text:"Minería a cielo abierto que devasta ecosistemas, drenaje ácido que contamina el agua y liberación de partículas causantes de enfermedades pulmonares." }
+    ],
+    correct: { 1:"B", 2:"A", 3:"D", 4:"C" },
+    feedback: "¡Excelente! Recuerde que la extracción ya genera impactos significativos: desde derrames de crudo en el petróleo, los riesgos del fracking en el gas natural, la devastación de la minería del carbón y la contaminación radiactiva de la energía nuclear."
+  },
+  {
+    id: 2,
+    phase: "Transformación",
+    instruction: "Arrastra cada impacto ambiental de la fase de <strong>transformación</strong> a la fuente de energía que le corresponde.",
+    sources: [
+      { id:1, name:"🛢️ Petróleo",        color:"#7c3aed" },
+      { id:2, name:"💨 Gas natural",      color:"#0891b2" },
+      { id:3, name:"⛏️ Carbón",           color:"#374151" },
+      { id:4, name:"☢️ Energía nuclear",  color:"#b45309" }
+    ],
+    impacts: [
+      { id:"A", text:"Centrales térmicas altamente ineficientes que emiten grandes cantidades de CO₂, mercurio, SO₂ y partículas finas, además de generar cenizas con metales pesados." },
+      { id:"B", text:"Emisiones mínimas de GEI durante operación, pero con uso intensivo de agua para refrigeración y riesgo de accidentes catastróficos (Chernóbil, Fukushima)." },
+      { id:"C", text:"Emisiones atmosféricas de NOx, SO₂, partículas finas y compuestos orgánicos volátiles, junto con residuos peligrosos como aguas residuales con metales pesados." },
+      { id:"D", text:"Procesos de licuefacción y transporte que consumen grandes cantidades de energía y pueden liberar contaminantes." }
+    ],
+    correct: { 1:"C", 2:"D", 3:"A", 4:"B" },
+    feedback: "¡Muy bien! El petróleo genera emisiones tóxicas en refinerías, el gas natural requiere procesos energéticamente costosos, el carbón opera en centrales altamente contaminantes y la energía nuclear, aunque con bajas emisiones, presenta riesgos catastróficos."
+  },
+  {
+    id: 3,
+    phase: "Uso energético",
+    instruction: "Arrastra cada impacto ambiental de la fase de <strong>uso energético</strong> a la fuente de energía que le corresponde.",
+    sources: [
+      { id:1, name:"🛢️ Petróleo",        color:"#7c3aed" },
+      { id:2, name:"💨 Gas natural",      color:"#0891b2" },
+      { id:3, name:"⛏️ Carbón",           color:"#374151" },
+      { id:4, name:"☢️ Energía nuclear",  color:"#b45309" }
+    ],
+    impacts: [
+      { id:"A", text:"Principal emisor global de CO₂, con altísima carga de contaminación del aire y enfermedades respiratorias y cardiovasculares." },
+      { id:"B", text:"Baja huella de carbono, pero genera residuos radiactivos de larga vida (miles de años) sin solución definitiva global, además de riesgos de proliferación nuclear." },
+      { id:"C", text:"Menores emisiones de CO₂ que carbón o petróleo, pero las altas fugas de metano durante todo el ciclo de vida pueden anular sus beneficios climáticos." },
+      { id:"D", text:"Elevadas emisiones de CO₂ que contribuyen al cambio climático, generación de smog y enfermedades respiratorias." }
+    ],
+    correct: { 1:"D", 2:"C", 3:"A", 4:"B" },
+    feedback: "¡Felicidades! Ha completado las tres rondas. El petróleo con sus emisiones de CO₂ y smog, el gas natural con la problemática del metano, el carbón como principal emisor global y la energía nuclear con el desafío de los residuos radiactivos."
+  }
+];
+
+/* ══════════════════════════════════════════
+   ESTADO GLOBAL
+══════════════════════════════════════════ */
+let currentRound = 0;   // índice 0–2
+let filled       = {};  // sourceId → impactId placed
+let verified     = false;
+let roundScores  = [];  // correctas por ronda
+let selectedTag  = null;
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function isMobile(){ return window.matchMedia("(max-width:699px)").matches; }
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+/* ══════════════════════════════════════════
+   RENDER RONDA
+══════════════════════════════════════════ */
+function renderRound(){
+  const round   = ROUNDS[currentRound];
+  const leftCol = document.getElementById('left-col');
+  const rightCol= document.getElementById('right-col');
+  leftCol.innerHTML = rightCol.innerHTML = '';
+  filled   = {};
+  verified = false;
+  selectedTag = null;
+
+  // Instrucción
+  document.getElementById('instr-bar').innerHTML = isMobile()
+    ? "👆 Toca un impacto para seleccionarlo, luego toca la fuente correspondiente"
+    : "👆 " + round.instruction;
+
+  // Round badge
+  document.getElementById('round-badge').textContent = `Ronda ${round.id} / 3`;
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.remove('active');
+    if(i===currentRound) t.classList.add('active');
+  });
+
+  // ── Impactos (barajados) ──
+  shuffle(round.impacts).forEach(imp=>{
+    const el = document.createElement('div');
+    el.className    = 'impact-tag';
+    el.draggable    = true;
+    el.dataset.id   = imp.id;
+    el.textContent  = imp.text;
+    el.setAttribute('role','button');
+    el.setAttribute('tabindex','0');
+    el.addEventListener('dragstart', onDragStart);
+    el.addEventListener('dragend',   onDragEnd);
+    el.addEventListener('click',     onTapTag);
+    el.addEventListener('keydown',   e=>{ if(e.key==='Enter'||e.key===' ') onTapTag(e); });
+    leftCol.appendChild(el);
+  });
+
+  // ── Fuentes (orden fijo) ──
+  round.sources.forEach(src=>{
+    const card = document.createElement('div');
+    card.className  = 'source-card';
+    card.dataset.src= src.id;
+
+    const hdr = document.createElement('div');
+    hdr.className   = 'source-header';
+    hdr.style.background = src.color;
+    hdr.textContent = src.name;
+
+    const zone = document.createElement('div');
+    zone.className    = 'drop-zone';
+    zone.dataset.sid  = src.id;
+    zone.textContent  = 'Arrastra aquí el impacto correspondiente';
+    zone.setAttribute('aria-label',`Zona de impacto para ${src.name}`);
+    zone.addEventListener('dragover',  onDragOver);
+    zone.addEventListener('dragleave', onDragLeave);
+    zone.addEventListener('drop',      onDrop);
+    zone.addEventListener('click',     onTapZone);
+
+    const fb = document.createElement('div');
+    fb.className = 'zone-fb';
+    fb.id = `fb-${src.id}`;
+
+    card.appendChild(hdr);
+    card.appendChild(zone);
+    card.appendChild(fb);
+    rightCol.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════════
+   DRAG & DROP
+══════════════════════════════════════════ */
+let draggingImpact = null;
+
+function onDragStart(e){
+  draggingImpact = e.currentTarget.dataset.id;
+  e.dataTransfer.setData('text/plain', draggingImpact);
+  setTimeout(()=>e.currentTarget.classList.add('dragging'),0);
+}
+function onDragEnd(e){ e.currentTarget.classList.remove('dragging'); }
+function onDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const impId = e.dataTransfer.getData('text/plain');
+  const srcId = parseInt(e.currentTarget.dataset.sid);
+  placeImpact(srcId, impId);
+}
+
+/* ══════════════════════════════════════════
+   TAP-TO-MATCH
+══════════════════════════════════════════ */
+function onTapTag(e){
+  if(!isMobile()) return;
+  const id = e.currentTarget.dataset.id;
+  if(selectedTag===id){ selectedTag=null; clearTagSel(); return; }
+  selectedTag=id; clearTagSel(); e.currentTarget.classList.add('selected');
+}
+function onTapZone(e){
+  if(!isMobile()) return;
+  if(!selectedTag) return;
+  const srcId = parseInt(e.currentTarget.dataset.sid);
+  placeImpact(srcId, selectedTag);
+  selectedTag=null; clearTagSel();
+}
+function clearTagSel(){ document.querySelectorAll('.impact-tag').forEach(t=>t.classList.remove('selected')); }
+
+/* ══════════════════════════════════════════
+   COLOCAR IMPACTO EN ZONA
+══════════════════════════════════════════ */
+function placeImpact(srcId, impId){
+  if(verified) return;
+
+  // Liberar zona que ya tenía este impacto
+  for(const k in filled){
+    if(filled[k]===impId && parseInt(k)!==srcId){
+      clearZone(parseInt(k));
+      delete filled[k];
+    }
+  }
+  // Liberar impacto previo en esta zona
+  if(filled[srcId]){
+    markTagUsed(filled[srcId], false);
+  }
+
+  filled[srcId] = impId;
+
+  // Encontrar texto del impacto
+  const impData = ROUNDS[currentRound].impacts.find(i=>i.id===impId);
+  const zone = document.querySelector(`.drop-zone[data-sid="${srcId}"]`);
+  if(zone){
+    zone.innerHTML='';
+    zone.classList.add('filled');
+    const pt = document.createElement('span');
+    pt.className  = 'placed-tag';
+    pt.textContent= impData.text;
+    pt.title      = 'Haz clic para devolver';
+    pt.onclick    = ()=>{ if(!verified) returnImpact(srcId, impId); };
+    zone.appendChild(pt);
+  }
+  markTagUsed(impId, true);
+}
+
+function clearZone(srcId){
+  const zone = document.querySelector(`.drop-zone[data-sid="${srcId}"]`);
+  if(zone){ zone.innerHTML='Arrastra aquí el impacto correspondiente'; zone.classList.remove('filled','correct','incorrect'); }
+  const fb = document.getElementById('fb-'+srcId);
+  if(fb){ fb.className='zone-fb'; }
+}
+
+function returnImpact(srcId, impId){
+  markTagUsed(impId, false);
+  clearZone(srcId);
+  delete filled[srcId];
+}
+
+function markTagUsed(impId, used){
+  document.querySelectorAll('.impact-tag').forEach(t=>{
+    if(t.dataset.id===impId){
+      if(used) t.classList.add('used');
+      else     t.classList.remove('used');
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   VERIFICAR RONDA
+══════════════════════════════════════════ */
+function checkRound(){
+  if(Object.keys(filled).length===0) return;
+  verified=true;
+  const round=ROUNDS[currentRound];
+  let correct=0;
+
+  round.sources.forEach(src=>{
+    const placed = filled[src.id];
+    const zone   = document.querySelector(`.drop-zone[data-sid="${src.id}"]`);
+    const fb     = document.getElementById('fb-'+src.id);
+    if(!placed||!zone) return;
+
+    if(placed===round.correct[src.id]){
+      correct++;
+      zone.classList.add('correct');
+    } else {
+      zone.classList.add('incorrect');
+      setTimeout(()=>zone.classList.remove('incorrect'),400);
+    }
+  });
+
+  roundScores.push(correct);
+  const total=round.sources.length;
+  const allCorrect=correct===total;
+
+  // Marcar tab como done
+  document.getElementById('tab-'+(currentRound+1)).classList.add('done');
+
+  // Mostrar modal de ronda
+  const modal=document.getElementById('round-modal');
+  const isLast=currentRound===ROUNDS.length-1;
+  document.getElementById('rm-icon').textContent  = allCorrect?'✅':'📊';
+  document.getElementById('rm-title').textContent = allCorrect?'¡Correcto!':'Resultado de la ronda';
+  document.getElementById('rm-title').style.color = allCorrect?'#166534':'#1a2535';
+  document.getElementById('rm-text').innerHTML    = `<strong>${correct} de ${total}</strong> respuestas correctas.<br><br>${round.feedback}`;
+  document.getElementById('rm-btn-next').style.display  = isLast?'none':'inline-block';
+  document.getElementById('rm-btn-again').textContent   = allCorrect?'Repasar':'Reintentar';
+  modal.style.display='flex';
+}
+
+/* ══════════════════════════════════════════
+   NAVEGACIÓN DE RONDAS
+══════════════════════════════════════════ */
+function goToRound(n){
+  currentRound=n-1;
+  renderRound();
+  document.getElementById('round-modal').style.display='none';
+}
+
+function nextRound(){
+  document.getElementById('round-modal').style.display='none';
+  if(currentRound<ROUNDS.length-1){
+    currentRound++;
+    renderRound();
+  } else {
+    showFinalModal();
+  }
+}
+
+function retryRound(){
+  document.getElementById('round-modal').style.display='none';
+  roundScores.pop();
+  renderRound();
+}
+
+function resetRound(){
+  roundScores = roundScores.slice(0, currentRound);
+  renderRound();
+  document.getElementById('tab-'+(currentRound+1)).classList.remove('done');
+}
+
+/* ══════════════════════════════════════════
+   MODAL FINAL
+══════════════════════════════════════════ */
+function showFinalModal(){
+  const total   = ROUNDS.reduce((a,r)=>a+r.sources.length,0);
+  const correct = roundScores.reduce((a,b)=>a+b,0);
+  const pct     = Math.round(correct/total*100);
+  const great   = pct>=80;
+
+  document.getElementById('fm-icon').textContent  = pct===100?'🏆': great?'🎉':'📖';
+  document.getElementById('fm-title').textContent = pct===100?'¡Perfecto!': great?'¡Buen trabajo!':'Sigue practicando';
+  document.getElementById('fm-title').style.color = great?'#166534':'#1a2535';
+  document.getElementById('fm-text').innerHTML    =
+    `Completaste las tres rondas con <strong>${correct} de ${total}</strong> respuestas correctas (${pct}%).<br><br>
+     Este conocimiento es fundamental para evaluar y diseñar proyectos energéticos sostenibles.<br><br>
+     ${pct===100?'¡Dominas los impactos ambientales de todas las fases del ciclo energético convencional!':'Te recomendamos repasar las rondas con menor puntaje.'}`;
+  document.getElementById('final-modal').style.display='flex';
+}
+
+function restartAll(){
+  roundScores=[];currentRound=0;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('done','active'));
+  document.getElementById('tab-1').classList.add('active');
+  document.getElementById('final-modal').style.display='none';
+  renderRound();
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  renderRound();
+  let t;
+  window.addEventListener('resize',()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{
+      const bar=document.getElementById('instr-bar');
+      if(bar) bar.innerHTML = isMobile()
+        ? "👆 Toca un impacto para seleccionarlo, luego toca la fuente correspondiente"
+        : "👆 " + ROUNDS[currentRound].instruction;
+    },200);
+  });
+});
+</script>
+</body>
+</html>

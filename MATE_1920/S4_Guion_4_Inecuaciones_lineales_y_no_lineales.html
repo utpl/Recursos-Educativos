@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Juego Interactivo | Inecuaciones Lineales y no Lineales</title>
+    <style>
+        :root {
+            /* Paleta vibrante tipo imágenes referencia */
+            --color-1: #3b82f6;      /* Azul */
+            --color-2: #ef4444;      /* Rojo */
+            --color-3: #10b981;      /* Verde */
+            --color-4: #8b5cf6;      /* Violeta */
+            --color-bg: #f0f9ff;
+            --color-surface: #ffffff;
+            --color-text: #0f172a;
+            --color-muted: #64748b;
+            --shadow-soft: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #fef3c7 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 20px;
+        }
+
+        /* CONTENEDOR 800x800 MODERNO */
+        .game-container {
+            width: 800px;
+            height: 800px;
+            background: var(--color-surface);
+            border-radius: 32px;
+            box-shadow: var(--shadow-soft), 0 0 0 1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* HEADER CON FORMAS GEOMÉTRICAS */
+        .game-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 24px 28px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-header::before,
+        .game-header::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .game-header::before {
+            width: 100px;
+            height: 100px;
+            top: -30px;
+            right: 80px;
+        }
+
+        .game-header::after {
+            width: 60px;
+            height: 60px;
+            bottom: -10px;
+            right: 140px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .title-main {
+            font-size: 20px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title-main::before {
+            content: '◆';
+            color: #fbbf24;
+        }
+
+        .subhead {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 6px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ÁREA DE JUEGO */
+        .game-area {
+            flex: 1;
+            padding: 12px 32px;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            position: relative;
+        }
+
+        .game-area::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* BADGE INSTRUCCIÓN MODERNO */
+        .instruccion {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 24px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .instruccion::before {
+            content: '💡';
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        /* LAYOUT DOS COLUMNAS MODERNO */
+        .match-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 32px;
+            height: calc(100% - 170px);
+        }
+
+        .columna h3 {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .columna h3::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #e2e8f0 0%, transparent 100%);
+        }
+
+        /* CARDS ARRASTRABLES CON ICONOS CIRCULARES */
+        .drag-item {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: grab;
+            box-shadow: var(--shadow-card);
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drag-item::before {
+            content: '⋮⋮';
+            font-size: 12px;
+            color: #cbd5e1;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Colores individuales por inecuación */
+        .drag-item[data-id="0"] { border-left: 5px solid var(--color-1); }
+        .drag-item[data-id="1"] { border-left: 5px solid var(--color-2); }
+        .drag-item[data-id="2"] { border-left: 5px solid var(--color-3); }
+        .drag-item[data-id="3"] { border-left: 5px solid var(--color-4); }
+
+        .drag-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .drag-item[data-id="0"] .drag-icon { background: linear-gradient(135deg, #60a5fa 0%, var(--color-1) 100%); }
+        .drag-item[data-id="1"] .drag-icon { background: linear-gradient(135deg, #f87171 0%, var(--color-2) 100%); }
+        .drag-item[data-id="2"] .drag-icon { background: linear-gradient(135deg, #34d399 0%, var(--color-3) 100%); }
+        .drag-item[data-id="3"] .drag-icon { background: linear-gradient(135deg, #a78bfa 0%, var(--color-4) 100%); }
+
+        .drag-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-text);
+            font-family: 'Courier New', monospace;
+        }
+
+        .drag-item:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .drag-item.dragging {
+            opacity: 0.6;
+            transform: rotate(5deg) scale(1.05);
+            cursor: grabbing;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+        }
+
+        .drag-item.matched {
+            opacity: 0.5;
+            cursor: default;
+            text-decoration: line-through;
+            background: #f1f5f9;
+        }
+
+        /* ZONAS DE DROP ESTILO TARGET */
+        .drop-zone {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 3px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 12px;
+            min-height: 80px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .drop-zone::before {
+            content: '○';
+            font-size: 24px;
+            color: #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-color: var(--color-3);
+            border-style: solid;
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+        }
+
+        .drop-zone.drag-over::before {
+            content: '◉';
+            color: var(--color-3);
+            transform: scale(1.2);
+        }
+
+        .drop-zone.matched {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-color: #059669;
+            border-style: solid;
+            cursor: default;
+        }
+
+        .drop-zone.matched::before {
+            content: '✓';
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .drop-text {
+            font-size: 13px;
+            color: var(--color-text);
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .match-badge {
+            position: absolute;
+            bottom: -10px;
+            right: 16px;
+            background: #059669;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* BOTÓN REINICIAR MODERNO */
+        .btn-reset {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 24px;
+            width: 100%;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-reset:active {
+            transform: translateY(0);
+        }
+
+        /* FEEDBACK MODERNO */
+        .feedback-area {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #92400e;
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            display: none;
+            animation: slideUp 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feedback-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .feedback-area.show {
+            display: block;
+        }
+
+        .feedback-area.success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .feedback-area.success::before {
+            background: linear-gradient(90deg, #059669, #10b981);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scroll personalizado */
+        .game-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        .game-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .game-area::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            body { padding: 0; }
+            .game-container {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .match-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-header">
+        <div class="title-main">Inecuaciones Lineales y no Lineales</div>
+        <div class="subhead">Fundamentos Matemáticos </div>
+    </div>
+
+    <div class="game-area">
+        <div class="instruccion">
+            Arrastra cada inecuación (izquierda) sobre su descripción correcta (derecha). ¡Une los 4 pares para completar el desafío!
+        </div>
+
+        <div class="match-layout" id="matchLayout">
+            <!-- COLUMNA IZQUIERDA: Elementos arrastrables -->
+            <div class="columna">
+                <h3>📐 Inecuaciones</h3>
+                <div id="dragContainer">
+                    <div class="drag-item" data-id="0" draggable="true">
+                        <div class="drag-icon">1</div>
+                        <div class="drag-text">3x − 5 > 7</div>
+                    </div>
+                    <div class="drag-item" data-id="1" draggable="true">
+                        <div class="drag-icon">2</div>
+                        <div class="drag-text">x² − 4 ≤ 0</div>
+                    </div>
+                    <div class="drag-item" data-id="2" draggable="true">
+                        <div class="drag-icon">3</div>
+                        <div class="drag-text">2/x > 1</div>
+                    </div>
+                    <div class="drag-item" data-id="3" draggable="true">
+                        <div class="drag-icon">4</div>
+                        <div class="drag-text">−2x + 1 ≥ 5</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: Zonas de drop -->
+            <div class="columna">
+                <h3>🎯 Descripciones</h3>
+                <div id="dropContainer">
+                    <div class="drop-zone" data-desc-id="0">
+                        <div class="drop-text">Inecuación no lineal racional donde la variable aparece en el denominador.</div>
+                    </div>
+                    <div class="drop-zone" data-desc-id="1">
+                        <div class="drop-text">Inecuación lineal que requiere despejar la variable (sin cambio de signo).</div>
+                    </div>
+                    <div class="drop-zone" data-desc-id="2">
+                        <div class="drop-text">Inecuación lineal que requiere despejar y cambiar el signo al dividir por negativo.</div>
+                    </div>
+                    <div class="drop-zone" data-desc-id="3">
+                        <div class="drop-text">Inecuación no lineal cuadrática que genera solución en intervalo entre dos valores.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-reset" id="resetGame">⟳ Reiniciar juego</button>
+        <div id="feedbackMessage" class="feedback-area"></div>
+    </div>
+</div>
+
+<script>
+    // Configuración correcta del juego
+    const descripcionesCorrectas = [
+        { id: 0, texto: "Inecuación no lineal racional donde la variable aparece en el denominador." },
+        { id: 1, texto: "Inecuación lineal que requiere despejar la variable (sin cambio de signo)." },
+        { id: 2, texto: "Inecuación lineal que requiere despejar y cambiar el signo al dividir por negativo." },
+        { id: 3, texto: "Inecuación no lineal cuadrática que genera solución en intervalo entre dos valores." }
+    ];
+    
+    // Mapeo: inecuación -> descripción correcta
+    const correctMatches = {
+        0: 1,   // 3x-5>7 -> lineal simple (B)
+        1: 3,   // x²-4≤0 -> cuadrática (D)
+        2: 0,   // 2/x>1 -> racional (A)
+        3: 2    // -2x+1≥5 -> lineal cambio signo (C)
+    };
+    
+    let matches = { 0: null, 1: null, 2: null, 3: null };
+    let matchedDropZones = new Set();
+    
+    const dragItems = document.querySelectorAll('.drag-item');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    const resetBtn = document.getElementById('resetGame');
+    const feedbackDiv = document.getElementById('feedbackMessage');
+    
+    function actualizarTextosDescripciones() {
+        const drops = document.querySelectorAll('.drop-zone');
+        drops.forEach((drop, idx) => {
+            if (descripcionesCorrectas[idx]) {
+                drop.querySelector('.drop-text').textContent = descripcionesCorrectas[idx].texto;
+            }
+        });
+    }
+    actualizarTextosDescripciones();
+    
+    function checkCompletion() {
+        const allMatched = Object.values(matches).every(val => val !== null);
+        if (allMatched) {
+            let correctCount = 0;
+            for (let dragId in matches) {
+                if (correctMatches[dragId] === matches[dragId]) correctCount++;
+            }
+            
+            if (correctCount === 4) {
+                feedbackDiv.innerHTML = "🎉 ¡Felicidades! Has completado el reto con éxito.<br><br>Demostraste comprender la diferencia entre inecuaciones lineales y no lineales, identificando correctamente sus características y procedimientos de resolución.";
+                feedbackDiv.classList.add('show', 'success');
+                
+                dragItems.forEach(drag => {
+                    drag.style.opacity = '0.5';
+                    drag.setAttribute('draggable', 'false');
+                });
+            } else {
+                feedbackDiv.innerHTML = "⚠️ Has emparejado todas, pero algunas relaciones son incorrectas. Revisa las características y reinicia para intentarlo de nuevo.";
+                feedbackDiv.classList.add('show');
+                feedbackDiv.classList.remove('success');
+            }
+        }
+    }
+    
+    function updateVisualMatches() {
+        dropZones.forEach(zone => {
+            zone.classList.remove('matched');
+            const badge = zone.querySelector('.match-badge');
+            if (badge) badge.remove();
+        });
+        
+        for (let dragId in matches) {
+            const dropId = matches[dragId];
+            if (dropId !== null) {
+                const dropZone = document.querySelector(`.drop-zone[data-desc-id="${dropId}"]`);
+                if (dropZone) {
+                    dropZone.classList.add('matched');
+                    const dragElement = document.querySelector(`.drag-item[data-id="${dragId}"]`);
+                    const dragText = dragElement ? dragElement.querySelector('.drag-text').textContent : '';
+                    
+                    const badge = document.createElement('div');
+                    badge.className = 'match-badge';
+                    badge.textContent = `✓ ${dragText}`;
+                    dropZone.appendChild(badge);
+                }
+            }
+        }
+        
+        dragItems.forEach(drag => {
+            const dragId = drag.getAttribute('data-id');
+            if (matches[dragId] !== null) {
+                drag.classList.add('matched');
+                drag.setAttribute('draggable', 'false');
+            } else {
+                drag.classList.remove('matched');
+                drag.setAttribute('draggable', 'true');
+            }
+        });
+    }
+    
+    function resetGame() {
+        matches = { 0: null, 1: null, 2: null, 3: null };
+        matchedDropZones.clear();
+        
+        dragItems.forEach(drag => {
+            drag.setAttribute('draggable', 'true');
+            drag.classList.remove('matched');
+            drag.style.opacity = '1';
+        });
+        
+        dropZones.forEach(zone => {
+            zone.classList.remove('matched', 'drag-over');
+            const badge = zone.querySelector('.match-badge');
+            if (badge) badge.remove();
+        });
+        
+        feedbackDiv.classList.remove('show', 'success');
+        feedbackDiv.innerHTML = "";
+    }
+    
+    // Eventos Drag and Drop
+    dragItems.forEach(drag => {
+        drag.addEventListener('dragstart', (e) => {
+            if (drag.getAttribute('draggable') === 'false') {
+                e.preventDefault();
+                return;
+            }
+            e.dataTransfer.setData('text/plain', drag.getAttribute('data-id'));
+            e.dataTransfer.effectAllowed = 'move';
+            drag.classList.add('dragging');
+        });
+        
+        drag.addEventListener('dragend', () => {
+            drag.classList.remove('dragging');
+        });
+    });
+    
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const dropId = zone.getAttribute('data-desc-id');
+            if (!matchedDropZones.has(parseInt(dropId))) {
+                zone.classList.add('drag-over');
+            }
+        });
+        
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('drag-over');
+        });
+        
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            
+            const dropId = parseInt(zone.getAttribute('data-desc-id'));
+            if (matchedDropZones.has(dropId)) {
+                feedbackDiv.innerHTML = "❌ Esta descripción ya tiene una inecuación asignada.";
+                feedbackDiv.classList.add('show');
+                setTimeout(() => feedbackDiv.classList.remove('show'), 2000);
+                return;
+            }
+            
+            const dragId = parseInt(e.dataTransfer.getData('text/plain'));
+            if (matches[dragId] !== null) {
+                feedbackDiv.innerHTML = "⚠️ Esta inecuación ya está emparejada.";
+                feedbackDiv.classList.add('show');
+                setTimeout(() => feedbackDiv.classList.remove('show'), 2000);
+                return;
+            }
+            
+            matches[dragId] = dropId;
+            matchedDropZones.add(dropId);
+            
+            updateVisualMatches();
+            checkCompletion();
+        });
+    });
+    
+    resetBtn.addEventListener('click', resetGame);
+    
+    // Teclado para accesibilidad
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') resetGame();
+    });
+    
+    updateVisualMatches();
+</script>
+</body>
+</html>

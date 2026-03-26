@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Infografía interactiva: Clasificación de las fuentes de energía - ELEC_1019">
+    <title>Clasificación de las fuentes de energía | ELEC_1019</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --accent: #00a19d;
+            --bg: #f4f7fa;
+            --card-bg: #ffffff;
+            --text: #1a2a44;
+            --light-text: #555555;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.4;
+            font-size: 11px;
+            max-width: 800px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .resource-container {
+            width: 800px;
+            height: 800px;
+            margin: 0 auto;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-left h1 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .course-info {
+            font-size: 10px;
+            opacity: 0.95;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .title-main {
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            padding: 14px 20px 8px;
+            flex-shrink: 0;
+            border-bottom: 1px solid #e0e6f0;
+        }
+        
+        .intro-section {
+            padding: 12px 24px 8px;
+            flex-shrink: 0;
+            background: white;
+            border-bottom: 1px solid #e0e6f0;
+        }
+        
+        .intro-section p {
+            font-size: 11px;
+            color: var(--light-text);
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        
+        .instruction {
+            background: #e6f3ff;
+            color: var(--primary);
+            padding: 8px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 11.5px;
+            border-bottom: 1px solid #d0e6ff;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .instruction::before {
+            content: "👆";
+            font-size: 14px;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 20px 24px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+            gap: 14px;
+            flex: 1;
+        }
+        
+        .topic-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .topic-card:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 24px rgba(0, 102, 204, 0.18);
+            border-color: var(--primary);
+        }
+        
+        .topic-card .icon {
+            font-size: 38px;
+            margin-bottom: 8px;
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+        
+        .topic-card:hover .icon {
+            transform: scale(1.15);
+        }
+        
+        .topic-card h3 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+        
+        .topic-card p {
+            font-size: 10px;
+            color: var(--light-text);
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent);
+            color: white;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 42, 68, 0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeInModal 0.2s ease forwards;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 92%;
+            max-width: 680px;
+            max-height: 92%;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .modal-header {
+            padding: 16px 24px 12px;
+            border-bottom: 1px solid #e0e6f0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(90deg, #f8f9fa, #ffffff);
+        }
+        
+        .modal-header .icon {
+            font-size: 42px;
+            flex-shrink: 0;
+        }
+        
+        .modal-header h2 {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+        
+        .modal-header .close-btn {
+            width: 32px;
+            height: 32px;
+            background: #e5e9f0;
+            border: none;
+            border-radius: 50%;
+            font-size: 22px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .modal-header .close-btn:hover {
+            background: #ff4d4f;
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 20px 26px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 11px;
+            color: var(--text);
+            line-height: 1.45;
+        }
+        
+        .modal-body ul {
+            margin: 14px 0;
+            padding-left: 18px;
+        }
+        
+        .modal-body li {
+            margin-bottom: 9px;
+        }
+        
+        .modal-body strong {
+            color: var(--accent);
+        }
+        
+        .modal-footer {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e6f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .nav-btn:hover {
+            background: #0052a3;
+            transform: scale(1.05);
+        }
+        
+        .nav-btn:disabled {
+            background: #a3b8d1;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .counter {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--light-text);
+            background: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes modalPop {
+            0% { transform: scale(0.95) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 20px;
+            font-size: 9.5px;
+            color: #64748b;
+            background: #f1f4f8;
+            border-top: 1px solid #e0e6f0;
+            text-align: center;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* Scrollbar customization */
+        .content-area::-webkit-scrollbar,
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .content-area::-webkit-scrollbar-thumb,
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 20px;
+        }
+        
+        @media (max-width: 800px) {
+            .resource-container {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+            .topics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="resource-container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <div style="font-size: 28px; line-height: 1;">⚡</div>
+                <div class="course-info">
+                    <strong>Energía y Medioambiente</strong>
+              
+                </div>
+            </div>
+            <div style="text-align: right; font-size: 10px; line-height: 1.2;">
+            
+                <strong>Infografía Interactiva</strong>
+            </div>
+        </header>
+        
+        <!-- TÍTULO PRINCIPAL -->
+        <div class="title-main">
+            Clasificación de las fuentes de energía
+        </div>
+        
+        <!-- INTRODUCCIÓN -->
+        <div class="intro-section">
+            <p><strong>Conozca los diferentes criterios</strong> que permiten clasificar las fuentes de energía, desde su origen hasta su viabilidad económica, para comprender cómo se evalúa su contribución a la sostenibilidad y la resiliencia energética.</p>
+        </div>
+        
+        <!-- INSTRUCCIÓN -->
+        <div class="instruction">
+            👆 Haga clic en los temas para visualizar la información
+        </div>
+        
+        <!-- ÁREA DE CONTENIDO -->
+        <div class="content-area">
+            
+            <!-- GRID DE TEMAS -->
+            <div class="topics-grid" id="topics-grid">
+                <!-- Se genera con JavaScript -->
+            </div>
+        </div>
+        
+        <!-- FOOTER CON REFERENCIA -->
+        <div class="footer">
+            <span>
+                <strong>Referencia APA 7:</strong> 
+                Jaramillo Pacheco, J. L. (s. f.). <em>Clasificación de las fuentes de energía</em> [Infografía interactiva]. Energía y Medioambiente - ELEC_1019. Elaboración propia.
+            </span>
+            
+        </div>
+        
+        <!-- MODAL -->
+        <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-content">
+                
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <span class="icon" id="modal-icon"></span>
+                    <h2 id="modal-title"></h2>
+                    <button class="close-btn" onclick="closeModal()" aria-label="Cerrar ventana">✕</button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal-body" id="modal-body">
+                    <!-- Contenido dinámico -->
+                </div>
+                
+                <!-- Modal Footer con navegación -->
+                <div class="modal-footer">
+                    <button class="nav-btn" onclick="prevTopic()" id="btn-prev">
+                        ← Anterior
+                    </button>
+                    
+                    <div class="counter">
+                        <span id="modal-counter">1 de 7</span>
+                    </div>
+                    
+                    <button class="nav-btn" onclick="nextTopic()" id="btn-next">
+                        Siguiente →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Datos de los 7 criterios de clasificación
+         * Cada objeto contiene el contenido listo para renderizar en HTML
+         */
+        const topics = [
+            {
+                id: 1,
+                title: "Origen",
+                icon: "🌍",
+                content: `
+                    <p><strong>Según su origen</strong> (una de las clasificaciones más básicas, pero todavía vigente), las fuentes de energía se clasifican en:</p>
+                    <ul>
+                        <li><strong>Renovables:</strong> Aquellas que se regeneran naturalmente en escalas humanas de tiempo.<br>
+                            Ej.: solar ☀️, eólica 🌬️, hidroeléctrica 💧, geotérmica 🌋, biomasa 🌳.</li>
+                        <li><strong>No renovables:</strong> aquellas que existen en cantidades limitadas o cuya regeneración toma millones de años.<br>
+                            Ej.: petróleo ⛽, gas natural 🔥, carbón 🪨, uranio ☢️.</li>
+                    </ul>
+                    <p style="font-size:10px; color:#64748b; margin-top:12px;">Esta clasificación sigue siendo el punto de partida clásico en cualquier análisis energético.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Impacto ambiental",
+                icon: "🌿",
+                content: `
+                    <p><strong>Según el impacto ambiental que generan</strong> (criterio cada vez más utilizado en planes de descarbonización y sostenibilidad), las fuentes de energía son:</p>
+                    <ul>
+                        <li><strong>Limpias o de baja emisión:</strong> producen poca o ninguna emisión de Gases de Efecto Invernadero (GEI) durante su operación.<br>
+                            Ej.: solar ☀️, eólica 🌬️, nuclear ☢️ (controvertido), hidroeléctrica a pequeña escala 💧.</li>
+                        <li><strong>Contaminantes o de alta emisión:</strong> generan grandes cantidades de CO₂, metano u otros contaminantes.<br>
+                            Ej.: carbón 🪨, petróleo ⛽, gas natural 🔥, biomasa no sostenible 🌳.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 3,
+                title: "Disponibilidad o gestión",
+                icon: "⏳",
+                content: `
+                    <p><strong>Según su disponibilidad o gestión</strong>, las fuentes de energía son:</p>
+                    <ul>
+                        <li><strong>Primarias:</strong> que se obtienen directamente de la naturaleza.<br>
+                            Ej.: sol ☀️, viento 🌬️, agua 💧, petróleo crudo ⛽, uranio ☢️.</li>
+                        <li><strong>Secundarias:</strong> que se derivan de la transformación de una fuente primaria.<br>
+                            Ej.: electricidad ⚡, hidrógeno 🧪, combustibles refinados ⛽.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 4,
+                title: "Forma de entrega",
+                icon: "🔌",
+                content: `
+                    <p><strong>Según su forma de entrega</strong>, las fuentes de energía se clasifican en:</p>
+                    <ul>
+                        <li><strong>Despachable (gestionable):</strong> aquella que puede controlarse y producirse bajo demanda.<br>
+                            Ej.: hidroeléctrica 💧, gas natural 🔥, carbón 🪨, nuclear ☢️.</li>
+                        <li><strong>No despachable (variable o intermitente):</strong> aquella que depende de condiciones naturales (sol, viento) y requiere sistemas de almacenamiento o respaldo.<br>
+                            Ej.: solar fotovoltaica ☀️, eólica 🌬️.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 5,
+                title: "Viabilidad económica",
+                icon: "💰",
+                content: `
+                    <p><strong>Según su viabilidad económica</strong> (criterio importante para la toma de decisiones en infraestructura energética), las fuentes de energía son:</p>
+                    <ul>
+                        <li><strong>Competitivas en costos:</strong> aquellas actualmente más baratas o similares a fósiles.<br>
+                            Ej.: solar y eólica en muchos países ☀️🌬️.</li>
+                        <li><strong>De altos costos iniciales o subvencionadas:</strong> aquellas que requieren apoyo público para ser viables.<br>
+                            Ej.: nuclear ☢️, geotérmica profunda 🌋, hidrógeno verde 🧪 (todavía en desarrollo).</li>
+                    </ul>
+                `
+            },
+            {
+                id: 6,
+                title: "Escala y contexto de uso",
+                icon: "🏗️",
+                content: `
+                    <p><strong>Según su escala y contexto de uso</strong>, las fuentes de energía se clasifican en:</p>
+                    <ul>
+                        <li><strong>Centralizadas:</strong> aquellas que requieren grandes instalaciones e infraestructuras para distribución.<br>
+                            Ej.: plantas termoeléctricas 🏭, hidroeléctricas grandes 💧, nucleares ☢️.</li>
+                        <li><strong>Descentralizadas:</strong> aquellas que se pueden instalar en pequeña escala y cerca del consumidor.<br>
+                            Ej.: paneles solares domésticos ☀️, biodigestores rurales 🌳, minieólica 🌬️.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 7,
+                title: "Criterio integrado moderno",
+                icon: "🔄",
+                content: `
+                    <p><strong>Un nuevo criterio de clasificación</strong> que se impone en la actualidad, tanto al hablar de políticas públicas como en discusiones de marcos académicos, es el denominado <strong>integrado moderno</strong>.</p>
+                    <p>Propone que las fuentes de energía ya no se clasifican solo por su origen, sino por una <strong>combinación de criterios</strong> que permiten evaluar su contribución real a la sostenibilidad y la resiliencia energética.</p>
+                    <p><strong>Esta clasificación es clave para:</strong></p>
+                    <ul>
+                        <li>Diseñar políticas públicas de transición energética justa.</li>
+                        <li>Evaluar la viabilidad técnica y económica de cada fuente en diferentes regiones.</li>
+                        <li>Fomentar la educación y cultura energética en la ciudadanía.</li>
+                    </ul>
+                `
+            }
+        ]
+        
+        let currentIndex = 0
+        
+        /**
+         * Renderiza las tarjetas interactivas en la cuadrícula
+         */
+        function renderCards() {
+            const grid = document.getElementById('topics-grid')
+            grid.innerHTML = ''
+            
+            topics.forEach((topic, index) => {
+                const cardHTML = `
+                <div class="topic-card" data-index="${index}" role="button" tabindex="0" aria-label="Ver información sobre ${topic.title}">
+                    <span class="icon">${topic.icon}</span>
+                    <h3>${topic.title}</h3>
+                    <p>Clic para explorar</p>
+                    <div class="card-badge">${index + 1}/7</div>
+                </div>`
+                grid.innerHTML += cardHTML
+            })
+            
+            // Agregar listeners a las tarjetas
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    currentIndex = parseInt(card.dataset.index)
+                    openModal(currentIndex)
+                })
+                // Soporte teclado para accesibilidad
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        currentIndex = parseInt(card.dataset.index)
+                        openModal(currentIndex)
+                    }
+                })
+            })
+        }
+        
+        /**
+         * Abre el modal con el contenido del tema seleccionado
+         */
+        function openModal(index) {
+            const topic = topics[index]
+            if (!topic) return
+            
+            currentIndex = index
+            
+            // Llenar modal
+            document.getElementById('modal-icon').textContent = topic.icon
+            document.getElementById('modal-title').textContent = topic.title
+            document.getElementById('modal-body').innerHTML = topic.content
+            
+            // Actualizar contador
+            document.getElementById('modal-counter').textContent = `${index + 1} de ${topics.length}`
+            
+            // Habilitar / deshabilitar botones de navegación
+            document.getElementById('btn-prev').disabled = index === 0
+            document.getElementById('btn-next').disabled = index === topics.length - 1
+            
+            // Mostrar modal
+            const modal = document.getElementById('modal')
+            modal.style.display = 'flex'
+            
+            // Enfocar primer elemento interactivo (accesibilidad)
+            setTimeout(() => {
+                modal.querySelector('.modal-content').focus()
+            }, 300)
+        }
+        
+        /**
+         * Cierra el modal
+         */
+        function closeModal() {
+            const modal = document.getElementById('modal')
+            modal.style.display = 'none'
+        }
+        
+        /**
+         * Navega al tema anterior
+         */
+        function prevTopic() {
+            if (currentIndex > 0) {
+                currentIndex--
+                openModal(currentIndex)
+            }
+        }
+        
+        /**
+         * Navega al tema siguiente
+         */
+        function nextTopic() {
+            if (currentIndex < topics.length - 1) {
+                currentIndex++
+                openModal(currentIndex)
+            }
+        }
+        
+        /**
+         * Inicialización completa del recurso
+         */
+        function init() {
+            console.log('%c✅ Infografía interactiva cargada correctamente - Clasificación de fuentes de energía', 'color:#00a19d; font-weight:700')
+            renderCards()
+            
+            // Cerrar modal con tecla ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('modal')
+                    if (modal.style.display === 'flex') closeModal()
+                }
+            })
+            
+            // Mensaje de accesibilidad en consola
+            console.log('%c♿ Recurso optimizado para WCAG 2.1 AA | Funciona dentro de iframe LMS (Moodle / Canvas)', 'color:#0066cc; font-size:10px')
+        }
+        
+        // Iniciar cuando el DOM esté listo
+        window.onload = init
+    </script>
+</body>
+</html>

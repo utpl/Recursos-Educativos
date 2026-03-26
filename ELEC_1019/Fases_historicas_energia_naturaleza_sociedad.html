@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fases Históricas: Energía - Naturaleza - Sociedad | ELEC_1019</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --accent: #00a19d;
+            --bg: #f4f7fa;
+            --card: #ffffff;
+            --text: #1a2a44;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 11px;
+            line-height: 1.45;
+            max-width: 800px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 800px;
+            height: 800px;
+            background: white;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 25px rgba(0,0,0,0.12);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .header-left h1 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .title-main {
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e6f0;
+            flex-shrink: 0;
+        }
+        
+        .intro {
+            padding: 14px 28px;
+            font-size: 11.5px;
+            color: #334155;
+            background: #f0f7ff;
+            flex-shrink: 0;
+        }
+        
+        .instruction {
+            background: #e6f3ff;
+            color: var(--primary);
+            padding: 10px 24px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 11.5px;
+            flex-shrink: 0;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            overflow-y: auto;
+        }
+        
+        .phase-card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 18px 16px;
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.12);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        
+        .phase-card:hover {
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 15px 30px rgba(0, 102, 204, 0.22);
+            border-color: var(--primary);
+        }
+        
+        .phase-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            transition: transform 0.4s ease;
+        }
+        
+        .phase-card:hover .phase-icon {
+            transform: scale(1.15) rotate(8deg);
+        }
+        
+        .phase-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        
+        .phase-subtitle {
+            font-size: 10.5px;
+            color: #64748b;
+            line-height: 1.3;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 42, 68, 0.88);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 640px;
+            border-radius: 16px;
+            max-height: 88vh;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 18px 24px;
+            background: linear-gradient(90deg, var(--accent), #00b8a9);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .modal-header .icon {
+            font-size: 42px;
+        }
+        
+        .modal-header h2 {
+            flex: 1;
+            font-size: 15.5px;
+            font-weight: 700;
+        }
+        
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.25);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 26px 28px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 11.5px;
+            line-height: 1.55;
+        }
+        
+        .modal-body ul {
+            padding-left: 20px;
+            margin: 12px 0;
+        }
+        
+        .modal-body li {
+            margin-bottom: 10px;
+        }
+        
+        .modal-footer {
+            padding: 14px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 24px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .counter {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        footer {
+            padding: 12px 24px;
+            font-size: 9.5px;
+            color: #64748b;
+            background: #f1f5f9;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        /* RESPONSIVIDAD */
+        @media (max-width: 800px) {
+            .container {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+            
+            .content {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 14px;
+                padding: 18px;
+            }
+            
+            .phase-card {
+                padding: 16px 12px;
+            }
+            
+            .phase-icon {
+                font-size: 42px;
+            }
+        }
+        
+        @media (max-width: 500px) {
+            .phase-title {
+                font-size: 12.5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <span style="font-size: 32px;">🌍</span>
+                <div>
+                    <h1>Fases Históricas</h1>
+                    <div style="font-size: 10.5px;">Energía - Naturaleza - Sociedad</div>
+                </div>
+            </div>
+          
+        </header>
+        
+        <div class="title-main">
+            Fases históricas: energía-naturaleza-sociedad
+        </div>
+        
+        <div class="intro">
+            Conozca las distintas fases históricas que describen la evolución de la relación entre el ser humano, la naturaleza y el uso de la energía, desde la era preagrícola hasta el paradigma sostenible actual.
+        </div>
+        
+        <div class="instruction">
+            👆 Haga clic en los temas para visualizar la información
+        </div>
+        
+        <!-- GRID DE FASES -->
+        <div class="content" id="phases-grid">
+            <!-- Generado por JavaScript -->
+        </div>
+        
+        <!-- FOOTER -->
+        <footer>
+            <strong>Referencia APA 7:</strong> Elaboración propia basada en el material de la asignatura Energía y Medioambiente.<br>
+            Prof. Jorge Luis Jaramillo Pacheco.
+        </footer>
+    </div>
+    
+    <!-- MODAL -->
+    <div class="modal" id="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="icon" id="modal-icon"></span>
+                <h2 id="modal-title"></h2>
+                <button class="close-btn" onclick="closeModal()" aria-label="Cerrar">✕</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button class="nav-btn" onclick="prevPhase()" id="btn-prev">← Anterior</button>
+                <div class="counter" id="modal-counter">1 de 5</div>
+                <button class="nav-btn" onclick="nextPhase()" id="btn-next">Siguiente →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const phases = [
+            {
+                id: 1,
+                title: "Fase de recolección y caza (pre agrícola)",
+                icon: "🏹",
+                color: "#4ade80",
+                content: `
+                    <p><strong>Características principales:</strong></p>
+                    <ul>
+                        <li>El ser humano es <strong>nómada</strong>.</li>
+                        <li>Aprovecha los recursos naturales <strong>sin transformación significativa</strong>.</li>
+                        <li>Interacción con la naturaleza <strong>armoniosa y directa</strong>.</li>
+                        <li><strong>Bajo impacto ecológico</strong>.</li>
+                    </ul>
+                    <p><strong>Fuentes de energía utilizadas:</strong></p>
+                    <ul>
+                        <li>Energía humana</li>
+                        <li>Biomasa</li>
+                    </ul>
+                    <p style="margin-top:16px; font-size:10.5px; color:#64748b;">
+                        Esta fase representa la relación más equilibrada entre el ser humano y la naturaleza en términos energéticos.
+                    </p>
+                `
+            },
+            {
+                id: 2,
+                title: "Fase agrícola (neolítica)",
+                icon: "🌾",
+                color: "#fbbf24",
+                content: `
+                    <p><strong>Características principales:</strong></p>
+                    <ul>
+                        <li>Inicio de la agricultura y domesticación de animales.</li>
+                        <li>Transformación de ecosistemas.</li>
+                        <li>Comienzo de un impacto ambiental <strong>sostenido</strong>.</li>
+                        <li>Principales problemas: deforestación y erosión del suelo.</li>
+                    </ul>
+                    <p><strong>Fuentes de energía utilizadas:</strong></p>
+                    <ul>
+                        <li>Energía solar</li>
+                        <li>Fuerza animal</li>
+                        <li>Energía del agua</li>
+                        <li>Energía del viento</li>
+                    </ul>
+                `
+            },
+            {
+                id: 3,
+                title: "Fase industrial",
+                icon: "🏭",
+                color: "#f87171",
+                content: `
+                    <p><strong>Características principales:</strong></p>
+                    <ul>
+                        <li>Explotación intensiva de los recursos naturales.</li>
+                        <li>Generación masiva de emisiones de gases de efecto invernadero.</li>
+                        <li>Contaminación atmosférica, hídrica y del suelo.</li>
+                        <li>Degradación ambiental acelerada.</li>
+                    </ul>
+                    <p><strong>Fuentes de energía utilizadas:</strong></p>
+                    <ul>
+                        <li>Carbón</li>
+                        <li>Petróleo</li>
+                        <li>Gas natural</li>
+                    </ul>
+                    <p style="margin-top:12px; color:#b91c1c; font-weight:600;">
+                        Inicio de la revolución energética basada en combustibles fósiles.
+                    </p>
+                `
+            },
+            {
+                id: 4,
+                title: "Fase tecnológica (postindustrial)",
+                icon: "💻",
+                color: "#60a5fa",
+                content: `
+                    <p><strong>Características principales:</strong></p>
+                    <ul>
+                        <li>Aumento significativo del consumo energético.</li>
+                        <li>Alta dependencia de sistemas energéticos complejos.</li>
+                        <li>Intensificación del cambio climático.</li>
+                        <li>Despertar de la conciencia ambiental.</li>
+                    </ul>
+                    <p><strong>Avances energéticos:</strong></p>
+                    <ul>
+                        <li>Expansión masiva de la electricidad</li>
+                        <li>Desarrollo de la energía nuclear</li>
+                        <li>Avances en eficiencia energética</li>
+                    </ul>
+                `
+            },
+            {
+                id: 5,
+                title: "Fase sostenible",
+                icon: "🌱",
+                color: "#34d399",
+                content: `
+                    <p><strong>Características principales:</strong></p>
+                    <ul>
+                        <li>Búsqueda de equilibrio entre desarrollo humano y conservación ecológica.</li>
+                        <li>Paradigma en construcción.</li>
+                        <li>Enfoque en descarbonización, economía circular, justicia ambiental y resiliencia climática.</li>
+                    </ul>
+                    <p><strong>Fuentes de energía priorizadas:</strong></p>
+                    <ul>
+                        <li>Energía solar</li>
+                        <li>Energía eólica</li>
+                        <li>Hidrógeno verde</li>
+                        <li>Soluciones avanzadas de almacenamiento energético</li>
+                    </ul>
+                    <p style="margin-top:16px; font-size:11px; background:#ecfdf5; padding:12px; border-radius:8px;">
+                        <strong>Esta fase representa el paradigma actual hacia el cual debemos transitar.</strong>
+                    </p>
+                `
+            }
+        ];
+        
+        let currentIndex = 0;
+        
+        function renderCards() {
+            const grid = document.getElementById('phases-grid');
+            grid.innerHTML = '';
+            
+            phases.forEach((phase, index) => {
+                const card = document.createElement('div');
+                card.className = 'phase-card';
+                card.innerHTML = `
+                    <div class="phase-icon">${phase.icon}</div>
+                    <div class="phase-title">${phase.title}</div>
+                    <div class="phase-subtitle">Clic para explorar esta fase</div>
+                `;
+                card.onclick = () => openModal(index);
+                grid.appendChild(card);
+            });
+        }
+        
+        function openModal(index) {
+            currentIndex = index;
+            const phase = phases[index];
+            
+            document.getElementById('modal-icon').textContent = phase.icon;
+            document.getElementById('modal-title').textContent = phase.title;
+            document.getElementById('modal-body').innerHTML = phase.content;
+            document.getElementById('modal-counter').textContent = `${index + 1} de ${phases.length}`;
+            
+            document.getElementById('btn-prev').disabled = index === 0;
+            document.getElementById('btn-next').disabled = index === phases.length - 1;
+            
+            document.getElementById('modal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        function prevPhase() {
+            if (currentIndex > 0) openModal(currentIndex - 1);
+        }
+        
+        function nextPhase() {
+            if (currentIndex < phases.length - 1) openModal(currentIndex + 1);
+        }
+        
+        // Cerrar con tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+        
+        // Inicialización
+        window.onload = () => {
+            renderCards();
+            console.log('%c✅ Infografía interactiva "Fases Históricas: Energía-Naturaleza-Sociedad" cargada correctamente', 'color:#00a19d; font-weight:700');
+        };
+    </script>
+</body>
+</html>

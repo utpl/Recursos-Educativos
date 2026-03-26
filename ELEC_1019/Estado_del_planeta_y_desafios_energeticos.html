@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Estado del planeta y desafíos energéticos | ELEC_1019</title>
+<style>
+/* ══════════════════════════════════════════
+   VARIABLES & RESET
+══════════════════════════════════════════ */
+:root{
+  --primary:#0055b3;
+  --accent:#007a76;
+  --success:#166534;
+  --danger:#b91c1c;
+  --warn-bg:#fef9c3;
+  --warn-txt:#713f12;
+  --bg-intro:#e8f1fb;
+  --bg-instr:#d0e4f7;
+  --bg-foot:#eef1f5;
+  --bg-tag:#f0f7ff;
+  --text:#1a2535;
+  --text-mid:#3a4a5c;
+  --border:#b0bec5;
+  --radius:8px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+/* ── OUTER SHELL ── */
+html,body{
+  width:100%;height:100%;
+  background:#d4dbe4;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:11px;color:var(--text);
+  display:flex;align-items:flex-start;justify-content:center;
+}
+
+/* ══════════════════════════════════════════
+   CONTAINER — ESTRICTO 800×800
+══════════════════════════════════════════ */
+.container{
+  width:800px;height:800px;
+  max-width:800px;max-height:800px;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 4px 28px rgba(0,0,0,.18);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);
+  color:#fff;padding:10px 18px;
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+header .icon{font-size:22px;line-height:1;}
+header h1{font-size:15px;font-weight:700;line-height:1.2;}
+header .sub{font-size:10px;opacity:.87;margin-top:1px;}
+
+/* ── META BAR ── */
+.meta{
+  padding:6px 18px;background:var(--bg-intro);
+  color:#0d3a6e;font-size:10.5px;
+  display:flex;gap:18px;flex-wrap:wrap;
+  border-bottom:1px solid #b8d4ef;flex-shrink:0;
+}
+.meta span b{color:var(--primary);}
+
+/* ── INSTRUCTION ── */
+.instruction{
+  padding:6px 18px;background:var(--bg-instr);
+  color:var(--primary);font-size:11px;font-weight:700;
+  text-align:center;flex-shrink:0;
+  border-bottom:1px solid #9bbfe0;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{
+  padding:5px 18px 4px;background:#f4f7fa;
+  flex-shrink:0;border-bottom:1px solid #dde3ea;
+}
+.progress-label{
+  font-size:10px;color:var(--text-mid);
+  margin-bottom:3px;display:flex;justify-content:space-between;
+}
+.progress-track{
+  height:6px;background:#dde3ea;border-radius:4px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--primary),var(--accent));
+  border-radius:4px;
+  transition:width .4s ease;
+}
+
+/* ══════════════════════════════════════════
+   GAME AREA  — two columns
+══════════════════════════════════════════ */
+.game-area{
+  flex:1;display:flex;gap:12px;
+  padding:10px 14px;overflow:hidden;min-height:0;
+}
+
+/* ── LEFT: draggable tags ── */
+.left-col{
+  width:178px;flex-shrink:0;
+  display:flex;flex-direction:column;gap:6px;
+  overflow-y:auto;
+}
+.left-col::-webkit-scrollbar{width:4px;}
+.left-col::-webkit-scrollbar-thumb{background:#c0ccd8;border-radius:4px;}
+
+.tag{
+  background:var(--bg-tag);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:7px 9px;
+  font-size:11px;font-weight:600;color:var(--text);
+  cursor:grab;user-select:none;
+  transition:border-color .18s,box-shadow .18s,opacity .18s;
+  line-height:1.3;
+}
+.tag:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(0,85,179,.18);}
+.tag.dragging{opacity:.4;cursor:grabbing;}
+.tag.used{opacity:.35;cursor:not-allowed;pointer-events:none;}
+.tag.selected{border-color:var(--primary);background:#dceeff;box-shadow:0 0 0 3px rgba(0,85,179,.22);}
+
+/* ── RIGHT: sentence slots ── */
+.right-col{
+  flex:1;display:flex;flex-direction:column;gap:6px;
+  overflow-y:auto;min-width:0;
+}
+.right-col::-webkit-scrollbar{width:4px;}
+.right-col::-webkit-scrollbar-thumb{background:#c0ccd8;border-radius:4px;}
+
+/* sentence card */
+.sentence-card{
+  background:#fafbfc;
+  border:2px dashed var(--border);
+  border-radius:var(--radius);
+  padding:7px 10px;
+  font-size:10.5px;color:var(--text-mid);line-height:1.5;
+  transition:border-color .2s,background .2s,box-shadow .2s;
+  position:relative;
+}
+.sentence-card.drag-over{
+  border-color:var(--primary);background:#e8f1fb;
+  box-shadow:0 0 0 3px rgba(0,85,179,.18);
+}
+.sentence-card.correct{
+  border-style:solid;border-color:#16a34a;background:#f0fdf4;
+}
+.sentence-card.incorrect{
+  border-color:var(--danger);background:#fff1f1;
+  animation:shake .32s ease;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-5px);}
+  75%{transform:translateX(5px);}
+}
+
+/* blank drop zone inside the sentence */
+.blank{
+  display:inline-flex;align-items:center;
+  min-width:120px;min-height:20px;
+  background:#e8edf5;border:1.5px dashed var(--border);
+  border-radius:5px;padding:2px 6px;
+  font-size:10.5px;color:#7a8a9a;
+  vertical-align:middle;cursor:pointer;
+  transition:background .18s,border-color .18s;
+  line-height:1.3;
+}
+.blank.filled{
+  background:#e0f0ff;border-color:var(--primary);
+  color:var(--text);font-weight:600;font-style:normal;
+}
+.blank.correct-fill{background:#dcfce7;border-color:#16a34a;color:var(--success);}
+.blank.incorrect-fill{background:#fee2e2;border-color:var(--danger);color:var(--danger);}
+
+/* feedback text under card */
+.fb-text{
+  display:none;font-size:10px;margin-top:4px;line-height:1.4;
+  padding:4px 7px;border-radius:5px;
+}
+.fb-text.show{display:block;}
+.fb-text.ok{background:#f0fdf4;color:var(--success);}
+.fb-text.err{background:#fff1f1;color:var(--danger);}
+
+/* ── CONTROLS ── */
+.controls{
+  padding:8px 16px;background:var(--bg-foot);
+  border-top:1px solid #d4dbe4;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;flex-shrink:0;
+}
+.btn{
+  padding:7px 18px;border:none;border-radius:20px;
+  font-size:11.5px;font-weight:600;cursor:pointer;
+  transition:opacity .15s,transform .1s;
+}
+.btn:active{transform:scale(.97);}
+.btn-check{background:var(--accent);color:#fff;}
+.btn-reset{background:#546e7a;color:#fff;}
+.score-badge{
+  font-size:11px;font-weight:700;color:var(--primary);
+  background:#e8f1fb;padding:4px 12px;border-radius:20px;
+}
+
+/* ── FOOTER ── */
+footer{
+  padding:5px 18px;font-size:9.5px;color:#607080;
+  background:var(--bg-foot);text-align:center;
+  flex-shrink:0;border-top:1px solid #d4dbe4;
+}
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(10,20,40,.76);
+  align-items:center;justify-content:center;
+  z-index:9000;padding:20px;
+}
+.modal-box{
+  background:#fff;border-radius:14px;
+  width:100%;max-width:460px;
+  padding:28px 26px;text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.22);
+}
+.modal-box .m-icon{font-size:50px;margin-bottom:10px;}
+.modal-box h2{font-size:16px;font-weight:700;margin-bottom:8px;}
+.modal-box p{font-size:11.5px;line-height:1.65;color:var(--text-mid);margin-bottom:18px;}
+.btn-again{
+  background:var(--primary);color:#fff;
+  border:none;padding:9px 24px;
+  border-radius:20px;font-size:12px;
+  font-weight:600;cursor:pointer;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — tablet / mobile (≤699px)
+══════════════════════════════════════════ */
+@media(max-width:699px){
+  body{align-items:flex-start;}
+  .container{
+    width:100vw;height:100dvh;
+    max-width:100vw;max-height:100dvh;
+    border-radius:0;
+  }
+  header h1{font-size:13px;}
+  header .sub{font-size:9.5px;}
+  header .icon{font-size:20px;}
+  .game-area{
+    flex-direction:column;
+    overflow-y:auto;padding:10px 12px 14px;gap:10px;
+  }
+  .left-col{
+    width:100%;overflow:visible;
+    flex-direction:row;flex-wrap:wrap;gap:5px;
+  }
+  .left-col .tag{flex:1 1 calc(50% - 3px);min-width:120px;}
+  .right-col{width:100%;overflow:visible;}
+  .controls{flex-wrap:wrap;}
+  .btn{flex:1;text-align:center;}
+}
+@media(max-width:400px){
+  .left-col .tag{flex:1 1 100%;}
+  header h1{font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="container" role="main">
+
+  <!-- HEADER -->
+  <header>
+    <span class="icon" aria-hidden="true">🌍</span>
+    <div>
+      <h1>Estado del planeta y desafíos energéticos</h1>
+      <div class="sub">Energía y Medioambiente</div>
+    </div>
+  </header>
+
+  <!-- META -->
+  <div class="meta">
+    <span><b>Tipo:</b> Arrastrar y soltar</span>
+  
+    <span><b>Ítems:</b> 10 conceptos</span>
+  </div>
+
+  <!-- INSTRUCCIÓN -->
+  <div class="instruction" id="instr-bar">
+    👆 Arrastra cada concepto al espacio en blanco del enunciado que le corresponde
+  </div>
+
+  <!-- BARRA DE PROGRESO -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Progreso</span>
+      <span id="prog-txt">0 / 10</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill"></div>
+    </div>
+  </div>
+
+  <!-- GAME AREA -->
+  <div class="game-area" id="game-area">
+
+    <!-- columna izquierda: etiquetas arrastrables -->
+    <div class="left-col" id="left-col" aria-label="Conceptos para arrastrar"></div>
+
+    <!-- columna derecha: enunciados con huecos -->
+    <div class="right-col" id="right-col" aria-label="Enunciados"></div>
+
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="btn btn-reset" onclick="resetGame()">↺ Reiniciar</button>
+    <span class="score-badge" id="score-badge">— / 10</span>
+    <button class="btn btn-check" onclick="checkAnswers()">✓ Verificar</button>
+  </div>
+
+  <footer>Prof. Jorge Luis Jaramillo Pacheco &nbsp;·&nbsp; Energía y Medioambiente</footer>
+</div>
+
+<!-- MODAL RESULTADO -->
+<div class="modal" id="result-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <div class="m-icon" id="modal-icon" aria-hidden="true">🎉</div>
+    <h2 id="modal-title"></h2>
+    <p  id="modal-text"></p>
+    <button class="btn-again" onclick="restartGame()">Jugar de nuevo</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATOS
+══════════════════════════════════════════ */
+
+// Orden de presentación de los enunciados (barajado para no seguir patrón fijo)
+const SENTENCES = [
+  {
+    id: 1,
+    answer: "Dependencia fósil",
+    before: "La",
+    after: "energética global se caracteriza por el predominio de carbón, petróleo y gas natural como fuentes principales.",
+    feedback: "La dependencia de combustibles fósiles define el sistema energético actual y explica la elevada contribución a las emisiones globales de CO₂."
+  },
+  {
+    id: 2,
+    answer: "Cambio climático",
+    before: "El",
+    after: "acelerado se manifiesta en aumento de temperatura, eventos extremos y deshielo polar.",
+    feedback: "El cambio climático resume múltiples evidencias físicas del calentamiento global y sus efectos sobre sistemas naturales y humanos."
+  },
+  {
+    id: 3,
+    answer: "Crisis de biodiversidad",
+    before: "La",
+    after: "se evidencia en la pérdida masiva de especies debido a la destrucción de hábitats y contaminación.",
+    feedback: "La crisis de biodiversidad describe la pérdida acelerada de especies, vinculada a actividades humanas intensivas en recursos."
+  },
+  {
+    id: 4,
+    answer: "Contaminación energética",
+    before: "La",
+    after: "atmosférica y ambiental proviene en gran parte de la producción y uso de combustibles fósiles.",
+    feedback: "La contaminación derivada de la energía fósil afecta aire, agua y suelo, con impactos directos en la salud y los ecosistemas."
+  },
+  {
+    id: 5,
+    answer: "Transición energética",
+    before: "La",
+    after: "busca sustituir fuentes fósiles por renovables de forma rápida y socialmente justa.",
+    feedback: "La transición energética representa el cambio estructural necesario hacia fuentes renovables y bajas en carbono."
+  },
+  {
+    id: 6,
+    answer: "Almacenamiento energético",
+    before: "El",
+    after: "permite compensar la intermitencia de fuentes renovables como solar y eólica.",
+    feedback: "El almacenamiento energético es clave para garantizar la estabilidad del sistema eléctrico con alta penetración renovable."
+  },
+  {
+    id: 7,
+    answer: "Eficiencia energética",
+    before: "La",
+    after: "implica reducir el consumo de energía sin disminuir la calidad de vida.",
+    feedback: "La eficiencia energética permite desacoplar consumo y bienestar, reduciendo impactos ambientales sin sacrificar desarrollo."
+  },
+  {
+    id: 8,
+    answer: "Adaptación climática",
+    before: "La",
+    after: "incluye medidas para proteger infraestructuras y poblaciones frente a impactos del clima.",
+    feedback: "La adaptación climática responde a impactos ya inevitables mediante resiliencia e infraestructura preparada."
+  },
+  {
+    id: 9,
+    answer: "Gobernanza climática",
+    before: "La",
+    after: "internacional coordina políticas y compromisos como los establecidos en el Acuerdo de París.",
+    feedback: "La gobernanza climática articula compromisos internacionales y cooperación para enfrentar un problema global."
+  },
+  {
+    id: 10,
+    answer: "Educación energética",
+    before: "La",
+    after: "sostenible promueve cambios culturales y tecnológicos en el uso de la energía.",
+    feedback: "La educación energética fomenta cambios de comportamiento y apoyo social a políticas sostenibles."
+  }
+];
+
+// Las etiquetas se muestran en orden aleatorio
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+/* ══════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════ */
+let filled   = {};   // sentenceId → answer string placed
+let verified = false;
+let selectedTag = null; // tap-to-match en móvil
+
+/* ══════════════════════════════════════════
+   UTILITARIOS
+══════════════════════════════════════════ */
+function isMobile(){ return window.matchMedia("(max-width:699px)").matches; }
+
+function updateProgress(){
+  const done = Object.keys(filled).length;
+  document.getElementById('prog-txt').textContent  = done+' / 10';
+  document.getElementById('prog-fill').style.width = (done*10)+'%';
+}
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+function renderGame(){
+  const leftCol  = document.getElementById('left-col');
+  const rightCol = document.getElementById('right-col');
+  leftCol.innerHTML  = '';
+  rightCol.innerHTML = '';
+  verified = false;
+
+  // Instrucción adaptada
+  document.getElementById('instr-bar').textContent = isMobile()
+    ? "👆 Toca un concepto y luego toca el espacio en blanco del enunciado"
+    : "👆 Arrastra cada concepto al espacio en blanco del enunciado que le corresponde";
+
+  // ── Etiquetas (orden aleatorio) ──
+  shuffle(SENTENCES).forEach(s => {
+    const tag = document.createElement('div');
+    tag.className   = 'tag';
+    tag.draggable   = true;
+    tag.dataset.ans = s.answer;
+    tag.textContent = s.answer;
+    tag.setAttribute('role','button');
+    tag.setAttribute('tabindex','0');
+
+    tag.addEventListener('dragstart', onDragStart);
+    tag.addEventListener('dragend',   onDragEnd);
+    tag.addEventListener('click',     onTapTag);
+    tag.addEventListener('keydown',   e=>{ if(e.key==='Enter'||e.key===' ') onTapTag(e); });
+    leftCol.appendChild(tag);
+  });
+
+  // ── Enunciados (orden barajado también) ──
+  shuffle(SENTENCES).forEach(s => {
+    const card = document.createElement('div');
+    card.className    = 'sentence-card';
+    card.dataset.id   = s.id;
+    card.dataset.ans  = s.answer;
+
+    // construir HTML: "antes [blank] después"
+    const beforeTxt = document.createTextNode(s.before+' ');
+
+    const blank = document.createElement('span');
+    blank.className   = 'blank';
+    blank.dataset.sid = s.id;
+    blank.textContent = '___________';
+    blank.setAttribute('aria-label','Espacio para respuesta');
+
+    blank.addEventListener('dragover',  onDragOver);
+    blank.addEventListener('dragleave', onDragLeave);
+    blank.addEventListener('drop',      onDrop);
+    blank.addEventListener('click',     onTapBlank);
+
+    const afterTxt = document.createTextNode(' '+s.after);
+
+    const fb = document.createElement('div');
+    fb.className = 'fb-text';
+    fb.id        = 'fb-'+s.id;
+    fb.textContent = s.feedback;
+
+    card.appendChild(beforeTxt);
+    card.appendChild(blank);
+    card.appendChild(afterTxt);
+    card.appendChild(fb);
+    rightCol.appendChild(card);
+  });
+
+  updateProgress();
+  document.getElementById('score-badge').textContent = '— / 10';
+}
+
+/* ══════════════════════════════════════════
+   DRAG & DROP
+══════════════════════════════════════════ */
+let draggingAns = null;
+
+function onDragStart(e){
+  draggingAns = e.currentTarget.dataset.ans;
+  e.dataTransfer.setData('text/plain', draggingAns);
+  setTimeout(()=>e.currentTarget.classList.add('dragging'),0);
+}
+function onDragEnd(e){ e.currentTarget.classList.remove('dragging'); }
+function onDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const ans = e.dataTransfer.getData('text/plain');
+  const sid = parseInt(e.currentTarget.dataset.sid);
+  placeAnswer(sid, ans);
+}
+
+/* ══════════════════════════════════════════
+   TAP-TO-MATCH
+══════════════════════════════════════════ */
+function onTapTag(e){
+  if(!isMobile()) return;
+  const ans = e.currentTarget.dataset.ans;
+  if(selectedTag === ans){ selectedTag=null; clearTagSel(); return; }
+  selectedTag = ans;
+  clearTagSel();
+  e.currentTarget.classList.add('selected');
+}
+function onTapBlank(e){
+  if(!isMobile()) return;
+  if(!selectedTag) return;
+  const sid = parseInt(e.currentTarget.dataset.sid);
+  placeAnswer(sid, selectedTag);
+  selectedTag = null;
+  clearTagSel();
+}
+function clearTagSel(){
+  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('selected'));
+}
+
+/* ══════════════════════════════════════════
+   COLOCAR RESPUESTA EN HUECO
+══════════════════════════════════════════ */
+function placeAnswer(sid, ans){
+  if(verified) return; // no permitir cambios tras verificar
+
+  // Si esa respuesta ya estaba en otro hueco → liberar ese hueco
+  for(const k in filled){
+    if(filled[k]===ans && parseInt(k)!==sid){
+      const prevBlank = document.querySelector(`.blank[data-sid="${k}"]`);
+      if(prevBlank){ prevBlank.textContent='___________'; prevBlank.classList.remove('filled'); }
+      delete filled[k];
+    }
+  }
+
+  // Si el hueco ya tenía algo → devolver etiqueta visible (reset usado)
+  if(filled[sid]){
+    const prevAns = filled[sid];
+    markTagUsed(prevAns, false);
+  }
+
+  filled[sid] = ans;
+
+  const blank = document.querySelector(`.blank[data-sid="${sid}"]`);
+  if(blank){ blank.textContent = ans; blank.classList.add('filled'); }
+
+  markTagUsed(ans, true);
+  updateProgress();
+}
+
+function markTagUsed(ans, used){
+  document.querySelectorAll('.tag').forEach(t=>{
+    if(t.dataset.ans===ans){
+      if(used) t.classList.add('used');
+      else     t.classList.remove('used');
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   VERIFICAR
+══════════════════════════════════════════ */
+function checkAnswers(){
+  if(Object.keys(filled).length===0){ return; }
+  verified = true;
+  let correct = 0;
+  const total = SENTENCES.length;
+
+  SENTENCES.forEach(s=>{
+    const blank   = document.querySelector(`.blank[data-sid="${s.id}"]`);
+    const card    = document.querySelector(`.sentence-card[data-id="${s.id}"]`);
+    const fb      = document.getElementById('fb-'+s.id);
+    const placed  = filled[s.id];
+
+    if(!placed) return; // hueco vacío, no calificar
+
+    if(placed === s.answer){
+      correct++;
+      blank.classList.replace('filled','correct-fill');
+      card.classList.add('correct');
+      fb.classList.add('show','ok');
+    } else {
+      blank.classList.replace('filled','incorrect-fill');
+      card.classList.add('incorrect');
+      fb.classList.add('show','err');
+      setTimeout(()=>card.classList.remove('incorrect'),400);
+    }
+  });
+
+  document.getElementById('score-badge').textContent = correct+' / '+total;
+
+  // Modal si todo correcto o al menos la mitad
+  if(correct === total){
+    showModal('🎉','¡Excelente trabajo!','#166534',
+      `Has completado la actividad con <strong>${correct} de ${total}</strong> respuestas correctas.<br><br>
+       El diagnóstico ambiental global exige acciones coordinadas en energía, políticas públicas y transformación cultural para asegurar la sostenibilidad futura.`);
+  } else if(correct >= Math.ceil(total/2)){
+    showModal('📊','¡Buen intento!','#1a2535',
+      `Acertaste <strong>${correct} de ${total}</strong>.<br><br>
+       Repasa los conceptos que no coincidieron y vuelve a intentarlo.<br>
+       Cada término describe un desafío energético o ambiental clave del planeta actual.`);
+  } else {
+    showModal('📖','Sigue practicando','#1a2535',
+      `Acertaste <strong>${correct} de ${total}</strong>.<br><br>
+       Te recomendamos revisar el material de la Semana 3 antes de intentarlo de nuevo.<br>
+       Presta atención al contexto de cada enunciado.`);
+  }
+}
+
+function showModal(icon, title, color, html){
+  document.getElementById('modal-icon').textContent  = icon;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-title').style.color = color;
+  document.getElementById('modal-text').innerHTML    = html;
+  document.getElementById('result-modal').style.display = 'flex';
+}
+
+/* ══════════════════════════════════════════
+   RESET
+══════════════════════════════════════════ */
+function resetGame(){
+  filled={};verified=false;selectedTag=null;
+  renderGame();
+}
+function restartGame(){
+  document.getElementById('result-modal').style.display='none';
+  resetGame();
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  renderGame();
+  let t;
+  window.addEventListener('resize',()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{
+      const bar=document.getElementById('instr-bar');
+      if(bar) bar.textContent=isMobile()
+        ?"👆 Toca un concepto y luego toca el espacio en blanco del enunciado"
+        :"👆 Arrastra cada concepto al espacio en blanco del enunciado que le corresponde";
+    },200);
+  });
+});
+</script>
+</body>
+</html>
