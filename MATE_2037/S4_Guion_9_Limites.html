@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Límites | Quiz interactivo | Cálculo diferencial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        /* Contenedor principal - responsivo, máximo 800px */
+        .quiz-container {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .quiz-header {
+            background: linear-gradient(105deg, #1e40af, #2563eb);
+            color: white;
+            padding: 20px 24px;
+            text-align: center;
+        }
+
+        .quiz-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .quiz-header p {
+            font-size: 11px;
+            opacity: 0.85;
+            margin-top: 6px;
+        }
+
+        /* Instrucción */
+        .instruction-bar {
+            background: #fef7e0;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #b86b0c;
+            border-bottom: 1px solid #ffe6b3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Área principal del quiz */
+        .quiz-main {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Barra de progreso */
+        .progress-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .progress-step {
+            flex: 1;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.completed {
+            background: #2563eb;
+        }
+
+        .progress-step.active {
+            background: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Tarjeta de pregunta */
+        .question-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .question-number {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .question-text {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.45;
+            color: #1e2937;
+            margin-bottom: 20px;
+        }
+
+        /* Opciones */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-item:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+            transform: translateX(4px);
+        }
+
+        .option-item.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .option-item.correct {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .option-item.incorrect {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .option-letter {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.45;
+            color: #334155;
+        }
+
+        /* Tabla para pregunta 3 */
+        .limit-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 12px;
+        }
+
+        .limit-table th,
+        .limit-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            text-align: center;
+        }
+
+        .limit-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .table-note {
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* Feedback */
+        .feedback-area {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0;
+            display: none;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .feedback-area.show {
+            display: block;
+        }
+
+        .feedback-area.correct {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            color: #166534;
+        }
+
+        .feedback-area.incorrect {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        /* Botones de navegación */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-prev {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-prev:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-next {
+            background: #2563eb;
+            color: white;
+            margin-left: auto;
+        }
+
+        .btn-check {
+            background: #eab308;
+            color: #1e2937;
+        }
+
+        /* Modal para gráfica */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: white;
+            max-width: 600px;
+            width: 90%;
+            border-radius: 28px;
+            overflow: hidden;
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(105deg, #1e40af, #2563eb);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .modal-body {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .modal-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Footer */
+        .quiz-footer {
+            background: #f8fafc;
+            padding: 12px 24px;
+            font-size: 10px;
+            color: #64748b;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+            
+            .quiz-main {
+                padding: 16px;
+            }
+            
+            .question-card {
+                padding: 18px;
+            }
+            
+            .question-text {
+                font-size: 14px;
+            }
+            
+            .option-item {
+                padding: 12px;
+            }
+            
+            .option-text {
+                font-size: 12px;
+            }
+            
+            .nav-btn {
+                padding: 10px 18px;
+                font-size: 12px;
+            }
+            
+            .modal-card {
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .instruction-bar {
+                font-size: 11px;
+                padding: 10px 16px;
+            }
+            
+            .question-text {
+                font-size: 13px;
+            }
+            
+            .limit-table th,
+            .limit-table td {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+        }
+
+        /* Enlace de gráfica clickeable */
+        .graph-link {
+            color: #2563eb;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-container">
+    <!-- Header -->
+    <div class="quiz-header">
+        <h1>📐 LÍMITES</h1>
+        <p>Cálculo diferencial </p>
+    </div>
+
+    <!-- Instrucción -->
+    <div class="instruction-bar">
+        👆 Revise con atención cada enunciado y elija la opción correcta.
+    </div>
+
+    <!-- Área principal del quiz -->
+    <div class="quiz-main">
+        <!-- Barra de progreso -->
+        <div class="progress-bar" id="progressBar"></div>
+
+        <!-- Tarjeta de pregunta -->
+        <div class="question-card">
+            <div class="question-number" id="questionNumber">Pregunta 1 de 5</div>
+            <div class="question-text" id="questionText"></div>
+            
+            <!-- Opciones -->
+            <div class="options-list" id="optionsList"></div>
+            
+            <!-- Tabla para pregunta 3 (se muestra condicionalmente) -->
+            <div id="tableContainer" style="display: none;"></div>
+            
+            <!-- Área de feedback -->
+            <div class="feedback-area" id="feedbackArea"></div>
+            
+            <!-- Botones -->
+            <div class="nav-buttons">
+                <button class="nav-btn btn-prev" id="prevBtn" onclick="prevQuestion()">← Anterior</button>
+                <button class="nav-btn btn-check" id="checkBtn" onclick="checkAnswer()" style="display: none;">✓ Verificar respuesta</button>
+                <button class="nav-btn btn-next" id="nextBtn" onclick="nextQuestion()" style="display: none;">Siguiente →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="quiz-footer">
+        📌 <strong>Referencia APA 7:</strong> Rohoden, K. (2026). <em>Límites - Quiz interactivo</em>.
+    </div>
+</div>
+
+<!-- Modal para gráfica -->
+<div id="graphModal" class="modal-overlay" onclick="closeGraphModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>📊 Gráfica de la función (Pregunta 2)</h3>
+            <div class="modal-close" onclick="closeGraphModal()">✕</div>
+        </div>
+        <div class="modal-body">
+            <img src="media/Imagen 20.png" alt="Gráfica de la función f(x) = (x² - 1)/(x - 1)" style="max-width:100%; border-radius:16px;">
+            <p style="margin-top: 16px; font-size: 12px; color: #64748b;">Observe la gráfica de <strong>f(x) = (x² - 1)/(x - 1)</strong>. La curva se aproxima a un valor constante cuando x → 1.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Datos del quiz - Texto EXACTO del documento Word
+    const quizData = [
+        {
+            number: 1,
+            question: "¿Cuál es la definición formal de un límite de una función?",
+            options: [
+                "A. El valor exacto de la función en un punto.",
+                "B. El valor al que se aproximan los resultados de la función cuando la variable independiente se acerca a un punto específico.",
+                "C. El promedio de los valores de la función en un intervalo.",
+                "D. El valor máximo que puede tomar la función."
+            ],
+            correctIndex: 1,
+            feedback: "El límite describe el comportamiento de f(x) cuando x se aproxima a un número, sin necesidad de alcanzarlo."
+        },
+        {
+            number: 2,
+            question: "Observe la siguiente gráfica de la función f(x) = (x² - 1)/(x - 1). La curva se aproxima a un valor constante cuando x → 1. ¿Cuál es ese valor?",
+            options: [
+                "A. 0",
+                "B. 1",
+                "C. 2",
+                "D. No existe"
+            ],
+            correctIndex: 2,
+            feedback: "Aunque la función no está definida en x = 1, la gráfica muestra que, al acercarse por izquierda y derecha, el valor tiende a 2. Por lo tanto, el límite existe y es 2.",
+            hasGraph: true
+        },
+        {
+            number: 3,
+            question: "Considere la función f(x) = 1/x. Complete la tabla de valores y determine el límite cuando x → 0⁺",
+            options: [
+                "A. 0",
+                "B. 1",
+                "C. No existe.",
+                "D. +∞"
+            ],
+            correctIndex: 3,
+            feedback: "La tabla muestra que conforme x se acerca a 0 por la derecha, los valores de f(x) crecen sin límite. Por lo tanto, el límite es +∞",
+            hasTable: true,
+            tableData: [
+                { x: "0.1", fx: "10" },
+                { x: "0.01", fx: "100" },
+                { x: "0.001", fx: "1000" },
+                { x: "0.0001", fx: "10000" }
+            ]
+        },
+        {
+            number: 4,
+            question: "¿Cuándo se concluye que un límite no existe?",
+            options: [
+                "A. Cuando la función es creciente.",
+                "B. Cuando los límites laterales son iguales.",
+                "C. Cuando los límites laterales son distintos o divergen hacia infinito en sentidos opuestos.",
+                "D. Cuando la función es continua."
+            ],
+            correctIndex: 2,
+            feedback: "Si los límites por la izquierda y por la derecha no coinciden, el límite no existe. Ejemplo: funciones con asíntotas verticales."
+        },
+        {
+            number: 5,
+            question: "Los límites laterales permiten…",
+            options: [
+                "A. Distinguir el comportamiento de la función al aproximarse a un punto desde la izquierda o la derecha.",
+                "B. Analizar el comportamiento de la función en intervalos grandes.",
+                "C. Calcular derivadas.",
+                "D. Determinar máximos y mínimos."
+            ],
+            correctIndex: 0,
+            feedback: "Los límites laterales son fundamentales para estudiar discontinuidades y comportamientos extremos, ya que diferencian la aproximación desde cada lado."
+        }
+    ];
+
+    let currentIndex = 0;
+    let selectedOption = null;
+    let isAnswered = false;
+    let userAnswers = new Array(5).fill(null);
+
+    // Elementos DOM
+    const progressBar = document.getElementById('progressBar');
+    const questionNumber = document.getElementById('questionNumber');
+    const questionText = document.getElementById('questionText');
+    const optionsList = document.getElementById('optionsList');
+    const tableContainer = document.getElementById('tableContainer');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const prevBtn = document.getElementById('prevBtn');
+    const checkBtn = document.getElementById('checkBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // Renderizar barra de progreso
+    function renderProgress() {
+        progressBar.innerHTML = '';
+        for (let i = 0; i < quizData.length; i++) {
+            const step = document.createElement('div');
+            step.className = 'progress-step';
+            if (userAnswers[i] !== null) step.classList.add('completed');
+            if (i === currentIndex) step.classList.add('active');
+            progressBar.appendChild(step);
+        }
+    }
+
+    // Renderizar tabla para pregunta 3 si aplica
+    function renderTable() {
+        const q = quizData[currentIndex];
+        if (q.hasTable && q.tableData) {
+            let tableHTML = `
+                <table class="limit-table">
+                    <thead>
+                        <tr><th>x</th><th>f(x) = 1/x</th></tr>
+                    </thead>
+                    <tbody>
+            `;
+            q.tableData.forEach(row => {
+                tableHTML += `<tr><td>${row.x}</td><td>${row.fx}</td></tr>`;
+            });
+            tableHTML += `</tbody></table><div class="table-note">📌 Conforme x se acerca a 0 por la derecha, f(x) crece sin límite.</div>`;
+            tableContainer.innerHTML = tableHTML;
+            tableContainer.style.display = 'block';
+        } else {
+            tableContainer.style.display = 'none';
+        }
+    }
+
+    // Renderizar opciones
+    function renderOptions() {
+        const q = quizData[currentIndex];
+        optionsList.innerHTML = '';
+        
+        q.options.forEach((opt, idx) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-item';
+            if (userAnswers[currentIndex] === idx) optionDiv.classList.add('selected');
+            if (isAnswered) {
+                if (idx === q.correctIndex) optionDiv.classList.add('correct');
+                if (userAnswers[currentIndex] === idx && idx !== q.correctIndex) optionDiv.classList.add('incorrect');
+            }
+            
+            optionDiv.innerHTML = `
+                <div class="option-letter">${String.fromCharCode(65 + idx)}</div>
+                <div class="option-text">${opt}</div>
+            `;
+            
+            if (!isAnswered) {
+                optionDiv.addEventListener('click', () => selectOption(idx));
+            }
+            optionsList.appendChild(optionDiv);
+        });
+    }
+
+    // Seleccionar opción
+    function selectOption(idx) {
+        if (isAnswered) return;
+        selectedOption = idx;
+        
+        // Actualizar visualmente
+        document.querySelectorAll('.option-item').forEach((opt, i) => {
+            opt.classList.remove('selected');
+            if (i === idx) opt.classList.add('selected');
+        });
+        
+        // Mostrar botón de verificar
+        checkBtn.style.display = 'block';
+    }
+
+    // Verificar respuesta
+    function checkAnswer() {
+        if (selectedOption === null) {
+            feedbackArea.innerHTML = `<strong>⚠️ Atención:</strong> Por favor selecciona una opción antes de verificar.`;
+            feedbackArea.classList.add('show', 'incorrect');
+            return;
+        }
+        
+        const q = quizData[currentIndex];
+        const isCorrect = (selectedOption === q.correctIndex);
+        
+        isAnswered = true;
+        userAnswers[currentIndex] = selectedOption;
+        
+        // Guardar la respuesta
+        renderOptions(); // Re-renderiza con colores correctos/incorrectos
+        
+        // Mostrar feedback
+        feedbackArea.innerHTML = `<strong>${isCorrect ? '✅ Correcto' : '❌ Incorrecto'}</strong><br>${q.feedback}`;
+        feedbackArea.classList.add('show');
+        if (isCorrect) {
+            feedbackArea.classList.add('correct');
+            feedbackArea.classList.remove('incorrect');
+        } else {
+            feedbackArea.classList.add('incorrect');
+            feedbackArea.classList.remove('correct');
+        }
+        
+        // Ocultar botón verificar, mostrar siguiente
+        checkBtn.style.display = 'none';
+        nextBtn.style.display = 'block';
+        
+        // Actualizar barra de progreso
+        renderProgress();
+    }
+
+    // Siguiente pregunta
+    function nextQuestion() {
+        if (!isAnswered) {
+            feedbackArea.innerHTML = `<strong>⚠️ Atención:</strong> Debes verificar tu respuesta antes de continuar.`;
+            feedbackArea.classList.add('show', 'incorrect');
+            return;
+        }
+        
+        if (currentIndex < quizData.length - 1) {
+            currentIndex++;
+            loadQuestion();
+        } else {
+            // Quiz completado
+            const correctCount = userAnswers.filter((ans, idx) => ans === quizData[idx].correctIndex).length;
+            feedbackArea.innerHTML = `<strong>🎉 ¡Quiz completado!</strong><br>Has respondido correctamente ${correctCount} de ${quizData.length} preguntas.<br><br>Revisa las retroalimentaciones para afianzar tus conocimientos.`;
+            feedbackArea.classList.add('show', 'correct');
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            prevBtn.disabled = false;
+        }
+    }
+
+    // Pregunta anterior
+    function prevQuestion() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            loadQuestion();
+        }
+    }
+
+    // Cargar pregunta actual
+    function loadQuestion() {
+        const q = quizData[currentIndex];
+        
+        // Resetear estado
+        selectedOption = null;
+        isAnswered = false;
+        
+        // Actualizar interfaz
+        questionNumber.textContent = `Pregunta ${q.number} de ${quizData.length}`;
+        questionText.innerHTML = q.question;
+        
+        // Si es pregunta 2, hacer el texto clickeable para ver gráfica
+        if (q.hasGraph) {
+            const graphLink = document.createElement('span');
+            graphLink.className = 'graph-link';
+            graphLink.textContent = ' 📊 (Clic para ver gráfica)';
+            graphLink.style.cursor = 'pointer';
+            graphLink.onclick = () => openGraphModal();
+            
+            // Limpiar y agregar
+            const existingLink = questionText.querySelector('.graph-link');
+            if (existingLink) existingLink.remove();
+            questionText.appendChild(graphLink);
+        } else {
+            const existingLink = questionText.querySelector('.graph-link');
+            if (existingLink) existingLink.remove();
+        }
+        
+        // Restaurar estado de respuesta si ya fue respondida
+        if (userAnswers[currentIndex] !== null) {
+            isAnswered = true;
+            selectedOption = userAnswers[currentIndex];
+            feedbackArea.innerHTML = `<strong>${selectedOption === q.correctIndex ? '✅ Correcto' : '❌ Incorrecto'}</strong><br>${q.feedback}`;
+            feedbackArea.classList.add('show');
+            if (selectedOption === q.correctIndex) {
+                feedbackArea.classList.add('correct');
+                feedbackArea.classList.remove('incorrect');
+            } else {
+                feedbackArea.classList.add('incorrect');
+                feedbackArea.classList.remove('correct');
+            }
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'block';
+        } else {
+            feedbackArea.classList.remove('show', 'correct', 'incorrect');
+            feedbackArea.innerHTML = '';
+            checkBtn.style.display = 'block';
+            nextBtn.style.display = 'none';
+        }
+        
+        // Renderizar opciones y tabla
+        renderOptions();
+        renderTable();
+        
+        // Actualizar progreso
+        renderProgress();
+        
+        // Scroll suave al inicio de la tarjeta
+        document.querySelector('.quiz-main').scrollTop = 0;
+    }
+
+    // Abrir modal de gráfica
+    function openGraphModal() {
+        document.getElementById('graphModal').style.display = 'flex';
+    }
+
+    // Cerrar modal de gráfica
+    function closeGraphModal(event) {
+        if (event && event.target !== event.currentTarget && event.target.className !== 'modal-close') return;
+        document.getElementById('graphModal').style.display = 'none';
+    }
+
+    // Inicializar
+    function init() {
+        loadQuestion();
+        
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('graphModal').style.display = 'none';
+            }
+        });
+        
+        console.log('✅ Quiz de Límites cargado - completamente responsivo');
+    }
+
+    init();
+</script>
+</body>
+</html>
