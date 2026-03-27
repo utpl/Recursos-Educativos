@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optimización de Rendimiento · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #f0f5f2;
+  --white: #ffffff;
+  --ink:   #101c14;
+  --ink2:  #243020;
+  --muted: #6a7a68;
+  --sand:  #c8d8c0;
+  --hdr:   #142010;
+
+  --acc:   #2a6840;  --acc-l: #eaf5ee;
+  --acc2:  #c87010;  --acc2-l:#fff4e8;
+
+  --ok:    #1a6840;  --ok-l:  #e8f8ee;
+  --err:   #a02020;  --err-l: #fdecea;
+
+  /* Per-slot colors */
+  --s1: #1a5c8a;  --s1l: #eaf2fb;
+  --s2: #7a3898;  --s2l: #f5eafb;
+  --s3: #c06010;  --s3l: #fff4e8;
+  --s4: #1a6848;  --s4l: #eaf5ee;
+  --s5: #8a1a50;  --s5l: #fbeaf2;
+}
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--hdr);
+  padding: 14px 24px 12px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.hdr h1 { font-size: 14.5px; font-weight: 900; color: #fff; line-height: 1.2; }
+.hdr-sub { font-size: 9.5px; color: rgba(255,255,255,.42); margin-top: 3px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.6); font-size: 8.5px; font-weight: 600; letter-spacing: .7px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; }
+
+/* ── PROG ── */
+.pbar { background: var(--white); border-bottom: 1.5px solid var(--sand); padding: 8px 24px; display: flex; align-items: center; gap: 12px; }
+.pb-bg { flex: 1; height: 6px; background: var(--sand); border-radius: 10px; overflow: hidden; }
+.pb-fill { height: 100%; background: var(--acc); border-radius: 10px; transition: width .35s; }
+.pb-txt { font-size: 10px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.pb-sc { background: var(--acc-l); border: 1.5px solid rgba(42,104,64,.2); color: var(--acc); font-size: 10px; font-weight: 700; padding: 3px 13px; border-radius: 20px; white-space: nowrap; }
+
+/* ── INST ── */
+.inst { background: var(--acc2-l); border-bottom: 1.5px solid #f0c898; padding: 8px 24px; font-size: 10.5px; color: #5a3008; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.inst-b { background: var(--hdr); color: rgba(255,255,255,.8); font-size: 8.5px; font-weight: 700; padding: 3px 12px; border-radius: 20px; margin-left: auto; white-space: nowrap; }
+
+/* ── MAIN AREA ── */
+.main { display: grid; grid-template-columns: 1fr 220px; gap: 0; min-height: 520px; }
+
+/* ── SENTENCES COLUMN ── */
+.sentences { padding: 16px 18px 16px 22px; display: flex; flex-direction: column; gap: 10px; }
+
+.sent-row {
+  background: var(--white);
+  border: 2px solid var(--sand);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  transition: border-color .2s;
+}
+.sent-row.ok  { border-color: var(--ok); }
+.sent-row.err { border-color: var(--err); }
+
+.sent-num {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 13px;
+  background: var(--bg); border-bottom: 1px solid var(--sand);
+  font-size: 9px; font-weight: 800; letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.num-badge {
+  width: 22px; height: 22px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 900; color: #fff;
+  flex-shrink: 0;
+}
+.num-badge.s1{background:var(--s1)} .num-badge.s2{background:var(--s2)}
+.num-badge.s3{background:var(--s3)} .num-badge.s4{background:var(--s4)}
+.num-badge.s5{background:var(--s5)}
+
+/* Sentence text with inline drop zone */
+.sent-text {
+  padding: 11px 13px;
+  font-size: 12px; font-weight: 500; color: var(--ink2); line-height: 2;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+}
+
+/* Inline drop zone (the blank) */
+.blank {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 130px; height: 34px;
+  border: 2px dashed var(--sand);
+  border-radius: 8px;
+  background: var(--bg);
+  padding: 0 8px;
+  cursor: pointer;
+  transition: all .18s;
+  vertical-align: middle;
+  position: relative;
+}
+.blank.drag-over { border-color: var(--acc); background: var(--acc-l); transform: scale(1.03); }
+.blank .hint-txt { font-size: 9.5px; color: var(--sand); font-style: italic; }
+.blank.filled { border-style: solid; background: var(--acc-l); border-color: rgba(42,104,64,.3); }
+.blank.ok-b  { background: var(--ok-l);  border-color: var(--ok);  border-style: solid; }
+.blank.err-b { background: var(--err-l); border-color: var(--err); border-style: solid; }
+
+.placed-word {
+  font-size: 11.5px; font-weight: 800;
+  cursor: grab; user-select: none;
+  display: flex; align-items: center; gap: 5px;
+}
+.placed-word:active { cursor: grabbing; }
+.pw-rm { font-size: 12px; opacity: .35; cursor: pointer; transition: opacity .15s; }
+.pw-rm:hover { opacity: .9; }
+.blank-ico { font-size: 14px; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
+
+/* Feedback below sentence */
+.sent-fb {
+  display: none; padding: 7px 13px; font-size: 10px;
+  line-height: 1.65; border-top: 1px solid var(--sand);
+}
+.sent-fb.show { display: flex; gap: 8px; align-items: flex-start; }
+.sent-fb.ok  { background: var(--ok-l);  color: var(--ok); }
+.sent-fb.err { background: var(--err-l); color: var(--err); }
+.fb-i { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── CHIP BANK (sidebar) ── */
+.sidebar { padding: 16px 18px 16px 10px; display: flex; flex-direction: column; }
+.bank-lbl { font-size: 9px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.bank {
+  flex: 1; display: flex; flex-direction: column; gap: 8px;
+  background: var(--white); border: 2px dashed var(--sand);
+  border-radius: 14px; padding: 10px 9px; min-height: 180px;
+  transition: all .2s;
+}
+.bank.drag-over { border-color: var(--acc); background: var(--acc-l); }
+
+.chip-word {
+  font-size: 11.5px; font-weight: 800; color: var(--ink);
+  background: var(--bg); border: 1.5px solid var(--sand);
+  border-radius: 9px; padding: 9px 13px;
+  cursor: grab; user-select: none; transition: all .18s;
+  box-shadow: 0 1px 5px rgba(0,0,0,.06); text-align: center;
+}
+.chip-word:hover { border-color: var(--acc); transform: translateX(-2px) scale(1.02); box-shadow: 0 4px 14px rgba(0,0,0,.1); }
+.chip-word:active { cursor: grabbing; transform: scale(.97); }
+.chip-word.dragging { opacity: .35; }
+
+/* ── ACTIONS ── */
+.actions { padding: 9px 22px 16px; display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+.btn { font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 800; border-radius: 10px; padding: 10px 22px; cursor: pointer; border: none; transition: all .18s; display: flex; align-items: center; gap: 6px; }
+.btn-v { background: var(--acc); color: #fff; box-shadow: 0 3px 12px rgba(42,104,64,.22); }
+.btn-v:hover { background: #1a4428; }
+.btn-v:disabled { opacity: .4; cursor: not-allowed; }
+.btn-r { background: var(--white); color: var(--muted); border: 1.5px solid var(--sand); }
+.btn-r:hover { border-color: var(--muted); color: var(--ink); }
+.sfin { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--ink2); }
+
+/* ── SUCCESS ── */
+.success { display: none; margin: 0 22px 14px; background: var(--ok-l); border: 2px solid rgba(26,104,64,.25); border-radius: 14px; padding: 13px 17px; font-size: 11.5px; color: var(--ok); line-height: 1.7; }
+.success.show { display: flex; gap: 12px; align-items: flex-start; }
+.s-ico { font-size: 20px; flex-shrink: 0; }
+
+/* ── FOOTER ── */
+.foot { background: var(--hdr); padding: 7px 24px; font-size: 9px; color: rgba(255,255,255,.28); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+
+/* ── MOBILE ── */
+@media (max-width: 580px) {
+  body { width: 100%; }
+  .hdr { padding: 12px 16px; }
+  .hdr h1 { font-size: 13px; }
+  .pbar { padding: 7px 16px; }
+  .inst { padding: 7px 16px; font-size: 10px; }
+  .main { grid-template-columns: 1fr; }
+  .sentences { padding: 12px 14px; }
+  .sidebar { padding: 0 14px 12px; }
+  .bank { flex-direction: row; flex-wrap: wrap; min-height: unset; }
+  .chip-word { font-size: 11px; padding: 7px 11px; }
+  .actions { padding: 7px 14px 14px; }
+  .success { margin: 0 14px 12px; }
+  .foot { padding: 7px 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <h1>Optimización de rendimiento en redes</h1>
+    <div class="hdr-sub">Cálculo Diferencial · MATE_2037 · Semana 14 · Katty Alexandra Rohoden Jaramillo</div>
+  </div>
+  <div class="chips">
+    <div class="chip">Arrastrar y soltar</div>
+    <div class="chip">5 conceptos</div>
+  </div>
+</div>
+
+<!-- PROG -->
+<div class="pbar">
+  <div class="pb-bg"><div class="pb-fill" id="pbf" style="width:0%"></div></div>
+  <div class="pb-txt" id="pbt">0 de 5</div>
+  <div class="pb-sc" id="pbs">Completadas: 0 / 5</div>
+</div>
+
+<!-- INST -->
+<div class="inst">
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6" stroke="#8a6020" stroke-width="1.1"/><path d="M6.5 4v4M6.5 9.5v.3" stroke="#8a6020" stroke-width="1.1" stroke-linecap="round"/></svg>
+  Arrastre cada concepto y colóquela en el espacio que complete correctamente el enunciado sobre optimización del rendimiento de un canal, considerando derivación, puntos críticos y verificación del máximo.
+  <div class="inst-b">Arrastra al espacio en blanco</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SENTENCES -->
+  <div class="sentences" id="sentences">
+
+    <!-- Sentence 1 -->
+    <div class="sent-row" id="sr1">
+      <div class="sent-num">
+        <div class="num-badge s1">1</div>
+        <span style="color:var(--s1)">Función objetivo</span>
+      </div>
+      <div class="sent-text">
+        La <div class="blank" id="b1"
+             ondragover="bOver(event,'1')" ondragleave="bLeave('1')" ondrop="bDrop(event,'1')"
+             onclick="bTap('1')">
+          <span class="hint-txt">suelta aquí</span>
+        </div> modela el rendimiento del canal en función de la carga ofrecida.
+      </div>
+      <div class="sent-fb" id="fb1"></div>
+    </div>
+
+    <!-- Sentence 2 -->
+    <div class="sent-row" id="sr2">
+      <div class="sent-num">
+        <div class="num-badge s2">2</div>
+        <span style="color:var(--s2)">Restricciones</span>
+      </div>
+      <div class="sent-text">
+        Las <div class="blank" id="b2"
+             ondragover="bOver(event,'2')" ondragleave="bLeave('2')" ondrop="bDrop(event,'2')"
+             onclick="bTap('2')">
+          <span class="hint-txt">suelta aquí</span>
+        </div> delimitan el dominio lógico del problema según condiciones físicas.
+      </div>
+      <div class="sent-fb" id="fb2"></div>
+    </div>
+
+    <!-- Sentence 3 -->
+    <div class="sent-row" id="sr3">
+      <div class="sent-num">
+        <div class="num-badge s3">3</div>
+        <span style="color:var(--s3)">Puntos críticos</span>
+      </div>
+      <div class="sent-text">
+        Los <div class="blank" id="b3"
+             ondragover="bOver(event,'3')" ondragleave="bLeave('3')" ondrop="bDrop(event,'3')"
+             onclick="bTap('3')">
+          <span class="hint-txt">suelta aquí</span>
+        </div> se obtienen al igualar a cero la primera derivada.
+      </div>
+      <div class="sent-fb" id="fb3"></div>
+    </div>
+
+    <!-- Sentence 4 -->
+    <div class="sent-row" id="sr4">
+      <div class="sent-num">
+        <div class="num-badge s4">4</div>
+        <span style="color:var(--s4)">Derivada primera</span>
+      </div>
+      <div class="sent-text">
+        La <div class="blank" id="b4"
+             ondragover="bOver(event,'4')" ondragleave="bLeave('4')" ondrop="bDrop(event,'4')"
+             onclick="bTap('4')">
+          <span class="hint-txt">suelta aquí</span>
+        </div> permite analizar la variación de la función y localizar extremos.
+      </div>
+      <div class="sent-fb" id="fb4"></div>
+    </div>
+
+    <!-- Sentence 5 -->
+    <div class="sent-row" id="sr5">
+      <div class="sent-num">
+        <div class="num-badge s5">5</div>
+        <span style="color:var(--s5)">Interpretación</span>
+      </div>
+      <div class="sent-text">
+        La <div class="blank" id="b5"
+             ondragover="bOver(event,'5')" ondragleave="bLeave('5')" ondrop="bDrop(event,'5')"
+             onclick="bTap('5')">
+          <span class="hint-txt">suelta aquí</span>
+        </div> traduce el resultado matemático al contexto real del problema.
+      </div>
+      <div class="sent-fb" id="fb5"></div>
+    </div>
+
+  </div><!-- /sentences -->
+
+  <!-- SIDEBAR BANK -->
+  <div class="sidebar">
+    <div class="bank-lbl">Conceptos — arrastra al hueco</div>
+    <div class="bank" id="bank"
+         ondragover="bankOver(event)" ondragleave="bankLeave()" ondrop="bankDrop(event)">
+      <!-- generated by JS (shuffled) -->
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ACTIONS -->
+<div class="actions">
+  <button class="btn btn-r" onclick="resetAll()">↺ Reiniciar</button>
+  <button class="btn btn-v" id="btnV" onclick="verify()" disabled>Verificar ✓</button>
+  <div class="sfin" id="sfin"></div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success" id="succ">
+  <div class="s-ico">🏆</div>
+  <div>¡Muy bien! La secuencia lógica de la optimización mediante derivadas para determinar condiciones de máximo rendimiento en contextos aplicados.</div>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Elaboración propia. · Rohoden Jaramillo, K. A. (2025). <em>Optimización de rendimiento en redes.</em> UTPL.</span>
+  <span>S14 · MATE_2037</span>
+</div>
+
+<script>
+/* ── DATA (exactamente del documento) ── */
+// slot '1' → word 'función objetivo'  (correct answer for blank 1)
+const CORRECT = {
+  '1': '1',   // blank 1 ← chip 1 (función objetivo)
+  '2': '2',   // blank 2 ← chip 2 (restricciones)
+  '3': '3',   // blank 3 ← chip 3 (puntos críticos)
+  '4': '4',   // blank 4 ← chip 4 (derivada primera)
+  '5': '5'    // blank 5 ← chip 5 (interpretación)
+};
+
+const WORDS = {
+  '1': { text: 'función objetivo',   color: 'var(--s1)' },
+  '2': { text: 'restricciones',      color: 'var(--s2)' },
+  '3': { text: 'puntos críticos',    color: 'var(--s3)' },
+  '4': { text: 'derivada primera',   color: 'var(--s4)' },
+  '5': { text: 'interpretación',     color: 'var(--s5)' }
+};
+
+const FB = {
+  '1': 'La función objetivo representa la magnitud a optimizar y expresa el rendimiento en términos de la variable independiente considerada.',
+  '2': 'Las restricciones establecen valores posibles coherentes con la realidad del sistema, evitando soluciones matemáticamente válidas, pero físicamente imposibles.',
+  '3': 'Los puntos críticos identifican candidatos a máximos o mínimos al anular la pendiente de la función.',
+  '4': 'La derivada primera mide la tasa de cambio instantánea y permite ubicar extremos relativos dentro del dominio.',
+  '5': 'La interpretación contextualiza el resultado, indicando su significado práctico en términos de eficiencia o rendimiento.'
+};
+
+/* ── STATE ── */
+let blankContent = {};   // blankId → wordId
+let wordLoc      = {};   // wordId  → 'bank' | blankId
+let dragWord     = null;
+let tapSel       = null;
+let verified     = false;
+
+function shuffle(a) {
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
+  return b;
+}
+
+/* ── BUILD BANK ── */
+function buildBank() {
+  const bank = document.getElementById('bank');
+  bank.innerHTML = '';
+  shuffle(Object.keys(WORDS)).forEach(id => {
+    wordLoc[id] = 'bank';
+    bank.appendChild(makeChip(id));
+  });
+}
+
+function makeChip(id) {
+  const el = document.createElement('div');
+  el.className = 'chip-word';
+  el.id = 'chip-' + id;
+  el.textContent = WORDS[id].text;
+  el.style.borderLeftColor = WORDS[id].color;
+  el.style.borderLeftWidth = '3px';
+  el.draggable = true;
+  el.dataset.id = id;
+  el.addEventListener('dragstart', e => {
+    dragWord = id;
+    e.dataTransfer.setData('text/plain', id);
+    setTimeout(() => el.classList.add('dragging'), 0);
+  });
+  el.addEventListener('dragend', () => { dragWord=null; el.classList.remove('dragging'); });
+  el.addEventListener('click', () => chipTap(id));
+  return el;
+}
+
+/* ── DRAG: BLANK ── */
+function bOver(e, bid) { e.preventDefault(); document.getElementById('b'+bid).classList.add('drag-over'); }
+function bLeave(bid)   { document.getElementById('b'+bid).classList.remove('drag-over'); }
+function bDrop(e, bid) {
+  e.preventDefault(); bLeave(bid);
+  const id = e.dataTransfer.getData('text/plain') || dragWord;
+  if (id) place(id, bid);
+}
+
+/* ── DRAG: BANK ── */
+function bankOver(e)  { e.preventDefault(); document.getElementById('bank').classList.add('drag-over'); }
+function bankLeave()  { document.getElementById('bank').classList.remove('drag-over'); }
+function bankDrop(e)  {
+  e.preventDefault(); bankLeave();
+  const id = e.dataTransfer.getData('text/plain') || dragWord;
+  if (id && wordLoc[id]!=='bank') returnToBank(id);
+}
+
+/* ── TAP ── */
+function chipTap(id) {
+  if (verified) return;
+  if (tapSel===id) { clearTap(); return; }
+  clearTap(); tapSel=id;
+  const el=document.getElementById('chip-'+id);
+  if(el){el.style.outline='2px solid var(--acc)';el.style.outlineOffset='2px';}
+}
+function bTap(bid) {
+  if (verified) return;
+  if (tapSel) { place(tapSel, bid); clearTap(); }
+  else if (blankContent[bid]) returnToBank(blankContent[bid]);
+}
+function clearTap() {
+  if (tapSel) {
+    const el=document.getElementById('chip-'+tapSel);
+    if(el){el.style.outline='';el.style.outlineOffset='';}
+  }
+  tapSel=null;
+}
+
+/* ── PLACE / RETURN ── */
+function place(id, bid) {
+  if (verified) return;
+  // if blank already has a word, return it
+  if (blankContent[bid]) returnToBank(blankContent[bid]);
+  // remove from bank or old blank
+  if (wordLoc[id]==='bank') {
+    document.getElementById('chip-'+id)?.remove();
+  } else {
+    const old = wordLoc[id];
+    delete blankContent[old];
+    renderBlank(old, null);
+  }
+  wordLoc[id] = bid;
+  blankContent[bid] = id;
+  renderBlank(bid, id);
+  updateScore();
+}
+
+function returnToBank(id) {
+  if (verified) return;
+  const bid = wordLoc[id];
+  delete blankContent[bid];
+  wordLoc[id] = 'bank';
+  renderBlank(bid, null);
+  document.getElementById('bank').appendChild(makeChip(id));
+  updateScore();
+}
+
+function renderBlank(bid, id) {
+  const bl = document.getElementById('b'+bid);
+  if (!id) {
+    bl.className = 'blank';
+    bl.innerHTML = '<span class="hint-txt">suelta aquí</span>';
+  } else {
+    bl.className = 'blank filled';
+    const word = WORDS[id];
+    bl.innerHTML = `
+      <div class="placed-word" style="color:${word.color}">
+        <span>${word.text}</span>
+        <span class="pw-rm" onclick="event.stopPropagation();returnToBank('${id}')">✕</span>
+      </div>`;
+    // drag from placed
+    const pw = bl.querySelector('.placed-word');
+    pw.draggable = true;
+    pw.addEventListener('dragstart', e => { dragWord=id; e.dataTransfer.setData('text/plain',id); pw.style.opacity='.4'; });
+    pw.addEventListener('dragend',   () => { dragWord=null; pw.style.opacity=''; });
+    pw.addEventListener('click',     () => { if(!tapSel) returnToBank(id); });
+  }
+}
+
+/* ── SCORE ── */
+function updateScore() {
+  const n = Object.keys(blankContent).length;
+  document.getElementById('pbf').style.width = (n/5*100)+'%';
+  document.getElementById('pbt').textContent = `${n} de 5`;
+  document.getElementById('pbs').textContent = `Completadas: ${n} / 5`;
+  document.getElementById('btnV').disabled = n<5;
+}
+
+/* ── VERIFY ── */
+function verify() {
+  if (Object.keys(blankContent).length<5) return;
+  verified=true;
+  let ok=0;
+  ['1','2','3','4','5'].forEach(bid => {
+    const wid = blankContent[bid];
+    const isOk = CORRECT[bid] === wid;
+    if(isOk) ok++;
+
+    // sentence row
+    document.getElementById('sr'+bid).classList.add(isOk?'ok':'err');
+
+    // blank
+    const bl = document.getElementById('b'+bid);
+    bl.classList.remove('filled'); bl.classList.add(isOk?'ok-b':'err-b');
+    const ico = document.createElement('span');
+    ico.className = 'blank-ico';
+    ico.textContent = isOk ? '✅' : '❌';
+    const rm = bl.querySelector('.pw-rm');
+    if(rm) rm.remove();
+    bl.appendChild(ico);
+
+    // feedback
+    const fb = document.getElementById('fb'+bid);
+    fb.className = 'sent-fb show ' + (isOk?'ok':'err');
+    fb.innerHTML = `<div class="fb-i">${isOk?'✅':'❌'}</div>
+      <div><strong>${isOk?'¡Correcto!':'Incorrecto.'}</strong> ${FB[bid]}</div>`;
+  });
+
+  document.getElementById('pbs').textContent = `Resultado: ${ok} / 5`;
+  document.getElementById('sfin').textContent = `✓ ${ok} correctas`;
+  document.getElementById('btnV').style.display='none';
+  document.getElementById('bank').style.display='none';
+  if(ok===5) document.getElementById('succ').classList.add('show');
+}
+
+/* ── RESET ── */
+function resetAll() {
+  verified=false; dragWord=null; tapSel=null;
+  blankContent={}; wordLoc={};
+  ['1','2','3','4','5'].forEach(bid=>{
+    document.getElementById('sr'+bid).classList.remove('ok','err');
+    renderBlank(bid,null);
+    document.getElementById('fb'+bid).className='sent-fb';
+    document.getElementById('fb'+bid).innerHTML='';
+  });
+  document.getElementById('btnV').style.display='';
+  document.getElementById('bank').style.display='';
+  document.getElementById('sfin').textContent='';
+  document.getElementById('succ').classList.remove('show');
+  buildBank(); updateScore();
+}
+
+/* ── BOOT ── */
+buildBank(); updateScore();
+if('ontouchstart' in window) {
+  document.querySelector('.inst-b').textContent = 'Toca ficha → toca hueco';
+}
+</script>
+</body>
+</html>

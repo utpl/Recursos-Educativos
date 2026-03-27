@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz · Criterios de la Derivada · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #eef4f0;
+  --white: #ffffff;
+  --ink:   #0e1a14;
+  --ink2:  #1e3028;
+  --muted: #6a8070;
+  --sand:  #c8d8cc;
+  --hdr:   #0e2018;
+
+  --acc:   #1a7050;  --acc-l: #e8f8f0;
+  --acc2:  #1a4878;  --acc2-l:#eaf2fb;
+
+  --ok:    #1a6840;  --ok-l:  #e8f8ee;
+  --err:   #a02020;  --err-l: #fdecea;
+}
+
+body {
+  font-family: 'Urbanist', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--hdr);
+  padding: 15px 24px 13px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.hdr h1 { font-size: 15px; font-weight: 900; color: #fff; line-height: 1.2; }
+.hdr-sub { font-size: 9.5px; color: rgba(255,255,255,.42); margin-top: 3px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid rgba(255,255,255,.2); color: rgba(255,255,255,.6); font-size: 8.5px; font-weight: 600; letter-spacing: .7px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; }
+
+/* ── STEP TRACK ── */
+.track {
+  background: var(--white); border-bottom: 1.5px solid var(--sand);
+  padding: 11px 24px;
+  display: flex; align-items: center; gap: 0;
+}
+.step-seg {
+  flex: 1; display: flex; align-items: center; gap: 0;
+}
+.step-circle {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; flex-shrink: 0;
+  background: var(--sand); color: var(--muted);
+  transition: all .25s; cursor: pointer; border: 2px solid transparent;
+}
+.step-circle.cur { background: var(--acc); color: #fff; border-color: var(--acc); box-shadow: 0 0 0 4px rgba(26,112,80,.18); }
+.step-circle.ok  { background: var(--ok); color: #fff; }
+.step-circle.err { background: var(--err); color: #fff; }
+.step-line { flex: 1; height: 2px; background: var(--sand); transition: background .25s; }
+.step-line.done { background: var(--ok); }
+.track-right { display: flex; align-items: center; gap: 10px; margin-left: 12px; }
+.sc-badge { background: var(--acc-l); border: 1.5px solid rgba(26,112,80,.2); color: var(--acc); font-size: 10px; font-weight: 700; padding: 3px 12px; border-radius: 20px; white-space: nowrap; }
+
+/* ── INST ── */
+.inst { background: var(--acc2-l); border-bottom: 1.5px solid #b8cce0; padding: 7px 24px; font-size: 10.5px; color: #0a2040; display: flex; align-items: center; gap: 8px; }
+
+/* ── QUIZ ── */
+.qbody { padding: 22px 24px 26px; }
+
+.qcard { display: none; }
+.qcard.active { display: block; animation: pop .26s ease; }
+@keyframes pop { from{opacity:0;transform:scale(.98)} to{opacity:1;transform:scale(1)} }
+
+/* Question block */
+.q-wrap {
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 3px 16px rgba(0,0,0,.07);
+  margin-bottom: 12px;
+}
+.q-head {
+  padding: 14px 18px;
+  display: flex; gap: 14px; align-items: flex-start;
+  border-bottom: 1.5px solid var(--sand);
+  background: var(--bg);
+}
+.q-badge {
+  background: var(--acc); color: #fff;
+  font-size: 9px; font-weight: 800; letter-spacing: .5px;
+  text-transform: uppercase; padding: 4px 12px;
+  border-radius: 20px; flex-shrink: 0; margin-top: 2px;
+}
+.q-txt { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.6; flex: 1; }
+.q-txt .mono { font-family: 'Courier New', monospace; font-size: 12.5px; background: rgba(26,112,80,.08); border-radius: 5px; padding: 1px 6px; }
+
+/* Options */
+.opts-list { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+
+.opt {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--bg);
+  border: 2px solid var(--sand);
+  border-radius: 11px; padding: 12px 14px;
+  cursor: pointer; transition: all .18s;
+}
+.opt:hover:not(.locked) { border-color: var(--acc); background: var(--acc-l); transform: translateX(4px); }
+.opt.locked { cursor: default; }
+.opt-key {
+  width: 28px; height: 28px; border-radius: 9px;
+  background: var(--white); border: 1.5px solid var(--sand);
+  color: var(--muted); font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .18s;
+}
+.opt-txt { font-size: 11.5px; color: var(--ink2); line-height: 1.55; padding-top: 3px; flex: 1; }
+.opt-txt .mono { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 700; }
+
+.opt.sel  { border-color: var(--acc); background: var(--acc-l); }
+.opt.sel  .opt-key { background: var(--acc); color: #fff; border-color: var(--acc); }
+.opt.correct { border-color: var(--ok); background: var(--ok-l); }
+.opt.correct .opt-key { background: var(--ok); color: #fff; border-color: var(--ok); }
+.opt.correct .opt-txt { color: var(--ok); font-weight: 600; }
+.opt.wrong { border-color: var(--err); background: var(--err-l); }
+.opt.wrong .opt-key { background: var(--err); color: #fff; border-color: var(--err); }
+.opt.wrong .opt-txt { color: var(--err); font-weight: 600; }
+
+/* Feedback */
+.fb {
+  display: none; padding: 11px 14px 13px; font-size: 11px; line-height: 1.7;
+  border-top: 1.5px solid var(--sand);
+}
+.fb.show { display: flex; gap: 10px; align-items: flex-start; animation: pop .22s ease; }
+.fb.ok  { background: var(--ok-l);  color: var(--ok); }
+.fb.err { background: var(--err-l); color: var(--err); }
+.fb-i { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.fb-t strong { font-weight: 800; display: block; margin-bottom: 3px; }
+.fb-t .mono { font-family: 'Courier New', monospace; font-size: 11.5px; font-weight: 700; background: rgba(0,0,0,.05); border-radius: 4px; padding: 1px 5px; }
+
+/* Actions */
+.actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.aside { font-size: 10px; font-weight: 700; }
+.btns { display: flex; gap: 8px; }
+.btn { font-family: 'Urbanist', sans-serif; font-size: 11px; font-weight: 800; border-radius: 10px; padding: 10px 22px; cursor: pointer; border: none; transition: all .2s; display: flex; align-items: center; gap: 6px; }
+.btn-c { background: var(--acc); color: #fff; box-shadow: 0 3px 12px rgba(26,112,80,.2); }
+.btn-c:hover { background: #0e4a34; }
+.btn-c:disabled { opacity: .4; cursor: not-allowed; }
+.btn-n { background: var(--acc2); color: #fff; box-shadow: 0 3px 12px rgba(26,72,120,.18); }
+.btn-n:hover { background: #0e2c50; }
+
+/* ── RESULTS ── */
+.results { display: none; padding: 22px 24px 28px; animation: pop .35s ease; }
+.results.show { display: block; }
+
+.res-banner {
+  background: var(--white); border: 1.5px solid var(--sand);
+  border-radius: 16px; padding: 22px 20px; text-align: center;
+  box-shadow: 0 3px 16px rgba(0,0,0,.07); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 20px;
+}
+.res-big { font-size: 56px; font-weight: 900; color: var(--acc); line-height: 1; flex-shrink: 0; }
+.res-right { text-align: left; }
+.res-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.res-msg { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.4; }
+
+.res-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.res-stat { background: var(--white); border: 1.5px solid var(--sand); border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+.rs-n { font-size: 30px; font-weight: 900; line-height: 1; margin-bottom: 3px; }
+.rs-l { font-size: 10px; font-weight: 600; color: var(--muted); }
+
+.res-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+.ri { background: var(--white); border: 1.5px solid var(--sand); border-radius: 10px; padding: 10px 13px; display: flex; align-items: center; gap: 10px; font-size: 11px; }
+.ri.ok  { border-color: rgba(26,104,64,.25); }
+.ri.err { border-color: rgba(160,32,32,.2); }
+.ri-i { font-size: 15px; flex-shrink: 0; }
+.ri-n { font-weight: 800; min-width: 72px; flex-shrink: 0; }
+.ri-q { color: var(--ink2); }
+
+.btn-retry { background: var(--hdr); color: #fff; font-family: 'Urbanist', sans-serif; font-size: 12px; font-weight: 800; border: none; border-radius: 12px; padding: 13px 26px; cursor: pointer; transition: background .2s; width: 100%; box-shadow: 0 4px 14px rgba(14,32,24,.2); }
+.btn-retry:hover { background: #040e08; }
+
+/* ── FOOTER ── */
+.foot { background: var(--hdr); padding: 7px 24px; font-size: 9px; color: rgba(255,255,255,.28); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 580px) {
+  body { width: 100%; }
+  .hdr { padding: 12px 16px; }
+  .hdr h1 { font-size: 13px; }
+  .track { padding: 9px 16px; }
+  .step-circle { width: 26px; height: 26px; font-size: 10px; }
+  .inst { padding: 7px 16px; font-size: 10px; }
+  .qbody { padding: 16px 16px 20px; }
+  .q-head { padding: 12px 14px; }
+  .q-txt { font-size: 12px; }
+  .opts-list { padding: 10px 11px; }
+  .res-banner { flex-direction: column; gap: 12px; text-align: center; }
+  .res-right { text-align: center; }
+  .res-stats { grid-template-columns: 1fr 1fr 1fr; }
+  .results { padding: 16px 16px 20px; }
+  .foot { padding: 7px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <h1>Criterios de la Derivada</h1>
+    <div class="hdr-sub">Cálculo Diferencial · MATE_2037 · Semana 13 · Katty Rohoden</div>
+  </div>
+  <div class="chips">
+    <div class="chip">Quiz</div>
+    <div class="chip">6 preguntas</div>
+  </div>
+</div>
+
+<!-- STEP TRACK -->
+<div class="track">
+  <div class="step-seg">
+    <div class="step-circle cur" id="sc0">1</div>
+    <div class="step-line" id="sl0"></div>
+  </div>
+  <div class="step-seg">
+    <div class="step-circle" id="sc1">2</div>
+    <div class="step-line" id="sl1"></div>
+  </div>
+  <div class="step-seg">
+    <div class="step-circle" id="sc2">3</div>
+    <div class="step-line" id="sl2"></div>
+  </div>
+  <div class="step-seg">
+    <div class="step-circle" id="sc3">4</div>
+    <div class="step-line" id="sl3"></div>
+  </div>
+  <div class="step-seg">
+    <div class="step-circle" id="sc4">5</div>
+    <div class="step-line" id="sl4"></div>
+  </div>
+  <div class="step-seg">
+    <div class="step-circle" id="sc5">6</div>
+    <div class="step-line" style="background:transparent"></div>
+  </div>
+  <div class="track-right">
+    <div class="sc-badge" id="scb">0 / 6</div>
+  </div>
+</div>
+
+<!-- INST -->
+<div class="inst">
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6" stroke="#0a3050" stroke-width="1.1"/><path d="M6.5 4v4M6.5 9.5v.3" stroke="#0a3050" stroke-width="1.1" stroke-linecap="round"/></svg>
+  Revise con atención cada enunciado y elija la opción correcta.
+</div>
+
+<!-- QUIZ BODY -->
+<div class="qbody" id="qbody">
+
+  <!-- Q1 -->
+  <div class="qcard active" id="qc0">
+    <div class="q-wrap">
+      <div class="q-head">
+        <div class="q-badge">Pregunta 1</div>
+        <div class="q-txt">Si para una función <span class="mono">f(x) = x³ − 3x²</span>, se determina que su primera derivada es <span class="mono">f′(x) = 3x² − 6x</span>, ¿cuáles son sus puntos críticos?</div>
+      </div>
+      <div class="opts-list" id="o0">
+        <div class="opt" onclick="pick(0,0)"><div class="opt-key">A</div><div class="opt-txt"><span class="mono">x = 0  y  x = 3</span></div></div>
+        <div class="opt" onclick="pick(0,1)"><div class="opt-key">B</div><div class="opt-txt"><span class="mono">x = 0  y  x = 2</span></div></div>
+        <div class="opt" onclick="pick(0,2)"><div class="opt-key">C</div><div class="opt-txt"><span class="mono">x = 1  y  x = −1</span></div></div>
+        <div class="opt" onclick="pick(0,3)"><div class="opt-key">D</div><div class="opt-txt">No tiene puntos críticos.</div></div>
+      </div>
+      <div class="fb" id="fb0"></div>
+    </div>
+    <div class="actions">
+      <span class="aside" id="as0"></span>
+      <div class="btns">
+        <button class="btn btn-c" id="bc0" onclick="confirm_(0)" disabled>Confirmar</button>
+        <button class="btn btn-n" id="bn0" onclick="goNext(0)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="qcard" id="qc1">
+    <div class="q-wrap">
+      <div class="q-head">
+        <div class="q-badge">Pregunta 2</div>
+        <div class="q-txt">Dada la función <span class="mono">g(x) = eˣ</span>, ¿cuál es el comportamiento de su concavidad en todo su dominio?</div>
+      </div>
+      <div class="opts-list" id="o1">
+        <div class="opt" onclick="pick(1,0)"><div class="opt-key">A</div><div class="opt-txt">Siempre cóncava hacia abajo (∩).</div></div>
+        <div class="opt" onclick="pick(1,1)"><div class="opt-key">B</div><div class="opt-txt">Siempre cóncava hacia arriba (∪).</div></div>
+        <div class="opt" onclick="pick(1,2)"><div class="opt-key">C</div><div class="opt-txt">Cambia de concavidad en <span class="mono">x = 0</span>.</div></div>
+        <div class="opt" onclick="pick(1,3)"><div class="opt-key">D</div><div class="opt-txt">Es una línea recta sin concavidad.</div></div>
+      </div>
+      <div class="fb" id="fb1"></div>
+    </div>
+    <div class="actions">
+      <span class="aside" id="as1"></span>
+      <div class="btns">
+        <button class="btn btn-c" id="bc1" onclick="confirm_(1)" disabled>Confirmar</button>
+        <button class="btn btn-n" id="bn1" onclick="goNext(1)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="qcard" id="qc2">
+    <div class="q-wrap">
+      <div class="q-head">
+        <div class="q-badge">Pregunta 3</div>
+        <div class="q-txt">¿Qué ocurre en un punto <span class="mono">x = c</span> si <span class="mono">f′(c) = 0</span> y <span class="mono">f″(c) &lt; 0</span>?</div>
+      </div>
+      <div class="opts-list" id="o2">
+        <div class="opt" onclick="pick(2,0)"><div class="opt-key">A</div><div class="opt-txt">Existe un máximo relativo.</div></div>
+        <div class="opt" onclick="pick(2,1)"><div class="opt-key">B</div><div class="opt-txt">Existe un punto de inflexión.</div></div>
+        <div class="opt" onclick="pick(2,2)"><div class="opt-key">C</div><div class="opt-txt">Existe un mínimo relativo.</div></div>
+        <div class="opt" onclick="pick(2,3)"><div class="opt-key">D</div><div class="opt-txt">La función es creciente.</div></div>
+      </div>
+      <div class="fb" id="fb2"></div>
+    </div>
+    <div class="actions">
+      <span class="aside" id="as2"></span>
+      <div class="btns">
+        <button class="btn btn-c" id="bc2" onclick="confirm_(2)" disabled>Confirmar</button>
+        <button class="btn btn-n" id="bn2" onclick="goNext(2)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="qcard" id="qc3">
+    <div class="q-wrap">
+      <div class="q-head">
+        <div class="q-badge">Pregunta 4</div>
+        <div class="q-txt">Para la función <span class="mono">h(x) = x³</span>, el punto (0, 0) representa:</div>
+      </div>
+      <div class="opts-list" id="o3">
+        <div class="opt" onclick="pick(3,0)"><div class="opt-key">A</div><div class="opt-txt">Un máximo absoluto.</div></div>
+        <div class="opt" onclick="pick(3,1)"><div class="opt-key">B</div><div class="opt-txt">Un mínimo relativo.</div></div>
+        <div class="opt" onclick="pick(3,2)"><div class="opt-key">C</div><div class="opt-txt">Un punto de inflexión.</div></div>
+        <div class="opt" onclick="pick(3,3)"><div class="opt-key">D</div><div class="opt-txt">Una asíntota vertical.</div></div>
+      </div>
+      <div class="fb" id="fb3"></div>
+    </div>
+    <div class="actions">
+      <span class="aside" id="as3"></span>
+      <div class="btns">
+        <button class="btn btn-c" id="bc3" onclick="confirm_(3)" disabled>Confirmar</button>
+        <button class="btn btn-n" id="bn3" onclick="goNext(3)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5 (Verdadero/Falso) -->
+  <div class="qcard" id="qc4">
+    <div class="q-wrap">
+      <div class="q-head">
+        <div class="q-badge">Pregunta 5</div>
+        <div class="q-txt">Una función es creciente en un intervalo si su primera derivada es positiva (<span class="mono">f′(x) &gt; 0</span>) en dicho tramo.</div>
+      </div>
+      <div class="opts-list" id="o4">
+        <div class="opt" onclick="pick(4,0)"><div class="opt-key">V</div><div class="opt-txt">Verdadero.</div></div>
+        <div class="opt" onclick="pick(4,1)"><div class="opt-key">F</div><div class="opt-txt">Falso.</div></div>
+      </div>
+      <div class="fb" id="fb4"></div>
+    </div>
+    <div class="actions">
+      <span class="aside" id="as4"></span>
+      <div class="btns">
+        <button class="btn btn-c" id="bc4" onclick="confirm_(4)" disabled>Confirmar</button>
+        <button class="btn btn-n" id="bn4" onclick="goNext(4)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="qcard" id="qc5">
+    <div class="q-wrap">
+      <div class="q-head">
+        <div class="q-badge">Pregunta 6</div>
+        <div class="q-txt">¿Cuál es la coordenada del punto de inflexión de la función <span class="mono">f(x) = 2x² − 6x + 5</span>?</div>
+      </div>
+      <div class="opts-list" id="o5">
+        <div class="opt" onclick="pick(5,0)"><div class="opt-key">A</div><div class="opt-txt">(1, 1)</div></div>
+        <div class="opt" onclick="pick(5,1)"><div class="opt-key">B</div><div class="opt-txt">(2, 9)</div></div>
+        <div class="opt" onclick="pick(5,2)"><div class="opt-key">C</div><div class="opt-txt">(−1, 9)</div></div>
+        <div class="opt" onclick="pick(5,3)"><div class="opt-key">D</div><div class="opt-txt">(0, 5)</div></div>
+      </div>
+      <div class="fb" id="fb5"></div>
+    </div>
+    <div class="actions">
+      <span class="aside" id="as5"></span>
+      <div class="btns">
+        <button class="btn btn-c" id="bc5" onclick="confirm_(5)" disabled>Confirmar</button>
+        <button class="btn btn-n" id="bn5" onclick="showResults()" style="display:none">Ver resultados →</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /qbody -->
+
+<!-- RESULTS -->
+<div class="results" id="rPanel">
+  <div class="res-banner">
+    <div class="res-big" id="rBig">0/6</div>
+    <div class="res-right">
+      <div class="res-label">respuestas correctas</div>
+      <div class="res-msg" id="rMsg"></div>
+    </div>
+  </div>
+  <div class="res-stats">
+    <div class="res-stat">
+      <div class="rs-n" style="color:var(--ok)" id="rOk">0</div>
+      <div class="rs-l">Correctas</div>
+    </div>
+    <div class="res-stat">
+      <div class="rs-n" style="color:var(--err)" id="rErr">0</div>
+      <div class="rs-l">Incorrectas</div>
+    </div>
+    <div class="res-stat">
+      <div class="rs-n" style="color:var(--acc2)" id="rPct">0%</div>
+      <div class="rs-l">Porcentaje</div>
+    </div>
+  </div>
+  <div class="res-list" id="rList"></div>
+  <button class="btn-retry" onclick="restart()">↺ Intentar de nuevo</button>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Elaboración propia. · Rohoden, K. (2025). <em>Criterios de la Derivada.</em> UTPL.</span>
+  <span>S13 · MATE_2037</span>
+</div>
+
+<script>
+/* ── DATA (exactamente del documento) ── */
+// P1: B (x=0 y x=2 — según retroalimentación: 3x(x-2)=0 → 0 y 2)
+// P2: B  P3: A  P4: C  P5: A (Verdadero)  P6: D
+const CORRECT = [1, 1, 0, 2, 0, 3];
+
+const FB = [
+  'Los puntos críticos se obtienen igualando la primera derivada a cero. Al factorizar 3x(x − 2) = 0, los valores que anulan la expresión son 0 y 2.',
+  'La segunda derivada de eˣ es siempre positiva (eˣ > 0), lo que garantiza que la función sea cóncava hacia arriba en todo el eje real.',
+  'Según el criterio de la segunda derivada, si esta es negativa en un punto crítico, la curva se abre hacia abajo, situando al punto en la parte superior de la curvatura (máximo).',
+  'En x = 0 la segunda derivada 6x es igual a cero y cambia de signo (de negativo a positivo), lo que define un cambio de concavidad o punto de inflexión.',
+  'La interpretación geométrica de la derivada como pendiente confirma que si f′(x) > 0, los valores de la función aumentan respecto a x.',
+  'La segunda derivada es 12x. Al igualar a cero, obtenemos x = 0. Sustituyendo en la función original: f(0) = 2(0)³ − 6(0) + 5 = 5.'
+];
+
+const QSHORT = [
+  'f(x) = x³ − 3x² → puntos críticos',
+  'g(x) = eˣ → concavidad',
+  'f′(c)=0 y f″(c)<0 → ¿qué ocurre?',
+  'h(x) = x³ → punto (0,0)',
+  'Función creciente si f′(x) > 0',
+  'f(x) = 2x²−6x+5 → inflexión'
+];
+
+let sel  = Array(6).fill(null);
+let conf = Array(6).fill(false);
+let score = 0;
+let cur   = 0;
+
+function pick(q, idx) {
+  if (conf[q]) return;
+  sel[q] = idx;
+  Array.from(document.getElementById('o'+q).children).forEach((el,i) => {
+    el.classList.toggle('sel', i===idx);
+  });
+  document.getElementById('bc'+q).disabled = false;
+}
+
+function confirm_(q) {
+  if (conf[q] || sel[q]===null) return;
+  conf[q] = true;
+  const ok = sel[q] === CORRECT[q];
+  if (ok) score++;
+
+  Array.from(document.getElementById('o'+q).children).forEach((el,i) => {
+    el.classList.add('locked'); el.onclick = null;
+    if (i===CORRECT[q]) el.classList.add('correct');
+    else if (i===sel[q] && !ok) el.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('fb'+q);
+  fb.className = 'fb show ' + (ok?'ok':'err');
+  fb.innerHTML = `<div class="fb-i">${ok?'✅':'❌'}</div>
+    <div class="fb-t"><strong>${ok?'¡Correcto!':'Incorrecto.'}</strong>${FB[q]}</div>`;
+
+  const as = document.getElementById('as'+q);
+  as.textContent = ok ? '✓ +1 punto' : '✗ Sin puntaje';
+  as.style.color = ok ? 'var(--ok)' : 'var(--err)';
+  as.style.fontWeight = '800';
+
+  document.getElementById('bc'+q).style.display = 'none';
+  document.getElementById('bn'+q).style.display = '';
+
+  // Update step track
+  document.getElementById('sc'+q).className = 'step-circle ' + (ok?'ok':'err');
+  if (q>0) document.getElementById('sl'+(q-1)).classList.add('done');
+  if (q+1<6) document.getElementById('sc'+(q+1)).classList.add('cur');
+  document.getElementById('scb').textContent = `${score} / 6`;
+}
+
+function goNext(q) {
+  document.getElementById('qc'+q).classList.remove('active');
+  cur = q+1;
+  document.getElementById('qc'+cur).classList.add('active');
+}
+
+function showResults() {
+  document.getElementById('qbody').style.display = 'none';
+  document.getElementById('rPanel').classList.add('show');
+
+  document.getElementById('rBig').textContent = `${score}/6`;
+  document.getElementById('rOk').textContent   = score;
+  document.getElementById('rErr').textContent  = 6-score;
+  document.getElementById('rPct').textContent  = Math.round(score/6*100)+'%';
+
+  const msgs = ['Sigue practicando, ¡puedes mejorar!', 'Buen esfuerzo. Repasa los criterios.', '¡Muy bien! Sólido dominio del tema.', '¡Excelente! Dominas los criterios de la derivada.'];
+  document.getElementById('rMsg').textContent = msgs[score<=1?0:score<=3?1:score<=5?2:3];
+
+  const list = document.getElementById('rList');
+  list.innerHTML = '';
+  for (let i=0; i<6; i++) {
+    const ok = sel[i]===CORRECT[i];
+    const d = document.createElement('div');
+    d.className = `ri ${ok?'ok':'err'}`;
+    d.innerHTML = `<div class="ri-i">${ok?'✅':'❌'}</div>
+      <div class="ri-n">Pregunta ${i+1}</div>
+      <div class="ri-q">${QSHORT[i]}</div>`;
+    list.appendChild(d);
+  }
+}
+
+function restart() {
+  sel=Array(6).fill(null); conf=Array(6).fill(false); score=0; cur=0;
+  for(let q=0;q<6;q++){
+    Array.from(document.getElementById('o'+q).children).forEach((el,i)=>{
+      el.className='opt'; const qq=q,ii=i; el.onclick=()=>pick(qq,ii);
+    });
+    document.getElementById('fb'+q).className='fb';
+    document.getElementById('fb'+q).innerHTML='';
+    document.getElementById('as'+q).textContent='';
+    document.getElementById('bc'+q).style.display='';
+    document.getElementById('bc'+q).disabled=true;
+    document.getElementById('bn'+q).style.display='none';
+    document.getElementById('qc'+q).classList.toggle('active',q===0);
+    document.getElementById('sc'+q).className='step-circle'+(q===0?' cur':'');
+    if(q<5) document.getElementById('sl'+q).className='step-line';
+  }
+  document.getElementById('qbody').style.display='';
+  document.getElementById('rPanel').classList.remove('show');
+  document.getElementById('scb').textContent='0 / 6';
+}
+</script>
+</body>
+</html>

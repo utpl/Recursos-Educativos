@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repaso 1er Bimestre · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #f4f0e8;
+  --white: #ffffff;
+  --ink:   #18140c;
+  --ink2:  #3c2e18;
+  --muted: #8a7a60;
+  --sand:  #ddd0b8;
+  --line:  #c8b898;
+
+  /* Week accent colors */
+  --w1: #1a5a8a; --w1l: #eaf3fb;
+  --w2: #1a6a48; --w2l: #eafaf2;
+  --w3: #7a3898; --w3l: #f5eafb;
+  --w4: #c06010; --w4l: #fff4e8;
+  --w5: #a02020; --w5l: #fdecea;
+  --w6: #1a6068; --w6l: #e8f8fa;
+  --w7: #2a4a20; --w7l: #eef4ea;
+
+  --hdr: #1c1810;
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--hdr);
+  padding: 16px 26px 14px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.hdr h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px; color: #fff; line-height: 1.2;
+}
+.hdr-sub { font-size: 9.5px; color: rgba(255,255,255,.42); margin-top: 3px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.6);
+  font-size: 8.5px; font-weight: 600; letter-spacing: .7px;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── PROGRESS ROW ── */
+.prog-row {
+  background: var(--white); border-bottom: 1.5px solid var(--sand);
+  padding: 10px 26px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.week-pills { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.w-pill {
+  font-size: 9px; font-weight: 700; letter-spacing: .4px;
+  padding: 4px 12px; border-radius: 20px;
+  cursor: pointer; border: 1.5px solid transparent;
+  transition: all .2s; white-space: nowrap;
+}
+.w-pill:hover { filter: brightness(.95); transform: translateY(-1px); }
+.inst-badge {
+  background: var(--hdr); color: rgba(255,255,255,.8);
+  font-size: 8.5px; font-weight: 600; letter-spacing: .3px;
+  padding: 3px 12px; border-radius: 20px; white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ── INTRO CARD ── */
+.intro-card {
+  margin: 16px 22px 12px;
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex; gap: 14px; align-items: flex-start;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+.intro-icon { flex-shrink: 0; margin-top: 2px; }
+.intro-card p { font-size: 11.5px; color: var(--ink2); line-height: 1.75; }
+.hint-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--hdr); color: rgba(255,255,255,.8);
+  font-size: 9px; font-weight: 600;
+  padding: 3px 12px; border-radius: 20px; margin-top: 8px;
+  width: fit-content;
+}
+
+/* ── WEEK ACCORDION ── */
+.weeks { padding: 0 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+
+.week-block {
+  border-radius: 16px; overflow: hidden;
+  border: 2px solid var(--sand);
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  transition: box-shadow .2s;
+}
+.week-block.open { box-shadow: 0 6px 24px rgba(0,0,0,.10); }
+
+/* Week header */
+.week-hdr {
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer; user-select: none;
+  transition: filter .15s;
+  background: var(--white);
+}
+.week-hdr:hover { filter: brightness(.98); }
+
+.wk-num {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+}
+.wk-meta { flex: 1; }
+.wk-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; margin-bottom: 2px;
+}
+.wk-title { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.2; }
+.wk-subtitle { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.wk-arr {
+  font-size: 18px; color: var(--muted);
+  transition: transform .25s; flex-shrink: 0;
+}
+.week-block.open .wk-arr { transform: rotate(180deg); }
+
+/* Sub-count badge */
+.wk-count {
+  font-size: 9px; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+  flex-shrink: 0; white-space: nowrap;
+}
+
+/* Week body */
+.week-body {
+  display: none;
+  border-top: 1.5px solid var(--sand);
+}
+.week-block.open .week-body { display: block; }
+
+/* Intro paragraph of week */
+.wk-intro {
+  padding: 14px 18px 10px;
+  font-size: 11px; color: var(--muted); line-height: 1.75;
+  border-bottom: 1px solid var(--sand);
+  background: var(--bg);
+}
+
+/* SUBTOPICS */
+.subtopics { padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 8px; background: var(--white); }
+
+.sub {
+  border-radius: 12px; overflow: hidden;
+  border: 1.5px solid var(--sand);
+}
+.sub-hdr {
+  padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; user-select: none;
+  background: var(--bg);
+  transition: filter .15s;
+}
+.sub-hdr:hover { filter: brightness(.97); }
+.sub-tag {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; padding: 3px 9px;
+  border-radius: 20px; flex-shrink: 0; white-space: nowrap;
+}
+.sub-title { font-size: 12px; font-weight: 700; color: var(--ink); flex: 1; }
+.sub-arr { font-size: 13px; color: var(--muted); transition: transform .2s; opacity: .5; }
+.sub.open .sub-arr { transform: rotate(180deg); }
+
+.sub-body {
+  display: none;
+  padding: 12px 14px 14px;
+  background: var(--white);
+  border-top: 1px solid var(--sand);
+}
+.sub.open .sub-body { display: block; }
+
+/* Content styles inside sub-body */
+.sub-body p { font-size: 11.5px; color: var(--ink2); line-height: 1.8; margin-bottom: 10px; }
+.sub-body p:last-child { margin-bottom: 0; }
+.sub-body h4 { font-size: 11px; font-weight: 700; color: var(--ink); margin: 10px 0 5px; }
+.sub-body ul, .sub-body ol { padding-left: 18px; margin-bottom: 10px; }
+.sub-body li { font-size: 11px; color: var(--ink2); line-height: 1.75; margin-bottom: 3px; }
+.sub-body li li { font-size: 10.5px; color: var(--muted); }
+
+.formula-box {
+  background: var(--bg); border: 1.5px solid var(--sand);
+  border-radius: 10px; padding: 10px 16px;
+  margin: 8px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  text-align: center; line-height: 1.6;
+}
+
+.table-wrap {
+  overflow-x: auto; margin: 8px 0;
+  border-radius: 10px; border: 1.5px solid var(--sand);
+}
+.data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.data-table th {
+  background: var(--bg); padding: 8px 14px;
+  text-align: center; font-weight: 700; color: var(--ink);
+  border-bottom: 1.5px solid var(--sand);
+}
+.data-table td {
+  padding: 7px 14px; text-align: center;
+  color: var(--ink2); border-bottom: 1px solid var(--sand);
+  font-family: 'Courier New', monospace; font-size: 12px;
+}
+.data-table tr:last-child td { border-bottom: none; }
+
+.steps-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.step-item { display: flex; gap: 10px; align-items: flex-start; }
+.step-n {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; color: #fff;
+  flex-shrink: 0; margin-top: 1px;
+}
+.step-t { font-size: 11px; color: var(--ink2); line-height: 1.7; flex: 1; }
+
+.concept-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0;
+}
+.concept-card {
+  background: var(--bg); border: 1.5px solid var(--sand);
+  border-radius: 10px; padding: 10px 12px;
+}
+.cc-label { font-size: 8.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 4px; }
+.cc-text { font-size: 11px; color: var(--ink2); line-height: 1.65; }
+
+/* ── FOOTER ── */
+.foot {
+  background: var(--hdr); padding: 7px 26px;
+  font-size: 9px; color: rgba(255,255,255,.28);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 580px) {
+  body { width: 100%; }
+  .hdr { padding: 12px 16px; }
+  .hdr h1 { font-size: 16px; }
+  .prog-row { padding: 9px 16px; }
+  .intro-card { margin: 12px 14px 10px; padding: 12px 14px; flex-direction: column; gap: 8px; }
+  .weeks { padding: 0 14px 20px; gap: 8px; }
+  .week-hdr { padding: 12px 14px; gap: 10px; }
+  .wk-num { width: 36px; height: 36px; font-size: 14px; border-radius: 10px; }
+  .wk-title { font-size: 13px; }
+  .concept-row { grid-template-columns: 1fr; }
+  .foot { padding: 7px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <h1>Repaso general del primer bimestre</h1>
+    <div class="hdr-sub">Cálculo Diferencial · MATE_2037 · Semana 8 · Katty Rohoden</div>
+  </div>
+  <div class="chips">
+    <div class="chip">Semanas 1–7</div>
+    <div class="chip">Presentación interactiva</div>
+  </div>
+</div>
+
+<!-- PROGRESS ROW -->
+<div class="prog-row">
+  <div class="week-pills">
+    <div class="w-pill" style="background:var(--w1l);color:var(--w1);border-color:rgba(26,90,138,.2)" onclick="jumpTo(0)">S1</div>
+    <div class="w-pill" style="background:var(--w2l);color:var(--w2);border-color:rgba(26,106,72,.2)" onclick="jumpTo(1)">S2</div>
+    <div class="w-pill" style="background:var(--w3l);color:var(--w3);border-color:rgba(122,56,152,.2)" onclick="jumpTo(2)">S3</div>
+    <div class="w-pill" style="background:var(--w4l);color:var(--w4);border-color:rgba(192,96,16,.2)" onclick="jumpTo(3)">S4</div>
+    <div class="w-pill" style="background:var(--w5l);color:var(--w5);border-color:rgba(160,32,32,.2)" onclick="jumpTo(4)">S5</div>
+    <div class="w-pill" style="background:var(--w6l);color:var(--w6);border-color:rgba(26,96,104,.2)" onclick="jumpTo(5)">S6</div>
+    <div class="w-pill" style="background:var(--w7l);color:var(--w7);border-color:rgba(42,74,32,.2)" onclick="jumpTo(6)">S7</div>
+  </div>
+  <div class="inst-badge">Haga clic en los temas para visualizar la información</div>
+</div>
+
+<!-- INTRO -->
+<div class="intro-card">
+  <div class="intro-icon">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <circle cx="18" cy="18" r="18" fill="#f0ece0"/>
+      <path d="M8 26 Q12 18 18 16 Q22 14 28 10" stroke="#1c1810" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="18" cy="16" r="3" fill="#1c1810"/>
+      <line x1="6" y1="28" x2="30" y2="28" stroke="#1c1810" stroke-width="1.4"/>
+    </svg>
+  </div>
+  <div>
+    <p>Explore un repaso integral que resalta la relevancia de los contenidos de las semanas 1 a 7 sobre funciones, límites y continuidad.</p>
+    <div class="hint-pill">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <circle cx="5" cy="5" r="4.5" stroke="rgba(255,255,255,.7)" stroke-width="1"/>
+        <path d="M5 3v3M5 7.2v.2" stroke="rgba(255,255,255,.7)" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      Haga clic en los temas para visualizar la información
+    </div>
+  </div>
+</div>
+
+<!-- WEEKS ACCORDION -->
+<div class="weeks">
+
+  <!-- ══ SEMANA 1 ══ -->
+  <div class="week-block" id="wb0">
+    <div class="week-hdr" onclick="toggleWeek(0)" style="background:var(--w1l)">
+      <div class="wk-num" style="background:var(--w1)">1</div>
+      <div class="wk-meta">
+        <div class="wk-label" style="color:var(--w1)">Semana 1</div>
+        <div class="wk-title">Unidad 1 · Funciones</div>
+        <div class="wk-subtitle">Definición, notación, representación, dominio y rango</div>
+      </div>
+      <div class="wk-count" style="background:var(--w1l);color:var(--w1);border:1.5px solid rgba(26,90,138,.2)">4 subtemas</div>
+      <div class="wk-arr">▼</div>
+    </div>
+    <div class="week-body">
+      <div class="wk-intro">En la semana 1 se introduce el concepto de función como base del cálculo diferencial, enfocándose en su interpretación como modelo de comportamiento y no solo como una expresión algebraica, para analizar relaciones y cambios en contextos tecnológicos.</div>
+      <div class="subtopics">
+
+        <!-- 1.1 -->
+        <div class="sub" id="s1-1">
+          <div class="sub-hdr" onclick="toggleSub('s1-1')">
+            <div class="sub-tag" style="background:var(--w1l);color:var(--w1)">1.1</div>
+            <div class="sub-title">Definición, notación y representación de una función</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <h4>Concepto de función — La "caja negra"</h4>
+            <p>Una función no es solo una fórmula; es una regla de transformación. Se concibe como un sistema que recibe un dato de entrada (<em>input</em>), lo procesa y devuelve un resultado único (<em>output</em>).</p>
+            <h4>Notación de Euler</h4>
+            <p>Si f(x) es la latencia de un paquete y x es el tiempo de congestión:</p>
+            <div class="formula-box">f(x) = 2x + 10</div>
+            <p>Donde x es la variable independiente y f(x) la dependiente.</p>
+            <h4>Representación de una función</h4>
+            <ul>
+              <li><strong>Verbal:</strong> se describe con palabras. Ej.: la distancia recorrida es igual a 60 veces el tiempo transcurrido.</li>
+              <li><strong>Simbólica:</strong> mediante una fórmula o ecuación matemática: d(t) = 60t</li>
+              <li><strong>Tabular:</strong> tabla con valores concretos de entrada y salida.</li>
+              <li><strong>Gráfica:</strong> sistema de ejes (plano cartesiano). Eje horizontal = variable independiente; eje vertical = variable dependiente.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.2 -->
+        <div class="sub" id="s1-2">
+          <div class="sub-hdr" onclick="toggleSub('s1-2')">
+            <div class="sub-tag" style="background:var(--w1l);color:var(--w1)">1.2</div>
+            <div class="sub-title">Tabla de valores y gráfica de una función</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <h4>¿Cómo se construye una tabla de valores?</h4>
+            <p>Usando f(x) = 2x + 3 como ejemplo:</p>
+            <div class="steps-list">
+              <div class="step-item"><div class="step-n" style="background:var(--w1)">a</div><div class="step-t">Identificar la función: f(x) = 2x + 3</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w1)">b</div><div class="step-t">Elegir valores de x: −2, −1, 0, 1, 2</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w1)">c</div><div class="step-t">Calcular f(x) para cada valor de x</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w1)">d</div><div class="step-t">Registrar en la tabla</div></div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <tr><th>x</th><th>f(x) = 2x + 3</th></tr>
+                <tr><td>−2</td><td>−1</td></tr>
+                <tr><td>−1</td><td>1</td></tr>
+                <tr><td>0</td><td>3</td></tr>
+                <tr><td>1</td><td>5</td></tr>
+                <tr><td>2</td><td>7</td></tr>
+              </table>
+            </div>
+            <p>La gráfica representa todos los puntos (x, f(x)) en el plano cartesiano.</p>
+          </div>
+        </div>
+
+        <!-- 1.3 -->
+        <div class="sub" id="s1-3">
+          <div class="sub-hdr" onclick="toggleSub('s1-3')">
+            <div class="sub-tag" style="background:var(--w1l);color:var(--w1)">1.3</div>
+            <div class="sub-title">Dominio y rango</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <div class="concept-row">
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w1)">Dominio</div>
+                <div class="cc-text">Conjunto de todos los valores de entrada x para los cuales la función está definida.</div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w1)">Rango</div>
+                <div class="cc-text">Conjunto de todos los valores de salida y que la función puede producir.</div>
+              </div>
+            </div>
+            <h4>Dos perspectivas del dominio:</h4>
+            <ul>
+              <li><strong>Matemático:</strong> evita operaciones ilegales (división por cero, raíces pares de negativos, logaritmos de cero o negativos).</li>
+              <li><strong>Físico/lógico:</strong> evita situaciones imposibles (tiempo negativo, distancias menores a cero, ancho de banda infinito).</li>
+            </ul>
+            <h4>Dos perspectivas del rango:</h4>
+            <ul>
+              <li><strong>Matemático:</strong> comportamiento asintótico y extremos de la fórmula.</li>
+              <li><strong>Físico:</strong> subconjunto de valores que tienen sentido en la realidad.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.4 -->
+        <div class="sub" id="s1-4">
+          <div class="sub-hdr" onclick="toggleSub('s1-4')">
+            <div class="sub-tag" style="background:var(--w1l);color:var(--w1)">1.4</div>
+            <div class="sub-title">Interpretación de gráficas — Elementos críticos de análisis</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>El análisis gráfico permite identificar interceptos, monotonía, concavidad y comportamiento asintótico de una función, herramientas clave para modelar y predecir el comportamiento de sistemas dinámicos.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEMANA 2 ══ -->
+  <div class="week-block" id="wb1">
+    <div class="week-hdr" onclick="toggleWeek(1)" style="background:var(--w2l)">
+      <div class="wk-num" style="background:var(--w2)">2</div>
+      <div class="wk-meta">
+        <div class="wk-label" style="color:var(--w2)">Semana 2</div>
+        <div class="wk-title">Unidad 1 · Funciones</div>
+        <div class="wk-subtitle">Tipos, operaciones y asíntotas</div>
+      </div>
+      <div class="wk-count" style="background:var(--w2l);color:var(--w2);border:1.5px solid rgba(26,106,72,.2)">3 subtemas</div>
+      <div class="wk-arr">▼</div>
+    </div>
+    <div class="week-body">
+      <div class="wk-intro">En la semana 2 se estudian los tipos de funciones, sus operaciones y el comportamiento asintótico para modelar sistemas de telecomunicaciones.</div>
+      <div class="subtopics">
+
+        <div class="sub" id="s2-1">
+          <div class="sub-hdr" onclick="toggleSub('s2-1')">
+            <div class="sub-tag" style="background:var(--w2l);color:var(--w2)">1.5</div>
+            <div class="sub-title">Tipos de funciones</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>Los tipos de funciones incluyen constantes, lineales, cuadráticas, racionales, exponenciales y logarítmicas. Cada tipo tiene características propias de dominio, rango y comportamiento gráfico.</p>
+          </div>
+        </div>
+
+        <div class="sub" id="s2-2">
+          <div class="sub-hdr" onclick="toggleSub('s2-2')">
+            <div class="sub-tag" style="background:var(--w2l);color:var(--w2)">1.6</div>
+            <div class="sub-title">Operaciones con funciones</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <div class="concept-row">
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w2)">Suma</div>
+                <div class="cc-text"><span style="font-family:monospace">(f + g)(x) = f(x) + g(x)</span></div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w2)">Resta</div>
+                <div class="cc-text"><span style="font-family:monospace">(f − g)(x) = f(x) − g(x)</span></div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w2)">Producto</div>
+                <div class="cc-text"><span style="font-family:monospace">(f · g)(x) = f(x) · g(x)</span></div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w2)">Cociente</div>
+                <div class="cc-text"><span style="font-family:monospace">(f/g)(x) = f(x)/g(x), g(x) ≠ 0</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" id="s2-3">
+          <div class="sub-hdr" onclick="toggleSub('s2-3')">
+            <div class="sub-tag" style="background:var(--w2l);color:var(--w2)">1.7</div>
+            <div class="sub-title">Asíntotas</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <div class="concept-row">
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w2)">↕ Vertical</div>
+                <div class="cc-text">Ocurre cuando el denominador es cero (q(x) = 0). Indica un error fatal o límite físico.</div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w2)">↔ Horizontal</div>
+                <div class="cc-text">Comportamiento a largo plazo. Se calcula comparando los grados de p(x) y q(x).</div>
+              </div>
+              <div class="concept-card" style="grid-column:1/-1">
+                <div class="cc-label" style="color:var(--w2)">/ Oblicua</div>
+                <div class="cc-text">Ocurre cuando el grado del numerador es exactamente uno mayor que el denominador.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEMANA 3 ══ -->
+  <div class="week-block" id="wb2">
+    <div class="week-hdr" onclick="toggleWeek(2)" style="background:var(--w3l)">
+      <div class="wk-num" style="background:var(--w3)">3</div>
+      <div class="wk-meta">
+        <div class="wk-label" style="color:var(--w3)">Semana 3</div>
+        <div class="wk-title">Unidad 1 · Funciones</div>
+        <div class="wk-subtitle">Especiales, composición e inversa</div>
+      </div>
+      <div class="wk-count" style="background:var(--w3l);color:var(--w3);border:1.5px solid rgba(122,56,152,.2)">3 subtemas</div>
+      <div class="wk-arr">▼</div>
+    </div>
+    <div class="week-body">
+      <div class="wk-intro">En la semana 3 se estudian funciones exponenciales y logarítmicas para analizar la atenuación de señales y el crecimiento de datos. Además, se aborda la composición y la función inversa para modelar procesos de transmisión y decodificación en redes.</div>
+      <div class="subtopics">
+
+        <div class="sub" id="s3-1">
+          <div class="sub-hdr" onclick="toggleSub('s3-1')">
+            <div class="sub-tag" style="background:var(--w3l);color:var(--w3)">1.8</div>
+            <div class="sub-title">Funciones especiales: Exponencial vs. Logarítmica</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <div class="concept-row">
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w3)">Exponencial (aˣ)</div>
+                <div class="cc-text">Crece rápidamente. Modela propagación de virus o congestión de red descontrolada.</div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w3)">Logarítmica (log_a x)</div>
+                <div class="cc-text">Crece lento. Inversa de la exponencial. Útil para escalas de decibelios o complejidad de algoritmos eficientes.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" id="s3-2">
+          <div class="sub-hdr" onclick="toggleSub('s3-2')">
+            <div class="sub-tag" style="background:var(--w3l);color:var(--w3)">1.9</div>
+            <div class="sub-title">Composición de funciones</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>La composición de funciones permite modelar procesos encadenados, donde la salida de una función se convierte en la entrada de la siguiente.</p>
+            <div class="formula-box">(f ∘ g)(x) = f(g(x))</div>
+            <p><strong>Importante:</strong> No es conmutativa. f∘g ≠ g∘f en general.</p>
+          </div>
+        </div>
+
+        <div class="sub" id="s3-3">
+          <div class="sub-hdr" onclick="toggleSub('s3-3')">
+            <div class="sub-tag" style="background:var(--w3l);color:var(--w3)">1.10</div>
+            <div class="sub-title">Función inversa</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <div class="steps-list">
+              <div class="step-item"><div class="step-n" style="background:var(--w3)">1</div><div class="step-t"><strong>¿Qué es?</strong> Permite deshacer el efecto de una función. Si f(a) = b, entonces f⁻¹(b) = a.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w3)">2</div><div class="step-t"><strong>Condición:</strong> la función debe ser inyectiva (uno a uno). f(x₁) = f(x₂) ⟹ x₁ = x₂</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w3)">3</div><div class="step-t"><strong>Prueba gráfica:</strong> si alguna recta horizontal corta la gráfica en más de un punto, no hay inversa. Ej.: f(x) = x² falla esta prueba.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w3)">4</div><div class="step-t"><strong>Definición formal:</strong> f⁻¹(b) = a ⟺ f(a) = b. El dominio de f⁻¹ es el rango de f, y viceversa.</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEMANA 4 ══ -->
+  <div class="week-block" id="wb3">
+    <div class="week-hdr" onclick="toggleWeek(3)" style="background:var(--w4l)">
+      <div class="wk-num" style="background:var(--w4)">4</div>
+      <div class="wk-meta">
+        <div class="wk-label" style="color:var(--w4)">Semana 4</div>
+        <div class="wk-title">Unidad 2 · Límites y continuidad</div>
+        <div class="wk-subtitle">Interpretación del límite y límites laterales</div>
+      </div>
+      <div class="wk-count" style="background:var(--w4l);color:var(--w4);border:1.5px solid rgba(192,96,16,.2)">3 subtemas</div>
+      <div class="wk-arr">▼</div>
+    </div>
+    <div class="week-body">
+      <div class="wk-intro">En la semana 4 se introduce el concepto de límite para analizar el comportamiento de la red ante posibles fallos. Se utilizan límites laterales para detectar problemas de latencia y se evalúa la existencia del límite para anticipar la estabilidad del sistema.</div>
+      <div class="subtopics">
+
+        <div class="sub" id="s4-1">
+          <div class="sub-hdr" onclick="toggleSub('s4-1')">
+            <div class="sub-tag" style="background:var(--w4l);color:var(--w4)">2.1</div>
+            <div class="sub-title">Interpretación del límite</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>El límite de una función es el valor al que se aproximan los resultados (valores de y) de una función a medida que la entrada (x) se acerca a un punto específico, sin necesariamente alcanzarlo.</p>
+            <div class="formula-box">lím f(x) = L  cuando  x → a</div>
+            <h4>Interpretación gráfica:</h4>
+            <ul>
+              <li>Si desde ambos lados la función se acerca al mismo valor L, el límite existe.</li>
+              <li>Si se acerca a valores diferentes desde la izquierda y la derecha, el límite no existe.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="sub" id="s4-2">
+          <div class="sub-hdr" onclick="toggleSub('s4-2')">
+            <div class="sub-tag" style="background:var(--w4l);color:var(--w4)">2.2</div>
+            <div class="sub-title">Límites laterales</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>Los límites laterales permiten analizar con mayor detalle el comportamiento cuando la variable se aproxima desde un solo lado.</p>
+            <div class="concept-row">
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w4)">Por la izquierda</div>
+                <div class="cc-text">x se aproxima a a desde valores menores: lím⁻ f(x)</div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w4)">Por la derecha</div>
+                <div class="cc-text">x se aproxima a a desde valores mayores: lím⁺ f(x)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" id="s4-3">
+          <div class="sub-hdr" onclick="toggleSub('s4-3')">
+            <div class="sub-tag" style="background:var(--w4l);color:var(--w4)">2.3</div>
+            <div class="sub-title">Existencia del límite</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>Para que un límite exista, la tendencia debe ser la misma por ambos lados:</p>
+            <div class="formula-box">lím⁻ f(x) = lím⁺ f(x) = L</div>
+            <p>Si los límites laterales son distintos, existe una discontinuidad de salto y el límite general <strong>no existe</strong>.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEMANA 5 ══ -->
+  <div class="week-block" id="wb4">
+    <div class="week-hdr" onclick="toggleWeek(4)" style="background:var(--w5l)">
+      <div class="wk-num" style="background:var(--w5)">5</div>
+      <div class="wk-meta">
+        <div class="wk-label" style="color:var(--w5)">Semana 5</div>
+        <div class="wk-title">Unidad 2 · Límites y continuidad</div>
+        <div class="wk-subtitle">Métodos de cálculo de límites</div>
+      </div>
+      <div class="wk-count" style="background:var(--w5l);color:var(--w5);border:1.5px solid rgba(160,32,32,.2)">3 subtemas</div>
+      <div class="wk-arr">▼</div>
+    </div>
+    <div class="week-body">
+      <div class="wk-intro">En la semana 5 se estudian métodos algebraicos para resolver límites: sustitución directa, factorización y racionalización.</div>
+      <div class="subtopics">
+
+        <div class="sub" id="s5-1">
+          <div class="sub-hdr" onclick="toggleSub('s5-1')">
+            <div class="sub-tag" style="background:var(--w5l);color:var(--w5)">2.4</div>
+            <div class="sub-title">Sustitución directa</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>El primer paso. Si da un número real, ese es el límite. Si da 0/0, es una indeterminación.</p>
+            <div class="steps-list">
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">1</div><div class="step-t">Identificar la función y el valor al que se aproxima la variable.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">2</div><div class="step-t">Sustituir directamente ese valor en la expresión.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">3</div><div class="step-t">Verificar que no genere expresiones indefinidas.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">4</div><div class="step-t">Si el resultado es un número real, ese valor es el límite.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" id="s5-2">
+          <div class="sub-hdr" onclick="toggleSub('s5-2')">
+            <div class="sub-tag" style="background:var(--w5l);color:var(--w5)">2.5</div>
+            <div class="sub-title">Factorización y cancelación</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>Se usa para indeterminaciones en funciones racionales. Se factoriza y cancela el término conflicto.</p>
+            <div class="steps-list">
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">1</div><div class="step-t">Identificar que la sustitución directa produce una indeterminación.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">2</div><div class="step-t">Factorizar completamente el numerador y el denominador.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">3</div><div class="step-t">Cancelar los factores comunes que provocan la indeterminación.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">4</div><div class="step-t">Evaluar el límite usando sustitución directa en la expresión simplificada.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w5)">5</div><div class="step-t">Interpretar el resultado como el valor al que se aproxima la función.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" id="s5-3">
+          <div class="sub-hdr" onclick="toggleSub('s5-3')">
+            <div class="sub-tag" style="background:var(--w5l);color:var(--w5)">2.6</div>
+            <div class="sub-title">Racionalización</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>Se usa cuando hay raíces cuadradas. Se multiplica numerador y denominador por el conjugado para eliminar la raíz.</p>
+            <div class="formula-box">Conjugado de (√u − v) es (√u + v)</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEMANA 6 ══ -->
+  <div class="week-block" id="wb5">
+    <div class="week-hdr" onclick="toggleWeek(5)" style="background:var(--w6l)">
+      <div class="wk-num" style="background:var(--w6)">6</div>
+      <div class="wk-meta">
+        <div class="wk-label" style="color:var(--w6)">Semana 6</div>
+        <div class="wk-title">Unidad 2 · Límites y continuidad</div>
+        <div class="wk-subtitle">Continuidad y tipos de discontinuidad</div>
+      </div>
+      <div class="wk-count" style="background:var(--w6l);color:var(--w6);border:1.5px solid rgba(26,96,104,.2)">3 subtemas</div>
+      <div class="wk-arr">▼</div>
+    </div>
+    <div class="week-body">
+      <div class="wk-intro">Durante esta semana se estudia la continuidad como indicador de estabilidad en sistemas de red y la discontinuidad como herramienta para identificar fallos en la transmisión de datos.</div>
+      <div class="subtopics">
+
+        <div class="sub" id="s6-1">
+          <div class="sub-hdr" onclick="toggleSub('s6-1')">
+            <div class="sub-tag" style="background:var(--w6l);color:var(--w6)">2.7</div>
+            <div class="sub-title">Definición de continuidad</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>Una función f es continua en x = a si se cumplen las tres condiciones:</p>
+            <div class="steps-list">
+              <div class="step-item"><div class="step-n" style="background:var(--w6)">1</div><div class="step-t"><strong>Definida:</strong> f(a) existe. El sistema tiene un valor real en ese punto.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w6)">2</div><div class="step-t"><strong>Límite:</strong> el límite existe. Los laterales son iguales (L⁻ = L⁺).</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w6)">3</div><div class="step-t"><strong>Coincidencia:</strong> el valor del límite es igual al valor de la función: L = f(a).</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" id="s6-2">
+          <div class="sub-hdr" onclick="toggleSub('s6-2')">
+            <div class="sub-tag" style="background:var(--w6l);color:var(--w6)">2.8</div>
+            <div class="sub-title">Discontinuidad de una función</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <div class="concept-row">
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w6)">Evitable</div>
+                <div class="cc-text">No está definida en f(a) o no se cumple f(x) = f(a). Se puede redefinir para hacerla continua.</div>
+              </div>
+              <div class="concept-card">
+                <div class="cc-label" style="color:var(--w6)">Esencial o inevitable</div>
+                <div class="cc-text">No existe el límite de la función cuando x se aproxima a a.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" id="s6-3">
+          <div class="sub-hdr" onclick="toggleSub('s6-3')">
+            <div class="sub-tag" style="background:var(--w6l);color:var(--w6)">2.9</div>
+            <div class="sub-title">Tipos de continuidad</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <ul>
+              <li><strong>Evitable (removible):</strong> el límite existe, pero f(a) no coincide o no existe. Como un "dato faltante".</li>
+              <li><strong>De salto (inevitable):</strong> los límites laterales existen, pero son distintos. Común en cambios de tarifas o enrutamiento.</li>
+              <li><strong>Infinita:</strong> la función crece o decrece sin límite (asíntota vertical). Colapso del sistema.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEMANA 7 ══ -->
+  <div class="week-block" id="wb6">
+    <div class="week-hdr" onclick="toggleWeek(6)" style="background:var(--w7l)">
+      <div class="wk-num" style="background:var(--w7)">7</div>
+      <div class="wk-meta">
+        <div class="wk-label" style="color:var(--w7)">Semana 7</div>
+        <div class="wk-title">Unidad 2 · Límites y continuidad</div>
+        <div class="wk-subtitle">Modelos asintóticos y parámetros de continuidad</div>
+      </div>
+      <div class="wk-count" style="background:var(--w7l);color:var(--w7);border:1.5px solid rgba(42,74,32,.2)">3 subtemas</div>
+      <div class="wk-arr">▼</div>
+    </div>
+    <div class="week-body">
+      <div class="wk-intro">En la semana 7 se aborda el análisis de discontinuidad y continuidad para optimizar el funcionamiento de sistemas tecnológicos. Se estudian modelos asintóticos para proyectar rendimiento y costos.</div>
+      <div class="subtopics">
+
+        <div class="sub" id="s7-1">
+          <div class="sub-hdr" onclick="toggleSub('s7-1')">
+            <div class="sub-tag" style="background:var(--w7l);color:var(--w7)">2.10</div>
+            <div class="sub-title">Análisis de discontinuidad en modelos de decisión</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <ul>
+              <li>Los modelos basados en umbrales (<em>Thresholds</em>) suelen comportarse como funciones a trozos.</li>
+              <li>El punto de quiebre genera una discontinuidad de salto. En seguridad de redes, esto ocurre cuando se bloquea una IP al superar exactamente 1000 peticiones.</li>
+              <li><strong>Riesgo:</strong> Oscilación ("Flapping") si el tráfico fluctúa alrededor del umbral.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="sub" id="s7-2">
+          <div class="sub-hdr" onclick="toggleSub('s7-2')">
+            <div class="sub-tag" style="background:var(--w7l);color:var(--w7)">2.11</div>
+            <div class="sub-title">Modelos de costo y rendimiento asintótico</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>En el contexto de Big Data e ingeniería de tráfico, se utilizan modelos de costo matemáticos que describen cómo crece el consumo de recursos en función del tamaño de la entrada n.</p>
+            <div class="formula-box">L = f(n) / g(n)  (cuando n → ∞)</div>
+            <p>Una función lineal (50n) siempre será más eficiente a largo plazo que una cuadrática (2n²), aunque tenga un inicio lento.</p>
+          </div>
+        </div>
+
+        <div class="sub" id="s7-3">
+          <div class="sub-hdr" onclick="toggleSub('s7-3')">
+            <div class="sub-tag" style="background:var(--w7l);color:var(--w7)">2.12</div>
+            <div class="sub-title">Determinación de parámetros de continuidad</div>
+            <div class="sub-arr">▼</div>
+          </div>
+          <div class="sub-body">
+            <p>Para que una función f(x) sea continua en un punto de empalme x = c:</p>
+            <div class="formula-box">lím⁻ f(x) = lím⁺ f(x) = f(c)</div>
+            <h4>Procedimiento:</h4>
+            <div class="steps-list">
+              <div class="step-item"><div class="step-n" style="background:var(--w7)">1</div><div class="step-t">Identificar los puntos de ruptura (valores de x donde cambia la fórmula).</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w7)">2</div><div class="step-t">Plantear el límite lateral izquierdo usando la expresión para x &lt; c.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w7)">3</div><div class="step-t">Plantear el límite lateral derecho usando la expresión para x &gt; c.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w7)">4</div><div class="step-t">Igualar ambas expresiones para formar una ecuación.</div></div>
+              <div class="step-item"><div class="step-n" style="background:var(--w7)">5</div><div class="step-t">Resolver la ecuación para la incógnita.</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- /weeks -->
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Elaboración propia. · Rohoden, K. (2025). <em>Repaso general del primer bimestre.</em> UTPL.</span>
+  <span>S8 · MATE_2037</span>
+</div>
+
+<script>
+function toggleWeek(idx) {
+  const wb = document.getElementById('wb' + idx);
+  const wasOpen = wb.classList.contains('open');
+  // close all
+  document.querySelectorAll('.week-block').forEach(w => w.classList.remove('open'));
+  // open clicked if it wasn't open
+  if (!wasOpen) wb.classList.add('open');
+}
+
+function toggleSub(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function jumpTo(idx) {
+  // open the week
+  document.querySelectorAll('.week-block').forEach(w => w.classList.remove('open'));
+  const wb = document.getElementById('wb' + idx);
+  wb.classList.add('open');
+  // scroll to it
+  setTimeout(() => {
+    wb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+}
+</script>
+</body>
+</html>
