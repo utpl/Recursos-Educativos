@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operaciones con Funciones · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #f3ede3;
+  --white:   #ffffff;
+  --ink:     #18120a;
+  --ink2:    #3d2e1a;
+  --muted:   #8a7860;
+  --sand:    #ddd0b8;
+  --line:    #c8baa0;
+
+  --c-sum:   #1a5e8a;  --c-sum-l:  #eaf3fb;
+  --c-res:   #1a6e48;  --c-res-l:  #eafaf2;
+  --c-pro:   #7a3898;  --c-pro-l:  #f5eefb;
+  --c-coc:   #c06010;  --c-coc-l:  #fff4e8;
+
+  --ok:      #1a6e40;  --ok-l:     #e8f8ee;
+  --err:     #a02020;  --err-l:    #fdecea;
+  --accent:  #2a4070;
+}
+
+body {
+  font-family: 'Lexend', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--accent);
+  padding: 15px 24px 13px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.hdr h1 {
+  font-size: 15px; font-weight: 800;
+  color: #fff; line-height: 1.2;
+}
+.hdr-sub { font-size: 9.5px; color: rgba(255,255,255,.5); margin-top: 3px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.65);
+  font-size: 8.5px; font-weight: 600; letter-spacing: .7px;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── GIVEN FUNCTIONS ── */
+.given {
+  background: var(--white);
+  border-bottom: 2px solid var(--sand);
+  padding: 14px 24px;
+}
+.given-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+.given-fns {
+  display: flex; gap: 14px; flex-wrap: wrap;
+}
+.fn-pill {
+  background: var(--bg);
+  border: 2px solid var(--sand);
+  border-radius: 12px; padding: 10px 18px;
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  font-family: 'Courier New', monospace;
+  letter-spacing: .2px;
+}
+.fn-pill span { color: var(--accent); font-weight: 700; }
+
+/* ── INSTRUCTION ── */
+.inst {
+  background: #fff8ee;
+  border-bottom: 1.5px solid #f0d8a8;
+  padding: 9px 24px;
+  display: flex; align-items: center; gap: 9px;
+  font-size: 10.5px; color: #5a3808;
+}
+.inst-hint {
+  margin-left: auto; white-space: nowrap;
+  background: var(--accent);
+  color: #fff; font-size: 9px; font-weight: 600;
+  padding: 3px 12px; border-radius: 20px;
+}
+
+/* ── MAIN AREA ── */
+.main { padding: 18px 24px 6px; display: flex; flex-direction: column; gap: 12px; }
+
+/* ── OPERATION ROW ── */
+.op-row {
+  background: var(--white);
+  border-radius: 14px;
+  border: 2px solid var(--sand);
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  transition: border-color .2s;
+}
+.op-row.correct { border-color: var(--ok); }
+.op-row.wrong   { border-color: var(--err); }
+
+.op-head {
+  padding: 11px 16px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1.5px solid var(--sand);
+}
+.op-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: .5px;
+  text-transform: uppercase; padding: 4px 12px;
+  border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+}
+.op-formula-left {
+  font-family: 'Courier New', monospace;
+  font-size: 13px; color: var(--ink2); flex: 1;
+}
+.op-status {
+  font-size: 18px; margin-left: auto; transition: all .2s;
+}
+
+.op-body {
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.op-equals {
+  font-size: 20px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+}
+
+/* ── DROP ZONE ── */
+.drop-zone {
+  min-width: 180px; height: 46px;
+  border: 2px dashed var(--sand);
+  border-radius: 10px;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: #eef2fc;
+  transform: scale(1.02);
+}
+.drop-zone.filled {
+  border-style: solid;
+  background: var(--white);
+}
+.drop-zone .dz-hint {
+  font-size: 10px; color: var(--line);
+  font-weight: 500; pointer-events: none;
+}
+.drop-zone .placed-chip {
+  font-family: 'Courier New', monospace;
+  font-size: 13px; font-weight: 600;
+  color: var(--ink); padding: 0 12px;
+  cursor: grab; user-select: none;
+  width: 100%; text-align: center;
+}
+.drop-zone .placed-chip:active { cursor: grabbing; }
+
+.op-constraint {
+  font-size: 11px; color: var(--muted);
+  font-family: 'Courier New', monospace; flex-shrink: 0;
+}
+
+/* ── FEEDBACK per row ── */
+.op-feedback {
+  display: none;
+  padding: 8px 16px 12px;
+  font-size: 11px; color: var(--ink2); line-height: 1.6;
+  border-top: 1.5px solid var(--sand);
+}
+.op-feedback.show { display: flex; gap: 8px; align-items: flex-start; }
+.op-feedback.ok-fb { color: var(--ok); background: var(--ok-l); }
+.op-feedback.err-fb { color: var(--err); background: var(--err-l); }
+.fb-ico { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── CHIPS BANK ── */
+.bank-wrap {
+  padding: 0 24px 18px;
+}
+.bank-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.bank-label::after { content:''; flex:1; height:1px; background:var(--sand); }
+.bank {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  min-height: 56px;
+  background: var(--white);
+  border: 2px dashed var(--sand);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.bank.drag-over { border-color: var(--accent); background: #eef2fc; }
+
+.chip-card {
+  font-family: 'Courier New', monospace;
+  font-size: 12.5px; font-weight: 600;
+  background: var(--white);
+  border: 2px solid var(--sand);
+  border-radius: 10px;
+  padding: 9px 16px;
+  cursor: grab;
+  transition: all .2s;
+  user-select: none;
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  white-space: nowrap;
+}
+.chip-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 5px 16px rgba(0,0,0,.12); }
+.chip-card:active { cursor: grabbing; transform: scale(.97); }
+.chip-card.dragging { opacity: .4; }
+
+/* ── ACTIONS ── */
+.actions {
+  padding: 0 24px 18px;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.btn {
+  font-family: 'Lexend', sans-serif;
+  font-size: 11px; font-weight: 700;
+  border-radius: 10px; padding: 10px 22px;
+  cursor: pointer; border: none; transition: all .2s;
+  display: flex; align-items: center; gap: 7px;
+}
+.btn-verify {
+  background: var(--accent); color: #fff;
+  box-shadow: 0 3px 14px rgba(42,64,112,.25);
+}
+.btn-verify:hover { background: #1e2e58; }
+.btn-verify:disabled { opacity: .4; cursor: not-allowed; }
+.btn-reset {
+  background: var(--white); color: var(--muted);
+  border: 1.5px solid var(--sand);
+}
+.btn-reset:hover { border-color: var(--muted); color: var(--ink); }
+.score-pill {
+  margin-left: auto;
+  background: var(--bg); border: 1.5px solid var(--sand);
+  color: var(--ink2); font-size: 10px; font-weight: 700;
+  padding: 5px 14px; border-radius: 20px;
+}
+
+/* ── SUCCESS BANNER ── */
+.success-banner {
+  display: none;
+  margin: 0 24px 18px;
+  background: var(--ok-l);
+  border: 2px solid rgba(26,110,64,.3);
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 12px; color: var(--ok); line-height: 1.7;
+}
+.success-banner.show { display: flex; gap: 12px; align-items: flex-start; }
+.success-banner .sb-icon { font-size: 22px; flex-shrink: 0; }
+
+/* ── FOOTER ── */
+.foot {
+  background: var(--accent);
+  padding: 7px 24px;
+  font-size: 9px; color: rgba(255,255,255,.32);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+}
+
+/* ── MOBILE TAP MODE ── */
+.tap-selected { border-color: var(--accent) !important; background: #eef2fc !important; box-shadow: 0 0 0 3px rgba(42,64,112,.15) !important; }
+.tap-hint {
+  font-size: 9px; color: var(--accent); font-weight: 600;
+  margin-top: 4px; text-align: center; display: none;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  body { width: 100%; }
+  .hdr { padding: 12px 16px; }
+  .hdr h1 { font-size: 13px; }
+  .given { padding: 12px 16px; }
+  .inst { padding: 8px 16px; font-size: 10px; }
+  .inst-hint { display: none; }
+  .main { padding: 14px 14px 6px; gap: 10px; }
+  .op-body { gap: 7px; }
+  .drop-zone { min-width: 140px; }
+  .bank-wrap { padding: 0 14px 14px; }
+  .actions { padding: 0 14px 14px; }
+  .bank { padding: 10px; }
+  .chip-card { font-size: 11.5px; padding: 8px 12px; }
+  .success-banner { margin: 0 14px 14px; }
+  .foot { padding: 7px 16px; }
+  .tap-hint { display: block; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <h1>Operaciones con funciones</h1>
+    <div class="hdr-sub">Cálculo Diferencial · MATE_2037 · Semana 2 · Katty Rohoden</div>
+  </div>
+  <div class="chips">
+    <div class="chip">Arrastrar y soltar</div>
+    <div class="chip">Semana 2</div>
+  </div>
+</div>
+
+<!-- GIVEN FUNCTIONS -->
+<div class="given">
+  <div class="given-label">Funciones dadas</div>
+  <div class="given-fns">
+    <div class="fn-pill"><span>f</span>(x) = x² + 1</div>
+    <div class="fn-pill"><span>g</span>(x) = x − 2</div>
+  </div>
+</div>
+
+<!-- INSTRUCTION -->
+<div class="inst">
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <circle cx="6.5" cy="6.5" r="6" stroke="#8a5c18" stroke-width="1.1"/>
+    <path d="M6.5 4v4M6.5 9.5v.3" stroke="#8a5c18" stroke-width="1.1" stroke-linecap="round"/>
+  </svg>
+  Arrastra cada ficha al espacio correspondiente para completar el resultado de cada operación.
+  <div class="inst-hint">Arrastra las fichas ↓</div>
+</div>
+<div class="tap-hint" style="padding:5px 16px 0;display:none" id="tapHintGlobal">
+  En móvil: toca una ficha y luego toca el espacio donde deseas colocarla.
+</div>
+
+<!-- OPERATION ROWS -->
+<div class="main">
+
+  <!-- SUMA -->
+  <div class="op-row" id="row0">
+    <div class="op-head">
+      <div class="op-badge" style="background:var(--c-sum-l);color:var(--c-sum)">1. Suma</div>
+      <div class="op-formula-left">(f + g)(x) = f(x) + g(x)</div>
+      <div class="op-status" id="st0"></div>
+    </div>
+    <div class="op-body">
+      <div class="op-equals">=</div>
+      <div class="drop-zone" id="dz0"
+           ondragover="dzOver(event,0)" ondragleave="dzLeave(0)" ondrop="dzDrop(event,0)"
+           onclick="dzTap(0)">
+        <span class="dz-hint">Suelta aquí</span>
+      </div>
+    </div>
+    <div class="op-feedback" id="fb0"></div>
+  </div>
+
+  <!-- RESTA -->
+  <div class="op-row" id="row1">
+    <div class="op-head">
+      <div class="op-badge" style="background:var(--c-res-l);color:var(--c-res)">2. Resta</div>
+      <div class="op-formula-left">(f − g)(x) = f(x) − g(x)</div>
+      <div class="op-status" id="st1"></div>
+    </div>
+    <div class="op-body">
+      <div class="op-equals">=</div>
+      <div class="drop-zone" id="dz1"
+           ondragover="dzOver(event,1)" ondragleave="dzLeave(1)" ondrop="dzDrop(event,1)"
+           onclick="dzTap(1)">
+        <span class="dz-hint">Suelta aquí</span>
+      </div>
+    </div>
+    <div class="op-feedback" id="fb1"></div>
+  </div>
+
+  <!-- PRODUCTO -->
+  <div class="op-row" id="row2">
+    <div class="op-head">
+      <div class="op-badge" style="background:var(--c-pro-l);color:var(--c-pro)">3. Producto</div>
+      <div class="op-formula-left">(f · g)(x) = f(x) · g(x)</div>
+      <div class="op-status" id="st2"></div>
+    </div>
+    <div class="op-body">
+      <div class="op-equals">=</div>
+      <div class="drop-zone" id="dz2"
+           ondragover="dzOver(event,2)" ondragleave="dzLeave(2)" ondrop="dzDrop(event,2)"
+           onclick="dzTap(2)">
+        <span class="dz-hint">Suelta aquí</span>
+      </div>
+    </div>
+    <div class="op-feedback" id="fb2"></div>
+  </div>
+
+  <!-- COCIENTE -->
+  <div class="op-row" id="row3">
+    <div class="op-head">
+      <div class="op-badge" style="background:var(--c-coc-l);color:var(--c-coc)">4. Cociente</div>
+      <div class="op-formula-left">(f/g)(x) = f(x)/g(x)</div>
+      <div class="op-status" id="st3"></div>
+    </div>
+    <div class="op-body">
+      <div class="op-equals">=</div>
+      <div class="drop-zone" id="dz3"
+           ondragover="dzOver(event,3)" ondragleave="dzLeave(3)" ondrop="dzDrop(event,3)"
+           onclick="dzTap(3)">
+        <span class="dz-hint">Suelta aquí</span>
+      </div>
+      <div class="op-constraint">, x ≠ 2</div>
+    </div>
+    <div class="op-feedback" id="fb3"></div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- CHIPS BANK -->
+<div class="bank-wrap">
+  <div class="bank-label">Fichas de respuesta — arrastra cada una a su lugar</div>
+  <div class="bank" id="bank"
+       ondragover="bankOver(event)" ondragleave="bankLeave()" ondrop="bankDrop(event)">
+    <!-- chips injected by JS (shuffled) -->
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions">
+  <button class="btn btn-reset" onclick="resetAll()">↺ Reiniciar</button>
+  <button class="btn btn-verify" id="btnVerify" onclick="verify()" disabled>Verificar ✓</button>
+  <div class="score-pill" id="scoreEl">Colocadas: 0 / 4</div>
+</div>
+
+<!-- SUCCESS BANNER -->
+<div class="success-banner" id="successBanner">
+  <div class="sb-icon">🎉</div>
+  <div>
+    <strong>¡Felicitaciones!</strong> Demostró dominio en las operaciones algebraicas entre funciones, reconociendo cómo la suma, resta, producto y cociente transforman expresiones y condiciones de dominio para modelar relaciones matemáticas con precisión.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Elaboración propia. · Rohoden, K. (2025). <em>Operaciones con funciones.</em> UTPL.</span>
+  <span>S2 · MATE_2037</span>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────── */
+// Correct answers per drop zone (0=sum, 1=sub, 2=prod, 3=quot)
+const ANSWERS = {
+  0: 'a',  // x² + x − 1
+  1: 'b',  // x² − x + 3
+  2: 'c',  // x³ − 2x² + x − 2
+  3: 'd'   // (x² + 1)/(x − 2)
+};
+
+const CHIPS = [
+  { id: 'a', label: 'x² + x − 1' },
+  { id: 'b', label: 'x² − x + 3' },
+  { id: 'c', label: 'x³ − 2x² + x − 2' },
+  { id: 'd', label: '(x² + 1) / (x − 2)' }
+];
+
+const FEEDBACK_OK = [
+  'La suma combina directamente los valores de ambas funciones, generando un polinomio más amplio.',
+  'La resta muestra la diferencia entre los valores, útil para comparar comportamientos.',
+  'El producto multiplica los valores, dando lugar a expresiones polinómicas de mayor grado.',
+  'El cociente divide los valores, pero requiere verificar el dominio para evitar divisiones por cero.'
+];
+
+const OP_COLORS = ['--c-sum', '--c-res', '--c-pro', '--c-coc'];
+
+/* ─────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────── */
+// chipId → location ('bank' | 'dz0'..'dz3')
+let chipLoc = { a: 'bank', b: 'bank', c: 'bank', d: 'bank' };
+// dzId (0-3) → chipId | null
+let dzContent = [null, null, null, null];
+
+let draggedChip = null;  // id of chip being dragged
+let tapSelected = null;  // id of chip selected via tap (mobile)
+let verified = false;
+
+/* ─────────────────────────────────────────────
+   INIT — shuffle chips
+───────────────────────────────────────────── */
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildBank() {
+  const bank = document.getElementById('bank');
+  bank.innerHTML = '';
+  const order = shuffle([...CHIPS]);
+  order.forEach(chip => {
+    if (chipLoc[chip.id] === 'bank') {
+      bank.appendChild(makeChipEl(chip.id, chip.label));
+    }
+  });
+}
+
+function makeChipEl(id, label) {
+  const el = document.createElement('div');
+  el.className = 'chip-card';
+  el.id = 'chip-' + id;
+  el.draggable = true;
+  el.textContent = label;
+  el.dataset.chipId = id;
+  el.addEventListener('dragstart', e => chipDragStart(e, id));
+  el.addEventListener('dragend',   () => chipDragEnd(id));
+  el.addEventListener('click',     () => chipTap(id));
+  return el;
+}
+
+/* ─────────────────────────────────────────────
+   DRAG — CHIP
+───────────────────────────────────────────── */
+function chipDragStart(e, id) {
+  draggedChip = id;
+  e.dataTransfer.setData('text/plain', id);
+  setTimeout(() => {
+    const el = document.getElementById('chip-' + id);
+    if (el) el.classList.add('dragging');
+  }, 0);
+}
+function chipDragEnd(id) {
+  draggedChip = null;
+  const el = document.getElementById('chip-' + id);
+  if (el) el.classList.remove('dragging');
+}
+
+/* ─────────────────────────────────────────────
+   DRAG — DROP ZONE
+───────────────────────────────────────────── */
+function dzOver(e, idx) {
+  e.preventDefault();
+  document.getElementById('dz' + idx).classList.add('drag-over');
+}
+function dzLeave(idx) {
+  document.getElementById('dz' + idx).classList.remove('drag-over');
+}
+function dzDrop(e, idx) {
+  e.preventDefault();
+  dzLeave(idx);
+  const id = e.dataTransfer.getData('text/plain') || draggedChip;
+  if (!id) return;
+  placeChip(id, idx);
+}
+
+/* ─────────────────────────────────────────────
+   DRAG — BANK (return chip)
+───────────────────────────────────────────── */
+function bankOver(e) { e.preventDefault(); document.getElementById('bank').classList.add('drag-over'); }
+function bankLeave()  { document.getElementById('bank').classList.remove('drag-over'); }
+function bankDrop(e)  {
+  e.preventDefault();
+  bankLeave();
+  const id = e.dataTransfer.getData('text/plain') || draggedChip;
+  if (!id) return;
+  returnToBank(id);
+}
+
+/* ─────────────────────────────────────────────
+   TAP (MOBILE)
+───────────────────────────────────────────── */
+function chipTap(id) {
+  if (verified) return;
+  // if already selected, deselect
+  if (tapSelected === id) {
+    clearTapSel();
+    return;
+  }
+  clearTapSel();
+  tapSelected = id;
+  const el = document.getElementById('chip-' + id);
+  if (el) el.classList.add('tap-selected');
+}
+
+function dzTap(idx) {
+  if (verified) return;
+  if (tapSelected) {
+    placeChip(tapSelected, idx);
+    clearTapSel();
+  } else if (dzContent[idx]) {
+    // return chip to bank on tap when no chip selected
+    returnToBank(dzContent[idx]);
+  }
+}
+
+function clearTapSel() {
+  if (tapSelected) {
+    const el = document.getElementById('chip-' + tapSelected);
+    if (el) el.classList.remove('tap-selected');
+  }
+  tapSelected = null;
+}
+
+/* ─────────────────────────────────────────────
+   PLACE / RETURN
+───────────────────────────────────────────── */
+function placeChip(id, dzIdx) {
+  if (verified) return;
+  // if another chip is in this dz, return it to bank first
+  if (dzContent[dzIdx]) {
+    returnToBank(dzContent[dzIdx]);
+  }
+  // remove chip from its current location
+  const fromBank = chipLoc[id] === 'bank';
+  if (fromBank) {
+    const el = document.getElementById('chip-' + id);
+    if (el) el.remove();
+  } else {
+    // remove from old drop zone
+    const oldDz = parseInt(chipLoc[id].replace('dz',''));
+    dzContent[oldDz] = null;
+    renderDz(oldDz);
+  }
+
+  chipLoc[id] = 'dz' + dzIdx;
+  dzContent[dzIdx] = id;
+  renderDz(dzIdx);
+  updateScore();
+}
+
+function returnToBank(id) {
+  if (verified) return;
+  const dzIdx = parseInt(chipLoc[id].replace('dz',''));
+  dzContent[dzIdx] = null;
+  chipLoc[id] = 'bank';
+  renderDz(dzIdx);
+  // re-add to bank
+  const chip = CHIPS.find(c => c.id === id);
+  document.getElementById('bank').appendChild(makeChipEl(chip.id, chip.label));
+  updateScore();
+}
+
+function renderDz(idx) {
+  const dz = document.getElementById('dz' + idx);
+  const id = dzContent[idx];
+  dz.classList.toggle('filled', !!id);
+  if (id) {
+    const chip = CHIPS.find(c => c.id === id);
+    dz.innerHTML = '';
+    const placed = document.createElement('div');
+    placed.className = 'placed-chip';
+    placed.textContent = chip.label;
+    placed.draggable = true;
+    placed.dataset.chipId = id;
+    placed.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', id); draggedChip = id; placed.style.opacity='.4'; });
+    placed.addEventListener('dragend',   () => { draggedChip = null; placed.style.opacity=''; });
+    placed.addEventListener('click',     () => returnToBank(id));
+    dz.appendChild(placed);
+  } else {
+    dz.innerHTML = '<span class="dz-hint">Suelta aquí</span>';
+  }
+}
+
+function updateScore() {
+  const placed = dzContent.filter(Boolean).length;
+  document.getElementById('scoreEl').textContent = `Colocadas: ${placed} / 4`;
+  document.getElementById('btnVerify').disabled = placed < 4;
+}
+
+/* ─────────────────────────────────────────────
+   VERIFY
+───────────────────────────────────────────── */
+function verify() {
+  if (dzContent.filter(Boolean).length < 4) return;
+  verified = true;
+  let correct = 0;
+
+  for (let i = 0; i < 4; i++) {
+    const row = document.getElementById('row' + i);
+    const st  = document.getElementById('st' + i);
+    const fb  = document.getElementById('fb' + i);
+    const isOk = dzContent[i] === ANSWERS[i];
+    if (isOk) correct++;
+
+    row.classList.add(isOk ? 'correct' : 'wrong');
+    st.textContent = isOk ? '✅' : '❌';
+
+    fb.className = 'op-feedback show ' + (isOk ? 'ok-fb' : 'err-fb');
+    fb.innerHTML = `<div class="fb-ico">${isOk ? '✅' : '❌'}</div>
+      <div><strong>${isOk ? '¡Correcto!' : 'Incorrecto.'}</strong> ${FEEDBACK_OK[i]}</div>`;
+
+    // color the placed chip
+    const dz = document.getElementById('dz' + i);
+    dz.style.borderColor = isOk ? 'var(--ok)' : 'var(--err)';
+    dz.style.background  = isOk ? 'var(--ok-l)' : 'var(--err-l)';
+  }
+
+  document.getElementById('scoreEl').textContent = `Resultado: ${correct} / 4`;
+  document.getElementById('btnVerify').style.display = 'none';
+  document.getElementById('bank').style.display = 'none';
+  document.querySelector('.bank-label').style.display = 'none';
+
+  if (correct === 4) {
+    document.getElementById('successBanner').classList.add('show');
+  }
+}
+
+/* ─────────────────────────────────────────────
+   RESET
+───────────────────────────────────────────── */
+function resetAll() {
+  verified = false;
+  tapSelected = null;
+  chipLoc = { a: 'bank', b: 'bank', c: 'bank', d: 'bank' };
+  dzContent = [null, null, null, null];
+
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('row' + i).classList.remove('correct','wrong');
+    document.getElementById('st' + i).textContent = '';
+    document.getElementById('fb' + i).className = 'op-feedback';
+    document.getElementById('fb' + i).innerHTML = '';
+    const dz = document.getElementById('dz' + i);
+    dz.style.borderColor = '';
+    dz.style.background  = '';
+    renderDz(i);
+  }
+
+  document.getElementById('bank').style.display = '';
+  document.querySelector('.bank-label').style.display = '';
+  document.getElementById('btnVerify').style.display = '';
+  document.getElementById('successBanner').classList.remove('show');
+  updateScore();
+  buildBank();
+}
+
+/* ─────────────────────────────────────────────
+   BOOT
+───────────────────────────────────────────── */
+buildBank();
+updateScore();
+
+// Show tap hint on touch devices
+if ('ontouchstart' in window) {
+  document.getElementById('tapHintGlobal').style.display = 'block';
+}
+</script>
+</body>
+</html>
