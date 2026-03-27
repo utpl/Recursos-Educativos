@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dominio y rango de una función • Recurso Interactivo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@500&amp;display=swap');
+        
+        :root {
+            --primary: #0d6efd;
+            --accent: #00c48c;
+            --warning: #ff8c00;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff, #e6f0ff);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        #resource-container {
+            width: 800px;
+            max-height: 780px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgb(13 110 253 / 0.15),
+                        0 10px 15px -3px rgb(0 0 0 / 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* HEADER */
+        .header {
+            background: linear-gradient(90deg, var(--primary), #00c48c);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 180px;
+            height: 180px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            filter: blur(20px);
+        }
+        
+        .header-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            flex: 1;
+        }
+        
+        .header-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            opacity: 0.95;
+        }
+        
+        .meta-pill {
+            background: rgba(255,255,255,0.25);
+            padding: 4px 14px;
+            border-radius: 9999px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        /* INSTRUCTIONS */
+        .instructions {
+            padding: 18px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13.5px;
+            color: var(--dark);
+        }
+        
+        .instructions-icon {
+            width: 34px;
+            height: 34px;
+            background: #00c48c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 196, 140, 0.3);
+        }
+        
+        /* MAIN DASHBOARD */
+        .dashboard {
+            flex: 1;
+            position: relative;
+            padding: 20px 30px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .columns-container {
+            display: flex;
+            gap: 18px;
+            flex: 1;
+            position: relative;
+        }
+        
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        
+        .column-header {
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .column-header::before,
+        .column-header::after {
+            content: '';
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ddd, transparent);
+            flex: 1;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 8px 20px -6px rgb(0 0 0 / 0.08),
+                        0 2px 8px -2px rgb(0 0 0 / 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 15px 30px -10px rgb(13 110 253 / 0.2);
+        }
+        
+        .card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        }
+        
+        .card.matched {
+            border-color: #00c48c;
+            animation: matchedPop 0.6s ease;
+        }
+        
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 8px;
+            height: 100%;
+        }
+        
+        .math {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--dark);
+            background: #f1f5f9;
+            padding: 4px 14px;
+            border-radius: 8px;
+            width: fit-content;
+        }
+        
+        .graph-svg {
+            width: 100%;
+            max-height: 118px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 6px;
+        }
+        
+        .card-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            line-height: 1.3;
+        }
+        
+        /* CONNECTION SVG */
+        #connections-svg {
+            position: absolute;
+            top: 88px;
+            left: 30px;
+            width: calc(100% - 60px);
+            height: calc(100% - 130px);
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* STATUS BAR */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding: 0 10px;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .progress {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .dot.complete {
+            background: #00c48c;
+            box-shadow: 0 0 8px #00c48c;
+        }
+        
+        /* BUTTONS */
+        .actions {
+            padding: 14px 30px;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056cc;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--dark);
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            width: 720px;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px -15px rgb(0 0 0 / 0.3);
+        }
+        
+        .modal-header {
+            padding: 24px 30px;
+            background: linear-gradient(90deg, #00c48c, var(--accent));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-body {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+        
+        .feedback-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 196, 140, 0.1);
+        }
+        
+        .feedback-card h4 {
+            color: #00c48c;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .feedback-card p {
+            font-size: 12.5px;
+            line-height: 1.4;
+            color: #444;
+        }
+        
+        /* ANIMATIONS */
+        @keyframes matchedPop {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+        
+        .line {
+            animation: drawLine 0.6s ease forwards;
+        }
+        
+        @keyframes drawLine {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 820px) {
+            #resource-container {
+                width: 100%;
+                max-width: 800px;
+                margin: 10px;
+                max-height: none;
+            }
+            .columns-container {
+                flex-direction: column;
+                height: auto;
+            }
+            .column {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            .modal-content {
+                width: 92%;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="resource-container">
+        
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <div style="font-size:10px; opacity:0.9; letter-spacing:1px;">CÁLCULO DIFERENCIAL • MATE_2037</div>
+                <h1 class="header-title">Dominio y rango de una función</h1>
+                <div style="font-size:13px; opacity:0.95;">Semana 1 • Recurso interactivo</div>
+            </div>
+            
+            <div class="header-meta">
+                <div class="meta-pill">Prof. Katty Rohoden</div>
+                <div class="meta-pill">Unir con líneas</div>
+                <div class="meta-pill">3 funciones • 3 dominios</div>
+            </div>
+            
+            <!-- Decorative radial element -->
+            <svg width="68" height="68" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.15;">
+                <circle cx="34" cy="34" r="28" stroke="white" stroke-width="8"/>
+                <circle cx="34" cy="34" r="14" stroke="white" stroke-width="8"/>
+            </svg>
+        </div>
+        
+        <!-- INSTRUCTIONS -->
+        <div class="instructions">
+            <div class="instructions-icon">🔗</div>
+            <div>
+                <strong>Instrucciones:</strong> Une cada <strong>ecuación (paquete)</strong> con su 
+                <strong>intervalo de dominio (regla)</strong> y su <strong>gráfica (señal)</strong>.<br>
+                <span style="opacity:0.75;">Haz clic en una ecuación y luego en el dominio y la gráfica correctos. ¡Las líneas se dibujarán automáticamente!</span>
+            </div>
+            <div style="margin-left:auto; font-size:22px; opacity:0.6;">📐</div>
+        </div>
+        
+        <!-- DASHBOARD -->
+        <div class="dashboard">
+            
+            <div class="columns-container" id="columns-container">
+                
+                <!-- PAQUETES COLUMN -->
+                <div class="column">
+                    <div class="column-header">
+                        📦 PAQUETES (ecuaciones)
+                    </div>
+                    
+                    <!-- Paquete 1 -->
+                    <div class="card" id="p1" data-type="paquete">
+                        <div class="card-content">
+                            <div class="math">f(x) = x² − 4</div>
+                            <div class="card-label">Polinomio cuadrático</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Paquete 2 -->
+                    <div class="card" id="p2" data-type="paquete">
+                        <div class="card-content">
+                            <div class="math">f(x) = 1/x</div>
+                            <div class="card-label">Función racional</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Paquete 3 -->
+                    <div class="card" id="p3" data-type="paquete">
+                        <div class="card-content">
+                            <div class="math">f(x) = √x</div>
+                            <div class="card-label">Función raíz cuadrada</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- REGLAS COLUMN -->
+                <div class="column">
+                    <div class="column-header">
+                        📏 REGLAS (dominios)
+                    </div>
+                    
+                    <!-- Regla 1 -->
+                    <div class="card" id="r1" data-type="regla">
+                        <div class="card-content">
+                            <div style="font-size:17px; font-weight:600; color:#0d6efd;">(−∞, ∞)</div>
+                            <div class="card-label" style="margin-top:4px;">Todos los reales</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Regla 2 -->
+                    <div class="card" id="r2" data-type="regla">
+                        <div class="card-content">
+                            <div style="font-size:17px; font-weight:600; color:#0d6efd;">(−∞, 0) ∪ (0, ∞)</div>
+                            <div class="card-label" style="margin-top:4px;">Todos los reales excepto 0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Regla 3 -->
+                    <div class="card" id="r3" data-type="regla">
+                        <div class="card-content">
+                            <div style="font-size:17px; font-weight:600; color:#0d6efd;">[0, ∞)</div>
+                            <div class="card-label" style="margin-top:4px;">Solo positivos (x ≥ 0)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SEÑALES COLUMN -->
+                <div class="column">
+                    <div class="column-header">
+                        📊 SEÑALES (gráficas)
+                    </div>
+                    
+                    <!-- Señal 1 - Parabola -->
+                    <div class="card" id="s1" data-type="senal">
+                        <div class="card-content">
+                            <svg class="graph-svg" viewBox="0 0 220 148" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Axes -->
+                                <line x1="18" y1="122" x2="205" y2="122" stroke="#cbd5e1" stroke-width="2"/>
+                                <line x1="110" y1="18" x2="110" y2="130" stroke="#cbd5e1" stroke-width="2"/>
+                                <!-- Parabola y = x²-4 (vertex below x-axis) -->
+                                <path d="M 38 125 Q 68 78 110 48 Q 152 78 182 125" fill="none" stroke="#0d6efd" stroke-width="5" stroke-linejoin="round"/>
+                                <text x="102" y="140" font-size="10" fill="#64748b">y = x² − 4</text>
+                            </svg>
+                            <div class="card-label">Parábola que abre hacia arriba, cortando el eje Y en -4</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Señal 2 - Hipérbola -->
+                    <div class="card" id="s2" data-type="senal">
+                        <div class="card-content">
+                            <svg class="graph-svg" viewBox="0 0 220 148" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Axes -->
+                                <line x1="18" y1="122" x2="205" y2="122" stroke="#cbd5e1" stroke-width="2"/>
+                                <line x1="110" y1="18" x2="110" y2="130" stroke="#cbd5e1" stroke-width="2"/>
+                                <!-- Hipérbola right branch -->
+                                <path d="M 118 28 Q 128 35 145 72 Q 165 115 195 125" fill="none" stroke="#0d6efd" stroke-width="4.5"/>
+                                <!-- Hipérbola left branch -->
+                                <path d="M 102 28 Q 92 35 75 72 Q 55 115 25 125" fill="none" stroke="#0d6efd" stroke-width="4.5"/>
+                                <text x="95" y="140" font-size="10" fill="#64748b">y = 1/x</text>
+                            </svg>
+                            <div class="card-label">Hipérbola con asíntota vertical en el eje Y (nunca toca el 0)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Señal 3 - Curva raíz -->
+                    <div class="card" id="s3" data-type="senal">
+                        <div class="card-content">
+                            <svg class="graph-svg" viewBox="0 0 220 148" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Axes -->
+                                <line x1="18" y1="122" x2="205" y2="122" stroke="#cbd5e1" stroke-width="2"/>
+                                <line x1="110" y1="18" x2="110" y2="130" stroke="#cbd5e1" stroke-width="2"/>
+                                <!-- Curva √x que inicia en origen y crece -->
+                                <path d="M 110 122 Q 130 108 150 82 Q 172 52 200 32" fill="none" stroke="#0d6efd" stroke-width="5" stroke-linejoin="round"/>
+                                <text x="105" y="140" font-size="10" fill="#64748b">y = √x</text>
+                            </svg>
+                            <div class="card-label">Curva que inicia en (0,0) y crece hacia la derecha</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SVG CONNECTIONS LAYER -->
+            <svg id="connections-svg" width="740" height="420" xmlns="http://www.w3.org/2000/svg"></svg>
+            
+            <!-- STATUS BAR -->
+            <div class="status-bar">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-weight:500;">Progreso:</span>
+                    <div class="progress" id="progress-dots">
+                        <div class="dot" id="dot-p1"></div>
+                        <div class="dot" id="dot-p2"></div>
+                        <div class="dot" id="dot-p3"></div>
+                    </div>
+                </div>
+                <div id="status-text" style="font-style:italic; color:#64748b;">0 de 3 funciones conectadas</div>
+                <div style="font-size:11px; color:#64748b;">Haz clic en una ecuación → luego en su dominio y gráfica</div>
+            </div>
+        </div>
+        
+        <!-- ACTIONS -->
+        <div class="actions">
+            <button onclick="resetActivity()" class="btn btn-secondary">
+                🔄 Reiniciar actividad
+            </button>
+            <button onclick="showCorrectAnswer()" class="btn btn-secondary">
+                👁️ Ver respuesta correcta
+            </button>
+            <button onclick="checkCompletion()" class="btn btn-primary">
+                ✅ Verificar todo
+            </button>
+        </div>
+    </div>
+    
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size:22px;">¡Conexiones establecidas con éxito! 🎉</h2>
+                    <p style="opacity:0.9; margin-top:4px;">Has dominado el concepto de dominio.</p>
+                </div>
+                <button onclick="closeModal()" style="background:none; border:none; font-size:28px; color:white; cursor:pointer;">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Feedback 1 -->
+                <div class="feedback-card">
+                    <h4>1. ¡Conexión establecida!</h4>
+                    <p>En redes reales, no existe el “tiempo negativo”, por eso la raíz debe ser mayor o igual a cero.</p>
+                </div>
+                <!-- Feedback 2 -->
+                <div class="feedback-card">
+                    <h4>2. ¡Enrutado exitoso!</h4>
+                    <p>Has evitado la división por cero, que causaría un colapso en el sistema.</p>
+                </div>
+                <!-- Feedback 3 -->
+                <div class="feedback-card">
+                    <h4>3. ¡Red estable!</h4>
+                    <p>Las funciones polinómicas son robustas y aceptan cualquier valor de entrada sin romperse.</p>
+                </div>
+            </div>
+            
+            <div style="padding:20px 30px; text-align:center; border-top:1px solid #e5e7eb;">
+                <button onclick="closeModal()" style="background:#00c48c; color:white; border:none; padding:12px 32px; border-radius:9999px; font-weight:600;">
+                    Volver al tablero interactivo
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        /**
+         * Recurso interactivo premium: Dominio y rango de una función
+         * Transformación completa del guion proporcionado en un dashboard radial/conectado
+         * Autor: Experto UX/UI + Frontend + Diseño Instruccional
+         * Características: 
+         * - Ancho exacto 800px
+         * - Altura máxima 780px (sin scroll)
+         * - Conexiones SVG dinámicas con líneas
+         * - Tarjetas flotantes + hover + animaciones
+         * - Modo infografía moderna (no lineal)
+         * - 100% HTML + CSS + JS puro
+         * - Compatible Moodle / Canvas iframe
+         */
+        
+        let selectedPaquete = null
+        let connections = {
+            p1: { regla: null, senal: null },
+            p2: { regla: null, senal: null },
+            p3: { regla: null, senal: null }
+        }
+        
+        // Mapeo de correctas según el documento y retroalimentación
+        const correctMatches = {
+            p1: { regla: 'r1', senal: 's1' },   // x²-4 → Todos los reales → Parábola
+            p2: { regla: 'r2', senal: 's2' },   // 1/x → Todos excepto 0 → Hipérbola
+            p3: { regla: 'r3', senal: 's3' }    // √x → Solo positivos → Curva raíz
+        }
+        
+        /**
+         * Obtiene las coordenadas del centro de un elemento relativo al SVG
+         */
+        function getCenter(element) {
+            const rect = element.getBoundingClientRect()
+            const svgRect = document.getElementById('connections-svg').getBoundingClientRect()
+            return {
+                x: rect.left + rect.width / 2 - svgRect.left,
+                y: rect.top + rect.height / 2 - svgRect.top
+            }
+        }
+        
+        /**
+         * Dibuja todas las líneas de conexión actuales
+         */
+        function drawConnections() {
+            const svg = document.getElementById('connections-svg')
+            svg.innerHTML = ''
+            
+            Object.keys(connections).forEach(pId => {
+                const match = connections[pId]
+                
+                // Línea hacia regla
+                if (match.regla) {
+                    const pEl = document.getElementById(pId)
+                    const rEl = document.getElementById(match.regla)
+                    if (pEl && rEl) {
+                        const pCenter = getCenter(pEl)
+                        const rCenter = getCenter(rEl)
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+                        line.setAttribute('x1', pCenter.x)
+                        line.setAttribute('y1', pCenter.y)
+                        line.setAttribute('x2', rCenter.x)
+                        line.setAttribute('y2', rCenter.y)
+                        line.setAttribute('stroke', '#00c48c')
+                        line.setAttribute('stroke-width', '3.5')
+                        line.setAttribute('stroke-dasharray', '8 3')
+                        line.setAttribute('class', 'line')
+                        svg.appendChild(line)
+                    }
+                }
+                
+                // Línea hacia señal
+                if (match.senal) {
+                    const pEl = document.getElementById(pId)
+                    const sEl = document.getElementById(match.senal)
+                    if (pEl && sEl) {
+                        const pCenter = getCenter(pEl)
+                        const sCenter = getCenter(sEl)
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+                        line.setAttribute('x1', pCenter.x)
+                        line.setAttribute('y1', pCenter.y)
+                        line.setAttribute('x2', sCenter.x)
+                        line.setAttribute('y2', sCenter.y)
+                        line.setAttribute('stroke', '#00c48c')
+                        line.setAttribute('stroke-width', '3.5')
+                        line.setAttribute('stroke-dasharray', '8 3')
+                        line.setAttribute('class', 'line')
+                        svg.appendChild(line)
+                    }
+                }
+            })
+        }
+        
+        /**
+         * Actualiza la barra de progreso
+         */
+        function updateProgress() {
+            let completed = 0
+            Object.keys(connections).forEach(pId => {
+                if (connections[pId].regla && connections[pId].senal) {
+                    completed++
+                    document.getElementById('dot-' + pId).classList.add('complete')
+                }
+            })
+            document.getElementById('status-text').innerHTML = 
+                `${completed} de 3 funciones <span style="color:#00c48c">completamente conectadas</span>`
+        }
+        
+        /**
+         * Conecta un paquete con un elemento (regla o señal)
+         */
+        function connect(pId, targetId) {
+            const targetType = document.getElementById(targetId).dataset.type
+            const expected = correctMatches[pId]
+            
+            if (targetType === 'regla') {
+                if (targetId === expected.regla) {
+                    connections[pId].regla = targetId
+                    document.getElementById(pId).classList.add('matched')
+                    document.getElementById(targetId).classList.add('matched')
+                    drawConnections()
+                    updateProgress()
+                    return true
+                }
+            } else if (targetType === 'senal') {
+                if (targetId === expected.senal) {
+                    connections[pId].senal = targetId
+                    document.getElementById(pId).classList.add('matched')
+                    document.getElementById(targetId).classList.add('matched')
+                    drawConnections()
+                    updateProgress()
+                    return true
+                }
+            }
+            return false
+        }
+        
+        /**
+         * Maneja el clic en cualquier tarjeta
+         */
+        function handleCardClick(e) {
+            const card = e.currentTarget
+            const id = card.id
+            const type = card.dataset.type
+            
+            if (type === 'paquete') {
+                // Seleccionar paquete
+                if (selectedPaquete === id) {
+                    selectedPaquete = null
+                    document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'))
+                } else {
+                    selectedPaquete = id
+                    document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'))
+                    card.classList.add('selected')
+                }
+            } 
+            else if (selectedPaquete) {
+                // Intentar conectar con regla o señal
+                const success = connect(selectedPaquete, id)
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'))
+                
+                if (!success) {
+                    // Feedback visual de error
+                    card.style.animation = 'none'
+                    setTimeout(() => {
+                        card.style.animation = 'matchedPop 0.4s ease'
+                    }, 10)
+                    // Pequeño tooltip temporal
+                    const originalText = card.innerHTML
+                    card.style.borderColor = '#ff8c00'
+                    setTimeout(() => {
+                        card.style.borderColor = 'transparent'
+                    }, 1200)
+                }
+                
+                selectedPaquete = null
+            }
+        }
+        
+        /**
+         * Verifica si la actividad está completa y abre el modal de retroalimentación
+         */
+        function checkCompletion() {
+            const isComplete = Object.keys(connections).every(pId => 
+                connections[pId].regla && connections[pId].senal
+            )
+            
+            if (isComplete) {
+                document.getElementById('success-modal').style.display = 'flex'
+            } else {
+                alert('⚠️ Aún faltan conexiones. ¡Sigue uniendo las líneas!')
+            }
+        }
+        
+        /**
+         * Muestra la solución correcta automáticamente
+         */
+        function showCorrectAnswer() {
+            // Limpiar todo
+            resetActivity()
+            
+            // Conectar todo correctamente
+            Object.keys(correctMatches).forEach(pId => {
+                const match = correctMatches[pId]
+                connections[pId].regla = match.regla
+                connections[pId].senal = match.senal
+                
+                // Marcar tarjetas
+                document.getElementById(pId).classList.add('matched')
+                document.getElementById(match.regla).classList.add('matched')
+                document.getElementById(match.senal).classList.add('matched')
+            })
+            
+            drawConnections()
+            updateProgress()
+            
+            // Mensaje temporal
+            const status = document.getElementById('status-text')
+            status.style.color = '#00c48c'
+            status.innerHTML = '✅ Respuesta oficial del guion cargada'
+            
+            setTimeout(() => {
+                status.style.color = '#64748b'
+                status.innerHTML = '3 de 3 funciones conectadas'
+            }, 2200)
+        }
+        
+        /**
+         * Reinicia toda la actividad
+         */
+        function resetActivity() {
+            connections = {
+                p1: { regla: null, senal: null },
+                p2: { regla: null, senal: null },
+                p3: { regla: null, senal: null }
+            }
+            selectedPaquete = null
+            
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('matched', 'selected')
+            })
+            
+            document.getElementById('connections-svg').innerHTML = ''
+            document.querySelectorAll('.dot').forEach(dot => dot.classList.remove('complete'))
+            document.getElementById('status-text').innerHTML = '0 de 3 funciones conectadas'
+        }
+        
+        /**
+         * Cierra el modal
+         */
+        function closeModal() {
+            document.getElementById('success-modal').style.display = 'none'
+        }
+        
+        /**
+         * Inicializa todo el recurso interactivo
+         */
+        function initializeResource() {
+            // Asignar listeners a todas las tarjetas
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', handleCardClick)
+            })
+            
+            console.log('%c✅ Recurso interactivo de Dominio y rango cargado correctamente', 'background:#00c48c;color:white;padding:2px 6px;border-radius:4px;font-size:10px')
+            console.log('Ancho exacto: 800px | Altura controlada | Conexiones SVG dinámicas | Inspirado en infografía radial')
+            
+            // Pequeña animación inicial de las tarjetas
+            let delay = 120
+            document.querySelectorAll('.card').forEach((card, index) => {
+                card.style.opacity = '0'
+                card.style.transform = 'translateY(18px)'
+                setTimeout(() => {
+                    card.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    card.style.opacity = '1'
+                    card.style.transform = 'translateY(0)'
+                }, delay + (index * 40))
+            })
+            
+            // Mensaje de bienvenida en consola solo para desarrollo
+        }
+        
+        // Arrancar la experiencia
+        window.onload = initializeResource
+    </script>
+</body>
+</html>
