@@ -2,44 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=800, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Propiedades de Límites | Dashboard Interactivo</title>
     <style>
         :root {
-            /* Paleta moderna y accesible */
             --bg: #f0f4f8;
             --card: #ffffff;
             --text: #0f172a;
             --text-light: #475569;
-            
-            /* Colores por propiedad */
-            --c1: #3b82f6; --c1-light: #dbeafe;
-            --c2: #10b981; --c2-light: #d1fae5;
-            --c3: #f59e0b; --c3-light: #fef3c7;
-            --c4: #8b5cf6; --c4-light: #ede9fe;
-            --c5: #ec4899; --c5-light: #fce7f3;
-            --c6: #06b6d4; --c6-light: #cffafe;
-            --c7: #f97316; --c7-light: #ffedd5;
-            --c8: #6366f1; --c8-light: #e0e7ff;
-            --c9: #14b8a6; --c9-light: #ccfbf1;
+            --c1: #3b82f6;  --c1-light: #dbeafe;
+            --c2: #10b981;  --c2-light: #d1fae5;
+            --c3: #f59e0b;  --c3-light: #fef3c7;
+            --c4: #8b5cf6;  --c4-light: #ede9fe;
+            --c5: #ec4899;  --c5-light: #fce7f3;
+            --c6: #06b6d4;  --c6-light: #cffafe;
+            --c7: #f97316;  --c7-light: #ffedd5;
+            --c8: #6366f1;  --c8-light: #e0e7ff;
+            --c9: #14b8a6;  --c9-light: #ccfbf1;
             --c10: #ef4444; --c10-light: #fee2e2;
-            
             --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+            --shadow-glow: 0 0 20px rgba(59,130,246,0.15);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
 
         body {
             background: var(--bg);
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            width: 800px;
-            height: 800px;
-            overflow: hidden;
             color: var(--text);
         }
 
+        /* ── DESKTOP: contenedor fijo 800×800 ── */
         .container {
             width: 800px;
             height: 800px;
@@ -48,361 +42,216 @@
             border-radius: 24px;
             box-shadow: var(--shadow-lg);
             overflow: hidden;
+            margin: 0 auto;
         }
 
-        /* Header limpio */
+        /* HEADER */
         .header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            position: absolute; top:0; left:0; right:0;
             padding: 16px 24px;
             background: rgba(255,255,255,0.9);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
             z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content:space-between; align-items:center;
         }
+        .header h1 { font-size:18px; font-weight:800; color:var(--text); display:flex; align-items:center; gap:10px; }
+        .header span { font-size:13px; color:var(--text-light); font-weight:600; background:rgba(0,0,0,0.03); padding:4px 12px; border-radius:20px; }
 
-        .header h1 {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .main { width:800px; height:800px; position:relative; padding-top:60px; }
 
-        .header span {
-            font-size: 13px;
-            color: var(--text-light);
-            font-weight: 600;
-            background: rgba(0,0,0,0.03);
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
+        /* SVG líneas */
+        .connections { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; }
+        .line { stroke:#0758ba; stroke-width:1.5; stroke-dasharray:5,5; opacity:1; transition:all .3s; }
+        .line.active { stroke:#3b82f6; stroke-width:2.5; opacity:1; stroke-dasharray:none; }
 
-        /* Área principal */
-        .main {
-            width: 800px;
-            height: 800px;
-            position: relative;
-            padding-top: 60px;
-        }
-
-        /* Líneas conectoras sutiles */
-        .connections {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .line {
-            stroke: #cbd5e1;
-            stroke-width: 1.5;
-            stroke-dasharray: 5,5;
-            opacity: 0.6;
-            transition: all 0.3s;
-        }
-
-        .line.active {
-            stroke: #3b82f6;
-            stroke-width: 2.5;
-            opacity: 1;
-            stroke-dasharray: none;
-        }
-
-        /* Nodo Central */
+        /* NODO CENTRAL */
         .center {
-            position: absolute;
-            top: 400px;
-            left: 400px;
-            transform: translate(-50%, -50%);
-            width: 140px;
-            height: 140px;
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            z-index: 10;
-            box-shadow: var(--shadow-lg), var(--shadow-glow);
-            border: 4px solid rgba(255,255,255,0.3);
-            cursor: default;
+            position:absolute; top:400px; left:400px; transform:translate(-50%,-50%);
+            width:140px; height:140px;
+            background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);
+            border-radius:50%;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            color:white; z-index:10;
+            box-shadow:var(--shadow-lg),var(--shadow-glow);
+            border:4px solid rgba(255,255,255,0.3);
         }
+        .center .icon  { font-size:40px; margin-bottom:4px; }
+        .center .title { font-size:14px; font-weight:800; letter-spacing:.5px; }
+        .center .count { font-size:11px; opacity:.9; margin-top:4px; font-weight:600; }
 
-        .center .icon {
-            font-size: 40px;
-            margin-bottom: 4px;
-        }
-
-        .center .title {
-            font-size: 14px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-
-        .center .count {
-            font-size: 11px;
-            opacity: 0.9;
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
-        /* Nodos de propiedades */
+        /* NODOS */
         .node {
-            position: absolute;
-            width: 130px;
-            background: var(--card);
-            border-radius: 16px;
-            padding: 12px 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            z-index: 5;
-            box-shadow: var(--shadow);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 2px solid transparent;
-            border-top-width: 4px;
+            position:absolute; width:130px;
+            background:var(--card); border-radius:16px; padding:12px 8px;
+            display:flex; flex-direction:column; align-items:center; text-align:center;
+            cursor:pointer; z-index:5; box-shadow:var(--shadow);
+            transition:all .3s cubic-bezier(.34,1.56,.64,1);
+            border:2px solid transparent; border-top-width:4px;
+            animation:fadeIn .5s ease backwards;
         }
+        .node:hover { transform:translateY(-5px) scale(1.05); box-shadow:var(--shadow-lg); z-index:20; }
+        .node.active { border-color:#3b82f6; box-shadow:0 0 0 4px rgba(59,130,246,0.2),var(--shadow-lg); transform:scale(1.08); z-index:15; }
+        .node .icon   { font-size:28px; margin-bottom:6px; }
+        .node .name   { font-size:12px; font-weight:700; color:var(--text); line-height:1.2; margin-bottom:4px; padding:0 4px; }
+        .node .formula { font-family:'Courier New',monospace; font-size:9px; color:var(--text-light); background:rgba(0,0,0,0.03); padding:3px 6px; border-radius:6px; width:100%; word-break:break-word; line-height:1.3; font-weight:700; overflow-wrap:break-word; }
 
-        .node:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: var(--shadow-lg);
-            z-index: 20;
-        }
+        .node[data-color="1"]  { border-top-color:var(--c1);  background:linear-gradient(to bottom,var(--c1-light),white);  }
+        .node[data-color="2"]  { border-top-color:var(--c2);  background:linear-gradient(to bottom,var(--c2-light),white);  }
+        .node[data-color="3"]  { border-top-color:var(--c3);  background:linear-gradient(to bottom,var(--c3-light),white);  }
+        .node[data-color="4"]  { border-top-color:var(--c4);  background:linear-gradient(to bottom,var(--c4-light),white);  }
+        .node[data-color="5"]  { border-top-color:var(--c5);  background:linear-gradient(to bottom,var(--c5-light),white);  }
+        .node[data-color="6"]  { border-top-color:var(--c6);  background:linear-gradient(to bottom,var(--c6-light),white);  }
+        .node[data-color="7"]  { border-top-color:var(--c7);  background:linear-gradient(to bottom,var(--c7-light),white);  }
+        .node[data-color="8"]  { border-top-color:var(--c8);  background:linear-gradient(to bottom,var(--c8-light),white);  }
+        .node[data-color="9"]  { border-top-color:var(--c9);  background:linear-gradient(to bottom,var(--c9-light),white);  }
+        .node[data-color="10"] { border-top-color:var(--c10); background:linear-gradient(to bottom,var(--c10-light),white); }
 
-        .node.active {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), var(--shadow-lg);
-            transform: scale(1.08);
-            z-index: 15;
-        }
-
-        .node .icon {
-            font-size: 28px;
-            margin-bottom: 6px;
-        }
-
-        .node .name {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1.2;
-            margin-bottom: 4px;
-            padding: 0 4px;
-        }
-
-        /* ⬅️ FÓRMULAS CORREGIDAS: No se desbordan */
-        .node .formula {
-            font-family: 'Courier New', monospace;
-            font-size: 9px; /* Tamaño reducido para caber */
-            color: var(--text-light);
-            background: rgba(0,0,0,0.03);
-            padding: 3px 6px;
-            border-radius: 6px;
-            width: 100%;
-            word-break: break-word; /* Permite romper palabras largas */
-            line-height: 1.3;
-            font-weight: 700;
-            overflow-wrap: break-word;
-            hyphens: auto;
-        }
-
-        /* Colores individuales */
-        .node[data-color="1"] { border-top-color: var(--c1); background: linear-gradient(to bottom, var(--c1-light), white); }
-        .node[data-color="2"] { border-top-color: var(--c2); background: linear-gradient(to bottom, var(--c2-light), white); }
-        .node[data-color="3"] { border-top-color: var(--c3); background: linear-gradient(to bottom, var(--c3-light), white); }
-        .node[data-color="4"] { border-top-color: var(--c4); background: linear-gradient(to bottom, var(--c4-light), white); }
-        .node[data-color="5"] { border-top-color: var(--c5); background: linear-gradient(to bottom, var(--c5-light), white); }
-        .node[data-color="6"] { border-top-color: var(--c6); background: linear-gradient(to bottom, var(--c6-light), white); }
-        .node[data-color="7"] { border-top-color: var(--c7); background: linear-gradient(to bottom, var(--c7-light), white); }
-        .node[data-color="8"] { border-top-color: var(--c8); background: linear-gradient(to bottom, var(--c8-light), white); }
-        .node[data-color="9"] { border-top-color: var(--c9); background: linear-gradient(to bottom, var(--c9-light), white); }
-        .node[data-color="10"] { border-top-color: var(--c10); background: linear-gradient(to bottom, var(--c10-light), white); }
-
-        /* Indicador de progreso */
+        /* DOTS */
         .dots {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 50;
-            background: rgba(255,255,255,0.9);
-            padding: 8px 16px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
+            position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+            display:flex; gap:8px; z-index:50;
+            background:rgba(255,255,255,0.9); padding:8px 16px; border-radius:20px; box-shadow:var(--shadow);
         }
+        .dot { width:10px; height:10px; border-radius:50%; background:#cbd5e1; cursor:pointer; transition:all .3s; }
+        .dot:hover { transform:scale(1.3); }
+        .dot.active  { background:#3b82f6; transform:scale(1.3); }
+        .dot.visited { background:#10b981; }
 
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #cbd5e1;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .dot:hover { transform: scale(1.3); }
-        .dot.active { background: #3b82f6; transform: scale(1.3); }
-        .dot.visited { background: #10b981; }
-
-        /* Modal Moderno */
+        /* MODAL */
         .modal-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(8px);
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
+            position:absolute; inset:0;
+            background:rgba(15,23,42,0.6); backdrop-filter:blur(8px);
+            z-index:200; display:flex; align-items:center; justify-content:center;
+            opacity:0; visibility:hidden; transition:all .3s;
         }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
+        .modal-overlay.active { opacity:1; visibility:visible; }
         .modal {
-            background: white;
-            width: 480px;
-            max-height: 650px;
-            border-radius: 24px;
-            padding: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            transform: scale(0.9);
-            transition: all 0.3s;
-            overflow-y: auto;
-            position: relative;
+            background:white; width:480px; max-height:650px;
+            border-radius:24px; padding:28px;
+            box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);
+            transform:scale(0.9); transition:all .3s;
+            overflow-y:auto; position:relative;
+        }
+        .modal-overlay.active .modal { transform:scale(1); }
+        .modal-close { position:absolute; top:16px; right:16px; width:36px; height:36px; border-radius:50%; border:none; background:#f1f5f9; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; color:#64748b; transition:all .2s; }
+        .modal-close:hover { background:#e2e8f0; color:#0f172a; transform:rotate(90deg); }
+        .modal-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:3px solid #e2e8f0; }
+        .modal-icon  { font-size:32px; }
+        .modal-title { font-size:20px; font-weight:800; color:var(--text); }
+        .modal-formula { background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%); padding:16px; border-radius:12px; font-family:'Courier New',monospace; font-size:14px; text-align:center; margin-bottom:20px; border-left:4px solid #3b82f6; font-weight:700; color:#1e40af; word-break:break-word; line-height:1.5; }
+        .modal-section { margin-bottom:20px; }
+        .modal-section h3 { font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:#64748b; margin-bottom:6px; font-weight:700; }
+        .modal-section p  { font-size:14px; line-height:1.6; color:var(--text); }
+        .modal-example { background:#fef3c7; border-left:4px solid #f59e0b; padding:12px 16px; border-radius:0 8px 8px 0; font-family:'Courier New',monospace; font-size:13px; margin-top:8px; color:#92400e; font-weight:600; }
+
+        .ref { position:absolute; bottom:12px; right:20px; font-size:10px; color:#94a3b8; z-index:50; }
+
+        @keyframes fadeIn { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+
+
+        /* ══════════════════════════════════════════
+           RESPONSIVE MÓVIL  (≤ 600px)
+           ══════════════════════════════════════════ */
+        @media (max-width: 600px) {
+            body { min-height:100dvh; }
+
+            /* El contenedor pasa a flujo de página normal */
+            .container {
+                width: 100vw;
+                height: auto;
+                min-height: 100dvh;
+                border-radius: 0;
+                overflow-y: auto;
+                position: relative;  /* mantiene para el modal */
+            }
+
+            /* Header estático */
+            .header {
+                position: sticky;
+                top: 0;
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .header h1   { font-size:15px; }
+            .header span { font-size:11px; }
+
+            /* Ocultar el mapa radial en móvil */
+            .main, .connections, .center, #nodesContainer, .dots, .ref {
+                display: none;
+            }
+
+            /* ── GRID DE TARJETAS PARA MÓVIL ── */
+            .mobile-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                padding: 14px 12px 80px;   /* bottom: espacio para el ref fijo */
+            }
+
+            .mobile-card {
+                background: white;
+                border-radius: 16px;
+                padding: 14px 12px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                cursor: pointer;
+                box-shadow: var(--shadow);
+                border: 2px solid transparent;
+                border-top-width: 4px;
+                transition: transform .2s, box-shadow .2s;
+                gap: 6px;
+            }
+            .mobile-card:active { transform: scale(0.97); }
+
+            .mobile-card .m-icon    { font-size:28px; }
+            .mobile-card .m-name    { font-size:13px; font-weight:700; color:var(--text); line-height:1.2; }
+            .mobile-card .m-formula { font-family:'Courier New',monospace; font-size:10px; color:var(--text-light); background:rgba(0,0,0,0.04); padding:4px 6px; border-radius:6px; width:100%; word-break:break-word; line-height:1.3; font-weight:700; }
+
+            .mobile-card[data-color="1"]  { border-top-color:var(--c1);  background:linear-gradient(to bottom,var(--c1-light),white);  }
+            .mobile-card[data-color="2"]  { border-top-color:var(--c2);  background:linear-gradient(to bottom,var(--c2-light),white);  }
+            .mobile-card[data-color="3"]  { border-top-color:var(--c3);  background:linear-gradient(to bottom,var(--c3-light),white);  }
+            .mobile-card[data-color="4"]  { border-top-color:var(--c4);  background:linear-gradient(to bottom,var(--c4-light),white);  }
+            .mobile-card[data-color="5"]  { border-top-color:var(--c5);  background:linear-gradient(to bottom,var(--c5-light),white);  }
+            .mobile-card[data-color="6"]  { border-top-color:var(--c6);  background:linear-gradient(to bottom,var(--c6-light),white);  }
+            .mobile-card[data-color="7"]  { border-top-color:var(--c7);  background:linear-gradient(to bottom,var(--c7-light),white);  }
+            .mobile-card[data-color="8"]  { border-top-color:var(--c8);  background:linear-gradient(to bottom,var(--c8-light),white);  }
+            .mobile-card[data-color="9"]  { border-top-color:var(--c9);  background:linear-gradient(to bottom,var(--c9-light),white);  }
+            .mobile-card[data-color="10"] { border-top-color:var(--c10); background:linear-gradient(to bottom,var(--c10-light),white); }
+
+            .mobile-ref {
+                text-align: center;
+                font-size:10px; color:#94a3b8;
+                padding: 12px 0 20px;
+            }
+
+            /* Modal en móvil: fixed para no depender del contenedor */
+            .modal-overlay {
+                position: fixed;
+                padding: 16px;
+            }
+            .modal {
+                width: 100%;
+                max-width: 480px;
+                max-height: 88dvh;
+                border-radius: 20px;
+                padding: 20px 18px;
+            }
+            .modal-title  { font-size:17px; }
+            .modal-formula{ font-size:13px; padding:12px; }
+            .modal-section p { font-size:13px; }
+            .modal-example   { font-size:12px; }
         }
 
-        .modal-overlay.active .modal {
-            transform: scale(1);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: none;
-            background: #f1f5f9;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
-            transition: all 0.2s;
-        }
-
-        .modal-close:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-            transform: rotate(90deg);
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 3px solid #e2e8f0;
-        }
-
-        .modal-icon {
-            font-size: 32px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--text);
-        }
-
-        .modal-formula {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            padding: 16px;
-            border-radius: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 20px;
-            border-left: 4px solid #3b82f6;
-            font-weight: 700;
-            color: #1e40af;
-            word-break: break-word;
-            line-height: 1.5;
-        }
-
-        .modal-section {
-            margin-bottom: 20px;
-        }
-
-        .modal-section h3 {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
-            margin-bottom: 6px;
-            font-weight: 700;
-        }
-
-        .modal-section p {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text);
-        }
-
-        .modal-example {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 12px 16px;
-            border-radius: 0 8px 8px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            margin-top: 8px;
-            color: #92400e;
-            font-weight: 600;
-        }
-
-        /* Referencia */
-        .ref {
-            position: absolute;
-            bottom: 12px;
-            right: 20px;
-            font-size: 10px;
-            color: #94a3b8;
-            z-index: 50;
-        }
-
-        /* Animaciones */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .node {
-            animation: fadeIn 0.5s ease backwards;
+        /* Tablet (601–860px) */
+        @media (min-width:601px) and (max-width:860px) {
+            body { display:flex; justify-content:center; align-items:center; min-height:100vh; padding:12px; }
+            .container { width:100%; max-width:800px; }
+            /* El modal usa position fixed en tablet también */
+            .modal-overlay { position:fixed; }
         }
     </style>
 </head>
@@ -414,21 +263,24 @@
         <span>10 propiedades fundamentales</span>
     </div>
 
+    <!-- Vista DESKTOP: mapa radial -->
     <div class="main">
         <svg class="connections" id="svgConnections"></svg>
-        
         <div class="center">
             <div class="icon">∞</div>
             <div class="title">LÍMITES</div>
             <div class="count">10 propiedades</div>
         </div>
-
         <div id="nodesContainer"></div>
-
         <div class="dots" id="dotsContainer"></div>
         <div class="ref">Cuenca et al. (2020) • Stewart Calculus</div>
     </div>
 
+    <!-- Vista MÓVIL: grid de tarjetas (se llena por JS) -->
+    <div class="mobile-grid" id="mobileGrid" style="display:none;"></div>
+    <div class="mobile-ref" id="mobileRef" style="display:none;">Cuenca et al. (2020) • Stewart Calculus</div>
+
+    <!-- Modal compartido -->
     <div class="modal-overlay" id="modal">
         <div class="modal">
             <button class="modal-close" onclick="closeModal()">×</button>
@@ -444,66 +296,57 @@
 
 <script>
     const properties = [
-        { id: 1, name: "Constante", icon: "🔢", formula: "lim c = c", desc: "El límite de una constante es la misma constante.", example: "limₓ→₂ 5 = 5" },
-        { id: 2, name: "Identidad", icon: "📌", formula: "lim x = a", desc: "El límite de la función identidad es el valor al que tiende x.", example: "limₓ→₃ x = 3" },
-        { id: 3, name: "Constante × Función", icon: "✖️", formula: "lim[k·f(x)] = k·lim f(x)", desc: "Una constante multiplicativa puede extraerse del límite.", example: "limₓ→₁ 4x = 4·1 = 4" },
-        { id: 4, name: "Suma/Resta", icon: "➕", formula: "lim[f ± g] = lim f ± lim g", desc: "El límite de una suma/resta es la suma/resta de los límites.", example: "lim(x²+3x) = lim x² + lim 3x" },
-        { id: 5, name: "Producto", icon: "📦", formula: "lim[f·g] = lim f · lim g", desc: "El límite de un producto es el producto de los límites.", example: "lim x(x+1) = lim x · lim(x+1)" },
-        { id: 6, name: "Cociente", icon: "➗", formula: "lim[f/g] = lim f / lim g, si lim g ≠ 0", desc: "El límite de un cociente es el cociente de los límites.", example: "lim(x²/x) = lim x² / lim x" },
-        { id: 7, name: "Potencias", icon: "⬆️", formula: "lim[f(x)]ⁿ = [lim f(x)]ⁿ", desc: "El límite de una potencia es la potencia del límite.", example: "lim(x+1)² = [lim(x+1)]²" },
-        { id: 8, name: "Raíces", icon: "√", formula: "lim ⁿ√f = ⁿ√(lim f)", desc: "El límite de una raíz es la raíz del límite.", example: "limₓ→₉ √x = √9 = 3" },
-        { id: 9, name: "Polinomios", icon: "📈", formula: "lim p(x) = p(a)", desc: "El límite de un polinomio es su evaluación directa.", example: "limₓ→₂(x²-1) = 2²-1 = 3" },
-        { id: 10, name: "Racionales", icon: "🧮", formula: "lim p/q = p(a)/q(a), si q(a)≠0", desc: "Límite de función racional = evaluación directa.", example: "lim(x+1)/(x+3) = (a+1)/(a+3)" }
+        { id:1,  name:"Constante",          icon:"🔢", formula:"lim c = c",                        desc:"El límite de una constante es la misma constante.",                              example:"limₓ→₂ 5 = 5" },
+        { id:2,  name:"Identidad",          icon:"📌", formula:"lim x = a",                        desc:"El límite de la función identidad es el valor al que tiende x.",                 example:"limₓ→₃ x = 3" },
+        { id:3,  name:"Constante × Func.",  icon:"✖️", formula:"lim[k·f(x)] = k·lim f(x)",        desc:"Una constante multiplicativa puede extraerse del límite.",                       example:"limₓ→₁ 4x = 4·1 = 4" },
+        { id:4,  name:"Suma / Resta",       icon:"➕", formula:"lim[f ± g] = lim f ± lim g",       desc:"El límite de una suma/resta es la suma/resta de los límites.",                   example:"lim(x²+3x) = lim x² + lim 3x" },
+        { id:5,  name:"Producto",           icon:"📦", formula:"lim[f·g] = lim f · lim g",         desc:"El límite de un producto es el producto de los límites.",                        example:"lim x(x+1) = lim x · lim(x+1)" },
+        { id:6,  name:"Cociente",           icon:"➗", formula:"lim[f/g] = lim f / lim g, g≠0",   desc:"El límite de un cociente es el cociente de los límites.",                        example:"lim(x²/x) = lim x² / lim x" },
+        { id:7,  name:"Potencias",          icon:"⬆️", formula:"lim[f(x)]ⁿ = [lim f(x)]ⁿ",       desc:"El límite de una potencia es la potencia del límite.",                           example:"lim(x+1)² = [lim(x+1)]²" },
+        { id:8,  name:"Raíces",             icon:"√",  formula:"lim ⁿ√f = ⁿ√(lim f)",             desc:"El límite de una raíz es la raíz del límite.",                                   example:"limₓ→₉ √x = √9 = 3" },
+        { id:9,  name:"Polinomios",         icon:"📈", formula:"lim p(x) = p(a)",                  desc:"El límite de un polinomio es su evaluación directa.",                            example:"limₓ→₂(x²-1) = 2²-1 = 3" },
+        { id:10, name:"Racionales",         icon:"🧮", formula:"lim p/q = p(a)/q(a), q(a)≠0",     desc:"Límite de función racional = evaluación directa si el denominador no es cero.",  example:"lim(x+1)/(x+3) = (a+1)/(a+3)" }
     ];
 
     let currentIndex = -1;
     const visited = new Set();
+    const isMobile = () => window.innerWidth <= 600;
 
-    function init() {
+    /* ── DESKTOP: mapa radial ── */
+    function initDesktop() {
         const container = document.getElementById('nodesContainer');
-        const svg = document.getElementById('svgConnections');
-        const dots = document.getElementById('dotsContainer');
-        
-        const centerX = 400;
-        const centerY = 400;
-        const radius = 240;
+        const svg       = document.getElementById('svgConnections');
+        const dots      = document.getElementById('dotsContainer');
+        container.innerHTML = ''; svg.innerHTML = ''; dots.innerHTML = '';
+
+        const cx = 400, cy = 400, r = 240;
 
         properties.forEach((prop, i) => {
-            // Calcular posición
             const angle = (i * 36 - 90) * Math.PI / 180;
-            const x = centerX + radius * Math.cos(angle) - 65; // 65 = mitad de 130px
-            const y = centerY + radius * Math.sin(angle) - 40;
-            
-            // Crear nodo
+            const x = cx + r * Math.cos(angle) - 65;
+            const y = cy + r * Math.sin(angle) - 40;
+
             const node = document.createElement('div');
             node.className = 'node';
             node.style.left = `${x}px`;
-            node.style.top = `${y}px`;
+            node.style.top  = `${y}px`;
             node.style.animationDelay = `${i * 0.05}s`;
             node.dataset.index = i;
             node.dataset.color = prop.id;
-            
-            // Contenido simplificado sin tooltip
             node.innerHTML = `
                 <div class="icon">${prop.icon}</div>
                 <div class="name">${prop.name}</div>
-                <div class="formula">${prop.formula}</div>
-            `;
-            
+                <div class="formula">${prop.formula}</div>`;
             node.onclick = () => openModal(i);
             container.appendChild(node);
-            
-            // Línea de conexión
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', centerX);
-            line.setAttribute('y1', centerY);
-            line.setAttribute('x2', x + 65);
-            line.setAttribute('y2', y + 40);
-            line.setAttribute('class', 'line');
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+            line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+            line.setAttribute('x2', x+65); line.setAttribute('y2', y+40);
+            line.setAttribute('class','line');
             line.dataset.index = i;
             svg.appendChild(line);
-            
-            // Dot indicador
+
             const dot = document.createElement('div');
             dot.className = 'dot';
             dot.dataset.index = i;
@@ -512,27 +355,59 @@
         });
     }
 
+    /* ── MÓVIL: grid de tarjetas ── */
+    function initMobile() {
+        const grid    = document.getElementById('mobileGrid');
+        const mRef    = document.getElementById('mobileRef');
+        grid.innerHTML = '';
+        grid.style.display = 'grid';
+        mRef.style.display = 'block';
+
+        properties.forEach((prop, i) => {
+            const card = document.createElement('div');
+            card.className = 'mobile-card';
+            card.dataset.color = prop.id;
+            card.innerHTML = `
+                <div class="m-icon">${prop.icon}</div>
+                <div class="m-name">${prop.name}</div>
+                <div class="m-formula">${prop.formula}</div>`;
+            card.onclick = () => openModal(i);
+            grid.appendChild(card);
+        });
+    }
+
+    /* ── Inicializar según pantalla ── */
+    function init() {
+        if (isMobile()) {
+            initMobile();
+        } else {
+            initDesktop();
+        }
+    }
+
     function openModal(index) {
         currentIndex = index;
         visited.add(index);
         const prop = properties[index];
-        
-        // Actualizar UI
-        document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
-        document.querySelectorAll('.line').forEach(l => l.classList.remove('active'));
-        document.querySelectorAll('.dot').forEach((d, i) => {
-            d.classList.toggle('active', i === index);
-            d.classList.toggle('visited', visited.has(i));
-        });
-        
-        document.querySelector(`.node[data-index="${index}"]`).classList.add('active');
-        document.querySelector(`.line[data-index="${index}"]`).classList.add('active');
-        
-        // Llenar modal
-        document.getElementById('modalIcon').textContent = prop.icon;
-        document.getElementById('modalTitle').textContent = prop.name;
+
+        // Actualizar nodos/dots desktop si aplica
+        if (!isMobile()) {
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.line').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.classList.toggle('active',   i === index);
+                d.classList.toggle('visited',  visited.has(i));
+            });
+            const activeNode = document.querySelector(`.node[data-index="${index}"]`);
+            const activeLine = document.querySelector(`.line[data-index="${index}"]`);
+            if (activeNode) activeNode.classList.add('active');
+            if (activeLine) activeLine.classList.add('active');
+        }
+
+        document.getElementById('modalIcon').textContent    = prop.icon;
+        document.getElementById('modalTitle').textContent   = prop.name;
         document.getElementById('modalFormula').textContent = prop.formula;
-        document.getElementById('modalContent').innerHTML = `
+        document.getElementById('modalContent').innerHTML   = `
             <div class="modal-section">
                 <h3>Descripción</h3>
                 <p>${prop.desc}</p>
@@ -544,34 +419,39 @@
             <div class="modal-section">
                 <h3>Aplicación</h3>
                 <p>Esta propiedad permite simplificar el cálculo de límites complejos descomponiéndolos en operaciones más simples.</p>
-            </div>
-        `;
-        
+            </div>`;
+
         document.getElementById('modal').classList.add('active');
     }
 
     function closeModal() {
         document.getElementById('modal').classList.remove('active');
-        document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
-        document.querySelectorAll('.line').forEach(l => l.classList.remove('active'));
+        if (!isMobile()) {
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.line').forEach(l => l.classList.remove('active'));
+        }
     }
 
-    // Cerrar al hacer clic fuera
-    document.getElementById('modal').addEventListener('click', (e) => {
+    document.getElementById('modal').addEventListener('click', e => {
         if (e.target.id === 'modal') closeModal();
     });
 
-    // Teclado
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
         if (e.key === 'Escape') closeModal();
         if (document.getElementById('modal').classList.contains('active')) {
             if (e.key === 'ArrowRight') openModal((currentIndex + 1) % 10);
-            if (e.key === 'ArrowLeft') openModal((currentIndex - 1 + 10) % 10);
+            if (e.key === 'ArrowLeft')  openModal((currentIndex - 1 + 10) % 10);
         }
+    });
+
+    // Re-inicializar si cambia el tamaño
+    let lastMobile = isMobile();
+    window.addEventListener('resize', () => {
+        const nowMobile = isMobile();
+        if (nowMobile !== lastMobile) { lastMobile = nowMobile; init(); }
     });
 
     init();
 </script>
-
 </body>
 </html>
