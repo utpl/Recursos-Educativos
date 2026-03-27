@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escalabilidad en Servidores · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #f2ede4;
+  --white: #ffffff;
+  --ink:   #111820;
+  --ink2:  #2e3a48;
+  --muted: #7a8a98;
+  --sand:  #ddd4c0;
+
+  --ca: #c85010;   /* Arquitectura A — naranja */
+  --cb: #1560a0;   /* Arquitectura B — azul */
+  --cg: #1a7048;   /* green accent */
+  --warn: #b82020; /* warning red */
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  overflow-x: hidden;
+}
+
+/* ══ HEADER ══ */
+.hdr {
+  background: var(--ink);
+  padding: 18px 26px 16px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.hdr-left h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 800;
+  color: #fff; line-height: 1.2;
+}
+.hdr-left h1 span { color: #f0c060; }
+.hdr-left p { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 3px; }
+.hdr-right {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+}
+.chip {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.6);
+  font-size: 9px; font-weight: 600;
+  letter-spacing: .7px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ══ PROGRESS BAR ══ */
+.progress-bar {
+  background: #e8e0d0;
+  height: 4px;
+  display: flex;
+}
+.progress-seg {
+  height: 100%;
+  flex: 1;
+  background: var(--sand);
+  transition: background .3s;
+  border-right: 2px solid var(--bg);
+}
+.progress-seg.done { background: var(--ink); }
+.progress-seg.active { background: #f0c060; }
+
+/* ══ SLIDE VIEWPORT ══ */
+.viewport {
+  overflow: hidden;
+  position: relative;
+}
+.track {
+  display: flex;
+  transition: transform .4s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+}
+.slide {
+  min-width: 800px;
+  width: 800px;
+  flex-shrink: 0;
+  padding: 26px 28px 24px;
+  min-height: 480px;
+}
+
+/* ══ SLIDE TITLES ══ */
+.slide-eyebrow {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.slide-eyebrow::after {
+  content: ''; flex: 1; height: 1px; background: var(--sand);
+}
+.slide-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 800;
+  line-height: 1.2; margin-bottom: 18px;
+  letter-spacing: -.2px;
+}
+
+/* ══ SLIDE 0 — INTRO ══ */
+.s0-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 4px;
+}
+.s0-card {
+  background: var(--white);
+  border-radius: 14px;
+  border: 1.5px solid var(--sand);
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.s0-card p {
+  font-size: 11.5px; color: var(--ink2); line-height: 1.75;
+}
+.s0-card.full { grid-column: 1 / -1; }
+.hint {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--ink); color: #f0c060;
+  font-size: 9.5px; font-weight: 600;
+  padding: 5px 14px; border-radius: 20px; margin-top: 16px;
+}
+
+/* ══ SLIDE 1 — PLANTEAMIENTO ══ */
+.scenario-box {
+  background: var(--white);
+  border-radius: 16px;
+  border: 1.5px solid var(--sand);
+  padding: 18px 20px;
+  box-shadow: 0 2px 14px rgba(0,0,0,.06);
+}
+.scenario-box p {
+  font-size: 11.5px; color: var(--ink2); line-height: 1.8;
+  margin-bottom: 10px;
+}
+.scenario-box p:last-child { margin-bottom: 0; }
+.alert-box {
+  background: #fff5f0;
+  border: 1.5px solid #f0a080;
+  border-radius: 12px;
+  padding: 13px 16px;
+  margin-top: 14px;
+  display: flex; gap: 11px; align-items: flex-start;
+}
+.alert-box p { font-size: 11px; color: #7a2010; line-height: 1.7; margin: 0; }
+
+/* ══ SLIDE 2 — MODELOS ══ */
+.models-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 4px;
+}
+.model-card {
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+  border: 2px solid transparent;
+}
+.model-card.ca {
+  background: #fff6f0;
+  border-color: #f0a070;
+}
+.model-card.cb {
+  background: #f0f5ff;
+  border-color: #80b0e0;
+}
+.model-top {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.model-badge {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 800;
+  padding: 3px 10px; border-radius: 8px; color: #fff;
+}
+.model-name { font-size: 11px; font-weight: 700; line-height: 1.3; }
+.model-formula {
+  font-family: 'Courier New', monospace;
+  font-size: 17px; font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.model-desc {
+  font-size: 10.5px; color: var(--ink2); line-height: 1.7;
+}
+
+/* ══ SLIDE 3 — EVALUACIÓN ══ */
+.eval-intro {
+  font-size: 11.5px; color: var(--ink2); line-height: 1.75;
+  background: var(--white);
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--sand);
+  margin-bottom: 16px;
+}
+.eval-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.eval-card {
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+.eval-card.ca { background: #fff6f0; border: 1.5px solid #f0a070; }
+.eval-card.cb { background: #f0f5ff; border: 1.5px solid #80b0e0; }
+.eval-label {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.eval-formula {
+  font-family: 'Courier New', monospace;
+  font-size: 12px; margin-bottom: 8px;
+  color: var(--ink2);
+}
+.eval-result {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px; font-weight: 800;
+  line-height: 1;
+}
+.eval-unit { font-size: 11px; font-weight: 500; opacity: .6; margin-top: 3px; }
+.eval-verdict {
+  margin-top: 14px;
+  background: #fffbef;
+  border: 1.5px solid #e8c060;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 11px; color: #5a4010; line-height: 1.7;
+  grid-column: 1 / -1;
+}
+.eval-verdict strong { color: #3a2808; }
+
+/* ══ SLIDE 4 — CONCLUSIÓN ══ */
+.concl-main {
+  background: var(--ink);
+  border-radius: 16px;
+  padding: 22px 22px 20px;
+  margin-bottom: 14px;
+  display: flex; gap: 18px; align-items: flex-start;
+}
+.concl-main p {
+  font-size: 12px; color: rgba(255,255,255,.85); line-height: 1.8;
+}
+.concl-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.concl-pill {
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.concl-pill.ca {
+  background: #fff6f0; border: 1.5px solid #f0a070;
+}
+.concl-pill.cb {
+  background: #f0f5ff; border: 1.5px solid #80b0e0;
+}
+.cp-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.cp-text {
+  font-size: 11px; color: var(--ink2); line-height: 1.65;
+}
+
+/* ══ BOTTOM NAV ══ */
+.bnav {
+  background: var(--white);
+  border-top: 1.5px solid var(--sand);
+  padding: 12px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+}
+.bnav-btn {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--sand); background: var(--white);
+  border-radius: 10px; padding: 8px 18px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 600; color: var(--ink2);
+  cursor: pointer; transition: all .2s;
+  white-space: nowrap;
+}
+.bnav-btn:hover:not(:disabled) {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+.bnav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.bnav-center {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.slide-label {
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  letter-spacing: .3px; white-space: nowrap;
+}
+.dots { display: flex; gap: 7px; }
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--sand); cursor: pointer;
+  transition: background .25s, transform .25s;
+}
+.dot.active { background: var(--ink); transform: scale(1.5); }
+
+/* ══ FOOTER ══ */
+.foot {
+  background: var(--ink);
+  padding: 8px 26px;
+  font-size: 9px; color: rgba(255,255,255,.3);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 4px;
+}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 600px) {
+  body { width: 100%; }
+  .slide { min-width: 100vw; width: 100vw; padding: 18px 16px 20px; min-height: unset; }
+  .hdr { padding: 14px 16px 12px; }
+  .hdr-left h1 { font-size: 14px; }
+  .slide-title { font-size: 17px; }
+  .s0-grid { grid-template-columns: 1fr; }
+  .models-grid { grid-template-columns: 1fr; }
+  .eval-grid { grid-template-columns: 1fr; }
+  .eval-verdict { grid-column: 1; }
+  .concl-row { grid-template-columns: 1fr; }
+  .concl-main { flex-direction: column; gap: 10px; }
+  .bnav { padding: 10px 14px; }
+  .bnav-btn { padding: 7px 12px; font-size: 10px; }
+  .foot { padding: 7px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>Análisis de escalabilidad en<br><span>arquitecturas de servidores</span></h1>
+    <p>Cálculo Diferencial · MATE_2037 · Semana 7 · Katty Rohoden</p>
+  </div>
+  <div class="hdr-right">
+    <div class="chip">Semana 7</div>
+    <div class="chip">MATE_2037</div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="progBar">
+  <div class="progress-seg active" id="seg0"></div>
+  <div class="progress-seg" id="seg1"></div>
+  <div class="progress-seg" id="seg2"></div>
+  <div class="progress-seg" id="seg3"></div>
+  <div class="progress-seg" id="seg4"></div>
+</div>
+
+<!-- SLIDES -->
+<div class="viewport">
+  <div class="track" id="track">
+
+    <!-- ══ SLIDE 0: INTRODUCCIÓN ══ -->
+    <div class="slide">
+      <div class="slide-eyebrow">Presentación · 1 de 5</div>
+      <div class="slide-title">¿De qué trata este análisis?</div>
+      <div class="s0-grid">
+        <div class="s0-card full">
+          <p>La escalabilidad de sistemas depende de cómo crece el tiempo de respuesta ante el aumento de usuarios, más que del rendimiento inicial observado. A continuación, se presenta un análisis comparativo que evidencia implicaciones para decisiones de diseño.</p>
+        </div>
+        <div class="s0-card" style="border-left:4px solid var(--ca)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--ca);margin-bottom:8px">Arquitectura A</div>
+          <p>Procesamiento en cola · Crecimiento <strong>lineal</strong></p>
+        </div>
+        <div class="s0-card" style="border-left:4px solid var(--cb)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--cb);margin-bottom:8px">Arquitectura B</div>
+          <p>Procesamiento paralelo sin control · Crecimiento <strong>cuadrático</strong></p>
+        </div>
+      </div>
+      <div class="hint">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <circle cx="5.5" cy="5.5" r="5" stroke="#f0c060" stroke-width="1.2"/>
+          <path d="M5.5 3.5v3M5.5 7.8v.2" stroke="#f0c060" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Haga clic en los temas para visualizar la información
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 1: PLANTEAMIENTO ══ -->
+    <div class="slide">
+      <div class="slide-eyebrow">Planteamiento · 2 de 5</div>
+      <div class="slide-title">Planteamiento de la situación</div>
+      <div class="scenario-box">
+        <p>En el diseño de centros de datos, un ingeniero debe decidir entre dos algoritmos de balanceo de carga para procesar peticiones simultáneas.</p>
+        <p>La elección incorrecta puede parecer funcional durante las pruebas con pocos usuarios, pero provocar una denegación de servicio (colapso) cuando el tráfico aumenta en producción.</p>
+      </div>
+      <div class="alert-box">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style="flex-shrink:0;margin-top:1px">
+          <path d="M11 2L2 19h18L11 2z" stroke="#c85010" stroke-width="1.8" fill="#fff5f0" stroke-linejoin="round"/>
+          <path d="M11 9v5" stroke="#c85010" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="11" cy="16.5" r="1" fill="#c85010"/>
+        </svg>
+        <p>Una arquitectura que parece óptima en pruebas con pocos usuarios puede colapsar en producción. El análisis de límites revela el comportamiento real a escala.</p>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 2: MODELOS ══ -->
+    <div class="slide">
+      <div class="slide-eyebrow">Modelos · 3 de 5</div>
+      <div class="slide-title">Definición de los modelos de costo</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:16px">Se han modelado experimentalmente los tiempos de respuesta (en milisegundos) para dos arquitecturas en función del número de usuarios:</p>
+      <div class="models-grid">
+        <div class="model-card ca">
+          <div class="model-top">
+            <div class="model-badge" style="background:var(--ca)">A</div>
+            <div class="model-name" style="color:var(--ca)">Procesamiento en cola</div>
+          </div>
+          <div class="model-formula" style="background:#fff0e8;color:var(--ca)">f(n) = 50n + 5000</div>
+          <div class="model-desc">Tiene un tiempo de inicio alto (overhead) debido a la configuración de seguridad, pero procesa cada petición de manera secuencial y constante.</div>
+        </div>
+        <div class="model-card cb">
+          <div class="model-top">
+            <div class="model-badge" style="background:var(--cb)">B</div>
+            <div class="model-name" style="color:var(--cb)">Procesamiento paralelo sin control</div>
+          </div>
+          <div class="model-formula" style="background:#e8f0ff;color:var(--cb)">g(n) = 2n²</div>
+          <div class="model-desc">Tiene un inicio muy rápido, pero sufre de contención de recursos (bloqueos) que hacen que el tiempo crezca cuadráticamente a medida que se suman usuarios.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 3: EVALUACIÓN ══ -->
+    <div class="slide">
+      <div class="slide-eyebrow">Evaluación · 4 de 5</div>
+      <div class="slide-title">Evaluación aritmética — la trampa de los datos pequeños</div>
+      <div class="eval-intro">Si se evalúa el rendimiento para una carga baja, por ejemplo, <strong>n = 10 usuarios</strong>:</div>
+      <div class="eval-grid">
+        <div class="eval-card ca">
+          <div class="eval-label" style="color:var(--ca)">Arquitectura A</div>
+          <div class="eval-formula">f(10) = 50(10) + 5000</div>
+          <div class="eval-result" style="color:var(--ca)">5 500</div>
+          <div class="eval-unit">ms · 5.5 segundos</div>
+        </div>
+        <div class="eval-card cb">
+          <div class="eval-label" style="color:var(--cb)">Arquitectura B</div>
+          <div class="eval-formula">g(10) = 2(10)²</div>
+          <div class="eval-result" style="color:var(--cb)">200</div>
+          <div class="eval-unit">ms · 0.2 segundos</div>
+        </div>
+        <div class="eval-verdict">
+          En una prueba inicial, la Arquitectura B parece superior, siendo <strong>27 veces más rápida</strong> que la A. Un análisis superficial sugeriría implementar B.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 4: CONCLUSIÓN ══ -->
+    <div class="slide">
+      <div class="slide-eyebrow">Conclusión · 5 de 5</div>
+      <div class="slide-title">Conclusión del análisis</div>
+      <div class="concl-main">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" style="flex-shrink:0">
+          <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,.08)"/>
+          <path d="M10 32 Q16 18 21 16 Q26 14 32 10" stroke="#f0c060" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <path d="M10 22 Q16 28 21 28 Q26 28 32 32" stroke="rgba(255,255,255,.3)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-dasharray="4 3"/>
+          <circle cx="21" cy="16" r="3.5" fill="#f0c060"/>
+        </svg>
+        <p>Aunque la Arquitectura B es más rápida para prototipos o microservicios (menos de 60 usuarios), la Arquitectura A es la única opción viable para una aplicación masiva de analítica de datos, ya que su crecimiento lineal garantiza estabilidad a largo plazo.</p>
+      </div>
+      <div class="concl-row">
+        <div class="concl-pill ca">
+          <div class="cp-label" style="color:var(--ca)">✓ Arquitectura A — Recomendada a escala</div>
+          <div class="cp-text">Crecimiento lineal · Estable para grandes volúmenes · Viable para aplicaciones masivas</div>
+        </div>
+        <div class="concl-pill cb">
+          <div class="cp-label" style="color:var(--cb)">△ Arquitectura B — Solo para prototipos</div>
+          <div class="cp-text">Crecimiento cuadrático · Colapsa con muchos usuarios · Adecuada para menos de 60 usuarios</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /track -->
+</div><!-- /viewport -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="bnav-btn" id="btnP" onclick="prev()" disabled>
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <path d="M8 10L4 6.5 8 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Anterior
+  </button>
+
+  <div class="bnav-center">
+    <div class="dots" id="dots"></div>
+    <div class="slide-label" id="slideLabel">Introducción</div>
+  </div>
+
+  <button class="bnav-btn" id="btnN" onclick="next()">
+    Siguiente
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <path d="M5 3l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Elaboración propia. · Rohoden, K. (2025). <em>Análisis de escalabilidad en arquitecturas de servidores.</em> UTPL.</span>
+  <span>S7 · MATE_2037</span>
+</div>
+
+<script>
+const LABELS = [
+  'Introducción',
+  'Planteamiento de la situación',
+  'Definición de los modelos de costo',
+  'Evaluación aritmética',
+  'Conclusión'
+];
+const N = 5;
+let cur = 0;
+let slideW = 800; // default, recalculated on resize
+
+/* Build dots */
+const dotsEl = document.getElementById('dots');
+for (let i = 0; i < N; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => go(i);
+  dotsEl.appendChild(d);
+}
+
+function getSlideWidth() {
+  return document.querySelector('.slide').offsetWidth;
+}
+
+function go(idx) {
+  cur = idx;
+  slideW = getSlideWidth();
+  document.getElementById('track').style.transform = `translateX(-${cur * slideW}px)`;
+
+  // dots
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+
+  // progress
+  for (let i = 0; i < N; i++) {
+    const seg = document.getElementById('seg' + i);
+    if (i < cur) { seg.className = 'progress-seg done'; }
+    else if (i === cur) { seg.className = 'progress-seg active'; }
+    else { seg.className = 'progress-seg'; }
+  }
+
+  // label
+  document.getElementById('slideLabel').textContent = LABELS[cur];
+
+  // buttons
+  document.getElementById('btnP').disabled = cur === 0;
+  document.getElementById('btnN').disabled = cur === N - 1;
+}
+
+function prev() { if (cur > 0) go(cur - 1); }
+function next() { if (cur < N - 1) go(cur + 1); }
+
+// keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft') prev();
+});
+
+// recalculate on resize (important for mobile)
+window.addEventListener('resize', () => {
+  slideW = getSlideWidth();
+  document.getElementById('track').style.transition = 'none';
+  document.getElementById('track').style.transform = `translateX(-${cur * slideW}px)`;
+  requestAnimationFrame(() => {
+    document.getElementById('track').style.transition = '';
+  });
+});
+
+// swipe support
+let startX = 0;
+const vp = document.querySelector('.viewport');
+vp.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+vp.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - startX;
+  if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+});
+</script>
+</body>
+</html>
