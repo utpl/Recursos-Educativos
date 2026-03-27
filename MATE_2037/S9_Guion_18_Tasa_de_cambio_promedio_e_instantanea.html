@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasa de Cambio · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #f4efe6;
+  --white:  #ffffff;
+  --ink:    #14100a;
+  --ink2:   #362a18;
+  --muted:  #8a7a62;
+  --sand:   #ddd0b8;
+
+  --cp:  #1a5e8a;   /* promedio — azul */
+  --cp2: #e8f3fb;
+  --ci:  #8a3800;   /* instantánea — terracota */
+  --ci2: #faf0e8;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--ink);
+  padding: 18px 26px 16px;
+}
+.hdr-top {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 10px;
+}
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.55);
+  font-size: 9px; font-weight: 600; letter-spacing: .7px;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+}
+.hdr h1 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 20px; font-weight: 700; color: #fff;
+  line-height: 1.2; letter-spacing: -.2px;
+}
+.hdr h1 em { color: #f0c060; font-style: normal; }
+.hdr-sub { font-size: 10px; color: rgba(255,255,255,.38); margin-top: 4px; }
+
+/* ── INTRO ── */
+.intro {
+  background: var(--white);
+  border-bottom: 1.5px solid var(--sand);
+  padding: 12px 26px;
+  display: flex; align-items: flex-start; gap: 13px;
+}
+.intro p { font-size: 11px; color: var(--ink2); line-height: 1.75; flex: 1; }
+.hint-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--ink); color: #f0c060;
+  font-size: 9.5px; font-weight: 600;
+  padding: 3px 12px; border-radius: 20px; margin-top: 8px;
+  width: fit-content;
+}
+
+/* ── COLUMN HEADERS ── */
+.col-hdrs {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px 1fr;
+  gap: 0;
+  padding: 0 14px;
+  margin-top: 16px; margin-bottom: 8px;
+}
+.col-hdr {
+  border-radius: 12px 12px 0 0;
+  padding: 12px 16px 10px;
+  text-align: center;
+}
+.col-hdr-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.col-hdr-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 14px; font-weight: 700; line-height: 1.2;
+}
+.col-hdr-formula {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 16px; font-weight: 700; margin-top: 4px;
+}
+.col-sep {
+  display: flex; align-items: center; justify-content: center;
+}
+.vs-badge {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--ink); color: #f0c060;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  border: 2px solid rgba(255,255,255,.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+
+/* ── ROWS ── */
+.rows { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 8px; }
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  gap: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.07);
+  transition: box-shadow .2s, transform .2s;
+}
+.row:hover { box-shadow: 0 6px 20px rgba(0,0,0,.14); transform: translateY(-2px); }
+
+.cell {
+  padding: 14px 16px;
+  font-size: 11.5px; line-height: 1.65; color: var(--ink2);
+}
+.cell-p { background: var(--cp2); border-right: 1px solid rgba(26,94,138,.12); }
+.cell-i { background: var(--ci2); border-left:  1px solid rgba(138,56,0,.12); }
+
+.cell-label {
+  font-size: 8px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; margin-bottom: 4px; display: block;
+  opacity: .6;
+}
+.cell-val { font-size: 12px; font-weight: 600; }
+
+.row-mid {
+  background: #fff;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; padding: 8px 4px;
+}
+.row-icon { opacity: .3; }
+.row-num {
+  font-size: 8px; font-weight: 700; color: var(--muted);
+  letter-spacing: .5px;
+}
+
+/* row topic label — full-width bar above each row */
+.row-topic {
+  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--muted);
+  padding: 6px 0 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.row-topic::before, .row-topic::after {
+  content: ''; flex: 1; height: 1px; background: var(--sand);
+}
+
+/* ── MODAL ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(14,10,4,.55);
+  backdrop-filter: blur(5px);
+  z-index: 100; display: flex;
+  align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none;
+  transition: opacity .22s;
+}
+.overlay.open { opacity: 1; pointer-events: auto; }
+.modal {
+  background: var(--white); border-radius: 20px;
+  width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.28);
+  transform: translateY(12px) scale(.97);
+  transition: transform .22s; position: relative;
+}
+.overlay.open .modal { transform: none; }
+.modal-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg); border: 1.5px solid var(--sand);
+  font-size: 15px; cursor: pointer; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--sand); }
+
+.modal-body { padding: 22px 24px 26px; }
+.modal-topic {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+.modal-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--ink); margin-bottom: 18px; line-height: 1.2;
+}
+
+.modal-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.mc {
+  border-radius: 14px; padding: 16px;
+  border: 1.5px solid transparent;
+}
+.mc-p { background: var(--cp2); border-color: rgba(26,94,138,.2); }
+.mc-i { background: var(--ci2); border-color: rgba(138,56,0,.2); }
+
+.mc-hdr {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.mc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mc-name { font-size: 10px; font-weight: 700; }
+.mc-val { font-size: 13px; font-weight: 600; line-height: 1.5; }
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  background: var(--white); border-top: 1.5px solid var(--sand);
+  padding: 10px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.bnav-info { font-size: 10px; color: var(--muted); font-weight: 600; }
+.ndots { display: flex; gap: 6px; }
+.ndot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--sand); cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.ndot.active { transform: scale(1.5); background: var(--ink); }
+.bnav-btns { display: flex; gap: 7px; }
+.nb {
+  border: 1.5px solid var(--sand); background: var(--white);
+  border-radius: 8px; padding: 5px 13px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px; font-weight: 600; color: var(--ink2);
+  cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; gap: 5px;
+}
+.nb:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+/* ── FOOTER ── */
+.foot {
+  background: var(--ink); padding: 7px 26px;
+  font-size: 9px; color: rgba(255,255,255,.3);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 580px) {
+  body { width: 100%; }
+  .hdr { padding: 13px 16px 13px; }
+  .hdr h1 { font-size: 16px; }
+  .intro { padding: 10px 16px; flex-direction: column; gap: 6px; }
+  .col-hdrs { grid-template-columns: 1fr 32px 1fr; padding: 0 10px; }
+  .col-hdr-title { font-size: 12px; }
+  .col-hdr-formula { font-size: 14px; }
+  .rows { padding: 0 10px 12px; gap: 6px; }
+  .row { grid-template-columns: 1fr 32px 1fr; }
+  .cell { padding: 11px 12px; font-size: 11px; }
+  .cell-val { font-size: 11px; }
+  .modal-compare { grid-template-columns: 1fr; }
+  .bnav { padding: 9px 14px; }
+  .foot { padding: 7px 16px; }
+  .vs-badge { width: 28px; height: 28px; font-size: 8.5px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div>
+      <h1>Tasa de cambio<br><em>promedio e instantánea</em></h1>
+      <div class="hdr-sub">Cálculo Diferencial · MATE_2037 · Semana 9 · Katty Rohoden</div>
+    </div>
+    <div class="chips">
+      <div class="chip">Semana 9</div>
+      <div class="chip">Infografía</div>
+    </div>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div class="intro">
+  <div>
+    <p>El análisis de variación permite distinguir entre cambios medidos en intervalos y cambios en instantes específicos, fundamentales para modelar sistemas dinámicos. A continuación, se comparan ambas tasas desde perspectivas matemática, geométrica y aplicada.</p>
+    <div class="hint-pill">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <circle cx="5" cy="5" r="4.5" stroke="#f0c060" stroke-width="1"/>
+        <path d="M5 3v3M5 7.2v.3" stroke="#f0c060" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      Haga clic en los temas para visualizar la información
+    </div>
+  </div>
+</div>
+
+<!-- COLUMN HEADERS -->
+<div class="col-hdrs">
+  <!-- left side: promedio -->
+  <div style="grid-column:2">
+    <div class="col-hdr" style="background:var(--cp2);border:2px solid rgba(26,94,138,.25)">
+      <div class="col-hdr-label" style="color:var(--cp)">Tasa de cambio</div>
+      <div class="col-hdr-title" style="color:var(--cp)">Promedio</div>
+      <div class="col-hdr-formula" style="color:var(--cp)">Δy/Δx</div>
+    </div>
+  </div>
+
+  <!-- VS separator -->
+  <div class="col-sep">
+    <div class="vs-badge">VS</div>
+  </div>
+
+  <!-- right side: instantánea -->
+  <div>
+    <div class="col-hdr" style="background:var(--ci2);border:2px solid rgba(138,56,0,.25)">
+      <div class="col-hdr-label" style="color:var(--ci)">Tasa de cambio</div>
+      <div class="col-hdr-title" style="color:var(--ci)">Instantánea</div>
+      <div class="col-hdr-formula" style="color:var(--ci)">dy/dx</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROWS -->
+<div class="rows" id="rows">
+
+  <!-- ROW 0: Herramienta matemática -->
+  <div class="row-topic">Herramienta matemática</div>
+  <div class="row" onclick="openModal(0)">
+    <div class="cell cell-p">
+      <span class="cell-label" style="color:var(--cp)">T. C. Promedio</span>
+      <div class="cell-val">Pendiente (álgebra)</div>
+    </div>
+    <div class="row-mid">
+      <div class="row-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="1" y="1" width="16" height="16" rx="3" stroke="#c0a880" stroke-width="1.2"/>
+          <line x1="5" y1="9" x2="13" y2="9" stroke="#c0a880" stroke-width="1.2"/>
+          <line x1="9" y1="5" x2="9" y2="13" stroke="#c0a880" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="row-num">01</div>
+    </div>
+    <div class="cell cell-i">
+      <span class="cell-label" style="color:var(--ci)">T. C. Instantánea</span>
+      <div class="cell-val">Derivada (cálculo)</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Interpretación geométrica -->
+  <div class="row-topic">Interpretación geométrica</div>
+  <div class="row" onclick="openModal(1)">
+    <div class="cell cell-p">
+      <span class="cell-label" style="color:var(--cp)">T. C. Promedio</span>
+      <div class="cell-val">Pendiente de la recta secante</div>
+    </div>
+    <div class="row-mid">
+      <div class="row-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M2 14 Q5 10 9 8 Q13 6 16 4" stroke="#c0a880" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <circle cx="9" cy="8" r="2" fill="none" stroke="#c0a880" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="row-num">02</div>
+    </div>
+    <div class="cell cell-i">
+      <span class="cell-label" style="color:var(--ci)">T. C. Instantánea</span>
+      <div class="cell-val">Pendiente de la recta tangente</div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Dominio de aplicación -->
+  <div class="row-topic">Dominio de aplicación</div>
+  <div class="row" onclick="openModal(2)">
+    <div class="cell cell-p">
+      <span class="cell-label" style="color:var(--cp)">T. C. Promedio</span>
+      <div class="cell-val">Intervalo de tiempo [t₁, t₂]</div>
+    </div>
+    <div class="row-mid">
+      <div class="row-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <line x1="2" y1="9" x2="16" y2="9" stroke="#c0a880" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="5" cy="9" r="2" fill="none" stroke="#c0a880" stroke-width="1.2"/>
+          <circle cx="13" cy="9" r="2" fill="none" stroke="#c0a880" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="row-num">03</div>
+    </div>
+    <div class="cell cell-i">
+      <span class="cell-label" style="color:var(--ci)">T. C. Instantánea</span>
+      <div class="cell-val">Instante de tiempo t₁</div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Fórmula -->
+  <div class="row-topic">Fórmula</div>
+  <div class="row" onclick="openModal(3)">
+    <div class="cell cell-p" style="text-align:center">
+      <span class="cell-label" style="color:var(--cp)">T. C. Promedio</span>
+      <div class="cell-val" style="font-family:'IBM Plex Serif',serif;font-size:20px;margin-top:2px">Δy / Δx</div>
+    </div>
+    <div class="row-mid">
+      <div class="row-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M4 14L14 4" stroke="#c0a880" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M4 9h10" stroke="#c0a880" stroke-width="1.2" stroke-linecap="round" opacity=".4"/>
+        </svg>
+      </div>
+      <div class="row-num">04</div>
+    </div>
+    <div class="cell cell-i" style="text-align:center">
+      <span class="cell-label" style="color:var(--ci)">T. C. Instantánea</span>
+      <div class="cell-val" style="font-family:'IBM Plex Serif',serif;font-size:20px;margin-top:2px">dy / dx</div>
+    </div>
+  </div>
+
+  <!-- ROW 4: Uso en redes -->
+  <div class="row-topic">Uso en redes</div>
+  <div class="row" onclick="openModal(4)">
+    <div class="cell cell-p">
+      <span class="cell-label" style="color:var(--cp)">T. C. Promedio</span>
+      <div class="cell-val">Reportes históricos, facturación.</div>
+    </div>
+    <div class="row-mid">
+      <div class="row-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="2" y="11" width="3" height="5" rx="1" fill="#c0a880"/>
+          <rect x="7" y="7"  width="3" height="9" rx="1" fill="#c0a880"/>
+          <rect x="12" y="3" width="3" height="13" rx="1" fill="#c0a880"/>
+        </svg>
+      </div>
+      <div class="row-num">05</div>
+    </div>
+    <div class="cell cell-i">
+      <span class="cell-label" style="color:var(--ci)">T. C. Instantánea</span>
+      <div class="cell-val">Detección de anomalías en tiempo real.</div>
+    </div>
+  </div>
+
+</div><!-- /rows -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <div class="bnav-info" id="bnavInfo">Seleccione una fila</div>
+  <div class="ndots" id="ndots"></div>
+  <div class="bnav-btns">
+    <button class="nb" onclick="navPrev()">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+        <path d="M7 9L3 5.5 7 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="nb" onclick="navNext()">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+        <path d="M4 2l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Elaboración propia con ayuda de Gemini. · Rohoden, K. (2025). <em>Tasa de cambio promedio e instantánea.</em> UTPL.</span>
+  <span>S9 · MATE_2037</span>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-body">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-topic" id="mTopic"></div>
+      <div class="modal-title" id="mTitle"></div>
+      <div class="modal-compare" id="mCompare"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ROWS = [
+  {
+    topic: 'Herramienta matemática',
+    title: 'Herramienta matemática',
+    p: 'Pendiente (álgebra)',
+    i: 'Derivada (cálculo)'
+  },
+  {
+    topic: 'Interpretación geométrica',
+    title: 'Interpretación geométrica',
+    p: 'Pendiente de la recta secante',
+    i: 'Pendiente de la recta tangente'
+  },
+  {
+    topic: 'Dominio de aplicación',
+    title: 'Dominio de aplicación',
+    p: 'Intervalo de tiempo [t₁, t₂]',
+    i: 'Instante de tiempo t₁'
+  },
+  {
+    topic: 'Fórmula',
+    title: 'Fórmula',
+    p: 'Δy / Δx',
+    i: 'dy / dx',
+    pBig: true, iBig: true
+  },
+  {
+    topic: 'Uso en redes',
+    title: 'Uso en redes',
+    p: 'Reportes históricos, facturación.',
+    i: 'Detección de anomalías en tiempo real.'
+  }
+];
+
+let active = -1;
+
+/* Build dots */
+const dotsEl = document.getElementById('ndots');
+ROWS.forEach((r, i) => {
+  const d = document.createElement('div');
+  d.className = 'ndot';
+  d.onclick = () => openModal(i);
+  dotsEl.appendChild(d);
+});
+
+function openModal(idx) {
+  active = idx;
+  const r = ROWS[idx];
+
+  document.getElementById('mTopic').textContent = r.topic;
+  document.getElementById('mTitle').textContent = r.title;
+
+  const valStyle = r.pBig
+    ? 'font-family:"IBM Plex Serif",serif;font-size:26px;font-weight:700;margin-top:4px'
+    : 'font-size:13px;font-weight:600;line-height:1.6;margin-top:4px';
+  const valStyleI = r.iBig
+    ? 'font-family:"IBM Plex Serif",serif;font-size:26px;font-weight:700;margin-top:4px'
+    : 'font-size:13px;font-weight:600;line-height:1.6;margin-top:4px';
+
+  document.getElementById('mCompare').innerHTML = `
+    <div class="mc mc-p">
+      <div class="mc-hdr">
+        <div class="mc-dot" style="background:#1a5e8a"></div>
+        <div class="mc-name" style="color:#1a5e8a">Tasa de cambio promedio</div>
+      </div>
+      <div class="mc-val" style="${valStyle};color:#1a3a5a">${r.p}</div>
+    </div>
+    <div class="mc mc-i">
+      <div class="mc-hdr">
+        <div class="mc-dot" style="background:#8a3800"></div>
+        <div class="mc-name" style="color:#8a3800">Tasa de cambio instantánea</div>
+      </div>
+      <div class="mc-val" style="${valStyleI};color:#5a2000">${r.i}</div>
+    </div>`;
+
+  /* dots */
+  document.querySelectorAll('.ndot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+
+  document.getElementById('bnavInfo').textContent = r.topic;
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('overlay') &&
+      !e.target.classList.contains('modal-close')) return;
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function navPrev() { openModal(active <= 0 ? ROWS.length - 1 : active - 1); }
+function navNext() { openModal(active >= ROWS.length - 1 ? 0 : active + 1); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') navNext();
+  if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  navPrev();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reglas del Producto y Cociente · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #f6f0e6;
+  --white: #ffffff;
+  --ink:   #16100a;
+  --ink2:  #3a2c1a;
+  --muted: #8a7a60;
+  --sand:  #e0ceae;
+  --cp:    #16508a;   /* producto — azul */
+  --cp-l:  #eaf2fb;
+  --cc:    #7a3800;   /* cociente — terracota */
+  --cc-l:  #fbf2ea;
+  --step:  #2a6a40;   /* pasos — verde */
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: linear-gradient(135deg,#120c06 0%,#281c0c 100%);
+  padding: 16px 24px 14px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.hdr h1 {
+  font-family: 'Crimson Pro', serif;
+  font-size: 22px; font-weight: 700;
+  color: #fff; line-height: 1.2;
+}
+.hdr h1 em { color: #f5c060; font-style: normal; }
+.hdr-sub { font-size: 10px; color: rgba(255,255,255,.38); margin-top: 3px; }
+.hdr-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.5); font-size: 9px; font-weight: 600;
+  letter-spacing: .7px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── INTRO ── */
+.intro {
+  background: var(--white); border-bottom: 1.5px solid var(--sand);
+  padding: 11px 24px;
+  display: flex; align-items: center; gap: 13px;
+}
+.intro p { font-size: 11px; color: var(--ink2); line-height: 1.75; flex: 1; }
+.hint-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--ink); color: #f5c060;
+  font-size: 9px; font-weight: 600;
+  padding: 3px 12px; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* ── BOOK LAYOUT ── */
+.book {
+  display: flex;
+  min-height: 560px;
+}
+
+/* Sidebar tabs */
+.tabs {
+  width: 54px;
+  flex-shrink: 0;
+  background: #1a1008;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 10px;
+}
+.tab {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  width: 42px;
+  padding: 14px 8px;
+  border-radius: 8px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .6px; text-transform: uppercase;
+  cursor: pointer;
+  color: rgba(255,255,255,.4);
+  background: transparent;
+  border: none;
+  transition: all .2s;
+  text-align: center;
+  line-height: 1.3;
+}
+.tab:hover { color: rgba(255,255,255,.75); }
+.tab.active-p { color: #fff; background: var(--cp); }
+.tab.active-c { color: #fff; background: var(--cc); }
+
+/* Page area */
+.page-area { flex: 1; overflow: hidden; }
+
+.page {
+  display: none;
+  animation: fadeSlide .25s ease;
+  height: 100%;
+}
+.page.active { display: block; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── PAGE HEADER ── */
+.pg-hdr {
+  padding: 18px 24px 14px;
+  border-bottom: 2px solid;
+  display: flex; align-items: center; gap: 16px;
+}
+.pg-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Crimson Pro', serif;
+  font-size: 22px; font-weight: 700; color: #fff;
+}
+.pg-meta .eyebrow {
+  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.pg-meta .pg-title {
+  font-family: 'Crimson Pro', serif;
+  font-size: 20px; font-weight: 700; line-height: 1.2;
+}
+.pg-meta .pg-intro {
+  font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 4px;
+}
+
+/* ── SECTIONS ── */
+.sections { padding: 16px 24px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+.section {
+  border-radius: 14px; overflow: hidden;
+  border: 1.5px solid var(--sand);
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.sec-hdr {
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; user-select: none;
+  transition: filter .15s;
+}
+.sec-hdr:hover { filter: brightness(.97); }
+.sec-tag {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 20px;
+  flex-shrink: 0;
+}
+.sec-label { font-size: 12px; font-weight: 700; flex: 1; }
+.sec-arr { font-size: 13px; opacity: .35; transition: transform .2s; }
+.section.open .sec-arr { transform: rotate(180deg); }
+
+.sec-body {
+  display: none;
+  border-top: 1.5px solid var(--sand);
+  background: var(--white);
+}
+.section.open .sec-body { display: block; }
+.sec-body-inner { padding: 14px 16px 16px; }
+.sec-body-inner p {
+  font-size: 11.5px; color: var(--ink2); line-height: 1.8; margin-bottom: 10px;
+}
+.sec-body-inner p:last-child { margin-bottom: 0; }
+
+/* Formula block */
+.formula-block {
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 10px 0;
+  text-align: center;
+}
+.formula-block .f-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; opacity: .6; margin-bottom: 8px;
+}
+.formula-block .f-main {
+  font-family: 'Crimson Pro', serif;
+  font-size: 19px; font-weight: 600; line-height: 1.5;
+}
+.formula-block .f-parts {
+  font-size: 10px; color: var(--muted); margin-top: 6px; line-height: 1.6;
+}
+
+/* Exercise steps */
+.ex-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ex-title::after { content: ''; flex: 1; height: 1px; background: var(--sand); }
+
+.steps-list { display: flex; flex-direction: column; gap: 8px; }
+.step-item {
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff;
+  flex-shrink: 0; margin-top: 1px;
+  background: var(--step);
+}
+.step-content { flex: 1; }
+.step-name {
+  font-size: 10px; font-weight: 700; letter-spacing: .4px;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.step-expr {
+  font-family: 'Crimson Pro', serif;
+  font-size: 15px; color: var(--ink2); line-height: 1.5;
+}
+.step-sub {
+  font-size: 10.5px; color: var(--muted); margin-top: 2px;
+  line-height: 1.6;
+}
+
+/* result highlight */
+.result-box {
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-top: 10px;
+  display: flex; align-items: center; gap: 12px;
+}
+.result-box .r-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; flex-shrink: 0;
+}
+.result-box .r-val {
+  font-family: 'Crimson Pro', serif;
+  font-size: 18px; font-weight: 700;
+}
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  background: var(--white); border-top: 1.5px solid var(--sand);
+  padding: 10px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.bnav-label { font-size: 10px; color: var(--muted); font-weight: 600; }
+.rule-tabs { display: flex; gap: 8px; }
+.rtab {
+  border-radius: 20px; padding: 5px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 700;
+  cursor: pointer; transition: all .2s; border: 1.5px solid transparent;
+}
+.rtab-p { background: var(--cp-l); color: var(--cp); border-color: rgba(22,80,138,.25); }
+.rtab-p.active, .rtab-p:hover { background: var(--cp); color: #fff; }
+.rtab-c { background: var(--cc-l); color: var(--cc); border-color: rgba(122,56,0,.25); }
+.rtab-c.active, .rtab-c:hover { background: var(--cc); color: #fff; }
+
+/* ── FOOTER ── */
+.foot {
+  background: #120c06; padding: 7px 24px;
+  font-size: 9px; color: rgba(255,255,255,.28);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 580px) {
+  body { width: 100%; }
+  .hdr { padding: 13px 16px; }
+  .hdr h1 { font-size: 18px; }
+  .intro { padding: 10px 16px; gap: 8px; flex-wrap: wrap; }
+  .hint-pill { white-space: normal; }
+  .tabs { width: 40px; }
+  .tab { width: 32px; font-size: 8.5px; padding: 10px 5px; }
+  .pg-hdr { padding: 14px 16px 12px; gap: 12px; }
+  .pg-icon { width: 44px; height: 44px; font-size: 18px; border-radius: 12px; }
+  .pg-meta .pg-title { font-size: 17px; }
+  .sections { padding: 12px 14px 16px; gap: 10px; }
+  .sec-body-inner { padding: 12px 12px 14px; }
+  .formula-block .f-main { font-size: 16px; }
+  .bnav { padding: 9px 14px; flex-wrap: wrap; gap: 8px; }
+  .foot { padding: 7px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <h1>Reglas del <em>producto</em> y del <em>cociente</em></h1>
+    <div class="hdr-sub">Cálculo Diferencial · MATE_2037 · Semana 10 · Katty Rohoden</div>
+  </div>
+  <div class="hdr-chips">
+    <div class="chip">Semana 10</div>
+    <div class="chip">Derivación</div>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div class="intro">
+  <p>A continuación, le invito a explorar sobre dos de las reglas aritméticas más complejas de la derivación básica.</p>
+  <div class="hint-pill">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+      <circle cx="5" cy="5" r="4.5" stroke="#f5c060" stroke-width="1"/>
+      <path d="M5 3v3M5 7.2v.2" stroke="#f5c060" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+    Haga clic en los temas para visualizar la información
+  </div>
+</div>
+
+<!-- BOOK -->
+<div class="book">
+
+  <!-- SIDEBAR TABS -->
+  <div class="tabs">
+    <button class="tab active-p" id="tab-p" onclick="showPage('p')">Regla del Producto</button>
+    <button class="tab" id="tab-c" onclick="showPage('c')">Regla del Cociente</button>
+  </div>
+
+  <!-- PAGE AREA -->
+  <div class="page-area">
+
+    <!-- ══ PAGE: PRODUCTO ══ -->
+    <div class="page active" id="page-p">
+      <div class="pg-hdr" style="border-color:#c8dff0;background:var(--cp-l)">
+        <div class="pg-icon" style="background:var(--cp)">·</div>
+        <div class="pg-meta">
+          <div class="eyebrow" style="color:var(--cp)">Regla 1 de 2</div>
+          <div class="pg-title" style="color:var(--cp)">Regla del producto</div>
+          <div class="pg-intro">La derivada de un producto NO es el producto de las derivadas.</div>
+        </div>
+      </div>
+
+      <div class="sections">
+
+        <!-- Explicación geométrica -->
+        <div class="section open" id="sp0">
+          <div class="sec-hdr" style="background:var(--cp-l)" onclick="toggleSec('sp0')">
+            <span class="sec-tag" style="background:rgba(22,80,138,.12);color:var(--cp)">Geometría</span>
+            <span class="sec-label">Explicación geométrica de la regla del producto</span>
+            <span class="sec-arr">▼</span>
+          </div>
+          <div class="sec-body">
+            <div class="sec-body-inner">
+              <p>Imagine un rectángulo cuyos lados son u(x) y v(x). Si ambos lados crecen al mismo tiempo, el cambio en el área no es solo el pequeño cuadradito de la esquina (producto de cambios), sino que incluye las franjas rectangulares que se agregan a lo largo de cada lado.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulación -->
+        <div class="section" id="sp1">
+          <div class="sec-hdr" style="background:var(--cp-l)" onclick="toggleSec('sp1')">
+            <span class="sec-tag" style="background:rgba(22,80,138,.12);color:var(--cp)">Fórmula</span>
+            <span class="sec-label">Formulación de la regla del producto</span>
+            <span class="sec-arr">▼</span>
+          </div>
+          <div class="sec-body">
+            <div class="sec-body-inner">
+              <p>Si f(x) = u(x) · v(x), donde u y v son diferenciables:</p>
+              <div class="formula-block" style="background:var(--cp-l);border:1.5px solid rgba(22,80,138,.2)">
+                <div class="f-label" style="color:var(--cp)">Regla del producto</div>
+                <div class="f-main" style="color:var(--cp)">f ′(x) = u′(x)·v(x) + u(x)·v′(x)</div>
+                <div class="f-parts">
+                  <strong>u′·v</strong> = cambio en u manteniendo v &nbsp;|&nbsp;
+                  <strong>u·v′</strong> = cambio en v manteniendo u
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ejercicio -->
+        <div class="section" id="sp2">
+          <div class="sec-hdr" style="background:var(--cp-l)" onclick="toggleSec('sp2')">
+            <span class="sec-tag" style="background:rgba(22,80,138,.12);color:var(--cp)">Ejercicio</span>
+            <span class="sec-label">Ejercicio: S(t) = (t² + 1)(3t − 2)</span>
+            <span class="sec-arr">▼</span>
+          </div>
+          <div class="sec-body">
+            <div class="sec-body-inner">
+              <div class="ex-title" style="color:var(--cp)">Pasos de solución</div>
+              <div class="steps-list">
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cp)">1</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cp)">Asignación</div>
+                    <div class="step-expr">u = t² + 1 &nbsp;&nbsp; v = 3t − 2</div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cp)">2</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cp)">Derivación individual</div>
+                    <div class="step-expr">u′ = 2t &nbsp;&nbsp; v′ = 3</div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cp)">3</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cp)">Aplicar fórmula u′v + uv′</div>
+                    <div class="step-expr">S′(t) = (2t)(3t − 2) + (t² + 1)(3)</div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cp)">4</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cp)">Simplificación algebraica</div>
+                    <div class="step-expr">S′(t) = 6t² − 4t + 3t² + 3</div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="result-box" style="background:var(--cp-l);border:1.5px solid rgba(22,80,138,.25)">
+                <div class="r-label" style="color:var(--cp)">Resultado</div>
+                <div class="r-val" style="color:var(--cp)">S′(t) = 9t² − 4t + 3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sections -->
+    </div><!-- /page-p -->
+
+    <!-- ══ PAGE: COCIENTE ══ -->
+    <div class="page" id="page-c">
+      <div class="pg-hdr" style="border-color:#e8c8a8;background:var(--cc-l)">
+        <div class="pg-icon" style="background:var(--cc)">÷</div>
+        <div class="pg-meta">
+          <div class="eyebrow" style="color:var(--cc)">Regla 2 de 2</div>
+          <div class="pg-title" style="color:var(--cc)">Regla del cociente</div>
+          <div class="pg-intro">La derivada de una división es intrínsecamente más compleja por el efecto del denominador.</div>
+        </div>
+      </div>
+
+      <div class="sections">
+
+        <!-- Formulación cociente -->
+        <div class="section open" id="sc0">
+          <div class="sec-hdr" style="background:var(--cc-l)" onclick="toggleSec('sc0')">
+            <span class="sec-tag" style="background:rgba(122,56,0,.1);color:var(--cc)">Fórmula</span>
+            <span class="sec-label">Formulación de la regla del cociente</span>
+            <span class="sec-arr">▼</span>
+          </div>
+          <div class="sec-body">
+            <div class="sec-body-inner">
+              <p>La derivada de una división es intrínsecamente más compleja porque el denominador afecta el valor total de forma inversa (cuanto más grande es el denominador, menor es la función).</p>
+              <p>Si f(x) = u(x) / v(x), donde v(x) ≠ 0:</p>
+              <div class="formula-block" style="background:var(--cc-l);border:1.5px solid rgba(122,56,0,.2)">
+                <div class="f-label" style="color:var(--cc)">Regla del cociente</div>
+                <div class="f-main" style="color:var(--cc)">f ′(x) = [ u′(x)·v(x) − u(x)·v′(x) ] / [v(x)]²</div>
+                <div class="f-parts">
+                  Numerador: derivada de u por v, menos u por derivada de v<br>
+                  Denominador: el cuadrado de v(x)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ejercicio cociente -->
+        <div class="section" id="sc1">
+          <div class="sec-hdr" style="background:var(--cc-l)" onclick="toggleSec('sc1')">
+            <span class="sec-tag" style="background:rgba(122,56,0,.1);color:var(--cc)">Ejercicio</span>
+            <span class="sec-label">Ejercicio: E(x) = (x² + 2) / (x − 1)</span>
+            <span class="sec-arr">▼</span>
+          </div>
+          <div class="sec-body">
+            <div class="sec-body-inner">
+              <div class="ex-title" style="color:var(--cc)">Pasos de solución</div>
+              <div class="steps-list">
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cc)">1</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cc)">Asignación</div>
+                    <div class="step-expr">u = x² + 2 &nbsp;&nbsp; v = x − 1</div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cc)">2</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cc)">Derivación individual</div>
+                    <div class="step-expr">u′ = 2x &nbsp;&nbsp; v′ = 1</div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cc)">3</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cc)">Aplicar la regla</div>
+                    <div class="step-expr">E′(x) = [(2x)(x−1) − (x²+2)(1)] / (x−1)²</div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-num" style="background:var(--cc)">4</div>
+                  <div class="step-content">
+                    <div class="step-name" style="color:var(--cc)">Simplificando el numerador</div>
+                    <div class="step-expr">2x² − 2x − (x² + 2)</div>
+                    <div class="step-sub">= 2x² − 2x − x² − 2 = x² − 2x − 2</div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="result-box" style="background:var(--cc-l);border:1.5px solid rgba(122,56,0,.25)">
+                <div class="r-label" style="color:var(--cc)">Resultado</div>
+                <div class="r-val" style="color:var(--cc)">E′(x) = (x² − 2x − 2) / (x − 1)²</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sections -->
+    </div><!-- /page-c -->
+
+  </div><!-- /page-area -->
+</div><!-- /book -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <div class="bnav-label" id="bnavLabel">Regla del producto</div>
+  <div class="rule-tabs">
+    <button class="rtab rtab-p active" id="rnav-p" onclick="showPage('p')">· Producto</button>
+    <button class="rtab rtab-c" id="rnav-c" onclick="showPage('c')">÷ Cociente</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <span>Elaboración propia. · Rohoden, K. (2025). <em>Reglas del producto y del cociente.</em> UTPL.</span>
+  <span>S10 · MATE_2037</span>
+</div>
+
+<script>
+let cur = 'p';
+
+function showPage(id) {
+  cur = id;
+  // pages
+  document.getElementById('page-p').classList.toggle('active', id === 'p');
+  document.getElementById('page-c').classList.toggle('active', id === 'c');
+
+  // sidebar tabs
+  document.getElementById('tab-p').className = 'tab' + (id === 'p' ? ' active-p' : '');
+  document.getElementById('tab-c').className = 'tab' + (id === 'c' ? ' active-c' : '');
+
+  // bottom tabs
+  document.getElementById('rnav-p').classList.toggle('active', id === 'p');
+  document.getElementById('rnav-c').classList.toggle('active', id === 'c');
+
+  // label
+  document.getElementById('bnavLabel').textContent =
+    id === 'p' ? 'Regla del producto' : 'Regla del cociente';
+}
+
+function toggleSec(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') showPage(cur === 'p' ? 'c' : 'p');
+  if (e.key === 'ArrowLeft')  showPage(cur === 'p' ? 'c' : 'p');
+});
+</script>
+</body>
+</html>
