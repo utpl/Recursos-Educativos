@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teorema de Rolle | Experiencia Interactiva</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --line: #cbd5e1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Contenedor Principal Limitado a 800x800 */
+        .app-container {
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 100%);
+            position: relative;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Header Estilo Dashboard */
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        h1 { font-size: 18px; color: var(--text-main); letter-spacing: -0.5px; }
+        .subtitle { font-size: 12px; color: var(--text-light); }
+
+        /* Mapa Radial */
+        .radial-map {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+        }
+
+        .center-node {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(37, 99, 235, 0.2);
+            z-index: 5;
+            border: 4px solid var(--primary);
+            text-align: center;
+            padding: 10px;
+        }
+
+        .center-node svg { width: 40px; height: 40px; margin-bottom: 5px; fill: var(--primary); }
+        .center-node span { font-size: 11px; font-weight: 800; color: var(--primary); }
+
+        /* Conectores SVG */
+        .connections {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Nodos de Pasos */
+        .step-node {
+            position: absolute;
+            width: 180px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-node:hover {
+            transform: translateY(-5px) scale(1.05);
+            border-color: var(--primary);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .node-title { font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+        .node-hint { font-size: 10px; color: var(--text-light); }
+
+        /* Posicionamiento Circular */
+        .node-1 { top: 10%; left: 50%; transform: translateX(-50%); }
+        .node-2 { top: 50%; right: 0%; transform: translateY(-50%); }
+        .node-3 { bottom: 10%; left: 50%; transform: translateX(-50%); }
+        .node-4 { top: 50%; left: 0%; transform: translateY(-50%); }
+
+        /* Modal / Panel de Detalle */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: white;
+            width: 500px;
+            max-height: 600px;
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f1f5f9;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .modal-h { font-size: 16px; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .modal-body { font-size: 13px; color: var(--text-main); line-height: 1.6; }
+        
+        .math-block {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary);
+            font-size: 14px;
+        }
+
+        .graph-container {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .graph-container img { width: 100%; display: block; }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: none;
+        }
+
+        .ref-box { font-size: 9px; color: var(--text-light); max-width: 300px; }
+        
+        .btn-calc {
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-decoration: none;
+            pointer-events: auto;
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+            transition: 0.2s;
+        }
+
+        .btn-calc:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Responsive Mobile */
+        @media (max-width: 600px) {
+            .app-container { width: 100vw; height: 100vh; border-radius: 0; overflow-y: auto; }
+            .radial-map { position: relative; width: 100%; height: auto; top: 0; left: 0; transform: none; padding: 100px 20px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+            .center-node { position: static; transform: none; margin-bottom: 40px; }
+            .step-node { position: static; transform: none; width: 100%; }
+            .connections { display: none; }
+            .modal { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <svg style="position:absolute; opacity:0.05;" width="800" height="800">
+        <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"/>
+            </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+    </svg>
+
+    <header class="header">
+        <div class="badge">Semana 12 • Cálculo Diferencial</div>
+        <h1>Teorema de Rolle</h1>
+        <p class="subtitle">Explora la aplicación práctica en funciones cuadráticas</p>
+    </header>
+
+    <div class="radial-map" id="map">
+        <svg class="connections">
+            <line x1="300" y1="300" x2="300" y2="100" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4" />
+            <line x1="300" y1="300" x2="500" y2="300" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4" />
+            <line x1="300" y1="300" x2="300" y2="500" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4" />
+            <line x1="300" y1="300" x2="100" y2="300" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4" />
+        </svg>
+
+        <div class="center-node">
+            <svg viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3M19,19H5V5H19V19M7,12H17V13H7V12M7,15H17V16H7V15M7,8H17V9H7V8Z"/></svg>
+            <span>f(x) = x² - 4x + 3</span>
+            <small style="font-size: 8px; color: var(--text-light)">Intervalo [1, 3]</small>
+        </div>
+
+        <div class="step-node node-1" onclick="openModal('hipotesis')">
+            <div class="step-icon" style="background: #dbeafe; color: #2563eb;">1</div>
+            <div class="node-title">Verificar Hipótesis</div>
+            <div class="node-hint">Continuidad y Derivabilidad</div>
+        </div>
+
+        <div class="step-node node-2" onclick="openModal('extremos')">
+            <div class="step-icon" style="background: #d1fae5; color: #059669;">2</div>
+            <div class="node-title">Valores Extremos</div>
+            <div class="node-hint">f(a) = f(b)</div>
+        </div>
+
+        <div class="step-node node-3" onclick="openModal('calculo')">
+            <div class="step-icon" style="background: #fef3c7; color: #d97706;">3</div>
+            <div class="node-title">Encontrar valor 'c'</div>
+            <div class="node-hint">Derivada f'(c) = 0</div>
+        </div>
+
+        <div class="step-node node-4" onclick="openModal('grafica')">
+            <div class="step-icon" style="background: #ede9fe; color: #7c3aed;">4</div>
+            <div class="node-title">Representación</div>
+            <div class="node-hint">Interpretación Visual</div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="ref-box">
+            <p><strong>Referencias APA 7:</strong></p>
+            <p>Rohoden, K. (2026). Ejemplo de aplicación del teorema de Rolle. Universidad Técnica Particular de Loja.</p>
+        </div>
+        <a href="#" class="btn-calc" onclick="alert('Iniciando simulador interactivo...')">Calculadora de Rolle</a>
+    </footer>
+
+    <div class="overlay" id="overlay">
+        <div class="modal">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const content = {
+        hipotesis: {
+            title: "Paso 1: Hipótesis Fundamentales",
+            body: `
+                <p>Para aplicar el Teorema de Rolle, primero validamos la naturaleza de la función:</p>
+                <div class="math-block">
+                    <strong>Continuidad:</strong> Al ser una función polinómica, es continua en todo ℝ, y por tanto en [1, 3].<br><br>
+                    <strong>Derivabilidad:</strong> Las funciones polinómicas son derivables en todo su dominio (1, 3).
+                </div>
+                <p>Ambas condiciones son esenciales para asegurar que no existan saltos o puntas en la curva.</p>
+            `
+        },
+        extremos: {
+            title: "Paso 2: Igualdad en los Extremos",
+            body: `
+                <p>Verificamos que la altura de la función sea la misma en los límites del intervalo:</p>
+                <div class="math-block">
+                    f(1) = 1² - 4(1) + 3 = 1 - 4 + 3 = <strong>0</strong><br>
+                    f(3) = 3² - 4(3) + 3 = 9 - 12 + 3 = <strong>0</strong>
+                </div>
+                <p>Como <strong>f(1) = f(3)</strong>, se cumple la tercera condición. Existe al menos un punto donde la pendiente es cero.</p>
+            `
+        },
+        calculo: {
+            title: "Paso 3: Cálculo del punto crítico (c)",
+            body: `
+                <p>Procedemos a encontrar el valor exacto donde la tangente es horizontal:</p>
+                <div class="math-block">
+                    1. Derivamos: f'(x) = 2x - 4<br>
+                    2. Igualamos a 0: 2x - 4 = 0<br>
+                    3. Resolvemos: 2x = 4  →  <strong>x = 2</strong>
+                </div>
+                <p>El valor <strong>c = 2</strong> se encuentra dentro del intervalo (1, 3), verificando así el teorema.</p>
+            `
+        },
+        grafica: {
+            title: "Paso 4: Representación Geométrica",
+            body: `
+                <p>Observa cómo la recta secante (verde) que une los puntos (1,0) y (3,0) es totalmente horizontal.</p>
+                <div class="graph-container">
+                    <img src="https://i.imgur.com/K3Z9j9N.png" alt="Gráfica Teorema de Rolle">
+                </div>
+                <p style="margin-top:10px;"><strong>Conclusión:</strong> El teorema garantiza que en el vértice de la parábola (x=2), la tangente (línea roja) también es horizontal.</p>
+            `
+        }
+    };
+
+    function openModal(id) {
+        const modal = document.getElementById('modalContent');
+        const data = content[id];
+        modal.innerHTML = `
+            <div class="modal-h">
+                <span>${data.title}</span>
+            </div>
+            <div class="modal-body">${data.body}</div>
+        `;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    // Cerrar al hacer click fuera
+    document.getElementById('overlay').addEventListener('click', function(e) {
+        if(e.target === this) closeModal();
+    });
+</script>
+
+</body>
+</html>

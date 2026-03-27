@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Cálculo | Tasas de Cambio</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.3);
+            --text: #f1f5f9;
+            --success: #22c55e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: #020617;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* Contenedor 800x800 */
+        .main-frame {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* Navbar Superior */
+        .nav-header {
+            padding: 20px 30px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-header h1 { font-size: 16px; letter-spacing: 1px; color: var(--accent); }
+        .status-pill { background: var(--success); color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; }
+
+        /* Contenido Dual */
+        .content-body {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            overflow: hidden;
+        }
+
+        /* Panel Izquierdo: Control */
+        .control-panel {
+            padding: 30px;
+            background: rgba(15, 23, 42, 0.5);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .instruction { font-size: 12px; color: #94a3b8; line-height: 1.4; }
+
+        .menu-item {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover { border-color: var(--accent); background: #334155; }
+        .menu-item.active { border-color: var(--accent); background: var(--accent-glow); box-shadow: 0 0 20px var(--accent-glow); }
+        .menu-item h3 { font-size: 14px; margin-bottom: 5px; }
+        .menu-item p { font-size: 11px; color: #94a3b8; }
+
+        /* Panel Derecho: Visualizador */
+        .viz-panel {
+            padding: 40px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: relative;
+        }
+
+        .data-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .math-hero {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            padding: 15px;
+            border-radius: 12px;
+            color: #38bdf8;
+            font-size: 18px;
+            text-align: center;
+            margin: 20px 0;
+            border: 1px solid var(--accent);
+        }
+
+        .step-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 15px 30px;
+            background: rgba(0,0,0,0.2);
+            font-size: 10px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .main-frame { width: 100vw; height: 100vh; border-radius: 0; }
+            .content-body { grid-template-columns: 1fr; }
+            .control-panel { display: none; } /* Ocultamos panel en móvil para usar vista de lista */
+            .viz-panel { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-frame">
+    <div class="nav-header">
+        <h1>CALCULUS ENGINE v3.0</h1>
+        <div class="status-pill">Semana 15: Tasa de Cambio</div>
+    </div>
+
+    <div class="content-body">
+        <aside class="control-panel">
+            <p class="instruction">Haga clic en un módulo para procesar los datos de la red:</p>
+            
+            <div class="menu-item active" onclick="loadModule('wifi', this)">
+                <h3>🌐 Cobertura WiFi</h3>
+                <p>Modelo Geométrico de Expansión</p>
+            </div>
+
+            <div class="menu-item" onclick="loadModule('metcalfe', this)">
+                <h3>📈 Ley de Metcalfe</h3>
+                <p>Crecimiento de Complejidad IoT</p>
+            </div>
+
+            <div style="margin-top: auto;">
+                <p class="instruction">Tutor: Katty Rohoden</p>
+            </div>
+        </aside>
+
+        <main class="viz-panel" id="vizPanel">
+            </main>
+    </div>
+
+    <footer class="footer">
+        <div>REF: Rohoden, K. (2026). Cálculo Diferencial - UTPL</div>
+        <div>FORMATO APA 7TH ED.</div>
+    </footer>
+</div>
+
+<script>
+    const modules = {
+        wifi: {
+            title: "Expansión de Cobertura WiFi",
+            content: `
+                <div class="data-card">
+                    <span class="step-pill">ESCENARIO</span>
+                    <p style="font-size: 14px; margin-bottom: 15px;">Una antena omnidireccional incrementa su potencia. ¿A qué velocidad crece el área de cobertura?</p>
+                    
+                    <span class="step-pill">DATOS</span>
+                    <ul style="font-size: 13px; list-style: none; margin-bottom: 20px;">
+                        <li>• Radio actual (r): 10 m</li>
+                        <li>• Variación radio (dr/dt): 2 m/s</li>
+                    </ul>
+
+                    <span class="step-pill">MODELO MATEMÁTICO</span>
+                    <div class="math-hero">A = π · r²</div>
+                    <div class="math-hero" style="font-size: 15px; border-style: dashed;">dA/dt = 2π · r · (dr/dt)</div>
+
+                    <span class="step-pill">RESULTADO</span>
+                    <p style="font-size: 18px; color: var(--success); font-weight: bold;">dA/dt = 40π ≈ 125.66 m²/s</p>
+                </div>
+            `
+        },
+        metcalfe: {
+            title: "Complejidad de Red (IoT)",
+            content: `
+                <div class="data-card">
+                    <span class="step-pill">LEY DE METCALFE</span>
+                    <p style="font-size: 14px; margin-bottom: 15px;">Evaluando la carga de gestión en una red de malla completa (Full Mesh).</p>
+                    
+                    <span class="step-pill">DATOS ACTUALES</span>
+                    <ul style="font-size: 13px; list-style: none; margin-bottom: 20px;">
+                        <li>• Nodos (N): 1,000</li>
+                        <li>• Instalación (dN/dt): 20 nodos/día</li>
+                    </ul>
+
+                    <span class="step-pill">DERIVADA DE COMPLEJIDAD</span>
+                    <div class="math-hero">V = N²</div>
+                    <div class="math-hero" style="font-size: 15px; border-style: dashed;">dV/dt = 2N · (dN/dt)</div>
+
+                    <span class="step-pill">ANÁLISIS DE IMPACTO</span>
+                    <p style="font-size: 18px; color: var(--accent); font-weight: bold;">40,000 conexiones/día</p>
+                    <p style="font-size: 11px; margin-top: 10px; color: #94a3b8;">Conclusión: Mientras el hardware crece linealmente, la complejidad de seguridad y gestión crece exponencialmente.</p>
+                </div>
+            `
+        }
+    };
+
+    function loadModule(key, el) {
+        // Update UI Menu
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        el.classList.add('active');
+
+        // Update Content
+        const panel = document.getElementById('vizPanel');
+        panel.innerHTML = `
+            <h2 style="font-size: 20px; margin-bottom: 20px; color: var(--accent)">${modules[key].title}</h2>
+            ${modules[key].content}
+        `;
+    }
+
+    // Inicializar
+    window.onload = () => loadModule('wifi', document.querySelector('.menu-item'));
+</script>
+
+</body>
+</html>

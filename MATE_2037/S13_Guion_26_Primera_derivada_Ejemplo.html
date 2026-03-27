@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criterio de la Primera Derivada | UTPL</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f1f5f9;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Contenedor principal 800x800 */
+        .dashboard {
+            width: 800px;
+            height: 800px;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            padding: 24px 32px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+        .top-bar span { font-size: 11px; opacity: 0.7; text-transform: uppercase; font-weight: 600; }
+
+        /* Main Workspace */
+        .workspace {
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            overflow: hidden;
+        }
+
+        /* Sidebar: Flujo de pasos */
+        .steps-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .step-card {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .step-card:hover { border-color: var(--accent); background: #eff6ff; }
+        .step-card.active { 
+            background: white; 
+            border-color: var(--accent); 
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1); 
+        }
+
+        .step-number {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .step-card h3 { font-size: 13px; color: var(--primary); }
+
+        /* Main Content Display */
+        .display {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px dashed #cbd5e1;
+            overflow-y: auto;
+        }
+
+        .formula-box {
+            background: var(--primary);
+            color: #60a5fa;
+            padding: 20px;
+            border-radius: 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 15px;
+            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Tabla de signos compacta */
+        .sign-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            font-size: 11px;
+        }
+
+        .sign-table th { text-align: left; padding: 12px; color: var(--text-light); }
+        .sign-table td { padding: 12px; background: white; }
+        .sign-table tr td:first-child { border-radius: 12px 0 0 12px; font-weight: bold; }
+        .sign-table tr td:last-child { border-radius: 0 12px 12px 0; }
+
+        .badge-sign {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .pos { background: #d1fae5; color: #065f46; }
+        .neg { background: #fee2e2; color: #991b1b; }
+
+        /* Gráfica y Conclusión */
+        .img-container {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: white;
+        }
+        .img-container img { width: 100%; display: block; }
+
+        .conclusion-card {
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            border-left: 4px solid var(--success);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* Footer con APA */
+        .footer {
+            padding: 20px 32px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .apa { font-size: 10px; color: var(--text-light); max-width: 500px; }
+        .btn-reset {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Scrollbar */
+        .display::-webkit-scrollbar { width: 6px; }
+        .display::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .content-active { animation: slideIn 0.3s ease-out; }
+
+        @media (max-width: 600px) {
+            .dashboard { width: 100vw; height: auto; border-radius: 0; }
+            .workspace { grid-template-columns: 1fr; }
+            .top-bar h1 { font-size: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="top-bar">
+        <div>
+            <h1>Análisis de Función Cúbica</h1>
+            <span>Criterio de la Primera Derivada • Semana 13</span>
+        </div>
+        <div style="text-align: right">
+            <p style="font-size: 12px; font-weight: bold">f(x) = x³ - 3x² - 9x + 5</p>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="steps-flow">
+            <div class="step-card active" onclick="showStep(1, this)">
+                <div class="step-number">Fase 01</div>
+                <h3>Derivación y Puntos Críticos</h3>
+            </div>
+            <div class="step-card" onclick="showStep(2, this)">
+                <div class="step-number">Fase 02</div>
+                <h3>Tabla de Variación (Signos)</h3>
+            </div>
+            <div class="step-card" onclick="showStep(3, this)">
+                <div class="step-number">Fase 03</div>
+                <h3>Interpretación y Máximos/Mínimos</h3>
+            </div>
+            <div class="step-card" onclick="showStep(4, this)">
+                <div class="step-number">Fase 04</div>
+                <h3>Visualización Gráfica</h3>
+            </div>
+        </div>
+
+        <div class="display" id="mainDisplay">
+            </div>
+    </div>
+
+    <div class="footer">
+        <div class="apa">
+            <strong>Referencia APA 7:</strong> Rohoden, K. (2026). Primera derivada - Ejemplo. Universidad Técnica Particular de Loja. Elaborado con asistencia de Gemini. [cite: 25, 34]
+        </div>
+        <button class="btn-reset" onclick="location.reload()">Reiniciar</button>
+    </div>
+</div>
+
+<script>
+    const stepsData = {
+        1: `
+            <div class="content-active">
+                <p style="font-size: 13px; margin-bottom: 10px; font-weight: bold; color: var(--primary);">1. Proceso de Derivación:</p>
+                <div class="formula-box">f'(x) = 3x² - 6x - 9</div>
+                <p style="font-size: 12px; color: var(--text-light); margin-top: 15px;">Igualamos a cero y factorizamos para hallar los números críticos:</p>
+                <div class="formula-box" style="background: white; color: var(--primary); border: 2px solid var(--primary); margin-top: 10px;">
+                    3(x² - 2x - 3) = 0 <br>
+                    3(x - 3)(x + 1) = 0
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <div style="flex:1; background:#dcfce7; padding:10px; border-radius:12px; text-align:center; font-size:14px;">x₁ = 3</div>
+                    <div style="flex:1; background:#dcfce7; padding:10px; border-radius:12px; text-align:center; font-size:14px;">x₂ = -1</div>
+                </div>
+            </div>
+        `,
+        2: `
+            <div class="content-active">
+                <p style="font-size: 13px; margin-bottom: 10px; font-weight: bold; color: var(--primary);">2. Análisis de Intervalos:</p>
+                <table class="sign-table">
+                    <tr><th>Intervalo</th><th>Prueba</th><th>Signo</th><th>Estado</th></tr>
+                    <tr><td>(-∞, -1)</td><td>x = -2</td><td><span class="badge-sign pos">(+)</span></td><td>Creciente ↗</td></tr>
+                    <tr><td>(-1, 3)</td><td>x = 0</td><td><span class="badge-sign neg">(-)</span></td><td>Decreciente ↘</td></tr>
+                    <tr><td>(3, ∞)</td><td>x = 4</td><td><span class="badge-sign pos">(+)</span></td><td>Creciente ↗</td></tr>
+                </table>
+                <p style="font-size: 11px; font-style: italic; margin-top: 10px;">Evaluación en f'(k) para determinar el comportamiento. </p>
+            </div>
+        `,
+        3: `
+            <div class="content-active">
+                <p style="font-size: 13px; margin-bottom: 15px; font-weight: bold; color: var(--primary);">3. Conclusiones del Criterio:</p>
+                <div class="conclusion-card" style="border-left-color: var(--danger); margin-bottom: 12px;">
+                    <strong>Máximo Local en x = -1:</strong><br>
+                    La función pasa de <b>crecer</b> a <b>decrecer</b>. [cite: 28]
+                </div>
+                <div class="conclusion-card" style="border-left-color: var(--success);">
+                    <strong>Mínimo Local en x = 3:</strong><br>
+                    La función pasa de <b>decrecer</b> a <b>crecer</b>. [cite: 29]
+                </div>
+            </div>
+        `,
+        4: `
+            <div class="content-active">
+                <p style="font-size: 13px; margin-bottom: 10px; font-weight: bold; color: var(--primary);">4. Representación Geométrica:</p>
+                <div class="img-container">
+                    <img src="media/Imagen 7.png" alt="Gráfica de la función cúbica">
+                </div>
+                <p style="font-size: 11px; margin-top: 8px; color: var(--text-light); text-align: center;">
+                    Visualización del comportamiento y puntos de retorno. [cite: 33]
+                </p>
+            </div>
+        `
+    };
+
+    function showStep(num, element) {
+        // Actualizar tarjetas
+        document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
+        element.classList.add('active');
+
+        // Actualizar contenido
+        const display = document.getElementById('mainDisplay');
+        display.innerHTML = stepsData[num];
+    }
+
+    // Carga inicial
+    document.addEventListener('DOMContentLoaded', () => {
+        showStep(1, document.querySelector('.step-card'));
+    });
+</script>
+
+</body>
+</html>
