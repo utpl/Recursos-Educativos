@@ -1,929 +1,294 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>CALCULUS ENGINE · Tasa de Cambio Relacionada</title>
-    <style>
-        :root {
-            --bg: #080e14;
-            --panel: #0d1a26;
-            --panel2: #111f30;
-            --border: rgba(56, 189, 248, .12);
-            --border2: rgba(56, 189, 248, .25);
-            --text: #e2eaf4;
-            --muted: #607a90;
-            --accent: #38bdf8;
-            --accent2: #0ea5e9;
-            --glow: rgba(56, 189, 248, .18);
-            --green: #22d3a0;
-            --orange: #f59e0b;
-            --step-bg: rgba(56, 189, 248, .05);
-        }
-
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0
-        }
-
-        html,
-        body {
-            width: 800px;
-            height: 800px;
-            overflow: hidden;
-            background: #020810;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: var(--text)
-        }
-
-        .shell {
-            width: 800px;
-            height: 800px;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            position: relative
-        }
-
-        .shell::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image: linear-gradient(rgba(56, 189, 248, .03) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, .03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0
-        }
-
-        /* HDR */
-        .hdr {
-            height: 52px;
-            flex-shrink: 0;
-            background: rgba(13, 26, 38, .95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 12px;
-            position: relative;
-            z-index: 10
-        }
-
-        .hdr-logo {
-            display: flex;
-            align-items: center;
-            gap: 8px
-        }
-
-        .hdr-title {
-            font-size: 12.5px;
-            font-weight: 700;
-            letter-spacing: .5px;
-            color: var(--accent)
-        }
-
-        .hdr-title span {
-            color: white;
-            font-weight: 400;
-            font-size: 10px
-        }
-
-        .hdr-badge {
-            background: rgba(34, 211, 160, .12);
-            border: 1px solid rgba(34, 211, 160, .28);
-            color: white;
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: .6px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            white-space: nowrap
-        }
-
-        .hdr-hint {
-            margin-left: auto;
-            background: rgba(56, 189, 248, .07);
-            border: 1px solid var(--border2);
-            color: var(--accent);
-            font-size: 9px;
-            padding: 3px 11px;
-            border-radius: 20px;
-            white-space: nowrap
-        }
-
-        /* BODY */
-        .body {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 232px 1fr;
-            overflow: hidden;
-            position: relative;
-            z-index: 1
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            background: rgba(5, 10, 16, .75);
-            padding: 16px 12px;
-            gap: 10px
-        }
-
-        .sb-intro {
-            font-size: 10px;
-            color: var(--muted);
-            line-height: 1.65;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 11px;
-            margin-bottom: 2px
-        }
-
-        .sb-intro strong {
-            color: var(--text);
-            font-size: 10.5px;
-            display: block;
-            margin-bottom: 4px
-        }
-
-        .mod-btn {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 11px;
-            padding: 13px 13px;
-            cursor: pointer;
-            transition: all .22s;
-            position: relative;
-            overflow: hidden
-        }
-
-        .mod-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, var(--glow), transparent);
-            opacity: 0;
-            transition: opacity .22s
-        }
-
-        .mod-btn:hover::before,
-        .mod-btn.active::before {
-            opacity: 1
-        }
-
-        .mod-btn:hover,
-        .mod-btn.active {
-            border-color: var(--accent2);
-            box-shadow: 0 0 18px var(--glow)
-        }
-
-        .mod-btn.active {
-            background: rgba(14, 165, 233, .09)
-        }
-
-        .mod-icon {
-            font-size: 18px;
-            margin-bottom: 5px;
-            display: block
-        }
-
-        .mod-name {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 3px;
-            line-height: 1.35
-        }
-
-        .mod-desc {
-            font-size: 9.5px;
-            color: var(--muted);
-            line-height: 1.5
-        }
-
-        .mod-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 6px;
-            background: rgba(56, 189, 248, .07);
-            border: 1px solid var(--border2);
-            color: var(--accent);
-            font-size: 8.5px;
-            font-weight: 700;
-            letter-spacing: .4px;
-            padding: 2px 8px;
-            border-radius: 20px
-        }
-
-        .mod-tag .dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: blink 1.4s ease-in-out infinite
-        }
-
-        @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: .2
-            }
-        }
-
-        .sb-footer {
-            margin-top: auto;
-            font-size: 9px;
-            color: var(--muted);
-            line-height: 1.7
-        }
-
-        /* MAIN */
-        .main {
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-            background: linear-gradient(160deg, #080e14 0%, #0d1a26 100%)
-        }
-
-        .main::-webkit-scrollbar {
-            width: 4px
-        }
-
-        .main::-webkit-scrollbar-thumb {
-            background: var(--border2);
-            border-radius: 2px
-        }
-
-        /* CPANEL */
-        .cpanel {
-            padding: 18px 20px;
-            animation: fadeUp .3s ease
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px)
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0)
-            }
-        }
-
-        /* MOD TITLE */
-        .mod-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 14px
-        }
-
-        .mt-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 19px;
-            flex-shrink: 0
-        }
-
-        .mt-text h2 {
-            font-size: 13.5px;
-            font-weight: 800;
-            color: var(--accent);
-            line-height: 1.2
-        }
-
-        .mt-text p {
-            font-size: 9.5px;
-            color: var(--muted);
-            margin-top: 2px
-        }
-
-        /* SECTION LABEL */
-        .slabel {
-            font-size: 8.5px;
-            font-weight: 700;
-            letter-spacing: .9px;
-            text-transform: uppercase;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            margin-bottom: 8px
-        }
-
-        .slabel::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border)
-        }
-
-        /* DATA GRID */
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 7px;
-            margin-bottom: 12px
-        }
-
-        .data-cell {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 9px;
-            padding: 9px 11px
-        }
-
-        .dc-tag {
-            font-size: 8px;
-            font-weight: 700;
-            letter-spacing: .5px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 3px
-        }
-
-        .dc-val {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--accent)
-        }
-
-        .dc-note {
-            font-size: 9px;
-            color: var(--muted);
-            margin-top: 2px
-        }
-
-        /* PTEXT */
-        .ptext {
-            font-size: 11px;
-            color: #a8c0d4;
-            line-height: 1.75;
-            margin-bottom: 9px
-        }
-
-        /* FORMULA */
-        .fbox {
-            background: #020810;
-            border: 1px solid var(--border2);
-            border-radius: 9px;
-            padding: 10px 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--accent);
-            text-align: center;
-            margin: 6px 0;
-            position: relative;
-            overflow: hidden
-        }
-
-        .fbox::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at center, var(--glow) 0%, transparent 70%);
-            opacity: .45
-        }
-
-        .fbox span {
-            position: relative;
-            z-index: 1
-        }
-
-        .fbox.derived {
-            color: white;
-            border-color: rgba(34, 211, 160, .28)
-        }
-
-        .fbox.derived::before {
-            background: radial-gradient(ellipse at center, rgba(34, 211, 160, .1) 0%, transparent 70%)
-        }
-
-        /* NOTA */
-        .nota {
-            font-size: 9.5px;
-            color: var(--muted);
-            font-style: italic;
-            border-left: 2px solid var(--border2);
-            padding-left: 8px;
-            margin: 6px 0;
-            line-height: 1.6
-        }
-
-        /* STEPS */
-        .steps {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin: 8px 0
-        }
-
-        .step {
-            background: var(--step-bg);
-            border: 1px solid var(--border);
-            border-left: 3px solid transparent;
-            border-radius: 0 9px 9px 0;
-            padding: 9px 12px;
-            cursor: pointer;
-            transition: all .2s
-        }
-
-        .step:hover {
-            background: rgba(56, 189, 248, .08);
-            border-left-color: var(--accent)
-        }
-
-        .step.open {
-            background: rgba(56, 189, 248, .07);
-            border-left-color: var(--accent);
-            border-color: var(--border2)
-        }
-
-        .step.green-step:hover {
-            border-left-color: white;
-            background: rgba(34, 211, 160, .05)
-        }
-
-        .step.green-step.open {
-            border-left-color: white;
-            border-color: rgba(34, 211, 160, .22);
-            background: rgba(34, 211, 160, .05)
-        }
-
-        .step-head {
-            display: flex;
-            align-items: center;
-            gap: 8px
-        }
-
-        .step-n {
-            width: 21px;
-            height: 21px;
-            border-radius: 6px;
-            background: var(--panel2);
-            border: 1px solid var(--border2);
-            color: var(--accent);
-            font-size: 9px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all .2s
-        }
-
-        .step.open .step-n {
-            background: var(--accent);
-            color: var(--bg)
-        }
-
-        .step.green-step.open .step-n {
-            background: white;
-            color: var(--bg);
-            border-color: white
-        }
-
-        .step-lbl {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text);
-            flex: 1
-        }
-
-        .step-arr {
-            font-size: 13px;
-            color: var(--muted);
-            transition: transform .2s
-        }
-
-        .step.open .step-arr {
-            transform: rotate(90deg);
-            color: var(--accent)
-        }
-
-        .step.green-step.open .step-arr {
-            color: white
-        }
-
-        .step-body {
-            display: none;
-            padding-top: 8px;
-            font-size: 10.5px;
-            color: #90a8c0;
-            line-height: 1.75
-        }
-
-        .step.open .step-body {
-            display: block;
-            animation: fadeUp .2s ease
-        }
-
-        .step-body .f {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--accent);
-            background: rgba(56, 189, 248, .06);
-            border-radius: 5px;
-            padding: 2px 8px;
-            display: inline-block;
-            margin: 2px 0
-        }
-
-        .step-body .fg {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            font-weight: 700;
-            color: white;
-            background: rgba(34, 211, 160, .06);
-            border-radius: 5px;
-            padding: 2px 8px;
-            display: inline-block;
-            margin: 2px 0
-        }
-
-        /* REVEAL */
-        .reveal-btn {
-            background: rgba(56, 189, 248, .07);
-            border: 1px solid var(--border2);
-            color: var(--accent);
-            font-size: 9.5px;
-            font-weight: 700;
-            border-radius: 8px;
-            padding: 5px 13px;
-            cursor: pointer;
-            transition: all .18s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 4px
-        }
-
-        .reveal-btn:hover {
-            background: rgba(56, 189, 248, .14)
-        }
-
-        .reveal-btn.g {
-            border-color: rgba(34, 211, 160, .28);
-            color: white;
-            background: rgba(34, 211, 160, .05)
-        }
-
-        .reveal-btn.g:hover {
-            background: rgba(34, 211, 160, .1)
-        }
-
-        /* RESULT */
-        .result-hero {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: linear-gradient(135deg, #020c16, #0a1e30);
-            border: 1px solid var(--border2);
-            border-radius: 13px;
-            padding: 14px 16px;
-            margin: 11px 0
-        }
-
-        .rh-num {
-            font-family: 'Courier New', monospace;
-            font-size: 22px;
-            font-weight: 900;
-            white-space: nowrap;
-            flex-shrink: 0
-        }
-
-        .rh-num.blue {
-            color: var(--accent);
-            text-shadow: 0 0 18px var(--glow)
-        }
-
-        .rh-num.green {
-            color: white;
-            text-shadow: 0 0 18px rgba(34, 211, 160, .28)
-        }
-
-        .rh-label {
-            font-size: 10px;
-            color: var(--muted);
-            line-height: 1.55
-        }
-
-        .rh-label strong {
-            display: block;
-            font-size: 11.5px;
-            color: var(--text);
-            margin-bottom: 2px
-        }
-
-        /* CONCL */
-        .concl {
-            background: linear-gradient(135deg, rgba(34, 211, 160, .07), rgba(56, 189, 248, .04));
-            border: 1px solid rgba(34, 211, 160, .18);
-            border-radius: 11px;
-            padding: 12px 14px;
-            margin-top: 10px;
-            font-size: 10.5px;
-            color: #88b0a0;
-            line-height: 1.75
-        }
-
-        .concl strong {
-            color: white;
-            font-weight: 700
-        }
-
-        .concl.blue {
-            background: linear-gradient(135deg, rgba(56, 189, 248, .07), rgba(167, 139, 250, .03));
-            border-color: rgba(56, 189, 248, .18);
-            color: #88a8c0
-        }
-
-        .concl.blue strong {
-            color: var(--accent)
-        }
-
-        /* FOOT */
-        .foot {
-            height: 34px;
-            flex-shrink: 0;
-            background: rgba(4, 10, 18, .9);
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 18px;
-            position: relative;
-            z-index: 10
-        }
-
-        .foot-ref {
-            font-size: 8.5px;
-            color: var(--muted)
-        }
-
-        .foot-id {
-            font-size: 8px;
-            color: white;
-            font-family: 'Courier New', monospace
-        }
-
-        /* MOBILE */
-        @media(max-width:600px) {
-
-            html,
-            body {
-                width: 100%;
-                height: auto;
-                overflow: auto
-            }
-
-            .shell {
-                width: 100%;
-                height: auto
-            }
-
-            .body {
-                grid-template-columns: 1fr
-            }
-
-            .sidebar {
-                flex-direction: row;
-                flex-wrap: wrap;
-                padding: 10px;
-                gap: 7px
-            }
-
-            .mod-btn {
-                flex: 1;
-                min-width: 130px
-            }
-
-            .main {
-                overflow: visible
-            }
-
-            .data-grid {
-                grid-template-columns: 1fr 1fr
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tasa de cambio relacionada · MATE_2037</title>
+<style>
+:root{
+  --bg:#f8fafc;--white:#ffffff;
+  --ink:#0f172a;--ink2:#1e293b;--muted:#475569;
+  --border:#cbd5e1;--border-l:#e2e8f0;
+  --a-acc:#0369a1;--a-light:#e0f2fe;--a-mid:#bae6fd;--a-dark:#075985;
+  --b-acc:#15803d;--b-light:#dcfce7;--b-mid:#bbf7d0;--b-dark:#14532d;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:800px;height:800px;overflow:hidden;background:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;color:var(--ink)}
+.shell{width:800px;height:800px;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);overflow:hidden}
+/* HDR */
+.hdr{height:50px;flex-shrink:0;background:var(--white);border-bottom:2px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:11px}
+.hdr-icon{width:32px;height:32px;border-radius:9px;background:var(--a-light);border:1.5px solid var(--a-mid);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-title{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.hdr-sub{font-size:10px;color:var(--muted)}
+.hdr-hint{margin-left:auto;background:var(--a-light);border:1.5px solid var(--a-mid);color:var(--a-dark);font-size:9px;font-weight:600;padding:3px 11px;border-radius:20px;white-space:nowrap}
+/* INTRO */
+.intro{background:#f1f5f9;border-bottom:1.5px solid var(--border-l);padding:8px 20px;flex-shrink:0;display:flex;align-items:center;gap:9px}
+.intro p{font-size:10.5px;color:var(--ink2);line-height:1.6;flex:1}
+/* BODY */
+.body{flex:1;display:grid;grid-template-columns:222px 1fr;overflow:hidden}
+/* SIDEBAR */
+.sidebar{border-right:1.5px solid var(--border);background:var(--white);display:flex;flex-direction:column;padding:14px 12px;gap:9px}
+.sb-label{font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.mod-btn{background:var(--bg);border:1.5px solid var(--border);border-left:4px solid var(--border);border-radius:11px;padding:12px 11px;cursor:pointer;transition:all .2s}
+.mod-btn.active.ma,.mod-btn:hover{background:var(--a-light);border-color:var(--a-mid);border-left-color:var(--a-acc);box-shadow:0 2px 10px rgba(3,105,161,.1)}
+.mod-btn.active.mb{background:var(--b-light);border-color:var(--b-mid);border-left-color:var(--b-acc);box-shadow:0 2px 10px rgba(21,128,61,.1)}
+.mod-btn.mb:hover{background:var(--b-light);border-color:var(--b-mid);border-left-color:var(--b-acc)}
+.mb-icon{font-size:18px;margin-bottom:4px;display:block}
+.mb-name{font-size:11px;font-weight:700;color:var(--ink2);line-height:1.35;margin-bottom:3px}
+.mb-desc{font-size:9.5px;color:var(--muted);line-height:1.5}
+.mb-tag{display:inline-flex;align-items:center;gap:4px;margin-top:6px;background:#f1f5f9;border:1px solid var(--border);color:var(--muted);font-size:8.5px;font-weight:600;padding:2px 8px;border-radius:20px}
+.mod-btn.active.ma .mb-tag{background:var(--a-mid);border-color:var(--a-acc);color:var(--a-dark)}
+.mod-btn.active.mb .mb-tag{background:var(--b-mid);border-color:var(--b-acc);color:var(--b-dark)}
+.sb-footer{margin-top:auto;font-size:9px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border-l);padding-top:9px}
+/* MAIN */
+.main{overflow-y:auto;background:var(--bg);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.main::-webkit-scrollbar{width:5px}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+/* CPANEL */
+.cpanel{padding:16px 18px;animation:fu .25s ease}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* MOD TITLE */
+.mod-title{display:flex;align-items:center;gap:11px;margin-bottom:13px;padding-bottom:11px;border-bottom:1.5px solid var(--border-l)}
+.mt-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.mt-text h2{font-size:13px;font-weight:800;line-height:1.25;color:var(--ink)}
+.mt-text p{font-size:9.5px;color:var(--muted);margin-top:2px}
+/* SLABEL */
+.sl{font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;display:flex;align-items:center;gap:7px;margin-bottom:7px;margin-top:11px}
+.sl::after{content:'';flex:1;height:1px;background:var(--border-l)}
+/* TEXT */
+.pt{font-size:11px;color:var(--ink2);line-height:1.78;margin-bottom:8px}
+/* DATA GRID */
+.dg{display:grid;gap:7px;margin-bottom:10px}
+.dc{background:var(--white);border:1.5px solid var(--border);border-radius:9px;padding:8px 11px}
+.dct{font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.dcv{font-family:'Courier New',monospace;font-size:12px;font-weight:700}
+.dcn{font-size:9px;color:var(--muted);margin-top:2px}
+/* FORMULA */
+.fb2{border-radius:9px;padding:10px 15px;font-family:'Courier New',monospace;font-size:13.5px;font-weight:700;text-align:center;margin:6px 0;border:1.5px solid}
+.fb2.a{background:var(--a-light);border-color:var(--a-mid);color:var(--a-dark)}
+.fb2.b{background:var(--b-light);border-color:var(--b-mid);color:var(--b-dark)}
+/* NOTA */
+.nota{font-size:9.5px;color:var(--muted);font-style:italic;border-left:2.5px solid var(--border);padding-left:9px;margin:6px 0;line-height:1.6}
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:6px;margin:7px 0}
+.step{background:var(--white);border:1.5px solid var(--border);border-left:3.5px solid var(--border);border-radius:0 9px 9px 0;padding:9px 12px;cursor:pointer;transition:all .18s}
+.step.sa:hover,.step.sa.open{border-left-color:var(--a-acc);background:var(--a-light);border-color:var(--a-mid)}
+.step.sb:hover,.step.sb.open{border-left-color:var(--b-acc);background:var(--b-light);border-color:var(--b-mid)}
+.sh{display:flex;align-items:center;gap:8px}
+.sn{width:21px;height:21px;border-radius:6px;background:#f1f5f9;border:1.5px solid var(--border);font-size:9.5px;font-weight:800;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s}
+.step.sa.open .sn{background:var(--a-acc);color:#fff;border-color:var(--a-acc)}
+.step.sb.open .sn{background:var(--b-acc);color:#fff;border-color:var(--b-acc)}
+.sl2{font-size:11px;font-weight:700;color:var(--ink2);flex:1}
+.sa2{font-size:13px;color:var(--muted);transition:transform .18s}
+.step.open .sa2{transform:rotate(90deg)}
+.step.sa.open .sa2{color:var(--a-acc)}
+.step.sb.open .sa2{color:var(--b-acc)}
+.sbody{display:none;padding-top:8px;font-size:10.5px;color:var(--ink2);line-height:1.75}
+.step.open .sbody{display:block;animation:fu .18s ease}
+.fi{font-family:'Courier New',monospace;font-size:12px;font-weight:700;border-radius:5px;padding:2px 8px;display:inline-block;margin:2px 0}
+.fia{background:var(--a-light);color:var(--a-dark)}
+.fib{background:var(--b-light);color:var(--b-dark)}
+/* REVEAL BTN */
+.rb{border-radius:8px;padding:5px 13px;cursor:pointer;font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:all .18s;margin-top:4px;border:1.5px solid}
+.rb.a{background:var(--a-light);border-color:var(--a-mid);color:var(--a-dark)}
+.rb.a:hover{background:var(--a-mid)}
+.rb.b{background:var(--b-light);border-color:var(--b-mid);color:var(--b-dark)}
+.rb.b:hover{background:var(--b-mid)}
+/* RESULT */
+.rh{display:flex;align-items:center;gap:13px;border-radius:12px;padding:13px 15px;margin:11px 0;border:1.5px solid}
+.rh.a{background:var(--a-light);border-color:var(--a-mid)}
+.rh.b{background:var(--b-light);border-color:var(--b-mid)}
+.rn{font-family:'Courier New',monospace;font-size:19px;font-weight:900;white-space:nowrap;flex-shrink:0}
+.rn.a{color:var(--a-dark)}
+.rn.b{color:var(--b-dark)}
+.rl{font-size:10px;color:var(--muted);line-height:1.55}
+.rl strong{display:block;font-size:11.5px;color:var(--ink2);margin-bottom:2px}
+/* CONCL */
+.concl{border-radius:10px;padding:11px 14px;margin-top:9px;font-size:10.5px;line-height:1.78;border:1.5px solid}
+.concl.a{background:var(--a-light);border-color:var(--a-mid);color:var(--ink2)}
+.concl.b{background:var(--b-light);border-color:var(--b-mid);color:var(--ink2)}
+.concl strong{font-weight:700}
+.concl.a strong{color:var(--a-dark)}
+.concl.b strong{color:var(--b-dark)}
+/* FOOTER */
+.foot{height:33px;flex-shrink:0;background:var(--white);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+.foot-ref{font-size:8.5px;color:var(--muted)}
+.foot-id{font-size:8.5px;color:var(--muted);font-family:'Courier New',monospace}
+/* MOBILE */
+@media(max-width:600px){
+  html,body{width:100%;height:auto;overflow:auto}
+  .shell{width:100%;height:auto}
+  .body{grid-template-columns:1fr}
+  .sidebar{flex-direction:row;flex-wrap:wrap;padding:10px;gap:8px;border-right:none;border-bottom:1.5px solid var(--border)}
+  .mod-btn{flex:1;min-width:130px}
+  .main{overflow:visible}
+}
+</style>
 </head>
-
 <body>
-    <div class="shell">
+<div class="shell">
 
-        <!-- HDR -->
-        <div class="hdr">
-            <div class="hdr-logo">
-                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                    <rect width="26" height="26" rx="7" fill="rgba(56,189,248,.1)" stroke="rgba(56,189,248,.28)"
-                        stroke-width="1" />
-                    <path d="M4 19 Q8 12 13 10 Q17 8 22 5" stroke="#38bdf8" stroke-width="1.7" fill="none"
-                        stroke-linecap="round" />
-                    <circle cx="13" cy="10" r="2" fill="#38bdf8" />
-                    <path d="M4 21h18" stroke="rgba(56,189,248,.22)" stroke-width=".9" />
-                </svg>
-                <span class="hdr-title">CALCULUS ENGINE <span>v4.0</span></span>
-            </div>
-            <div class="hdr-badge">▶ ACTIVO</div>
-            <div class="hdr-hint">Haga clic en los temas para visualizar la información</div>
-        </div>
+<div class="hdr">
+  <div class="hdr-icon">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M2 13 Q5 8 9 7 Q12 6 16 3" stroke="#0369a1" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      <circle cx="9" cy="7" r="2" fill="#0369a1"/>
+      <line x1="1" y1="15" x2="17" y2="15" stroke="#bae6fd" stroke-width="1.2"/>
+    </svg>
+  </div>
+  <span class="hdr-title">Tasa de cambio relacionada: ejemplos de aplicación</span>
+ 
+  <div class="hdr-hint">Haga clic en los temas para visualizar la información</div>
+</div>
 
-        <!-- BODY -->
-        <div class="body">
+<div class="intro">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#0369a1" stroke-width="1.2"/><path d="M7 4.5V8M7 9.5v.5" stroke="#0369a1" stroke-width="1.2" stroke-linecap="round"/></svg>
+  <p>A continuación, le invito a explorar los siguientes ejemplos, donde podrá analizar la aplicación del cálculo diferencial en la expansión de redes y el crecimiento de su complejidad.</p>
+</div>
 
-            <!-- SIDEBAR -->
-            <div class="sidebar">
-                <div class="sb-intro">
-                    <strong>Tasa de cambio relacionada: ejemplos de aplicación</strong>
-                    A continuación, le invito a explorar los siguientes ejemplos, donde podrá analizar la aplicación del
-                    cálculo diferencial en la expansión de redes y el crecimiento de su complejidad.
-                </div>
+<div class="body">
 
-                <div class="mod-btn active" id="btn0" onclick="load(0,this)">
-                    <span class="mod-icon">🌐</span>
-                    <div class="mod-name">Expansión de cobertura WiFi (modelo geométrico).</div>
-                    <div class="mod-desc">Antena omnidireccional · Radio vs. área de cobertura</div>
-                    <div class="mod-tag"><span class="dot"></span>Modelo geométrico</div>
-                </div>
-
-                <div class="mod-btn" id="btn1" onclick="load(1,this)">
-                    <span class="mod-icon">📡</span>
-                    <div class="mod-name">Crecimiento de la complejidad de red (Ley de Metcalfe).</div>
-                    <div class="mod-desc">IoT full mesh · Nodos vs. conexiones posibles</div>
-                    <div class="mod-tag"><span class="dot"></span>Ley de Metcalfe</div>
-                </div>
-
-
-            </div>
-
-            <!-- MAIN -->
-            <div class="main" id="main"></div>
-
-        </div>
-
-        <!-- FOOT -->
-        <div class="foot">
-            <div class="foot-ref">Elaboración propia · Rohoden, K. (2025). <em>Tasa de cambio relacionada: ejemplos de
-                    aplicación.</em> UTPL.</div>
-
-        </div>
-
-    </div><!-- /shell -->
-    <script>
-        const MODS = [
-            {
-                render() {
-                    return `<div class="cpanel">
-    <div class="mod-title">
-      <div class="mt-icon" style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.18)">🌐</div>
-      <div class="mt-text"><h2>Expansión de cobertura WiFi (modelo geométrico)</h2><p>Planteamiento · Variables · Derivada · Cálculo · Conclusión</p></div>
+  <div class="sidebar">
+    <div class="sb-label">Temas</div>
+    <div class="mod-btn ma active" id="btn0" onclick="load(0,this)">
+      <span class="mb-icon">🌐</span>
+      <div class="mb-name">Expansión de cobertura WiFi (modelo geométrico).</div>
+      <div class="mb-desc">Antena omnidireccional · Radio vs. área</div>
+      <div class="mb-tag">Modelo geométrico</div>
     </div>
-    <div class="slabel">Planteamiento del problema</div>
-    <p class="ptext">Una antena omnidireccional incrementa su potencia de tal forma que el radio de cobertura eficaz aumenta a razón de 2 metros por segundo. Cuando el radio es de 10 metros, ¿a qué velocidad está creciendo el área de cobertura total?</p>
-    <div class="slabel">Variables · Datos</div>
-    <div class="data-grid">
-      <div class="data-cell"><div class="dc-tag">Variable</div><div class="dc-val">r</div><div class="dc-note">Radio (m)</div></div>
-      <div class="data-cell"><div class="dc-tag">Variable</div><div class="dc-val">A</div><div class="dc-note">Área (m²)</div></div>
-      <div class="data-cell"><div class="dc-tag">Variable</div><div class="dc-val">t</div><div class="dc-note">Tiempo (s)</div></div>
-      <div class="data-cell"><div class="dc-tag">Dato conocido</div><div class="dc-val">dr/dt = 2</div><div class="dc-note">m/s</div></div>
-      <div class="data-cell" style="grid-column:span 2"><div class="dc-tag">Se busca</div><div class="dc-val">dA/dt cuando r = 10</div><div class="dc-note">Tasa de cambio del área</div></div>
+    <div class="mod-btn mb" id="btn1" onclick="load(1,this)">
+      <span class="mb-icon">📡</span>
+      <div class="mb-name">Crecimiento de la complejidad de red (Ley de Metcalfe).</div>
+      <div class="mb-desc">IoT full mesh · Nodos vs. conexiones</div>
+      <div class="mb-tag">Ley de Metcalfe</div>
     </div>
-    <div class="slabel">Ecuación base</div>
-    <div class="fbox"><span>A = π · r²</span></div>
-    <div class="slabel" style="margin-top:11px">Procedimiento — clic en cada paso</div>
-    <div class="steps" id="sw">
-      <div class="step open" onclick="ts(this)">
-        <div class="step-head"><div class="step-n">1</div><div class="step-lbl">Derivada</div><div class="step-arr">›</div></div>
-        <div class="step-body">Se aplica la regla de la cadena, derivando A respecto al tiempo t:<br>
-          <span class="f">dA/dt = π · 2r · (dr/dt)</span><br>
-          <span class="f">dA/dt = 2π r · (dr/dt)</span>
-        </div>
-      </div>
-      <div class="step" onclick="ts(this)">
-        <div class="step-head"><div class="step-n">2</div><div class="step-lbl">Cálculo</div><div class="step-arr">›</div></div>
-        <div class="step-body">Sustituyendo r = 10 y dr/dt = 2:<br>
-          <span class="fg">dA/dt = 2π(10)(2) = 40π ≈ 125.66 m²/s</span>
-        </div>
-      </div>
-    </div>
-    <button class="reveal-btn" onclick="ra('sw')">
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Mostrar todos los pasos
-    </button>
-    <div class="result-hero" style="margin-top:13px">
-      <div>
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-          <circle cx="22" cy="22" r="21" stroke="rgba(56,189,248,.25)" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <circle cx="22" cy="22" r="14" stroke="rgba(56,189,248,.4)"  stroke-width="1.1" stroke-dasharray="3 2"/>
-          <circle cx="22" cy="22" r="7"  fill="rgba(56,189,248,.12)" stroke="#38bdf8" stroke-width="1.4"/>
-          <circle cx="22" cy="22" r="2.5" fill="#38bdf8"/>
-        </svg>
-      </div>
-      <div style="flex:1">
-        <div class="rh-num blue">40π ≈ 125.66 m²/s</div>
-        <div class="rh-label"><strong>Velocidad de crecimiento del área de cobertura</strong>cuando r = 10 m y dr/dt = 2 m/s</div>
-      </div>
-    </div>
-    <div class="slabel">Conclusión</div>
-    <div class="concl blue">Se puede concluir que, aunque el radio crece linealmente, el área de cobertura crece cuadráticamente. En redes inalámbricas, <strong>un pequeño aumento en el alcance radial implica una ganancia masiva en la zona de servicio.</strong></div>
-  </div>`}
-            },
-            {
-                render() {
-                    return `<div class="cpanel">
-    <div class="mod-title">
-      <div class="mt-icon" style="background:rgba(34,211,160,.09);border:1px solid rgba(34,211,160,.18)">📡</div>
-      <div class="mt-text"><h2 style="color:white">Crecimiento de la complejidad de red (Ley de Metcalfe)</h2><p>Contexto · Datos · Ecuación · Derivada · Cálculo · Conclusión</p></div>
-    </div>
-    <p class="ptext">Este ejemplo es ideal para demostrar cómo una variable lineal (agregar usuarios) afecta a una variable cuadrática (el valor o la complejidad de la red).</p>
-    <p class="ptext">En una red de tipo malla completa (full mesh), cada nodo puede conectarse teóricamente con todos los demás. Según la Ley de Metcalfe, el valor o la complejidad de gestión (V) de una red es proporcional al cuadrado del número de nodos (N).</p>
-    <div class="fbox"><span>V = N²</span></div>
-    <div class="nota"><strong>Nota:</strong> Técnicamente es N(N − 1), pero para N grande se aproxima a N².</div>
-    <div class="slabel">Planteamiento del problema</div>
-    <p class="ptext">Considerar que un startup de Internet de las Cosas (IoT) está desplegando sensores en una ciudad inteligente. Actualmente tienen 1,000 nodos instalados (N = 1000). Debido a una campaña de ventas agresiva, están instalando nuevos nodos a una velocidad de 20 nodos por día. ¿A qué velocidad está aumentando la complejidad de conexiones posibles (V) en la red en este instante?</p>
-    <p class="ptext" style="font-size:10.5px;color:#6a8a80"><strong style="color:white">Contexto:</strong> Una red IoT full mesh (malla completa) donde cada nodo puede conectarse con todos los demás.<br><strong style="color:white">Objetivo:</strong> Determinar la velocidad de aumento de la complejidad o conexiones posibles (V).</p>
-    <div class="slabel">Datos conocidos</div>
-    <div class="data-grid">
-      <div class="data-cell"><div class="dc-tag">Cantidad actual</div><div class="dc-val" style="color:white">N = 1,000</div><div class="dc-note">nodos</div></div>
-      <div class="data-cell" style="grid-column:span 2"><div class="dc-tag">Tasa de instalación</div><div class="dc-val" style="color:white">dN/dt = 20</div><div class="dc-note">nodos/día</div></div>
-    </div>
-    <div class="slabel">Ecuación de enlace · Derivada (modelo)</div>
-    <div class="fbox"><span>V = N² &nbsp;(Aproximación de la Ley de Metcalfe para N grande)</span></div>
-    <div class="fbox derived"><span>dV/dt = 2N · (dN/dt)</span></div>
-    <div class="slabel" style="margin-top:11px">Procedimiento — clic en cada paso</div>
-    <div class="steps" id="sm">
-      <div class="step green-step" onclick="ts(this)">
-        <div class="step-head"><div class="step-n" style="border-color:rgba(34,211,160,.25);color:white">1</div><div class="step-lbl">Cálculo</div><div class="step-arr">›</div></div>
-        <div class="step-body">Sustituyendo N = 1,000 y dN/dt = 20:<br><span class="fg">dV/dt = 2(1,000) · (20)</span></div>
-      </div>
-      <div class="step green-step" onclick="ts(this)">
-        <div class="step-head"><div class="step-n" style="border-color:rgba(34,211,160,.25);color:white">2</div><div class="step-lbl">Resultado</div><div class="step-arr">›</div></div>
-        <div class="step-body"><span class="fg">40,000 conexiones/día</span></div>
-      </div>
-    </div>
-    <button class="reveal-btn g" onclick="ra('sm')">
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Mostrar todos los pasos
-    </button>
-    <div class="result-hero" style="margin-top:13px">
-      <div>
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-          <circle cx="22" cy="22" r="21" stroke="rgba(34,211,160,.18)" stroke-width="1"/>
-          <circle cx="7"  cy="22" r="3" fill="rgba(34,211,160,.5)"/>
-          <circle cx="37" cy="22" r="3" fill="rgba(34,211,160,.5)"/>
-          <circle cx="22" cy="7"  r="3" fill="rgba(34,211,160,.5)"/>
-          <circle cx="22" cy="37" r="3" fill="rgba(34,211,160,.5)"/>
-          <circle cx="22" cy="22" r="3.5" fill="#22d3a0"/>
-          <line x1="7" y1="22" x2="22" y2="22" stroke="rgba(34,211,160,.35)" stroke-width=".9"/>
-          <line x1="37" y1="22" x2="22" y2="22" stroke="rgba(34,211,160,.35)" stroke-width=".9"/>
-          <line x1="22" y1="7"  x2="22" y2="22" stroke="rgba(34,211,160,.35)" stroke-width=".9"/>
-          <line x1="22" y1="37" x2="22" y2="22" stroke="rgba(34,211,160,.35)" stroke-width=".9"/>
-        </svg>
-      </div>
-      <div style="flex:1">
-        <div class="rh-num green">40,000 conexiones/día</div>
-        <div class="rh-label"><strong>Velocidad de aumento de la complejidad</strong>cuando N = 1,000 y dN/dt = 20 nodos/día</div>
-      </div>
-    </div>
-    <div class="slabel">Conclusión</div>
-    <div class="concl">Se concluye que, aunque el hardware crece linealmente (20 dispositivos/día), la carga de gestión en la base de datos o los vectores de ataque posibles crecen exponencialmente. <strong>El sistema de monitoreo debe estar preparado para procesar 40,000 nuevos flujos de datos diarios, no solo 20.</strong></div>
-  </div>`}
-            }
-        ];
 
-        function load(i, el) {
-            document.querySelectorAll('.mod-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('main').innerHTML = MODS[i].render();
-        }
-        function ts(el) { el.classList.toggle('open') }
-        function ra(id) { document.querySelectorAll('#' + id + ' .step').forEach(s => s.classList.add('open')) }
-        window.addEventListener('load', () => load(0, document.getElementById('btn0')));
-    </script>
+  </div>
+
+  <div class="main" id="main"></div>
+</div>
+
+<div class="foot">
+  <div class="foot-ref">Elaboración propia · Rohoden, K. (2025). <em>Tasa de cambio relacionada: ejemplos de aplicación.</em> UTPL.</div>
+
+</div>
+
+</div>
+<script>
+const M=[
+{r(){return`<div class="cpanel">
+  <div class="mod-title">
+    <div class="mt-icon" style="background:#e0f2fe;border:1.5px solid #bae6fd">🌐</div>
+    <div class="mt-text"><h2>Expansión de cobertura WiFi (modelo geométrico)</h2><p>Planteamiento · Variables · Datos · Derivada · Cálculo · Conclusión</p></div>
+  </div>
+  <div class="sl" style="color:#0369a1">Planteamiento del problema</div>
+  <p class="pt">Una antena omnidireccional incrementa su potencia de tal forma que el radio de cobertura eficaz aumenta a razón de 2 metros por segundo. Cuando el radio es de 10 metros, ¿a qué velocidad está creciendo el área de cobertura total?</p>
+  <div class="sl" style="color:#0369a1">Procedimiento</div>
+  <p style="font-size:10.5px;font-weight:700;color:#0369a1;margin-bottom:5px">Variables:</p>
+  <div class="dg" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="dc"><div class="dct">Variable</div><div class="dcv" style="color:#075985">Radio (r)</div></div>
+    <div class="dc"><div class="dct">Variable</div><div class="dcv" style="color:#075985">Área (A)</div></div>
+    <div class="dc"><div class="dct">Variable</div><div class="dcv" style="color:#075985">Tiempo (t)</div></div>
+  </div>
+  <p style="font-size:10.5px;font-weight:700;color:#0369a1;margin:8px 0 5px">Datos:</p>
+  <div class="dg" style="grid-template-columns:1fr 1fr">
+    <div class="dc"><div class="dct">Dato conocido</div><div class="dcv" style="color:#075985">dr/dt = 2 m/s</div></div>
+    <div class="dc"><div class="dct">Se busca</div><div class="dcv" style="color:#075985">dA/dt cuando r = 10</div></div>
+  </div>
+  <p style="font-size:10.5px;font-weight:700;color:#0369a1;margin:8px 0 4px">Derivada</p>
+  <div class="fb2 a">dA/dt = π · 2r · (dr/dt)</div>
+  <div class="fb2 a">dA/dt = 2π r · (dr/dt)</div>
+  <p style="font-size:10.5px;font-weight:700;color:#0369a1;margin:9px 0 4px">Cálculo</p>
+  <div class="steps" id="sw">
+    <div class="step sa open" onclick="ts(this)">
+      <div class="sh"><div class="sn">1</div><div class="sl2">Cálculo</div><div class="sa2">›</div></div>
+      <div class="sbody"><span class="fi fia">dA/dt = 2π(10)(2) = 40π ≈ 125.66 m²/s</span></div>
+    </div>
+  </div>
+  <div class="rh a">
+    <div>
+      <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+        <circle cx="19" cy="19" r="18" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <circle cx="19" cy="19" r="12" stroke="#7dd3fc" stroke-width="1.2" stroke-dasharray="3 2"/>
+        <circle cx="19" cy="19" r="6"  fill="#e0f2fe" stroke="#0369a1" stroke-width="1.4"/>
+        <circle cx="19" cy="19" r="2.5" fill="#0369a1"/>
+      </svg>
+    </div>
+    <div style="flex:1">
+      <div class="rn a">40π ≈ 125.66 m²/s</div>
+      <div class="rl"><strong>Velocidad de crecimiento del área de cobertura</strong>cuando r = 10 m y dr/dt = 2 m/s</div>
+    </div>
+  </div>
+  <p style="font-size:10.5px;font-weight:700;color:#0369a1;margin:9px 0 4px">Conclusión</p>
+  <div class="concl a">Se puede concluir que, aunque el radio crece linealmente, el área de cobertura crece cuadráticamente. En redes inalámbricas, <strong>un pequeño aumento en el alcance radial implica una ganancia masiva en la zona de servicio.</strong></div>
+</div>`}},
+{r(){return`<div class="cpanel">
+  <div class="mod-title">
+    <div class="mt-icon" style="background:#dcfce7;border:1.5px solid #bbf7d0">📡</div>
+    <div class="mt-text"><h2>Crecimiento de la complejidad de red (Ley de Metcalfe)</h2><p>Contexto · Objetivo · Datos · Ecuación · Derivada · Cálculo · Conclusión</p></div>
+  </div>
+  <p class="pt">Este ejemplo es ideal para demostrar cómo una variable lineal (agregar usuarios) afecta a una variable cuadrática (el valor o la complejidad de la red).</p>
+  <p class="pt">En una red de tipo malla completa (full mesh), cada nodo puede conectarse teóricamente con todos los demás. Según la Ley de Metcalfe, el valor o la complejidad de gestión (V) de una red es proporcional al cuadrado del número de nodos (N).</p>
+  <div class="fb2 b">V = N²</div>
+  <div class="nota"><em><strong>Nota:</strong> Técnicamente es N(N − 1), pero para N grande se aproxima a N².</em></div>
+  <div class="sl" style="color:#15803d">Planteamiento del problema</div>
+  <p class="pt">Considerar que un <em>startup</em> de Internet de las Cosas (IoT) está desplegando sensores en una ciudad inteligente. Actualmente tienen 1,000 nodos instalados (N = 1000). Debido a una campaña de ventas agresiva, están instalando nuevos nodos a una velocidad de 20 nodos por día. ¿A qué velocidad está aumentando la complejidad de conexiones posibles (V) en la red en este instante?</p>
+  <p style="font-size:10.5px;font-weight:700;color:#15803d;margin-bottom:4px">Contexto</p>
+  <p class="pt">Una red IoT <em>full mesh</em> (malla completa) donde cada nodo puede conectarse con todos los demás.</p>
+  <p style="font-size:10.5px;font-weight:700;color:#15803d;margin-bottom:4px">Objetivo</p>
+  <p class="pt">Determinar la velocidad de aumento de la complejidad o conexiones posibles (V).</p>
+  <p style="font-size:10.5px;font-weight:700;color:#15803d;margin:8px 0 5px">Datos conocidos</p>
+  <div class="dg" style="grid-template-columns:1fr 1fr">
+    <div class="dc"><div class="dct">Cantidad actual</div><div class="dcv" style="color:#14532d">N = 1,000 nodos</div></div>
+    <div class="dc"><div class="dct">Tasa de instalación</div><div class="dcv" style="color:#14532d">dN/dt = 20 nodos/día</div></div>
+  </div>
+  <p style="font-size:10.5px;font-weight:700;color:#15803d;margin:8px 0 4px">Ecuación de enlace</p>
+  <div class="fb2 b">V = N² (Aproximación de la Ley de Metcalfe para N grande)</div>
+  <p style="font-size:10.5px;font-weight:700;color:#15803d;margin:8px 0 4px">Derivada (modelo)</p>
+  <div class="fb2 b">dV/dt = 2N · (dN/dt)</div>
+  <p style="font-size:10.5px;font-weight:700;color:#15803d;margin:9px 0 4px">Cálculo</p>
+  <div class="steps" id="sm">
+    <div class="step sb" onclick="ts(this)">
+      <div class="sh"><div class="sn">1</div><div class="sl2">Cálculo</div><div class="sa2">›</div></div>
+      <div class="sbody"><span class="fi fib">dV/dt = 2(1,000) · (20)</span></div>
+    </div>
+    <div class="step sb" onclick="ts(this)">
+      <div class="sh"><div class="sn">2</div><div class="sl2">Resultado</div><div class="sa2">›</div></div>
+      <div class="sbody"><span class="fi fib">40,000 conexiones/día</span></div>
+    </div>
+  </div>
+  <button class="rb b" onclick="ra('sm')">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="1.1"/><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Mostrar todos los pasos
+  </button>
+  <div class="rh b" style="margin-top:11px">
+    <div>
+      <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+        <circle cx="19" cy="19" r="18" stroke="#bbf7d0" stroke-width="1.5"/>
+        <circle cx="5"  cy="19" r="2.8" fill="#86efac"/>
+        <circle cx="33" cy="19" r="2.8" fill="#86efac"/>
+        <circle cx="19" cy="5"  r="2.8" fill="#86efac"/>
+        <circle cx="19" cy="33" r="2.8" fill="#86efac"/>
+        <circle cx="19" cy="19" r="3.5" fill="#15803d"/>
+        <line x1="5" y1="19" x2="19" y2="19" stroke="#86efac" stroke-width=".9"/>
+        <line x1="33" y1="19" x2="19" y2="19" stroke="#86efac" stroke-width=".9"/>
+        <line x1="19" y1="5"  x2="19" y2="19" stroke="#86efac" stroke-width=".9"/>
+        <line x1="19" y1="33" x2="19" y2="19" stroke="#86efac" stroke-width=".9"/>
+      </svg>
+    </div>
+    <div style="flex:1">
+      <div class="rn b">40,000 conexiones/día</div>
+      <div class="rl"><strong>Velocidad de aumento de la complejidad</strong>cuando N = 1,000 y dN/dt = 20 nodos/día</div>
+    </div>
+  </div>
+  <p style="font-size:10.5px;font-weight:700;color:#15803d;margin:9px 0 4px">Conclusión</p>
+  <div class="concl b">Se concluye que, aunque el hardware crece linealmente (20 dispositivos/día), la carga de gestión en la base de datos o los vectores de ataque posibles crecen exponencialmente. <strong>El sistema de monitoreo debe estar preparado para procesar 40,000 nuevos flujos de datos diarios, no solo 20.</strong></div>
+</div>`}}
+];
+function load(i,el){document.querySelectorAll('.mod-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');document.getElementById('main').innerHTML=M[i].r()}
+function ts(el){el.classList.toggle('open')}
+function ra(id){document.querySelectorAll('#'+id+' .step').forEach(s=>s.classList.add('open'))}
+window.addEventListener('load',()=>load(0,document.getElementById('btn0')));
+</script>
 </body>
-
 </html>

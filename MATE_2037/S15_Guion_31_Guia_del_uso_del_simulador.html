@@ -1,219 +1,456 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guía del Simulador | Cálculo Diferencial</title>
-    <style>
-        :root {
-            --bg-color: #f0f4f8;
-            --surface: #ffffff;
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --text-main: #1e293b;
-            --text-muted: #475569;
-            --accent: #0ea5e9;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            --border: #e2e8f0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guía del simulador · MATE_2036</title>
+<style>
+/* ══════════════════════════════════════
+   TOKENS — fondos claros, WCAG AA ≥4.5:1
+   #1e293b/#fff=14.7:1 · #075985/#e0f2fe=5.8:1
+   #14532d/#dcfce7=6.1:1 · #78350f/#fef9c3=4.8:1
+══════════════════════════════════════ */
+:root{
+  --bg:     #f8fafc;
+  --white:  #ffffff;
+  --ink:    #0f172a;
+  --ink2:   #1e293b;
+  --muted:  #475569;
+  --border: #cbd5e1;
+  --bord-l: #e2e8f0;
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  /* WiFi — azul */
+  --wa:  #0369a1; --wal: #e0f2fe; --wam: #bae6fd; --wad: #075985;
+  /* Metcalfe — verde */
+  --ma:  #15803d; --mal: #dcfce7; --mam: #bbf7d0; --mad: #14532d;
+  /* Pregunta — ámbar */
+  --qa:  #92400e; --qal: #fef9c3; --qam: #fde68a; --qad: #78350f;
+  /* Steps */
+  --s1:#0369a1;--s2:#0891b2;--s3:#0369a1;--s4:#7c3aed;
+}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 10px;
-        }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:800px;height:800px;overflow:hidden;background:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;color:var(--ink)}
 
-        /* Contenedor Adaptable (Max 800x800) */
-        .simulator-card {
-            width: 100%;
-            max-width: 800px;
-            height: 800px;
-            background: var(--surface);
-            border-radius: 24px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
+/* ── SHELL ── */
+.shell{width:800px;height:800px;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);overflow:hidden}
 
-        /* Header con Contraste W3C */
-        .sim-header {
-            padding: 30px;
-            background: #ffffff;
-            border-bottom: 2px solid var(--bg-color);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+/* ── HEADER ── */
+.hdr{
+  height:50px;flex-shrink:0;
+  background:var(--white);border-bottom:2px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:11px;
+}
+.hdr-icon{width:32px;height:32px;border-radius:9px;background:var(--wal);border:1.5px solid var(--wam);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-title{font-size:13px;font-weight:700;color:var(--ink2)}
+.hdr-sub{font-size:10px;color:var(--muted)}
+.hdr-badge{margin-left:auto;background:#f1f5f9;border:1.5px solid var(--border);color:var(--muted);font-size:9px;font-weight:600;padding:3px 11px;border-radius:20px;white-space:nowrap}
 
-        .icon-box {
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            flex-shrink: 0;
-        }
+/* ── INTRO ── */
+.intro{background:#f1f5f9;border-bottom:1.5px solid var(--bord-l);padding:8px 20px;flex-shrink:0;display:flex;align-items:flex-start;gap:9px}
+.intro p{font-size:10.5px;color:var(--ink2);line-height:1.65;flex:1}
 
-        .header-text h1 { font-size: 18px; color: var(--primary-dark); }
-        .header-text p { font-size: 12px; color: var(--text-muted); }
+/* ── TAB BAR ── */
+.tabs{display:flex;flex-shrink:0;border-bottom:2px solid var(--border);background:var(--white)}
+.tab{
+  flex:1;padding:10px 16px;text-align:center;
+  font-size:11px;font-weight:700;cursor:pointer;
+  border-bottom:3px solid transparent;color:var(--muted);
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.tab:hover{background:var(--bg)}
+.tab.tw.active{color:var(--wa);border-bottom-color:var(--wa);background:var(--wal)}
+.tab.tm.active{color:var(--ma);border-bottom-color:var(--ma);background:var(--mal)}
 
-        /* Contenido con Scroll Suave */
-        .sim-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px;
-            display: grid;
-            gap: 25px;
-        }
+/* ── CONTENT ── */
+.content{flex:1;overflow:hidden;position:relative}
+.panel{display:none;height:100%;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.panel.active{display:block;animation:fu .25s ease}
+.panel::-webkit-scrollbar{width:5px}
+.panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-        /* Tarjetas de Pasos (Interactividad Hover) */
-        .step-section {
-            background: var(--bg-color);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid var(--border);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+/* ── PANEL BODY ── */
+.pbody{padding:16px 22px 20px}
 
-        .step-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            background: #fff;
-        }
+/* Objective card */
+.obj-card{
+  display:flex;align-items:flex-start;gap:12px;
+  border-radius:12px;padding:12px 15px;
+  margin-bottom:14px;border:1.5px solid;
+}
+.obj-card.w{background:var(--wal);border-color:var(--wam)}
+.obj-card.m{background:var(--mal);border-color:var(--mam)}
+.obj-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.obj-text{flex:1}
+.obj-tag{font-size:8.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
+.obj-tag.w{color:var(--wa)} .obj-tag.m{color:var(--ma)}
+.obj-desc{font-size:11px;color:var(--ink2);line-height:1.7}
 
-        .step-tag {
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            display: block;
-        }
+/* Step label */
+.step-label{
+  font-size:8.5px;font-weight:700;letter-spacing:.8px;
+  text-transform:uppercase;display:flex;align-items:center;gap:7px;
+  margin-bottom:9px;
+}
+.step-label::after{content:'';flex:1;height:1px;background:var(--bord-l)}
 
-        .step-title { font-size: 15px; margin-bottom: 15px; font-weight: 700; color: var(--text-main); }
+/* Step cards */
+.steps-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
 
-        /* Grid de Casos */
-        .cases-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+.sc{
+  background:var(--white);border:1.5px solid var(--border);
+  border-left:4px solid var(--border);
+  border-radius:0 10px 10px 0;
+  overflow:hidden;transition:all .2s;
+}
+.sc.w1{border-left-color:#0369a1} .sc.w2{border-left-color:#0891b2}
+.sc.w3{border-left-color:#7c3aed} .sc.w4{border-left-color:#be185d}
+.sc.m1{border-left-color:#15803d} .sc.m2{border-left-color:#0f766e}
+.sc.m3{border-left-color:#6d28d9}
 
-        .case-pill {
-            background: #ffffff;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 11px;
-            border: 1px solid var(--border);
-        }
+.sc-head{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;cursor:pointer;
+  transition:background .18s;
+}
+.sc-head:hover{background:var(--bg)}
+.sc.w1.open .sc-head,.sc.w2.open .sc-head{background:var(--wal)}
+.sc.w3.open .sc-head,.sc.w4.open .sc-head{background:#faf5ff}
+.sc.m1.open .sc-head,.sc.m2.open .sc-head{background:var(--mal)}
+.sc.m3.open .sc-head{background:#fdf4ff}
 
-        .case-pill strong { color: var(--accent); display: block; margin-bottom: 4px; }
+.sc-num{
+  width:26px;height:26px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.sc.w1 .sc-num{background:#0369a1} .sc.w2 .sc-num{background:#0891b2}
+.sc.w3 .sc-num{background:#7c3aed} .sc.w4 .sc-num{background:#be185d}
+.sc.m1 .sc-num{background:#15803d} .sc.m2 .sc-num{background:#0f766e}
+.sc.m3 .sc-num{background:#6d28d9}
 
-        /* Bloque de Reflexión */
-        .reflection-box {
-            background: #f0fdf4;
-            border-left: 4px solid #22c55e;
-            padding: 15px;
-            margin-top: 10px;
-            font-size: 12px;
-            color: #166534;
-        }
+.sc-title{font-size:11.5px;font-weight:700;color:var(--ink2);flex:1}
+.sc-arr{font-size:13px;color:var(--muted);transition:transform .18s}
+.sc.open .sc-arr{transform:rotate(90deg)}
+.sc.w1.open .sc-arr,.sc.w2.open .sc-arr{color:#0369a1}
+.sc.m1.open .sc-arr,.sc.m2.open .sc-arr{color:#15803d}
+.sc.w3.open .sc-arr{color:#7c3aed}
+.sc.m3.open .sc-arr{color:#6d28d9}
 
-        /* Footer APA */
-        footer {
-            padding: 20px 30px;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            font-size: 10px;
-            color: var(--text-muted);
-            text-align: center;
-        }
+.sc-body{display:none;padding:0 14px 13px 50px}
+.sc.open .sc-body{display:block;animation:fu .2s ease}
+.sc-text{font-size:11px;color:var(--ink2);line-height:1.78}
 
-        /* Responsividad Móvil */
-        @media (max-width: 650px) {
-            .simulator-card { height: auto; max-height: 95vh; }
-            .cases-grid { grid-template-columns: 1fr; }
-            .sim-header { padding: 20px; }
-            .sim-content { padding: 20px; }
-        }
+/* Sub-items inside steps */
+.sub-item{
+  display:flex;gap:9px;align-items:flex-start;
+  padding:5px 0;border-bottom:1px solid var(--bord-l);
+}
+.sub-item:last-child{border-bottom:none}
+.sub-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.sub-dot.w{background:#0369a1} .sub-dot.m{background:#15803d}
+.sub-text{font-size:11px;color:var(--ink2);line-height:1.7;flex:1}
+.sub-text .mono{font-family:'Courier New',monospace;font-size:11.5px;font-weight:700;background:#f1f5f9;border-radius:4px;padding:1px 6px;color:var(--ink2)}
 
-        /* Animaciones */
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+/* Question/reflex card */
+.q-card{
+  background:var(--qal);border:1.5px solid var(--qam);
+  border-radius:11px;padding:12px 14px;margin-top:4px;
+}
+.q-head{display:flex;align-items:center;gap:9px;margin-bottom:7px;cursor:pointer}
+.q-icon{font-size:18px;flex-shrink:0}
+.q-title{font-size:11px;font-weight:700;color:var(--qad);flex:1}
+.q-arr{font-size:13px;color:var(--qad);transition:transform .18s}
+.q-card.open .q-arr{transform:rotate(90deg)}
+.q-body{display:none;font-size:11px;color:var(--qa);line-height:1.75}
+.q-card.open .q-body{display:block;animation:fu .18s ease}
+.q-formula{
+  background:#fef3c7;border:1.5px solid var(--qam);
+  border-radius:7px;padding:8px 12px;margin:6px 0;
+  font-family:'Courier New',monospace;font-size:13px;font-weight:700;
+  color:var(--qad);text-align:center;
+}
+.q-hint{font-size:10.5px;color:var(--qa);font-style:italic;margin-top:6px;line-height:1.7}
+
+/* Conclusion ingeniería */
+.eng-card{
+  background:#faf5ff;border:1.5px solid #ddd6fe;
+  border-radius:11px;padding:12px 14px;margin-top:4px;
+}
+.eng-head{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.eng-title{font-size:11px;font-weight:700;color:#5b21b6}
+.eng-body{font-size:11px;color:#4c1d95;line-height:1.75}
+
+/* Reveal all btn */
+.rev-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  border-radius:8px;padding:5px 13px;cursor:pointer;
+  font-size:9.5px;font-weight:700;transition:all .18s;
+  margin-top:8px;border:1.5px solid;
+}
+.rev-btn.w{background:var(--wal);border-color:var(--wam);color:var(--wad)}
+.rev-btn.w:hover{background:var(--wam)}
+.rev-btn.m{background:var(--mal);border-color:var(--mam);color:var(--mad)}
+.rev-btn.m:hover{background:var(--mam)}
+
+/* ── FOOTER ── */
+.foot{height:33px;flex-shrink:0;background:var(--white);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+.foot-ref{font-size:8.5px;color:var(--muted)}
+.foot-id{font-size:8.5px;color:var(--muted);font-family:'Courier New',monospace}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  html,body{width:100%;height:auto;overflow:auto}
+  .shell{width:100%;height:auto}
+  .content{overflow:visible}
+  .panel{height:auto}
+  .pbody{padding:14px 14px 18px}
+  .sc-body{padding-left:40px}
+}
+</style>
 </head>
 <body>
+<div class="shell">
 
-<div class="simulator-card fade-in">
-    <header class="sim-header">
-        <div class="icon-box">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-        </div>
-        <div class="header-text">
-            <h1>Guía de Uso: Simulador de Redes</h1>
-            <p>Laboratorio de Tasas de Cambio Relacionadas</p>
-        </div>
-    </header>
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-icon">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <rect x="2" y="4" width="14" height="10" rx="2.5" stroke="#0369a1" stroke-width="1.4"/>
+      <path d="M6 8l2 2 4-4" stroke="#0369a1" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <span class="hdr-title">Guía de uso del simulador</span>
 
-    <div class="sim-content">
-        <p style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">
-            El simulador permite analizar cómo las tasas de cambio influyen en sistemas tecnológicos, evidenciando comportamientos no lineales.
-        </p>
-
-        <section class="step-section">
-            <span class="step-tag">Módulo 01</span>
-            <h2 class="step-title">Expansión de Cobertura WiFi</h2>
-            <div class="cases-grid">
-                <div class="case-pill">
-                    <strong>Caso A: Router Doméstico</strong>
-                    r = 10 m | dr/dt = 1 m/s
-                </div>
-                <div class="case-pill">
-                    <strong>Caso B: Antena 5G</strong>
-                    r = 50 m | dr/dt = 1 m/s
-                </div>
-            </div>
-            <div class="reflection-box">
-                <strong>¿Sabías qué?</strong> Aunque la señal avance a la misma velocidad (1 m/s), el área en el Caso B crece mucho más rápido debido a que r es mayor en la fórmula dA/dt = 2πr(dr/dt).
-            </div>
-        </section>
-
-        <section class="step-section">
-            <span class="step-tag">Módulo 02</span>
-            <h2 class="step-title">Ley de Metcalfe (Redes Sociales)</h2>
-            <div class="cases-grid">
-                <div class="case-pill">
-                    <strong>Red Pequeña</strong>
-                    n = 10 usuarios | dn/dt = 5 u/h
-                </div>
-                <div class="case-pill">
-                    <strong>Red Masiva</strong>
-                    n = 100 usuarios | dn/dt = 5 u/h
-                </div>
-            </div>
-            <p style="font-size: 12px; margin-top: 15px; font-weight: 600; color: var(--primary);">
-                Conclusión de Ingeniería: El riesgo de escalabilidad aumenta exponencialmente con el número de usuarios.
-            </p>
-        </section>
-    </div>
-
-    <footer>
-        <p><strong>Referencia APA 7:</strong></p>
-        <p>Rohoden, K. (2026). Guía de uso del simulador. Universidad Técnica Particular de Loja.</p>
-    </footer>
+  <div class="hdr-badge">Infografía</div>
 </div>
 
+<!-- INTRO -->
+<div class="intro">
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="flex-shrink:0;margin-top:2px"><circle cx="7.5" cy="7.5" r="7" stroke="#0369a1" stroke-width="1.2"/><path d="M7.5 5V9.5M7.5 11v.5" stroke="#0369a1" stroke-width="1.2" stroke-linecap="round"/></svg>
+  <p>El simulador permite analizar cómo las tasas de cambio relacionadas influyen en el crecimiento de sistemas tecnológicos, evidenciando comportamientos no lineales. A continuación, se presentan los pasos clave para explorar dos modelos representativos de redes y cobertura.</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab tw active" id="tab0" onclick="show(0)">
+    🌐 Parte 1. Expansión de cobertura WiFi (modelo geométrico)
+  </div>
+  <div class="tab tm" id="tab1" onclick="show(1)">
+    📡 Parte 2. Ley de Metcalfe (Crecimiento de red)
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ══ PANEL 0: WiFi ══ -->
+<div class="panel active" id="p0">
+<div class="pbody">
+
+  <!-- Objetivo -->
+  <div class="obj-card w">
+    <div class="obj-icon">🎯</div>
+    <div class="obj-text">
+      <div class="obj-tag w">Objetivo</div>
+      <div class="obj-desc">Entender que una tasa de crecimiento lineal (dr/dt constante) provoca un crecimiento de área acelerado (dA/dt variable).</div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="step-label" style="color:#0369a1">Pasos — haga clic para expandir</div>
+  <div class="steps-grid" id="sg0">
+
+    <!-- Step 1 -->
+    <div class="sc w1" onclick="toggleSC(this)">
+      <div class="sc-head">
+        <div class="sc-num">1</div>
+        <div class="sc-title">Configuración</div>
+        <div class="sc-arr">›</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-text">Seleccione "Expansión WiFi".</div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="sc w2" onclick="toggleSC(this)">
+      <div class="sc-head">
+        <div class="sc-num">2</div>
+        <div class="sc-title">Caso A (Router doméstico)</div>
+        <div class="sc-arr">›</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-text">
+          <div class="sub-item">
+            <div class="sub-dot w"></div>
+            <div class="sub-text">Ponga el radio (<span class="mono">r</span>) en 10 metros.</div>
+          </div>
+          <div class="sub-item">
+            <div class="sub-dot w"></div>
+            <div class="sub-text">Ponga la tasa (<span class="mono">dr/dt</span>) en 1 m/s.</div>
+          </div>
+          <div class="sub-item">
+            <div class="sub-dot w"></div>
+            <div class="sub-text">Observe el valor de <span class="mono">dA/dt</span> en el reporte.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="sc w1" onclick="toggleSC(this)">
+      <div class="sc-head">
+        <div class="sc-num">3</div>
+        <div class="sc-title">Caso B (Antena 5G)</div>
+        <div class="sc-arr">›</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-text">
+          <div class="sub-item">
+            <div class="sub-dot w"></div>
+            <div class="sub-text">Aumente el radio (<span class="mono">r</span>) a 50 metros.</div>
+          </div>
+          <div class="sub-item">
+            <div class="sub-dot w"></div>
+            <div class="sub-text">Mantenga la misma tasa (<span class="mono">dr/dt</span>) en 1 m/s.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Pregunta reflexiva -->
+    <div class="sc w3" onclick="toggleSC(this)">
+      <div class="sc-head">
+        <div class="sc-num">4</div>
+        <div class="sc-title">Pregunta reflexiva</div>
+        <div class="sc-arr">›</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-text">
+          ¿Por qué, si la señal avanza a la misma velocidad (1 m/s), el área cubierta crece mucho más rápido en el Caso B?
+          <div class="q-formula">dA/dt = 2π r · (dr/dt)</div>
+          <div class="q-hint"><em>Pista matemática:</em> Analice la fórmula de la derivada. ¿Qué papel juega la variable <span style="font-family:'Courier New',monospace;font-weight:700">r</span> en la ecuación?</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /steps-grid -->
+
+  <button class="rev-btn w" onclick="revAll('sg0')">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="1.1"/><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Mostrar todos los pasos
+  </button>
+
+</div><!-- /pbody -->
+</div><!-- /panel 0 -->
+
+<!-- ══ PANEL 1: Metcalfe ══ -->
+<div class="panel" id="p1">
+<div class="pbody">
+
+  <!-- Objetivo -->
+  <div class="obj-card m">
+    <div class="obj-icon">🎯</div>
+    <div class="obj-text">
+      <div class="obj-tag m">Objetivo</div>
+      <div class="obj-desc">Visualizar el riesgo de escalabilidad mediante tasas de cambio relacionadas.</div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="step-label" style="color:#15803d">Pasos — haga clic para expandir</div>
+  <div class="steps-grid" id="sg1">
+
+    <!-- Step 1 -->
+    <div class="sc m1" onclick="toggleSC(this)">
+      <div class="sc-head">
+        <div class="sc-num">1</div>
+        <div class="sc-title">Configuración</div>
+        <div class="sc-arr">›</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-text">Seleccione "Ley de Metcalfe".</div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="sc m2" onclick="toggleSC(this)">
+      <div class="sc-head">
+        <div class="sc-num">2</div>
+        <div class="sc-title">Escenario</div>
+        <div class="sc-arr">›</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-text">
+          <div class="sub-item">
+            <div class="sub-dot m"></div>
+            <div class="sub-text">Imagine una red social pequeña con 10 usuarios (<span class="mono">n = 10</span>) que gana 5 usuarios/hora (<span class="mono">dn/dt = 5</span>). Observe la tasa de crecimiento de conexiones (<span class="mono">dV/dt</span>).</div>
+          </div>
+          <div class="sub-item">
+            <div class="sub-dot m"></div>
+            <div class="sub-text">Ahora, imagine una red masiva con 100 usuarios (<span class="mono">n = 100</span>) que gana los mismos 5 usuarios/hora.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Análisis -->
+    <div class="sc m3" onclick="toggleSC(this)">
+      <div class="sc-head">
+        <div class="sc-num">3</div>
+        <div class="sc-title">Análisis</div>
+        <div class="sc-arr">›</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-text">
+          <div class="sub-item">
+            <div class="sub-dot m"></div>
+            <div class="sub-text">Compare los valores de <span class="mono">dV/dt</span> en ambos casos.</div>
+          </div>
+          <div class="sub-item" style="border-bottom:none;padding-top:8px">
+            <div class="sub-dot" style="background:#6d28d9"></div>
+            <div class="sub-text">
+              <strong style="color:#4c1d95">Conclusión de Ingeniería:</strong> ¿Por qué añadir 5 usuarios a una base de datos grande consume muchísimos más recursos de CPU/memoria que añadirlos a una base de datos pequeña?
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /steps-grid -->
+
+  <button class="rev-btn m" onclick="revAll('sg1')">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="1.1"/><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Mostrar todos los pasos
+  </button>
+
+</div><!-- /pbody -->
+</div><!-- /panel 1 -->
+
+</div><!-- /content -->
+
+<!-- FOOTER -->
+<div class="foot">
+  <div class="foot-ref">Elaboración propia · Rohoden, K. (2025). <em>Guía de uso del simulador.</em> UTPL.</div>
+
+</div>
+
+</div><!-- /shell -->
+<script>
+function show(i){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('p'+i).classList.add('active');
+  document.getElementById('tab'+i).classList.add('active');
+}
+function toggleSC(el){el.classList.toggle('open')}
+function revAll(id){document.querySelectorAll('#'+id+' .sc').forEach(s=>s.classList.add('open'))}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight') show(1);
+  if(e.key==='ArrowLeft')  show(0);
+});
+</script>
 </body>
 </html>
