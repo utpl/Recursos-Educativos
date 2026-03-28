@@ -76,8 +76,9 @@ body { background: var(--bg); }
 .node { cursor: pointer; }
 .node .pulse { fill: none; stroke-width: 1.5; opacity: 0; transition: opacity 0.22s; }
 .node:hover .pulse { opacity: 1; }
-.node .disc { transition: filter 0.2s; }
-.node:hover .disc { filter: brightness(1.07); }
+.node .disc { transition: filter 0.2s, transform 0.2s; }
+.node:hover .disc { filter: brightness(1.07); transform: scale(1); }
+.node:active .disc { transform: scale(0.95); }
 
 /* etiquetas */
 .lbl-grp { pointer-events: none; }
@@ -87,32 +88,59 @@ body { background: var(--bg); }
 }
 .lbl-grp text.main { font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 700; }
 
-/* TOOLTIP */
-#tooltip {
-  position: absolute; pointer-events: none;
-  z-index: 40; width: 215px;
-  opacity: 0; transform: scale(0.95) translateY(4px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+/* MODAL */
+#modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(28, 21, 16, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+  display: flex; align-items: center; justify-content: center;
 }
-#tooltip.vis { opacity: 1; transform: scale(1) translateY(0); }
-.tt {
-  background: #fff; border-radius: 18px;
-  padding: 8px 15px 4px;
-  box-shadow: 0 10px 32px -8px rgba(0,0,0,0.2);
+#modal-overlay.vis { opacity: 1; pointer-events: all; }
+
+.modal-card {
+  background: #fff; border-radius: 24px;
+  width: 90%; max-width: 420px;
+  padding: 28px 32px 32px;
+  box-shadow: 0 24px 60px -12px rgba(0,0,0,0.35);
   border: 1px solid #EDE4D8;
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
 }
-.tt-tag {
+#modal-overlay.vis .modal-card {
+  transform: scale(1) translateY(0);
+}
+
+.modal-close {
+  position: absolute; top: 16px; right: 20px;
+  width: 32px; height: 32px;
+  border-radius: 50%; border: none;
+  background: var(--bg); color: var(--ink);
+  font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: var(--amber-light); color: var(--amber); transform: rotate(90deg); }
+
+.modal-tag {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 8.5px; font-weight: 600; letter-spacing: 0.8px;
-  text-transform: uppercase; opacity: 0.8; margin-bottom: 4px;
+  font-size: 10px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; opacity: 0.8; margin-bottom: 8px;
 }
-.tt-title { font-size: 12px; font-weight: 800; line-height: 1.2; margin-bottom: 7px; }
-.tt-body { font-size: 10px; color: #5A4E43; line-height: 1.55; margin-bottom: 7px; }
-.tt-graf {
-  font-size: 9.5px; color: #7A6652;
-  background: #FAF5EE; border-left: 2px solid;
-  padding: 4px 8px; border-radius: 4px; line-height: 1.4;
+.modal-title { font-size: 20px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+.modal-body { font-size: 14px; color: #5A4E43; line-height: 1.7; margin-bottom: 20px; }
+.modal-graf {
+  font-size: 13px; color: #7A6652;
+  background: #FAF5EE; border-left: 3px solid;
+  padding: 12px 16px; border-radius: 8px; line-height: 1.5;
 }
+
+/* Centro activo */
+#centerNode { transition: transform 0.2s; }
+#centerNode:active { transform: scale(0.95); }
 
 /* ════════ MÓVIL ════════ */
 .mobile-view { display: none; }
@@ -141,7 +169,9 @@ body { background: var(--bg); }
     border: 1.5px solid var(--amber-border);
     border-radius: 20px; padding: 15px 18px;
     margin-bottom: 14px; position: relative; overflow: hidden;
+    cursor: pointer; transition: transform 0.2s;
   }
+  .m-center-card:active { transform: scale(0.98); }
   .m-center-card::before {
     content: ''; position: absolute; top: -18px; right: -18px;
     width: 72px; height: 72px; border-radius: 50%;
@@ -163,7 +193,9 @@ body { background: var(--bg); }
     border: 1px solid #EDE4D8;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     display: flex; align-items: flex-start; gap: 12px;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
   }
+  .m-card:active { transform: scale(0.98); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
   .m-dot {
     flex-shrink: 0; width: 38px; height: 38px;
     border-radius: 50%; display: flex; align-items: center;
@@ -189,6 +221,16 @@ body { background: var(--bg); }
     font-size: 9px; color: #000;
     font-family: 'JetBrains Mono', monospace; letter-spacing: 0.2px;
   }
+  
+  /* Modal en móvil */
+  .modal-card {
+    width: 92%; max-width: 360px;
+    padding: 24px 24px 28px;
+    max-height: 80vh; overflow-y: auto;
+  }
+  .modal-title { font-size: 18px; }
+  .modal-body { font-size: 13px; }
+  .modal-graf { font-size: 12px; }
 }
 </style>
 </head>
@@ -204,7 +246,6 @@ body { background: var(--bg); }
   </svg>
 
   <div class="hdr">
-   
     <div class="main-title">Tipos de <em>continuidad</em> de una función</div>
   </div>
 
@@ -228,16 +269,18 @@ body { background: var(--bg); }
     <g id="labels"></g>
   </svg>
 
-  <div id="tooltip">
-    <div class="tt">
-      <div class="tt-tag"  id="tt-tag"></div>
-      <div class="tt-title" id="tt-title"></div>
-      <div class="tt-body"  id="tt-body"></div>
-      <div class="tt-graf"  id="tt-graf"></div>
-    </div>
-  </div>
-
   <div class="ftr">Rohoden, K. (2025) · Fundamentos de continuidad · MATE_2037 &nbsp;·&nbsp; toca cada nodo para detalle</div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-tag" id="modal-tag"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-graf" id="modal-graf"></div>
+  </div>
 </div>
 
 <!-- ══════════════ MÓVIL ══════════════ -->
@@ -247,7 +290,7 @@ body { background: var(--bg); }
     <div class="m-title">Tipos de <em>continuidad</em> de una función</div>
   </div>
 
-  <div class="m-center-card">
+  <div class="m-center-card" onclick="openModal(CENTER)">
     <div class="m-center-label">Definición general</div>
     <div class="m-center-title">¿Qué es la continuidad?</div>
     <div class="m-center-desc">La continuidad describe la estabilidad del comportamiento de una función ante pequeñas variaciones en su variable independiente, evitando interrupciones o cambios abruptos.</div>
@@ -255,7 +298,7 @@ body { background: var(--bg); }
 
   <div class="m-list" id="mobileList"></div>
 
-  <div class="m-footer">Rohoden, K. (2025) · Fundamentos de continuidad · MATE_2037</div>
+  <div class="m-footer">Rohoden, K. (2025) · Fundamentos de continuidad</div>
 </div>
 
 <script>
@@ -310,7 +353,8 @@ const CENTER = {
   tag: "Definición general",
   title: "¿Qué es la continuidad?",
   body: "La continuidad describe la estabilidad del comportamiento de una función ante pequeñas variaciones en su variable independiente, evitando interrupciones o cambios abruptos.",
-  graf: "Una función continua puede representarse sin interrupciones, saltos ni agujeros."
+  graf: "Una función continua puede representarse sin interrupciones, saltos ni agujeros.",
+  color: "#C16F2E"
 };
 
 /* ── build desktop SVG ── */
@@ -319,9 +363,6 @@ const CX=400, CY=400, ORB=214, RN=48;
 const cG = document.getElementById('connectors');
 const nG = document.getElementById('nodes');
 const lG = document.getElementById('labels');
-const tip = document.getElementById('tooltip');
-const ttTag=document.getElementById('tt-tag'), ttTitle=document.getElementById('tt-title');
-const ttBody=document.getElementById('tt-body'), ttGraf=document.getElementById('tt-graf');
 
 function mk(t){return document.createElementNS(NS,t);}
 function sa(el,at){Object.entries(at).forEach(([k,v])=>el.setAttribute(k,v));}
@@ -364,8 +405,8 @@ NODES.forEach((nd,i)=>{
   nt.textContent=`0${nd.id}`;
   g.appendChild(nt);
 
-  g.addEventListener('mouseenter',()=>showTip(nd,nx,ny,false));
-  g.addEventListener('mouseleave',hideTip);
+  /* CLICK EVENT */
+  g.addEventListener('click',()=>openModal(nd));
   nG.appendChild(g);
 
   /* etiqueta exterior */
@@ -388,34 +429,47 @@ NODES.forEach((nd,i)=>{
   lG.appendChild(lg2);
 });
 
-/* nodo central hover */
-document.getElementById('centerNode').addEventListener('mouseenter',()=>showTip(null,CX,CY,true));
-document.getElementById('centerNode').addEventListener('mouseleave',hideTip);
+/* nodo central click */
+document.getElementById('centerNode').addEventListener('click',()=>openModal(CENTER));
 
-function showTip(nd, nx, ny, isCenter){
-  if(isCenter){
-    ttTag.textContent=CENTER.tag.toUpperCase();  ttTag.style.color='#C16F2E';
-    ttTitle.textContent=CENTER.title;            ttTitle.style.color='#C16F2E';
-    ttBody.textContent=CENTER.body;
-    ttGraf.textContent='📈 '+CENTER.graf;        ttGraf.style.borderColor='#C16F2E';
-  } else {
-    ttTag.textContent=nd.tag.toUpperCase();      ttTag.style.color=nd.color;
-    ttTitle.textContent=nd.title;                ttTitle.style.color=nd.color;
-    ttBody.textContent=nd.desc;
-    ttGraf.textContent='📈 '+nd.graf;            ttGraf.style.borderColor=nd.color;
-  }
-  const wrap=document.querySelector('.wrap');
-  const wr=wrap.getBoundingClientRect();
-  const sx=nx*(wr.width/800), sy=ny*(wr.height/800);
-  const TW=220, TH=145;
-  let left=sx+60, top=sy-52;
-  if(left+TW>wr.width)  left=sx-TW-58;
-  if(top+TH>wr.height)  top=sy-TH-10;
-  if(top<0) top=6; if(left<4) left=4;
-  tip.style.left=left+'px'; tip.style.top=top+'px';
-  tip.classList.add('vis');
+/* ── MODAL FUNCTIONS ── */
+function openModal(data) {
+  const overlay = document.getElementById('modal-overlay');
+  const tag = document.getElementById('modal-tag');
+  const title = document.getElementById('modal-title');
+  const body = document.getElementById('modal-body');
+  const graf = document.getElementById('modal-graf');
+  
+  // Si es el nodo central, usar color ámbar, si no, usar el del nodo
+  const color = data.color || '#C16F2E';
+  
+  tag.textContent = data.tag.toUpperCase();
+  tag.style.color = color;
+  
+  title.textContent = data.title;
+  title.style.color = color;
+  
+  body.textContent = data.desc || data.body;
+  
+  graf.textContent = '📈 ' + (data.graf || data.graf);
+  graf.style.borderColor = color;
+  
+  overlay.classList.add('vis');
 }
-function hideTip(){ tip.classList.remove('vis'); }
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('vis');
+}
+
+// Cerrar al hacer clic fuera del modal
+document.getElementById('modal-overlay').addEventListener('click',(e)=>{
+  if(e.target.id === 'modal-overlay') closeModal();
+});
+
+// Cerrar con tecla ESC
+document.addEventListener('keydown',(e)=>{
+  if(e.key === 'Escape') closeModal();
+});
 
 /* animación entrada */
 [...nG.children].forEach((g,i)=>{
@@ -436,6 +490,7 @@ const ml=document.getElementById('mobileList');
 NODES.forEach(nd=>{
   const c=document.createElement('div');
   c.className='m-card';
+  c.onclick = () => openModal(nd);
   c.innerHTML=`
     <div class="m-dot" style="background:${nd.bg};color:${nd.color};border:1.5px solid ${nd.color}45;">0${nd.id}</div>
     <div class="m-body">
