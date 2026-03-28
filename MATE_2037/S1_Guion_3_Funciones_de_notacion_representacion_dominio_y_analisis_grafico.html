@@ -2,671 +2,821 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Quiz · Funciones · MATE_2037</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 :root {
-  --bg:       #f5f0e8;
-  --white:    #ffffff;
-  --ink:      #1a1410;
-  --ink2:     #3d2e1c;
-  --muted:    #8a7a64;
-  --sand:     #ddd0b8;
-
-  --correct:  #1a6e40;
-  --correct-l:#e8f8ee;
-  --wrong:    #a02020;
-  --wrong-l:  #fdecea;
-  --neutral-l:#f0ebe0;
-
-  --accent:   #2a4a8a;
+  --bg: #f5f0e8;
+  --white: #ffffff;
+  --ink: #1a1410;
+  --ink2: #3d2e1c;
+  --muted: #8a7a64;
+  --sand: #ddd0b8;
+  --correct: #1a6e40;
+  --correct-l: #e8f8ee;
+  --wrong: #a02020;
+  --wrong-l: #fdecea;
+  --neutral-l: #f0ebe0;
+  --accent: #2a4a8a;
   --accent-l: #eef2fc;
-  --accent2:  #c86010;
-  --accent2-l:#fff3e8;
+  --accent2: #c86010;
+  --accent2-l: #fff3e8;
 }
 
 body {
   font-family: 'Geologica', sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-  width: 800px;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
+  padding: 12px;
+}
+
+/* Contenedor principal - altura controlada */
+.quiz-container {
+  max-width: 800px;
+  width: 100%;
+  max-height: 800px;
+  background: var(--bg);
+  border-radius: 24px;
+  overflow-y: auto;
   overflow-x: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-/* ── HEADER ── */
-.hdr {
+/* Header compacto */
+.header {
   background: var(--accent);
-  padding: 16px 26px 14px;
-  display: flex; align-items: flex-start;
-  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
-.hdr h1 {
-  font-size: 16px; font-weight: 800;
-  color: #fff; line-height: 1.2;
-  letter-spacing: -.2px;
+.header h1 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.3;
 }
-.hdr-sub { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 3px; }
-.hdr-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.header-sub {
+  font-size: 9px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 2px;
+}
+.chips {
+  display: flex;
+  gap: 6px;
+}
 .chip {
-  border: 1px solid rgba(255,255,255,.25);
-  color: rgba(255,255,255,.7);
-  font-size: 9px; font-weight: 600; letter-spacing: .7px;
-  text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.8);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
-/* ── PROGRESS ── */
-.prog-wrap {
+/* Progress bar compacto */
+.progress {
   background: var(--white);
-  border-bottom: 1.5px solid var(--sand);
-  padding: 10px 26px;
-  display: flex; align-items: center; gap: 14px;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--sand);
 }
-.prog-bar-bg {
-  flex: 1; height: 7px; background: var(--sand);
-  border-radius: 10px; overflow: hidden;
-}
-.prog-bar-fill {
-  height: 100%; background: var(--accent);
+.progress-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--sand);
   border-radius: 10px;
-  transition: width .4s ease;
+  overflow: hidden;
 }
-.prog-label {
-  font-size: 10px; font-weight: 700; color: var(--muted);
-  white-space: nowrap; min-width: 70px; text-align: right;
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  width: 0%;
 }
-.score-pill {
+.progress-text {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 70px;
+  text-align: right;
+}
+.score-badge {
   background: var(--accent-l);
-  border: 1.5px solid rgba(42,74,138,.2);
-  color: var(--accent); font-size: 10px; font-weight: 700;
-  padding: 3px 12px; border-radius: 20px; white-space: nowrap;
+  border: 1px solid rgba(42,74,138,0.2);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
-/* ── INSTRUCTIONS STRIP ── */
-.inst {
+/* Instructions */
+.instructions {
   background: var(--accent2-l);
-  border-bottom: 1.5px solid #f0c898;
-  padding: 8px 26px;
-  display: flex; align-items: center; gap: 9px;
-  font-size: 10.5px; color: #6a3008;
+  padding: 6px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  color: #6a3008;
+  border-bottom: 1px solid #f0c898;
 }
 
-/* ── QUIZ BODY ── */
+/* Quiz body */
 .quiz-body {
-  padding: 22px 26px 24px;
-  display: flex; flex-direction: column; gap: 0;
+  padding: 16px 20px;
+  background: var(--bg);
+  min-height: 380px;
 }
 
-/* ── QUESTION CARD ── */
+/* Question cards */
 .q-card {
   display: none;
-  animation: fadeQ .3s ease;
+  animation: fadeIn 0.25s ease;
 }
-.q-card.active { display: block; }
-
-@keyframes fadeQ {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+.q-card.active {
+  display: block;
 }
 
-.q-num {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 9px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: var(--muted);
-  margin-bottom: 10px;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.q-num-badge {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--accent); color: #fff;
-  font-size: 11px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
+
+.q-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.q-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.q-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .q-text {
-  font-size: 14px; font-weight: 600;
-  color: var(--ink); line-height: 1.6;
-  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.5;
   background: var(--white);
   border-radius: 14px;
-  padding: 16px 18px;
+  padding: 12px 14px;
   border: 1.5px solid var(--sand);
-  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  margin-bottom: 16px;
 }
-.q-text .q-formula {
+.q-text .formula {
   font-family: 'Courier New', monospace;
   background: var(--neutral-l);
   border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 13px;
+  padding: 2px 6px;
+  font-size: 12px;
 }
 
-/* ── OPTIONS ── */
-.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+/* Options */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
 .opt {
-  display: flex; align-items: flex-start; gap: 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   background: var(--white);
   border: 2px solid var(--sand);
   border-radius: 12px;
-  padding: 13px 16px;
+  padding: 10px 14px;
   cursor: pointer;
-  transition: all .2s;
-  box-shadow: 0 1px 6px rgba(0,0,0,.04);
+  transition: all 0.2s;
 }
 .opt:hover:not(.disabled) {
   border-color: var(--accent);
   background: var(--accent-l);
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
-.opt.disabled { cursor: default; }
+.opt.disabled {
+  cursor: default;
+}
 .opt-letter {
-  width: 28px; height: 28px; border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   background: var(--neutral-l);
-  color: var(--muted); font-size: 11px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: all .2s;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.opt-text { font-size: 12px; color: var(--ink2); line-height: 1.6; padding-top: 3px; flex: 1; }
-.opt-text .formula { font-family: 'Courier New', monospace; font-size: 12px; }
+.opt-text {
+  font-size: 11px;
+  color: var(--ink2);
+  line-height: 1.5;
+  flex: 1;
+  padding-top: 2px;
+}
+.opt-text .formula {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
 
-/* Option states */
-.opt.selected { border-color: var(--accent); background: var(--accent-l); }
-.opt.selected .opt-letter { background: var(--accent); color: #fff; }
+/* States */
+.opt.selected {
+  border-color: var(--accent);
+  background: var(--accent-l);
+}
+.opt.selected .opt-letter {
+  background: var(--accent);
+  color: white;
+}
+.opt.correct {
+  border-color: var(--correct);
+  background: var(--correct-l);
+}
+.opt.correct .opt-letter {
+  background: var(--correct);
+  color: white;
+}
+.opt.correct .opt-text {
+  color: var(--correct);
+  font-weight: 600;
+}
+.opt.wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-l);
+}
+.opt.wrong .opt-letter {
+  background: var(--wrong);
+  color: white;
+}
+.opt.wrong .opt-text {
+  color: var(--wrong);
+  font-weight: 600;
+}
 
-.opt.correct { border-color: var(--correct); background: var(--correct-l); }
-.opt.correct .opt-letter { background: var(--correct); color: #fff; }
-.opt.correct .opt-text { color: var(--correct); font-weight: 600; }
-
-.opt.wrong { border-color: var(--wrong); background: var(--wrong-l); }
-.opt.wrong .opt-letter { background: var(--wrong); color: #fff; }
-.opt.wrong .opt-text { color: var(--wrong); font-weight: 600; }
-
-.opt.reveal-correct { border-color: var(--correct); background: var(--correct-l); }
-.opt.reveal-correct .opt-letter { background: var(--correct); color: #fff; }
-
-/* ── FEEDBACK BOX ── */
+/* Feedback */
 .feedback {
   display: none;
   border-radius: 12px;
-  padding: 13px 16px;
-  margin-bottom: 18px;
-  font-size: 11.5px; line-height: 1.7;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 10px;
+  line-height: 1.6;
   border: 1.5px solid transparent;
-  animation: fadeQ .25s ease;
 }
-.feedback.show { display: flex; gap: 10px; align-items: flex-start; }
-.feedback.ok { background: var(--correct-l); border-color: rgba(26,110,64,.25); color: var(--correct); }
-.feedback.fail { background: var(--wrong-l); border-color: rgba(160,32,32,.25); color: var(--wrong); }
-.fb-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-.fb-text strong { font-weight: 700; display: block; margin-bottom: 3px; }
+.feedback.show {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.feedback.ok {
+  background: var(--correct-l);
+  border-color: rgba(26,110,64,0.25);
+  color: var(--correct);
+}
+.feedback.fail {
+  background: var(--wrong-l);
+  border-color: rgba(160,32,32,0.25);
+  color: var(--wrong);
+}
+.fb-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.fb-text strong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+}
 
-/* ── ACTIONS ── */
-.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+/* Actions */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
 .btn {
   font-family: 'Geologica', sans-serif;
-  font-size: 11px; font-weight: 700;
-  border-radius: 10px; padding: 10px 22px;
-  cursor: pointer; transition: all .2s; border: none;
-  display: flex; align-items: center; gap: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .btn-confirm {
-  background: var(--accent); color: #fff;
-  box-shadow: 0 3px 12px rgba(42,74,138,.25);
+  background: var(--accent);
+  color: white;
 }
-.btn-confirm:hover { background: #1e3870; }
-.btn-confirm:disabled { opacity: .4; cursor: not-allowed; }
+.btn-confirm:hover:not(:disabled) {
+  background: #1e3870;
+}
+.btn-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .btn-next {
-  background: var(--accent2); color: #fff;
-  box-shadow: 0 3px 12px rgba(200,96,16,.2);
+  background: var(--accent2);
+  color: white;
 }
-.btn-next:hover { background: #a84e0e; }
-.skip-info { font-size: 10px; color: var(--muted); }
+.btn-next:hover {
+  background: #a84e0e;
+}
+.skip-info {
+  font-size: 9px;
+  color: var(--muted);
+}
 
-/* ── RESULTS PANEL ── */
+/* Results panel */
 .results {
   display: none;
-  padding: 28px 26px 32px;
-  animation: fadeQ .4s ease;
+  padding: 20px;
+  background: var(--bg);
 }
-.results.show { display: block; }
-
+.results.show {
+  display: block;
+}
 .res-hero {
   background: var(--white);
   border-radius: 18px;
   border: 2px solid var(--sand);
-  padding: 28px 24px;
+  padding: 20px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,.08);
-  margin-bottom: 20px;
-}
-.res-score-num {
-  font-size: 56px; font-weight: 800;
-  color: var(--accent); line-height: 1;
-  margin-bottom: 6px;
-}
-.res-score-label {
-  font-size: 13px; font-weight: 600; color: var(--muted);
   margin-bottom: 16px;
 }
-.res-msg { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.5; }
-
-.res-breakdown {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  margin-bottom: 20px;
+.res-score {
+  font-size: 44px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
 }
-.res-box {
-  background: var(--white); border-radius: 12px;
-  border: 1.5px solid var(--sand); padding: 14px;
-  text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+.res-score-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 12px;
 }
-.res-box-num { font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
-.res-box-label { font-size: 10px; font-weight: 600; color: var(--muted); }
-
-.res-summary { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.res-message {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.res-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.res-stat {
+  background: var(--white);
+  border-radius: 12px;
+  border: 1.5px solid var(--sand);
+  padding: 10px;
+  text-align: center;
+}
+.res-stat-num {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.res-stat-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.res-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
 .res-item {
-  background: var(--white); border-radius: 10px;
-  border: 1.5px solid var(--sand); padding: 11px 14px;
-  display: flex; align-items: center; gap: 10px;
-  font-size: 11px; color: var(--ink2);
+  background: var(--white);
+  border-radius: 10px;
+  border: 1.5px solid var(--sand);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
 }
 .res-item .ri-badge {
-  width: 24px; height: 24px; border-radius: 8px;
-  font-size: 12px; display: flex; align-items: center; justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
-.res-item.ri-ok { border-color: rgba(26,110,64,.3); }
+.res-item.ri-ok { border-color: rgba(26,110,64,0.3); }
 .res-item.ri-ok .ri-badge { background: var(--correct-l); }
-.res-item.ri-fail { border-color: rgba(160,32,32,.2); }
+.res-item.ri-fail { border-color: rgba(160,32,32,0.2); }
 .res-item.ri-fail .ri-badge { background: var(--wrong-l); }
-.ri-q { font-weight: 700; flex-shrink: 0; min-width: 60px; }
-
+.ri-question {
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 55px;
+}
 .btn-retry {
-  background: var(--accent); color: #fff;
-  font-family: 'Geologica', sans-serif;
-  font-size: 12px; font-weight: 700;
-  border: none; border-radius: 12px;
-  padding: 12px 28px; cursor: pointer;
-  transition: background .2s; width: 100%;
-  box-shadow: 0 4px 14px rgba(42,74,138,.25);
-}
-.btn-retry:hover { background: #1e3870; }
-
-/* ── FOOTER ── */
-.foot {
   background: var(--accent);
-  padding: 7px 26px;
-  font-size: 9px; color: rgba(255,255,255,.35);
-  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+  color: white;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 100%;
+}
+.btn-retry:hover {
+  background: #1e3870;
 }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 580px) {
-  body { width: 100%; }
-  .hdr { padding: 13px 16px; }
-  .hdr h1 { font-size: 14px; }
-  .prog-wrap { padding: 9px 16px; }
-  .inst { padding: 7px 16px; font-size: 10px; }
-  .quiz-body { padding: 16px 16px 20px; }
-  .q-text { font-size: 12.5px; padding: 13px 14px; }
-  .opt { padding: 11px 13px; }
-  .opt-text { font-size: 11px; }
-  .res-breakdown { grid-template-columns: 1fr 1fr 1fr; }
-  .results { padding: 20px 16px 24px; }
-  .foot { padding: 7px 16px; }
+/* Footer */
+.footer {
+  background: var(--accent);
+  padding: 6px 20px;
+  font-size: 8px;
+  color: white;
+  text-align: center;
+}
+
+/* Scrollbar */
+.quiz-container::-webkit-scrollbar {
+  width: 5px;
+}
+.quiz-container::-webkit-scrollbar-track {
+  background: var(--sand);
+  border-radius: 10px;
+}
+.quiz-container::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 10px;
 }
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
-<div class="hdr">
-  <div>
-    <h1>Funciones: notación, representación, dominio y análisis gráfico</h1>
-    <div class="hdr-sub">Cálculo Diferencial · MATE_2037 · Semana 1 · Katty Rohoden</div>
-  </div>
-  <div class="hdr-chips">
-    <div class="chip">Quiz</div>
-    <div class="chip">6 preguntas</div>
-  </div>
-</div>
-
-<!-- PROGRESS -->
-<div class="prog-wrap">
-  <div class="prog-bar-bg">
-    <div class="prog-bar-fill" id="progFill" style="width:0%"></div>
-  </div>
-  <div class="prog-label" id="progLabel">Pregunta 1 de 6</div>
-  <div class="score-pill" id="scorePill">Puntaje: 0</div>
-</div>
-
-<!-- INSTRUCTIONS -->
-<div class="inst">
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <circle cx="7" cy="7" r="6.5" stroke="#c86010" stroke-width="1.2"/>
-    <path d="M7 4.5v4M7 10v.5" stroke="#c86010" stroke-width="1.2" stroke-linecap="round"/>
-  </svg>
-  Revise con atención cada enunciado y elija la opción correcta.
-</div>
-
-<!-- QUIZ BODY -->
-<div class="quiz-body" id="quizBody">
-
-  <!-- Q1 -->
-  <div class="q-card active" id="qc0">
-    <div class="q-num"><div class="q-num-badge">1</div> Pregunta 1 de 6</div>
-    <div class="q-text">¿Cuál de las siguientes afirmaciones describe mejor el <strong>dominio matemático</strong> de una función?</div>
-    <div class="options" id="opts0">
-      <div class="opt" onclick="select(0,0)"><div class="opt-letter">a</div><div class="opt-text">Los valores de salida que tienen sentido en la realidad.</div></div>
-      <div class="opt" onclick="select(0,1)"><div class="opt-letter">b</div><div class="opt-text">Los valores de entrada que no generan operaciones ilegales.</div></div>
-      <div class="opt" onclick="select(0,2)"><div class="opt-letter">c</div><div class="opt-text">Los valores de entrada que producen resultados negativos.</div></div>
-      <div class="opt" onclick="select(0,3)"><div class="opt-letter">d</div><div class="opt-text">Los valores de salida dependen de la variable independiente.</div></div>
+<div class="quiz-container">
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Funciones: notación, representación, dominio y análisis gráfico</h1>
+      <div class="header-sub">Cálculo Diferencial</div>
     </div>
-    <div class="feedback" id="fb0"></div>
-    <div class="actions">
-      <span class="skip-info" id="si0"></span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-confirm" id="btn0" onclick="confirm(0)" disabled>Confirmar</button>
-        <button class="btn btn-next" id="next0" onclick="goNext(0)" style="display:none">Siguiente →</button>
+    <div class="chips">
+      <div class="chip">Quiz</div>
+      <div class="chip">6 preguntas</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">Pregunta 1 de 6</div>
+    <div class="score-badge" id="scoreBadge">Puntaje: 0</div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+      <circle cx="7" cy="7" r="6.5" stroke="#c86010" stroke-width="1.2"/>
+      <path d="M7 4.5v4M7 10v.5" stroke="#c86010" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    Revise con atención cada enunciado y elija la opción correcta.
+  </div>
+
+  <!-- Quiz Body -->
+  <div class="quiz-body" id="quizBody">
+    <!-- Las 6 preguntas se generan dinámicamente para código más limpio -->
+  </div>
+
+  <!-- Results Panel -->
+  <div class="results" id="resultsPanel">
+    <div class="res-hero">
+      <div class="res-score" id="resScore">0/6</div>
+      <div class="res-score-label">respuestas correctas</div>
+      <div class="res-message" id="resMsg"></div>
+    </div>
+    <div class="res-stats">
+      <div class="res-stat">
+        <div class="res-stat-num" style="color: var(--correct)" id="resCorrect">0</div>
+        <div class="res-stat-label">Correctas</div>
+      </div>
+      <div class="res-stat">
+        <div class="res-stat-num" style="color: var(--wrong)" id="resWrong">0</div>
+        <div class="res-stat-label">Incorrectas</div>
+      </div>
+      <div class="res-stat">
+        <div class="res-stat-num" style="color: var(--accent2)" id="resPercent">0%</div>
+        <div class="res-stat-label">Porcentaje</div>
       </div>
     </div>
+    <div class="res-summary" id="resSummary"></div>
+    <button class="btn-retry" onclick="restartQuiz()">↺ Intentar de nuevo</button>
   </div>
 
-  <!-- Q2 -->
-  <div class="q-card" id="qc1">
-    <div class="q-num"><div class="q-num-badge">2</div> Pregunta 2 de 6</div>
-    <div class="q-text">En la función <span class="q-formula">g(x) = 5x − 4</span>, ¿qué valor obtiene la función cuando <span class="q-formula">x = −2</span>?</div>
-    <div class="options" id="opts1">
-      <div class="opt" onclick="select(1,0)"><div class="opt-letter">a</div><div class="opt-text">−14.</div></div>
-      <div class="opt" onclick="select(1,1)"><div class="opt-letter">b</div><div class="opt-text">−10.</div></div>
-      <div class="opt" onclick="select(1,2)"><div class="opt-letter">c</div><div class="opt-text">−4.</div></div>
-      <div class="opt" onclick="select(1,3)"><div class="opt-letter">d</div><div class="opt-text">6.</div></div>
-    </div>
-    <div class="feedback" id="fb1"></div>
-    <div class="actions">
-      <span class="skip-info" id="si1"></span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-confirm" id="btn1" onclick="confirm(1)" disabled>Confirmar</button>
-        <button class="btn btn-next" id="next1" onclick="goNext(1)" style="display:none">Siguiente →</button>
-      </div>
-    </div>
+  <!-- Footer -->
+  <div class="footer">
+    Elaboración propia. · Rohoden, K. (2025). <em>Funciones: notación, representación, dominio y análisis gráfico.</em> UTPL.
   </div>
-
-  <!-- Q3 -->
-  <div class="q-card" id="qc2">
-    <div class="q-num"><div class="q-num-badge">3</div> Pregunta 3 de 6</div>
-    <div class="q-text">¿Cuál de las siguientes opciones corresponde a una <strong>representación verbal</strong> de una función?</div>
-    <div class="options" id="opts2">
-      <div class="opt" onclick="select(2,0)"><div class="opt-letter">a</div><div class="opt-text"><span class="formula">h(x) = 2x + 5</span>.</div></div>
-      <div class="opt" onclick="select(2,1)"><div class="opt-letter">b</div><div class="opt-text">Una tabla con valores de entrada y salida.</div></div>
-      <div class="opt" onclick="select(2,2)"><div class="opt-letter">c</div><div class="opt-text">Una gráfica en el plano cartesiano.</div></div>
-      <div class="opt" onclick="select(2,3)"><div class="opt-letter">d</div><div class="opt-text">La temperatura aumenta en 2 grados por cada hora transcurrida.</div></div>
-    </div>
-    <div class="feedback" id="fb2"></div>
-    <div class="actions">
-      <span class="skip-info" id="si2"></span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-confirm" id="btn2" onclick="confirm(2)" disabled>Confirmar</button>
-        <button class="btn btn-next" id="next2" onclick="goNext(2)" style="display:none">Siguiente →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Q4 -->
-  <div class="q-card" id="qc3">
-    <div class="q-num"><div class="q-num-badge">4</div> Pregunta 4 de 6</div>
-    <div class="q-text">En la función <span class="q-formula">f(x) = (x+2) / (x²−9)</span>, ¿qué valores están <strong>excluidos del dominio</strong>?</div>
-    <div class="options" id="opts3">
-      <div class="opt" onclick="select(3,0)"><div class="opt-letter">a</div><div class="opt-text"><span class="formula">x = −3  y  x = 3</span></div></div>
-      <div class="opt" onclick="select(3,1)"><div class="opt-letter">b</div><div class="opt-text"><span class="formula">x = 0</span></div></div>
-      <div class="opt" onclick="select(3,2)"><div class="opt-letter">c</div><div class="opt-text"><span class="formula">x = 2</span></div></div>
-      <div class="opt" onclick="select(3,3)"><div class="opt-letter">d</div><div class="opt-text">Ninguno, todos los reales son válidos.</div></div>
-    </div>
-    <div class="feedback" id="fb3"></div>
-    <div class="actions">
-      <span class="skip-info" id="si3"></span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-confirm" id="btn3" onclick="confirm(3)" disabled>Confirmar</button>
-        <button class="btn btn-next" id="next3" onclick="goNext(3)" style="display:none">Siguiente →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Q5 -->
-  <div class="q-card" id="qc4">
-    <div class="q-num"><div class="q-num-badge">5</div> Pregunta 5 de 6</div>
-    <div class="q-text">Si una función es <strong>cóncava hacia arriba</strong>, ¿qué indica en términos de comportamiento?</div>
-    <div class="options" id="opts4">
-      <div class="opt" onclick="select(4,0)"><div class="opt-letter">a</div><div class="opt-text">Que la pendiente disminuye con el tiempo.</div></div>
-      <div class="opt" onclick="select(4,1)"><div class="opt-letter">b</div><div class="opt-text">Que el sistema está en equilibrio.</div></div>
-      <div class="opt" onclick="select(4,2)"><div class="opt-letter">c</div><div class="opt-text">Que el crecimiento se acelera.</div></div>
-      <div class="opt" onclick="select(4,3)"><div class="opt-letter">d</div><div class="opt-text">Que la función nunca cruza el eje Y.</div></div>
-    </div>
-    <div class="feedback" id="fb4"></div>
-    <div class="actions">
-      <span class="skip-info" id="si4"></span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-confirm" id="btn4" onclick="confirm(4)" disabled>Confirmar</button>
-        <button class="btn btn-next" id="next4" onclick="goNext(4)" style="display:none">Siguiente →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Q6 -->
-  <div class="q-card" id="qc5">
-    <div class="q-num"><div class="q-num-badge">6</div> Pregunta 6 de 6</div>
-    <div class="q-text">En una gráfica de <span class="q-formula">h(x) = −x² + 4x</span>, ¿qué representa el <strong>intercepto en Y</strong>?</div>
-    <div class="options" id="opts5">
-      <div class="opt" onclick="select(5,0)"><div class="opt-letter">a</div><div class="opt-text">El punto donde la función alcanza su máximo.</div></div>
-      <div class="opt" onclick="select(5,1)"><div class="opt-letter">b</div><div class="opt-text">El valor inicial cuando x = 0.</div></div>
-      <div class="opt" onclick="select(5,2)"><div class="opt-letter">c</div><div class="opt-text">El cambio de concavidad.</div></div>
-      <div class="opt" onclick="select(5,3)"><div class="opt-letter">d</div><div class="opt-text">El límite operativo máximo.</div></div>
-    </div>
-    <div class="feedback" id="fb5"></div>
-    <div class="actions">
-      <span class="skip-info" id="si5"></span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-confirm" id="btn5" onclick="confirm(5)" disabled>Confirmar</button>
-        <button class="btn btn-next" id="next5" onclick="showResults()" style="display:none">Ver resultados →</button>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /quiz-body -->
-
-<!-- RESULTS -->
-<div class="results" id="resultsPanel">
-  <div class="res-hero">
-    <div class="res-score-num" id="resNum">0/6</div>
-    <div class="res-score-label">respuestas correctas</div>
-    <div class="res-msg" id="resMsg"></div>
-  </div>
-  <div class="res-breakdown">
-    <div class="res-box">
-      <div class="res-box-num" style="color:var(--correct)" id="resOk">0</div>
-      <div class="res-box-label">Correctas</div>
-    </div>
-    <div class="res-box">
-      <div class="res-box-num" style="color:var(--wrong)" id="resFail">0</div>
-      <div class="res-box-label">Incorrectas</div>
-    </div>
-    <div class="res-box">
-      <div class="res-box-num" style="color:var(--accent2)" id="resPct">0%</div>
-      <div class="res-box-label">Porcentaje</div>
-    </div>
-  </div>
-  <div class="res-summary" id="resSummary"></div>
-  <button class="btn-retry" onclick="restartQuiz()">↺ Intentar de nuevo</button>
-</div>
-
-<!-- FOOTER -->
-<div class="foot">
-  <span>Elaboración propia. · Rohoden, K. (2025). <em>Funciones: notación, representación, dominio y análisis gráfico.</em> UTPL.</span>
-  <span>S1 · MATE_2037</span>
 </div>
 
 <script>
-/* ── Data ── */
-const CORRECT = [1, 0, 3, 0, 2, 1]; // 0-indexed answer indices
-const FEEDBACK = [
-  'El dominio matemático corresponde a los valores de entrada que no provocan errores como división por cero o raíces pares de números negativos.',
-  'Sustituyendo x = −2: g(−2) = 5(−2) − 4 = −10 − 4 = −14.',
-  'La representación verbal describe la relación con palabras, como "la temperatura depende del tiempo".',
-  'El denominador x² − 9 se anula en x = −3 y x = 3. Esos valores no pertenecen al dominio.',
-  'Una concavidad hacia arriba (forma de U) indica que el crecimiento se acelera, típico de procesos que se disparan rápidamente.',
-  'El intercepto en Y se obtiene al evaluar h(0). En este caso, h(0) = 0. Representa la condición inicial del sistema.'
-];
-const Q_TEXTS = [
-  '¿Cuál describe mejor el dominio matemático?',
-  'g(x) = 5x − 4, cuando x = −2',
-  '¿Cuál es una representación verbal?',
-  'f(x) = (x+2)/(x²−9), ¿valores excluidos?',
-  'Función cóncava hacia arriba, ¿qué indica?',
-  'h(x) = −x²+4x, ¿qué es el intercepto en Y?'
+// Datos del quiz
+const QUESTIONS = [
+  {
+    text: "¿Cuál de las siguientes afirmaciones describe mejor el <strong>dominio matemático</strong> de una función?",
+    options: [
+      "Los valores de salida que tienen sentido en la realidad.",
+      "Los valores de entrada que no generan operaciones ilegales.",
+      "Los valores de entrada que producen resultados negativos.",
+      "Los valores de salida dependen de la variable independiente."
+    ],
+    correct: 1,
+    feedback: "El dominio matemático corresponde a los valores de entrada que no provocan errores como división por cero o raíces pares de números negativos."
+  },
+  {
+    text: "En la función <span class='formula'>g(x) = 5x − 4</span>, ¿qué valor obtiene la función cuando <span class='formula'>x = −2</span>?",
+    options: ["−14.", "−10.", "−4.", "6."],
+    correct: 0,
+    feedback: "Sustituyendo x = −2: g(−2) = 5(−2) − 4 = −10 − 4 = −14."
+  },
+  {
+    text: "¿Cuál de las siguientes opciones corresponde a una <strong>representación verbal</strong> de una función?",
+    options: [
+      "<span class='formula'>h(x) = 2x + 5</span>.",
+      "Una tabla con valores de entrada y salida.",
+      "Una gráfica en el plano cartesiano.",
+      "La temperatura aumenta en 2 grados por cada hora transcurrida."
+    ],
+    correct: 3,
+    feedback: "La representación verbal describe la relación con palabras, como 'la temperatura depende del tiempo'."
+  },
+  {
+    text: "En la función <span class='formula'>f(x) = (x+2) / (x²−9)</span>, ¿qué valores están <strong>excluidos del dominio</strong>?",
+    options: [
+      "<span class='formula'>x = −3  y  x = 3</span>",
+      "<span class='formula'>x = 0</span>",
+      "<span class='formula'>x = 2</span>",
+      "Ninguno, todos los reales son válidos."
+    ],
+    correct: 0,
+    feedback: "El denominador x² − 9 se anula en x = −3 y x = 3. Esos valores no pertenecen al dominio."
+  },
+  {
+    text: "Si una función es <strong>cóncava hacia arriba</strong>, ¿qué indica en términos de comportamiento?",
+    options: [
+      "Que la pendiente disminuye con el tiempo.",
+      "Que el sistema está en equilibrio.",
+      "Que el crecimiento se acelera.",
+      "Que la función nunca cruza el eje Y."
+    ],
+    correct: 2,
+    feedback: "Una concavidad hacia arriba (forma de U) indica que el crecimiento se acelera, típico de procesos que se disparan rápidamente."
+  },
+  {
+    text: "En una gráfica de <span class='formula'>h(x) = −x² + 4x</span>, ¿qué representa el <strong>intercepto en Y</strong>?",
+    options: [
+      "El punto donde la función alcanza su máximo.",
+      "El valor inicial cuando x = 0.",
+      "El cambio de concavidad.",
+      "El límite operativo máximo."
+    ],
+    correct: 1,
+    feedback: "El intercepto en Y se obtiene al evaluar h(0). En este caso, h(0) = 0. Representa la condición inicial del sistema."
+  }
 ];
 
 let selected = new Array(6).fill(null);
 let confirmed = new Array(6).fill(false);
 let score = 0;
-let cur = 0;
+let currentQ = 0;
 
-/* ── Select option ── */
-function select(q, opt) {
-  if (confirmed[q]) return;
-  selected[q] = opt;
-  const opts = document.getElementById('opts'+q).children;
-  Array.from(opts).forEach((el, i) => {
-    el.classList.toggle('selected', i === opt);
+// Renderizar preguntas
+function renderQuestions() {
+  const container = document.getElementById('quizBody');
+  container.innerHTML = '';
+  
+  QUESTIONS.forEach((q, idx) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q-card' + (idx === 0 ? ' active' : '');
+    qDiv.id = `q${idx}`;
+    
+    qDiv.innerHTML = `
+      <div class="q-header">
+        <div class="q-number">${idx + 1}</div>
+        <div class="q-label">Pregunta ${idx + 1} de 6</div>
+      </div>
+      <div class="q-text">${q.text}</div>
+      <div class="options" id="opts${idx}">
+        ${q.options.map((opt, optIdx) => `
+          <div class="opt" onclick="selectOption(${idx}, ${optIdx})">
+            <div class="opt-letter">${String.fromCharCode(97 + optIdx)}</div>
+            <div class="opt-text">${opt}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="feedback" id="fb${idx}"></div>
+      <div class="actions">
+        <span class="skip-info" id="skip${idx}"></span>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-confirm" id="btn${idx}" onclick="confirmAnswer(${idx})" disabled>Confirmar</button>
+          <button class="btn btn-next" id="next${idx}" onclick="nextQuestion(${idx})" style="display: none;">Siguiente →</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(qDiv);
   });
-  document.getElementById('btn'+q).disabled = false;
 }
 
-/* ── Confirm ── */
-function confirm(q) {
+function selectOption(q, optIdx) {
+  if (confirmed[q]) return;
+  selected[q] = optIdx;
+  const opts = document.getElementById(`opts${q}`).children;
+  Array.from(opts).forEach((el, i) => {
+    el.classList.toggle('selected', i === optIdx);
+  });
+  document.getElementById(`btn${q}`).disabled = false;
+}
+
+function confirmAnswer(q) {
   if (confirmed[q] || selected[q] === null) return;
   confirmed[q] = true;
-
-  const opts = document.getElementById('opts'+q).children;
-  const correct = CORRECT[q];
-  const chosen  = selected[q];
-  const isOk    = chosen === correct;
-
-  if (isOk) score++;
-
+  
+  const opts = document.getElementById(`opts${q}`).children;
+  const correct = QUESTIONS[q].correct;
+  const chosen = selected[q];
+  const isCorrect = chosen === correct;
+  
+  if (isCorrect) score++;
+  
   Array.from(opts).forEach((el, i) => {
     el.classList.add('disabled');
     el.onclick = null;
     if (i === correct) el.classList.add('correct');
-    else if (i === chosen && !isOk) el.classList.add('wrong');
+    else if (i === chosen && !isCorrect) el.classList.add('wrong');
   });
-
-  const fb = document.getElementById('fb'+q);
-  fb.classList.add('show', isOk ? 'ok' : 'fail');
+  
+  const fb = document.getElementById(`fb${q}`);
+  fb.classList.add('show', isCorrect ? 'ok' : 'fail');
   fb.innerHTML = `
-    <div class="fb-icon">${isOk ? '✅' : '❌'}</div>
+    <div class="fb-icon">${isCorrect ? '✅' : '❌'}</div>
     <div class="fb-text">
-      <strong>${isOk ? '¡Correcto!' : 'Incorrecto'}</strong>
-      ${FEEDBACK[q]}
-    </div>`;
-
-  document.getElementById('btn'+q).style.display = 'none';
-  document.getElementById('next'+q).style.display = 'flex';
-  document.getElementById('si'+q).textContent = isOk ? '✓ +1 punto' : '✗ Sin puntaje';
-  document.getElementById('si'+q).style.color = isOk ? 'var(--correct)' : 'var(--wrong)';
-  document.getElementById('si'+q).style.fontWeight = '700';
-
+      <strong>${isCorrect ? '¡Correcto!' : 'Incorrecto'}</strong>
+      ${QUESTIONS[q].feedback}
+    </div>
+  `;
+  
+  document.getElementById(`btn${q}`).style.display = 'none';
+  document.getElementById(`next${q}`).style.display = 'flex';
+  const skipSpan = document.getElementById(`skip${q}`);
+  skipSpan.textContent = isCorrect ? '✓ +1 punto' : '✗ Sin puntaje';
+  skipSpan.style.color = isCorrect ? 'var(--correct)' : 'var(--wrong)';
+  skipSpan.style.fontWeight = '700';
+  
   updateProgress(q + 1);
 }
 
-/* ── Navigate ── */
-function goNext(q) {
-  document.getElementById('qc'+q).classList.remove('active');
-  cur = q + 1;
-  document.getElementById('qc'+cur).classList.add('active');
-  updateProgress(cur);
+function nextQuestion(q) {
+  document.getElementById(`q${q}`).classList.remove('active');
+  currentQ = q + 1;
+  if (currentQ < 6) {
+    document.getElementById(`q${currentQ}`).classList.add('active');
+    updateProgress(currentQ);
+  } else {
+    showResults();
+  }
 }
 
-/* ── Progress ── */
 function updateProgress(step) {
   const pct = (step / 6) * 100;
-  document.getElementById('progFill').style.width = pct + '%';
-  document.getElementById('progLabel').textContent =
-    step < 6 ? `Pregunta ${step + 1} de 6` : 'Completado';
-  document.getElementById('scorePill').textContent = `Puntaje: ${score}`;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = step < 6 ? `Pregunta ${step + 1} de 6` : 'Completado';
+  document.getElementById('scoreBadge').textContent = `Puntaje: ${score}`;
 }
 
-/* ── Results ── */
 function showResults() {
   document.getElementById('quizBody').style.display = 'none';
   const panel = document.getElementById('resultsPanel');
   panel.classList.add('show');
-
-  document.getElementById('resNum').textContent = `${score}/6`;
-  document.getElementById('resOk').textContent = score;
-  document.getElementById('resFail').textContent = 6 - score;
-  document.getElementById('resPct').textContent = Math.round(score/6*100) + '%';
-
-  const msgs = [
+  
+  const percent = Math.round((score / 6) * 100);
+  document.getElementById('resScore').textContent = `${score}/6`;
+  document.getElementById('resCorrect').textContent = score;
+  document.getElementById('resWrong').textContent = 6 - score;
+  document.getElementById('resPercent').textContent = percent + '%';
+  
+  const messages = [
     'Sigue practicando, ¡puedes mejorar!',
     'Buen esfuerzo, repasa los conceptos marcados.',
     '¡Muy bien! Tienes una base sólida.',
     '¡Excelente! Dominas los conceptos de funciones.'
   ];
-  const mi = score <= 2 ? 0 : score <= 3 ? 1 : score <= 5 ? 2 : 3;
-  document.getElementById('resMsg').textContent = msgs[mi];
-
-  const sumEl = document.getElementById('resSummary');
-  sumEl.innerHTML = '';
+  const idx = score <= 2 ? 0 : score <= 3 ? 1 : score <= 5 ? 2 : 3;
+  document.getElementById('resMsg').textContent = messages[idx];
+  
+  const summary = document.getElementById('resSummary');
+  summary.innerHTML = '';
   for (let i = 0; i < 6; i++) {
-    const ok = selected[i] === CORRECT[i];
+    const isCorrect = selected[i] === QUESTIONS[i].correct;
     const div = document.createElement('div');
-    div.className = `res-item ${ok ? 'ri-ok' : 'ri-fail'}`;
+    div.className = `res-item ${isCorrect ? 'ri-ok' : 'ri-fail'}`;
     div.innerHTML = `
-      <div class="ri-badge">${ok ? '✅' : '❌'}</div>
-      <div class="ri-q">Pregunta ${i+1}</div>
-      <div>${Q_TEXTS[i]}</div>`;
-    sumEl.appendChild(div);
+      <div class="ri-badge">${isCorrect ? '✅' : '❌'}</div>
+      <div class="ri-question">Pregunta ${i + 1}</div>
+      <div>${QUESTIONS[i].text.replace(/<[^>]*>/g, '').substring(0, 50)}...</div>
+    `;
+    summary.appendChild(div);
   }
-
-  document.getElementById('progFill').style.width = '100%';
-  document.getElementById('progLabel').textContent = 'Completado';
-  document.getElementById('scorePill').textContent = `Puntaje final: ${score}`;
+  
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressText').textContent = 'Completado';
+  document.getElementById('scoreBadge').textContent = `Puntaje final: ${score}`;
 }
 
-/* ── Restart ── */
 function restartQuiz() {
   selected = new Array(6).fill(null);
   confirmed = new Array(6).fill(false);
-  score = 0; cur = 0;
-
-  for (let q = 0; q < 6; q++) {
-    const opts = document.getElementById('opts'+q).children;
-    Array.from(opts).forEach(el => {
-      el.className = 'opt';
-      el.onclick = (function(qq, oi){ return function(){ select(qq, oi); }; })(q, Array.from(opts).indexOf(el));
-    });
-    document.getElementById('fb'+q).className = 'feedback';
-    document.getElementById('fb'+q).innerHTML = '';
-    document.getElementById('btn'+q).style.display = '';
-    document.getElementById('btn'+q).disabled = true;
-    document.getElementById('next'+q).style.display = 'none';
-    document.getElementById('si'+q).textContent = '';
-    document.getElementById('qc'+q).classList.toggle('active', q === 0);
-  }
-
+  score = 0;
+  currentQ = 0;
+  
   document.getElementById('quizBody').style.display = '';
   document.getElementById('resultsPanel').classList.remove('show');
+  
+  // Recargar preguntas
+  renderQuestions();
+  
+  // Reasignar eventos
+  for (let i = 0; i < 6; i++) {
+    window.selectOption = selectOption;
+    window.confirmAnswer = confirmAnswer;
+    window.nextQuestion = nextQuestion;
+  }
+  
   updateProgress(0);
-  document.getElementById('progFill').style.width = '0%';
-  document.getElementById('progLabel').textContent = 'Pregunta 1 de 6';
-  document.getElementById('scorePill').textContent = 'Puntaje: 0';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressText').textContent = 'Pregunta 1 de 6';
+  document.getElementById('scoreBadge').textContent = 'Puntaje: 0';
 }
 
-// fix onclick for restart
-function rebindOpts(q, i) {
-  return function() { select(q, i); };
-}
+// Inicializar
+renderQuestions();
+window.selectOption = selectOption;
+window.confirmAnswer = confirmAnswer;
+window.nextQuestion = nextQuestion;
+window.restartQuiz = restartQuiz;
 </script>
 </body>
 </html>
