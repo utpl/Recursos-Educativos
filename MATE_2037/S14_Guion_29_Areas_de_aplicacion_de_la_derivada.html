@@ -1,236 +1,521 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplicaciones de la Derivada | UTPL</title>
-    <style>
-        :root {
-            --primary: #1e293b;
-            --secondary: #64748b;
-            --accent: #0ea5e9;
-            --bg-light: #f8fafc;
-            --white: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Áreas de aplicación de la derivada · MATE_2037</title>
+<style>
+/* ═══ RESET ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:800px;height:800px;overflow:hidden;background:#ffffff;font-family:'Segoe UI',system-ui,sans-serif;color:#111}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+/* ═══ SHELL ═══ */
+.shell{display:flex;flex-direction:column;width:800px;height:800px;background:#fff}
 
-        body {
-            background-color: #e2e8f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+/* ═══ TOPBAR ═══ */
+.topbar{
+  height:48px;flex-shrink:0;background:#0f1e14;
+  display:flex;align-items:center;padding:0 20px;gap:12px;
+}
+.tb-icon{width:30px;height:30px;flex-shrink:0}
+.tb-title{font-size:13px;font-weight:700;color:#fff}
+.tb-hint{
+  margin-left:auto;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.75);
+  font-size:9px;padding:3px 10px;border-radius:20px;white-space:nowrap;
+}
 
-        /* Contenedor 800x800 */
-        .app-container {
-            width: 800px;
-            height: 800px;
-            background: var(--bg-light);
-            border-radius: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
+/* ═══ INTRO ═══ */
+.intro{
+  background:#f5f8f4;border-bottom:1.5px solid #d8e4d0;
+  padding:8px 20px;flex-shrink:0;
+  display:flex;align-items:center;gap:10px;
+}
+.intro p{font-size:10.5px;color:#3a4a38;line-height:1.5;flex:1}
 
-        /* Header */
-        header {
-            background: var(--primary);
-            color: var(--white);
-            padding: 40px;
-            text-align: center;
-        }
+/* ═══ CASE TABS ═══ */
+.case-tabs{
+  display:flex;flex-shrink:0;border-bottom:2px solid #d8e4d0;
+  background:#fff;
+}
+.ctab{
+  flex:1;padding:10px 16px;text-align:center;
+  font-size:11px;font-weight:700;cursor:pointer;
+  border-bottom:3px solid transparent;color:#888;
+  transition:all .2s;display:flex;align-items:center;
+  justify-content:center;gap:8px;
+}
+.ctab:hover{background:#f5f8f4}
+.ctab.active.c1{color:#1a5070;border-bottom-color:#1a5070;background:#f0f6fc}
+.ctab.active.c2{color:#1a5a30;border-bottom-color:#1a5a30;background:#f0f8f2}
 
-        header h1 { font-size: 24px; margin-bottom: 8px; }
-        header p { font-size: 14px; opacity: 0.8; }
+/* ═══ CONTENT ═══ */
+.content{flex:1;overflow:hidden;position:relative}
+.case-panel{display:none;height:100%;overflow:hidden;flex-direction:column}
+.case-panel.active{display:flex;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-        /* Grid de Selección */
-        .selection-grid {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            padding: 40px;
-        }
+/* ═══ CASE HEADER ═══ */
+.case-hdr{
+  padding:11px 20px 9px;flex-shrink:0;
+  display:flex;align-items:flex-start;gap:14px;
+  border-bottom:1.5px solid #e8f0e0;
+}
+.case-icon{
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.case-hdr-text h2{font-size:13px;font-weight:800;line-height:1.2;margin-bottom:3px}
+.case-sub{font-size:10px;color:#666;line-height:1.5}
 
-        .category-card {
-            background: var(--white);
-            border: 2px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 30px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            justify-content: center;
-        }
+/* ═══ TWO-PANE ═══ */
+.two-pane{
+  flex:1;display:grid;grid-template-columns:1fr 1fr;
+  gap:0;overflow:hidden;
+}
+.left-pane,.right-pane{
+  overflow-y:auto;padding:14px 16px;
+  scrollbar-width:thin;
+}
+.left-pane{border-right:1.5px solid #e8f0e0}
 
-        .category-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-            box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.1);
-        }
+/* ═══ SECTION ═══ */
+.sec-label{
+  font-size:9px;font-weight:800;letter-spacing:.8px;
+  text-transform:uppercase;margin-bottom:8px;
+  display:flex;align-items:center;gap:7px;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:#e0e8d8}
 
-        .icon-circle {
-            width: 64px;
-            height: 64px;
-            background: #f0f9ff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: var(--accent);
-        }
+/* ═══ PLANTEAMIENTO ═══ */
+.ptext{font-size:10.5px;color:#3a4a38;line-height:1.75;margin-bottom:10px}
+.formula-box{
+  background:#f0f6fc;border:1.5px solid #c0d8f0;
+  border-radius:9px;padding:9px 13px;
+  font-family:'Courier New',monospace;font-size:12.5px;font-weight:700;
+  color:#0e2840;margin:7px 0;text-align:center;line-height:1.6;
+}
+.formula-box.green{background:#eef8f2;border-color:#b0d8c0;color:#0e2818}
 
-        .category-card h2 { font-size: 16px; color: var(--primary); }
+.data-row{
+  display:flex;gap:8px;margin:6px 0;flex-wrap:wrap;
+}
+.data-pill{
+  background:#f0f6fc;border:1.5px solid #c0d8f0;
+  border-radius:8px;padding:5px 11px;
+  font-size:10px;color:#0e2840;font-weight:600;
+  display:flex;align-items:center;gap:5px;
+}
+.data-pill.green{background:#eef8f2;border-color:#b0d8c0;color:#0e2818}
+.dp-tag{font-size:8px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;opacity:.6}
 
-        /* Vista de Detalle (Overlay) */
-        .detail-view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 800px;
-            height: 800px;
-            background: var(--white);
-            z-index: 10;
-            display: none;
-            flex-direction: column;
-            padding: 40px;
-        }
+/* ═══ STEPS ═══ */
+.steps-list{display:flex;flex-direction:column;gap:8px;margin-top:4px}
 
-        .detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--bg-light);
-            padding-bottom: 20px;
-        }
+.step{
+  display:flex;gap:10px;align-items:flex-start;
+  background:#fff;border:1.5px solid #e8f0e0;
+  border-radius:10px;padding:10px 12px;
+  box-shadow:0 1px 5px rgba(0,0,0,.04);
+  cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.step:hover{transform:translateX(3px);box-shadow:0 3px 12px rgba(0,0,0,.08)}
+.step.revealed{background:var(--step-bg,#f0f8f2);border-color:var(--step-bc,#b0d8c0)}
 
-        .btn-back {
-            background: var(--bg-light);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--secondary);
-        }
+.step-n{
+  width:26px;height:26px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;
+  flex-shrink:0;
+}
+.step-body{flex:1}
+.step-title{font-size:10.5px;font-weight:700;color:#1a2818;margin-bottom:3px}
+.step-detail{
+  display:none;font-size:10px;color:#3a4a38;line-height:1.7;
+  margin-top:5px;
+}
+.step.revealed .step-detail{display:block}
+.step-formula{
+  font-family:'Courier New',monospace;font-size:12px;font-weight:700;
+  background:rgba(0,0,0,.05);border-radius:5px;padding:4px 9px;
+  margin:4px 0;display:inline-block;
+}
+.step-arrow{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  font-size:14px;color:#aaa;transition:transform .2s;
+}
+.step.revealed .step-arrow{transform:translateY(-50%) rotate(90deg)}
 
-        .content-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
+/* ═══ RESULT BOX ═══ */
+.result-card{
+  background:linear-gradient(135deg,#0e3a20,#1a5a30);
+  border-radius:12px;padding:14px 16px;color:#fff;
+  margin-top:10px;box-shadow:0 4px 16px rgba(14,58,32,.25);
+}
+.result-card.blue{background:linear-gradient(135deg,#0e2840,#1a4a70)}
+.result-card h4{font-size:11px;font-weight:700;margin-bottom:7px;opacity:.8;letter-spacing:.4px;text-transform:uppercase}
+.result-value{font-size:18px;font-weight:900;line-height:1.2;margin-bottom:4px}
+.result-note{font-size:9.5px;opacity:.75;line-height:1.6}
 
-        .math-block {
-            background: var(--bg-light);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            font-family: 'Courier New', Courier, monospace;
-            border-left: 4px solid var(--accent);
-        }
+/* ═══ CONCLUSION BOX ═══ */
+.concl{
+  background:#f5f8f4;border:1.5px solid #b8d0b0;
+  border-radius:10px;padding:10px 13px;margin-top:10px;
+  font-size:10.5px;color:#1a2818;line-height:1.7;
+}
+.concl strong{font-weight:700}
 
-        /* Footer */
-        footer {
-            padding: 24px 40px;
-            background: var(--white);
-            border-top: 1px solid #e2e8f0;
-            font-size: 11px;
-            color: var(--secondary);
-        }
+/* ═══ REVEAL-ALL BTN ═══ */
+.reveal-btn{
+  margin-top:6px;background:#0f1e14;color:#fff;border:none;
+  border-radius:8px;padding:7px 16px;font-size:10px;font-weight:700;
+  cursor:pointer;transition:background .15s;display:flex;
+  align-items:center;gap:6px;
+}
+.reveal-btn:hover{background:#2a4a20}
 
-        .apa-ref { font-style: italic; margin-top: 5px; }
+/* ═══ BOTTOM NAV ═══ */
+.bnav{
+  height:38px;flex-shrink:0;background:#f5f8f4;
+  border-top:1.5px solid #d8e4d0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;
+}
+.bnav-btn{
+  background:#0f1e14;color:#fff;border:none;
+  border-radius:8px;padding:5px 16px;font-size:10px;
+  font-weight:700;cursor:pointer;transition:background .15s;
+  display:flex;align-items:center;gap:5px;
+}
+.bnav-btn:hover{background:#2a4a20}
+.bnav-btn:disabled{opacity:.35;cursor:not-allowed}
+.bnav-ref{font-size:8.5px;color:#aaa}
 
-        /* Utility */
-        .show { display: flex; }
-    </style>
+/* ═══ MODAL ═══ */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .22s;
+}
+.overlay.open{opacity:1;pointer-events:auto}
+.modal{
+  background:#fff;border-radius:14px;width:540px;max-height:660px;
+  overflow-y:auto;padding:20px 22px;
+  box-shadow:0 16px 48px rgba(0,0,0,.25);
+  transform:scale(.94);transition:transform .22s;
+}
+.overlay.open .modal{transform:scale(1)}
+.mc{float:right;cursor:pointer;font-size:18px;color:#888;background:none;border:none}
+.mc:hover{color:#333}
+.mt{font-size:13px;font-weight:800;margin-bottom:12px;color:#0f1e14}
+.mtext{font-size:10.5px;color:#3a4a38;line-height:1.8}
+.mformula{
+  background:#f0f6fc;border:1.5px solid #c0d8f0;
+  border-radius:8px;padding:9px 13px;
+  font-family:'Courier New',monospace;font-size:13px;
+  font-weight:700;color:#0e2840;margin:8px 0;text-align:center;
+}
+
+/* ═══ MOBILE ═══ */
+@media(max-width:600px){
+  html,body{width:100%;height:auto;overflow:auto}
+  .shell{width:100%;height:auto}
+  .content{overflow:visible}
+  .case-panel{height:auto}
+  .two-pane{grid-template-columns:1fr}
+  .left-pane{border-right:none;border-bottom:1.5px solid #e8f0e0}
+  .modal{width:95%;max-height:90vh}
+}
+</style>
 </head>
 <body>
+<div class="shell">
 
-<div class="app-container">
-    <header>
-        <h1>Áreas de Aplicación de la Derivada</h1>
-        <p>Haga clic en los temas para visualizar la información </p>
-    </header>
-
-    <div class="selection-grid">
-        <div class="category-card" onclick="openDetail('analytics')">
-            <div class="icon-circle">📊</div>
-            <h2>Analítica de datos - minimización del error cuadrático</h2>
-        </div>
-        <div class="category-card" onclick="openDetail('traffic')">
-            <div class="icon-circle">🌐</div>
-            <h2>Ingeniería de tráfico - balanceo de carga en servidores</h2>
-        </div>
-    </div>
-
-    <div id="detailView" class="detail-view">
-        <div class="detail-header">
-            <h2 id="detailTitle">Título de Aplicación</h2>
-            <button class="btn-back" onclick="closeDetail()">← Volver</button>
-        </div>
-        <div class="content-scroll" id="detailContent">
-            </div>
-    </div>
-
-    <footer>
-        <strong>Referencia APA 7:</strong>
-        <div class="apa-ref">Rohoden, K. (2026). Áreas de aplicación de la derivada. Universidad Técnica Particular de Loja. Elaborado con asistencia de Gemini.</div>
-    </footer>
+<!-- TOPBAR -->
+<div class="topbar">
+  <!-- SVG icon: derivada/función -->
+  <svg class="tb-icon" viewBox="0 0 30 30" fill="none">
+    <circle cx="15" cy="15" r="15" fill="rgba(255,255,255,.1)"/>
+    <path d="M5 22 Q9 14 15 12 Q19 10 25 7" stroke="#4ade80" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="15" cy="12" r="2.2" fill="#4ade80"/>
+    <line x1="4" y1="24" x2="26" y2="24" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>
+  </svg>
+  <span class="tb-title">Áreas de aplicación de la derivada</span>
+  <div class="tb-hint">Haga clic en los temas para visualizar la información</div>
 </div>
 
+<!-- INTRO -->
+<div class="intro">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#d8f0e0"/><path d="M3 12 Q6 8 8 7 Q10 6 13 4" stroke="#1a5a30" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="8" cy="7" r="1.8" fill="#1a5a30"/></svg>
+  <p>A continuación, le invito a revisar algunos ejemplos de la aplicación de la derivada en el área de redes y analítica de datos.</p>
+</div>
+
+<!-- CASE TABS -->
+<div class="case-tabs">
+  <div class="ctab c1 active" id="tab0" onclick="showCase(0)">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 10 L7 7 L9 9 L11 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Analítica de datos - minimización del error cuadrático.
+  </div>
+  <div class="ctab c2" id="tab1" onclick="showCase(1)">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="6" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="5" width="6" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 8H9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Ingeniería de tráfico - balanceo de carga en servidores.
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ══ CASO 1: ANALÍTICA ══ -->
+<div class="case-panel active" id="cp0">
+  <div class="case-hdr" style="background:#f0f6fc">
+    <div class="case-icon" style="background:#e0f0fc">📊</div>
+    <div class="case-hdr-text">
+      <h2 style="color:#1a5070">Analítica de datos - minimización del error cuadrático</h2>
+      <div class="case-sub">Entrenamiento de modelo de regresión lineal · Suma de errores al cuadrado (SSE)</div>
+    </div>
+  </div>
+
+  <div class="two-pane">
+
+    <!-- LEFT: planteamiento -->
+    <div class="left-pane">
+      <div class="sec-label" style="color:#1a5070">Planteamiento del problema</div>
+
+      <p class="ptext">Suponga que se está entrenando un modelo simple de regresión lineal para predecir el tráfico de red en función de la hora del día. La calidad del modelo se mide por la suma de los errores al cuadrado (SSE).</p>
+      <p class="ptext">Suponer que la función de error <em>E</em> depende de un único parámetro de ajuste <em>w</em> (peso) y está dada por:</p>
+      <div class="formula-box">E(w) = 2w² − 12w + 25</div>
+
+      <div class="data-row">
+        <div class="data-pill"><div><div class="dp-tag">Variable</div>w (peso)</div></div>
+        <div class="data-pill"><div><div class="dp-tag">Función</div>E(w) = SSE</div></div>
+        <div class="data-pill"><div><div class="dp-tag">Objetivo</div>Minimizar error</div></div>
+      </div>
+
+      <div class="result-card blue" style="margin-top:12px">
+        <h4>Resultado final</h4>
+        <div class="result-value">w = 3</div>
+        <div class="result-note">El modelo alcanza su máxima precisión (mínimo error) cuando el parámetro se ajusta a 3.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: desarrollo paso a paso -->
+    <div class="right-pane">
+      <div class="sec-label" style="color:#1a5070">Desarrollo del problema <span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:9px;color:#aaa;margin-left:4px">— clic en cada paso</span></div>
+
+      <div class="steps-list" id="steps0">
+
+        <div class="step" style="--step-bg:#eef4fc;--step-bc:#a0c8e8" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5070">1</div>
+          <div class="step-body">
+            <div class="step-title">Derivada primera de la función de error</div>
+            <div class="step-detail">
+              Se empezará encontrando la derivada de la función de error E:
+              <div class="step-formula">E′(w) = 4w − 12</div>
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+        <div class="step" style="--step-bg:#eef4fc;--step-bc:#a0c8e8" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5070">2</div>
+          <div class="step-body">
+            <div class="step-title">Puntos críticos — igualar a cero</div>
+            <div class="step-detail">
+              Para encontrar los puntos críticos, se iguala a cero la derivada de la función:
+              <div class="step-formula">4w − 12 = 0 → 4w = 12 → w = 3</div>
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+        <div class="step" style="--step-bg:#eef4fc;--step-bc:#a0c8e8" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5070">3</div>
+          <div class="step-body">
+            <div class="step-title">Verificación — segunda derivada</div>
+            <div class="step-detail">
+              Para la verificación, se procede a encontrar la segunda derivada de la función:
+              <div class="step-formula">E″(w) = 4</div>
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+        <div class="step" style="--step-bg:#eef4fc;--step-bc:#a0c8e8" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5070">4</div>
+          <div class="step-body">
+            <div class="step-title">Conclusión</div>
+            <div class="step-detail">
+              Como E″(3) = 4 &gt; 0, la curva es cóncava hacia arriba (convexa), confirmando que en w = 3 existe un mínimo absoluto. El modelo alcanza su máxima precisión (mínimo error) cuando el parámetro se ajusta a 3.
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+      </div>
+      <button class="reveal-btn" onclick="revealAll(0)">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 5l2 2 2-2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Mostrar todos los pasos
+      </button>
+    </div>
+
+  </div>
+</div><!-- /cp0 -->
+
+<!-- ══ CASO 2: INGENIERÍA ══ -->
+<div class="case-panel" id="cp1">
+  <div class="case-hdr" style="background:#f0f8f4">
+    <div class="case-icon" style="background:#d8f0e4">🌐</div>
+    <div class="case-hdr-text">
+      <h2 style="color:#1a5a30">Ingeniería de tráfico - balanceo de carga en servidores</h2>
+      <div class="case-sub">100 peticiones/segundo · Servidor A y Servidor B · Minimizar latencia total</div>
+    </div>
+  </div>
+
+  <div class="two-pane">
+
+    <!-- LEFT: planteamiento -->
+    <div class="left-pane">
+      <div class="sec-label" style="color:#1a5a30">Planteamiento del problema</div>
+
+      <p class="ptext">Un balanceador de carga debe distribuir un total de 100 peticiones/segundo entre dos servidores (servidor A y servidor B) para minimizar el tiempo de respuesta total del sistema.</p>
+      <p class="ptext">Debido a diferencias en hardware y configuración:</p>
+
+      <div class="data-row">
+        <div class="data-pill green"><div><div class="dp-tag">Servidor A</div>L_A(x) = x²</div></div>
+        <div class="data-pill green"><div><div class="dp-tag">Servidor B</div>L_B(y) = 50y</div></div>
+        <div class="data-pill green"><div><div class="dp-tag">Restricción</div>x + y = 100</div></div>
+      </div>
+
+      <p class="ptext" style="margin-top:8px">El objetivo es minimizar la latencia total, la cual se determina con la función:</p>
+      <div class="formula-box green">L_total = L_A(x) + L_B(y)</div>
+
+      <div class="result-card" style="margin-top:12px">
+        <h4>Distribución óptima</h4>
+        <div class="result-value">A: 25 · B: 75 peticiones</div>
+        <div class="result-note">Lo óptimo es enviar solo 25 peticiones al servidor A y enviar el resto (75) al servidor B, que resiste mejor la carga masiva.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: desarrollo paso a paso -->
+    <div class="right-pane">
+      <div class="sec-label" style="color:#1a5a30">Desarrollo del problema <span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:9px;color:#aaa;margin-left:4px">— clic en cada paso</span></div>
+
+      <div class="steps-list" id="steps1">
+
+        <div class="step" style="--step-bg:#eef8f2;--step-bc:#90c8a0" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5a30">1</div>
+          <div class="step-body">
+            <div class="step-title">Expresar en términos de x</div>
+            <div class="step-detail">
+              Para facilitar la solución a este problema, lo primero que se hará es expresar todo en términos de x (carga en A). Como y = 100 − x:
+              <div class="step-formula">L_total(x) = x² + 50(100 − x)</div>
+              <div class="step-formula">L_total(x) = x² + 5000 − 50x = x² − 50x + 5000</div>
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+        <div class="step" style="--step-bg:#eef8f2;--step-bc:#90c8a0" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5a30">2</div>
+          <div class="step-body">
+            <div class="step-title">Derivada primera — aplicar la derivada</div>
+            <div class="step-detail">
+              Para proceder con la optimización, se debe aplicar la derivada a dicha función de latencia:
+              <div class="step-formula">L′_total(x) = 2x − 50</div>
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+        <div class="step" style="--step-bg:#eef8f2;--step-bc:#90c8a0" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5a30">3</div>
+          <div class="step-body">
+            <div class="step-title">Puntos críticos — igualar a cero</div>
+            <div class="step-detail">
+              Como ya se sabe, para encontrar los puntos críticos se debe igualar a cero la derivada:
+              <div class="step-formula">2x − 50 = 0 → 2x = 50 → x = 25</div>
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+        <div class="step" style="--step-bg:#eef8f2;--step-bc:#90c8a0" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5a30">4</div>
+          <div class="step-body">
+            <div class="step-title">Calcular las cargas</div>
+            <div class="step-detail">
+              Con este valor, se procede a calcular las cargas:
+              <div class="step-formula">Tráfico al servidor A (x): 25 peticiones.</div>
+              <div class="step-formula">Tráfico al servidor B (y): 100 − 25 = 75 peticiones.</div>
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+        <div class="step" style="--step-bg:#eef8f2;--step-bc:#90c8a0" onclick="toggleStep(this)">
+          <div class="step-n" style="background:#1a5a30">5</div>
+          <div class="step-body">
+            <div class="step-title">Conclusión</div>
+            <div class="step-detail">
+              En conclusión, aunque el servidor A parece más rápido inicialmente (latencia x² vs 50y), su rendimiento se degrada muy rápido si se satura. El resultado indica que lo óptimo es enviar solo 25 peticiones al servidor A y enviar el resto (75) al servidor B, que resiste mejor la carga masiva.
+            </div>
+          </div>
+          <div class="step-arrow">›</div>
+        </div>
+
+      </div>
+      <button class="reveal-btn" onclick="revealAll(1)">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 5l2 2 2-2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Mostrar todos los pasos
+      </button>
+    </div>
+
+  </div>
+</div><!-- /cp1 -->
+
+</div><!-- /content -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="bnav-btn" id="btnP" onclick="showCase(0)">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M6 8L3 5 6 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Analítica de datos
+  </button>
+  <span class="bnav-ref">Elaboración propia. · Rohoden, K. (2025). <em>Áreas de aplicación de la derivada.</em> UTPL.</span>
+  <button class="bnav-btn" id="btnN" onclick="showCase(1)">
+    Ingeniería de tráfico
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M4 2l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+</div>
+
+</div><!-- /shell -->
+
 <script>
-    const content = {
-        analytics: {
-            title: "Analítica de Datos",
-            body: `
-                <p><strong>Planteamiento del problema:</strong> Se busca predecir el tráfico de red mediante regresión lineal minimizando la suma de los errores al cuadrado (SSE).</p>
-                <div class="math-block">
-                    E(m) = Σ (y_i - m*x_i)²
-                </div>
-                <p>Para hallar el valor de 'm' que minimice el error, aplicamos la derivada respecto a 'm' e igualamos a cero.</p>
-                <div class="math-block">
-                    dE/dm = -2 Σ x_i(y_i - m*x_i) = 0
-                </div>
-                <p>Este proceso permite ajustar modelos predictivos con precisión matemática en entornos de Big Data.</p>
-            `
-        },
-        traffic: {
-            title: "Balanceo de Carga",
-            body: `
-                <p><strong>Contexto:</strong> Optimización de la latencia total entre dos servidores (A y B) con una carga total de 100 peticiones.</p>
-                <div class="math-block">
-                    L_total(x) = x² - 50x + 5000
-                </div>
-                <p><strong>Cálculo del Punto Crítico:</strong> Derivamos la función de latencia:</p>
-                <div class="math-block">
-                    L'(x) = 2x - 50 = 0 <br>
-                    x = 25
-                </div>
-                <p><strong>Resultado:</strong> El tráfico óptimo es de 25 peticiones al servidor A y 75 al servidor B para minimizar el tiempo de espera.</p>
-            `
-        }
-    };
+let curCase = 0;
 
-    function openDetail(key) {
-        document.getElementById('detailTitle').innerText = content[key].title;
-        document.getElementById('detailContent').innerHTML = content[key].body;
-        document.getElementById('detailView').classList.add('show');
-    }
+function showCase(idx) {
+  document.querySelectorAll('.case-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('cp'+idx).classList.add('active');
+  document.getElementById('tab'+idx).classList.add('active');
+  curCase = idx;
+}
 
-    function closeDetail() {
-        document.getElementById('detailView').classList.remove('show');
-    }
+function toggleStep(el) {
+  el.classList.toggle('revealed');
+}
+
+function revealAll(caseIdx) {
+  document.querySelectorAll('#steps'+caseIdx+' .step').forEach(s=>s.classList.add('revealed'));
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowRight' && curCase===0) showCase(1);
+  if (e.key==='ArrowLeft'  && curCase===1) showCase(0);
+});
 </script>
-
 </body>
 </html>
