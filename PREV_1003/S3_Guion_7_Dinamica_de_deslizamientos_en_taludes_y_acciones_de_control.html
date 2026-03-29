@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dinámica de deslizamientos en taludes</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent: #d97706;
+            --bg-light: #f0f9ff;
+            --bg-card: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --node-1: #78716c; /* Stone */
+            --node-2: #0ea5e9; /* Sky/Rain */
+            --node-3: #dc2626; /* Red alert */
+            --node-4: #f59e0b; /* Yellow construction */
+            --node-5: #7c3aed; /* Purple persistence */
+            --node-6: #10b981; /* Green protection */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+         
+        }
+
+        .resource-container {
+            width: 800px;
+            height: 800px;
+            max-width: 100%;
+            background: var(--bg-light);
+            
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 50%, #3b82f6 100%);
+            color: white;
+            padding: 14px 32px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-emojis {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 180px;
+            height: 180px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .emoji-bg {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 4rem;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .emoji-bg:nth-child(2) { animation-delay: -2s; animation-duration: 8s; }
+        .emoji-bg:nth-child(3) { animation-delay: -4s; animation-duration: 7s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(10deg); }
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        .graph-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, transparent 70%);
+        }
+
+        .connections-svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            stroke: #106fe3;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 5,5;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -100; }
+        }
+
+        /* Central Node */
+        .central-node {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 160px;
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 20px 40px -10px rgba(30, 58, 138, 0.5);
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 4px solid rgba(255,255,255,0.3);
+            text-align: center;
+            padding: 10px;
+        }
+
+        .central-node:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 25px 50px -10px rgba(30, 58, 138, 0.6);
+        }
+
+        .central-emoji {
+            font-size: 3rem;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .central-text {
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        /* Satellite Nodes */
+        .node {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow);
+            z-index: 5;
+            text-align: center;
+            padding: 8px;
+            border: 3px solid white;
+        }
+
+        .node:hover {
+            transform: scale(1.1);
+            z-index: 20;
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.3);
+        }
+
+        .node-emoji {
+            font-size: 2rem;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+        }
+
+        .node-title {
+            font-size: 0.67rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .node-hint {
+            position: absolute;
+            bottom: -8px;
+            background: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 2px solid var(--border);
+        }
+
+        /* Node Positions (Desktop) */
+        .node[data-id="1"] { /* Top - Condición inicial */
+            top: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--node-1) 0%, #57534e 100%);
+        }
+
+        .node[data-id="2"] { /* Top Right - Lluvias */
+            top: 22%;
+            right: 10%;
+            background: linear-gradient(135deg, var(--node-2) 0%, #0369a1 100%);
+        }
+
+        .node[data-id="3"] { /* Bottom Right - Desencadenamiento */
+            bottom: 22%;
+            right: 10%;
+            background: linear-gradient(135deg, var(--node-3) 0%, #991b1b 100%);
+        }
+
+        .node[data-id="4"] { /* Bottom - Intervención */
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--node-4) 0%, #b45309 100%);
+        }
+
+        .node[data-id="5"] { /* Bottom Left - Persistencia */
+            bottom: 22%;
+            left: 10%;
+            background: linear-gradient(135deg, var(--node-5) 0%, #5b21b6 100%);
+        }
+
+        .node[data-id="6"] { /* Top Left - Medidas */
+            top: 22%;
+            left: 10%;
+            background: linear-gradient(135deg, var(--node-6) 0%, #047857 100%);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 40px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: #f1f5f9;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #e2e8f0;
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-right: 40px;
+        }
+
+        .modal-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        .modal-body {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+        }
+
+        .reference-box {
+            position: absolute;
+            bottom: 6px;
+            left: 32px;
+            right: 32px;
+            background: rgba(255,255,255,0.95);
+            padding: 4px 16px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        
+        }
+
+        .reference-label {
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .instruction-pill {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            box-shadow: var(--shadow);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                background: var(--bg-light);
+            }
+
+            .resource-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.1rem;
+            }
+
+            .graph-area {
+                padding: 60px 20px 120px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .connections-svg, .central-node {
+                display: none;
+            }
+
+            .node {
+                position: relative;
+                width: 100%;
+                height: auto;
+                min-height: 80px;
+                border-radius: 16px;
+                flex-direction: row;
+                padding: 16px;
+                transform: none !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                bottom: auto !important;
+                text-align: left;
+                gap: 16px;
+            }
+
+            .node-emoji {
+                font-size: 2.5rem;
+                margin: 0;
+            }
+
+            .node-title {
+                font-size: 1rem;
+                text-align: left;
+                text-shadow: none;
+            }
+
+            .node-hint {
+                position: relative;
+                bottom: auto;
+                margin-left: auto;
+                width: 32px;
+                height: 32px;
+                font-size: 1.2rem;
+            }
+
+            .modal-overlay {
+                position: fixed;
+                padding: 20px;
+            }
+
+            .modal-content {
+                max-height: 90vh;
+                padding: 24px;
+            }
+
+            .reference-box {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 0;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            }
+
+            .instruction-pill {
+                position: fixed;
+                top: auto;
+                bottom: 100px;
+                white-space: nowrap;
+            }
+        }
+
+        /* Accessibility */
+        button:focus, .node:focus, .central-node:focus {
+            outline: 3px solid #60a5fa;
+            outline-offset: 2px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="resource-container">
+    <header>
+        <div class="header-emojis" aria-hidden="true">
+            <div class="emoji-bg">🏔️</div>
+            <div class="emoji-bg">🌧️</div>
+          
+        </div>
+        <h1>Dinámica de deslizamientos en taludes</h1>
+        <p class="subtitle">Acciones de control y estabilización</p>
+    </header>
+
+
+    <div class="graph-area" id="graphArea">
+        <svg class="connections-svg" id="connectionsSvg">
+            <!-- Lines drawn by JS -->
+        </svg>
+
+        <!-- Central Node -->
+        <div class="central-node" tabindex="0" aria-label="Dinámica de deslizamientos, nodo central">
+            <div class="central-emoji">⛰️</div>
+            <div class="central-text">Dinámica de Deslizamientos</div>
+        </div>
+
+        <!-- Satellite Nodes -->
+        <div class="node" data-id="1" tabindex="0" role="button" aria-label="Ver condición inicial del talud">
+            <div class="node-emoji">🏔️</div>
+            <div class="node-title">Condición inicial</div>
+            <div class="node-hint">+</div>
+        </div>
+
+        <div class="node" data-id="2" tabindex="0" role="button" aria-label="Ver lluvias y saturación">
+            <div class="node-emoji">🌧️</div>
+            <div class="node-title">Lluvias y saturación</div>
+            <div class="node-hint">+</div>
+        </div>
+
+        <div class="node" data-id="3" tabindex="0" role="button" aria-label="Ver desencadenamiento del evento">
+            <div class="node-emoji">⚠️</div>
+            <div class="node-title">Desencadenamiento</div>
+            <div class="node-hint">+</div>
+        </div>
+
+        <div class="node" data-id="4" tabindex="0" role="button" aria-label="Ver intervención en el pie del talud">
+            <div class="node-emoji">🚜</div>
+            <div class="node-title">Intervención pie del talud</div>
+            <div class="node-hint">+</div>
+        </div>
+
+        <div class="node" data-id="5" tabindex="0" role="button" aria-label="Ver persistencia de la susceptibilidad">
+            <div class="node-emoji">🔄</div>
+            <div class="node-title">Persistencia</div>
+            <div class="node-hint">+</div>
+        </div>
+
+        <div class="node" data-id="6" tabindex="0" role="button" aria-label="Ver medidas de estabilización">
+            <div class="node-emoji">🛡️</div>
+            <div class="node-title">Medidas estabilización</div>
+            <div class="node-hint">+</div>
+        </div>
+
+        <div class="reference-box">
+            <div class="reference-label">Referencia</div>
+            Banco Interamericano de Desarrollo. (2025). Talleres de identificación de modos de fallo: Documentos de apoyo a la aplicación de la guía. Catálogo para infraestructuras viales. https://publications.iadb.org/es/documentos-de-apoyo-la-aplicacion-de-la-guia-catalogo-para-infraestructuras-viales
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon">🏔️</div>
+                <h2 class="modal-title" id="modalTitle">Título</h2>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Contenido
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const contentData = {
+        1: {
+            title: "Condición inicial del talud",
+            emoji: "🏔️",
+            text: "Existe material suelto (coluvial–detrítico) sobre una zona meteorizada y fracturada. Esta configuración geológica predispone al terreno a movimientos masivos cuando se presentan condiciones desencadenantes."
+        },
+        2: {
+            title: "Lluvias y saturación",
+            emoji: "🌧️",
+            text: "La lluvia incrementa la humedad del suelo; al saturarse, el material pierde resistencia y aumenta la probabilidad de inestabilidad. El agua actúa como lubricante y aumenta el peso del material, reduciendo la fricción interna."
+        },
+        3: {
+            title: "Desencadenamiento del evento",
+            emoji: "⚠️",
+            text: "Se produce el desprendimiento o deslizamiento de material (colapso), que puede alcanzar la carretera y afectar la seguridad y conectividad. Este momento crítico representa la materialización del riesgo en un evento concreto."
+        },
+        4: {
+            title: "Intervención en el pie del talud",
+            emoji: "🚜",
+            text: "La remoción de material en la base (por maquinaria) puede ser necesaria para limpiar la vía, pero si se realiza sin criterios técnicos, puede reducir el soporte del talud y favorecer nuevos desprendimientos. Es crucial evaluar la estabilidad antes de intervenir."
+        },
+        5: {
+            title: "Persistencia de la susceptibilidad",
+            emoji: "🔄",
+            text: "Aun tras la primera intervención, el terreno puede quedar apoyado sobre roca fracturada, manteniendo condiciones propicias para futuros movimientos si continúan las lluvias u otros factores desencadenantes. El riesgo no desaparece automáticamente."
+        },
+        6: {
+            title: "Medidas de estabilización",
+            emoji: "🛡️",
+            text: "Se muestra una solución típica de control, basada en hormigón lanzado para proteger el talud y pernos de anclaje para mejorar la sujeción del material, reduciendo la probabilidad de nuevos desprendimientos y aumentando la seguridad de la vía."
+        }
+    };
+
+    function drawConnections() {
+        if (window.innerWidth <= 768) return; // Don't draw on mobile
+        
+        const svg = document.getElementById('connectionsSvg');
+        const central = document.querySelector('.central-node');
+        const nodes = document.querySelectorAll('.node');
+        
+        svg.innerHTML = '';
+        
+        const centralRect = central.getBoundingClientRect();
+        const containerRect = svg.getBoundingClientRect();
+        
+        const cx = centralRect.left + centralRect.width / 2 - containerRect.left;
+        const cy = centralRect.top + centralRect.height / 2 - containerRect.top;
+        
+        nodes.forEach(node => {
+            const nodeRect = node.getBoundingClientRect();
+            const nx = nodeRect.left + nodeRect.width / 2 - containerRect.left;
+            const ny = nodeRect.top + nodeRect.height / 2 - containerRect.top;
+            
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', cx);
+            line.setAttribute('y1', cy);
+            line.setAttribute('x2', nx);
+            line.setAttribute('y2', ny);
+            line.setAttribute('class', 'connection-line');
+            
+            svg.appendChild(line);
+        });
+    }
+
+    function openModal(id) {
+        const data = contentData[id];
+        document.getElementById('modalIcon').textContent = data.emoji;
+        document.getElementById('modalTitle').textContent = data.title;
+        document.getElementById('modalBody').textContent = data.text;
+        document.getElementById('modal').classList.add('active');
+        
+        // Announce for screen readers
+        const announcement = document.createElement('div');
+        announcement.setAttribute('role', 'status');
+        announcement.className = 'sr-only';
+        announcement.textContent = `Abriendo información sobre: ${data.title}`;
+        document.body.appendChild(announcement);
+        setTimeout(() => document.body.removeChild(announcement), 1000);
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+    }
+
+    // Event listeners
+    document.querySelectorAll('.node').forEach(node => {
+        node.addEventListener('click', () => openModal(node.dataset.id));
+        node.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') openModal(node.dataset.id);
+        });
+    });
+
+    document.getElementById('modal').addEventListener('click', (e) => {
+        if (e.target.id === 'modal') closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    window.addEventListener('resize', () => {
+        setTimeout(drawConnections, 100);
+    });
+
+    window.addEventListener('load', drawConnections);
+</script>
+
+</body>
+</html>
