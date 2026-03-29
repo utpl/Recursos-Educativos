@@ -48,10 +48,10 @@
   }
   .hdr h1 {
     font-family:'Spectral', serif;
-    font-size:clamp(22px,5.5vw,36px); font-weight:700; line-height:1.18; margin-bottom:8px;
+    font-size:clamp(18px,4vw,28px); font-weight:700; line-height:1.18; margin-bottom:8px;
   }
   .hdr h1 em { font-style:italic; color:var(--rust); }
-  .hdr .byline { font-size:13px; color:var(--sub); font-weight:500; line-height:1.5; }
+  .hdr .byline { font-size:12px; color:var(--sub); font-weight:500; line-height:1.5; }
 
   /* ── MAIN CARD ── */
   .main { width:100%; max-width:800px; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
@@ -101,28 +101,113 @@
   .tl-line { width:28px; height:2px; background:var(--border); flex-shrink:0; transition:background .3s; }
   .tl-line.done { background:var(--correct); }
 
-  /* ── PROGRESS ── */
-  .prog-wrap { padding:16px 28px 4px; display:flex; align-items:center; gap:10px; }
-  .prog-lbl { font-size:11px; font-weight:700; color:var(--sub); text-transform:uppercase; letter-spacing:.6px; white-space:nowrap; }
-  .prog-track { flex:1; height:7px; background:#DDD8CC; border-radius:7px; overflow:hidden; }
-  .prog-fill { height:100%; border-radius:7px; background:linear-gradient(90deg,var(--pine),#4AAA80); transition:width .55s cubic-bezier(.4,0,.2,1); width:0%; }
-  .prog-num { font-size:13px; font-weight:800; color:var(--pine); white-space:nowrap; }
-
-  /* ── QUESTIONS AREA ── */
-  .q-area { padding:8px 28px 30px; }
-  @media(max-width:480px){
-    .ctx{padding:22px 18px 20px;}
-    .prog-wrap{padding:14px 18px 2px;}
-    .q-area{padding:6px 18px 22px;}
-    .timeline-stripe{padding:10px 16px;}
+  /* ── BOTÓN INICIAR ── */
+  .start-section {
+    padding: 20px 28px 28px;
+    background: var(--card);
+  }
+  .start-quiz-btn {
+    width: 100%;
+    background: var(--pine);
+    color: #fff;
+    border: none;
+    border-radius: 13px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .start-quiz-btn:hover {
+    background: #1A3C2C;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(42,80,64,.28);
   }
 
-  /* ── QUESTION CARD ── */
-  .qcard { display:none; animation:fadeSlide .38s ease; }
-  .qcard.active { display:block; }
+  /* ── MODAL / VISTA DE PREGUNTAS (separada) ── */
+  .quiz-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .quiz-overlay.active {
+    display: flex;
+  }
+  .quiz-modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadowmd);
+    animation: modalFadeIn 0.3s ease;
+  }
+  @keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface);
+  }
+  .quiz-header h3 {
+    font-family: 'Spectral', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .close-quiz {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--sub);
+    line-height: 1;
+    padding: 0 8px;
+    transition: color 0.2s;
+  }
+  .close-quiz:hover {
+    color: var(--rust);
+  }
+
+  /* PROGRESS dentro del modal */
+  .prog-wrap-modal { padding: 16px 28px 4px; display: flex; align-items: center; gap: 10px; }
+  .prog-lbl { font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .6px; white-space: nowrap; }
+  .prog-track-modal { flex: 1; height: 7px; background: #DDD8CC; border-radius: 7px; overflow: hidden; }
+  .prog-fill-modal { height: 100%; border-radius: 7px; background: linear-gradient(90deg,var(--pine),#4AAA80); transition: width .55s cubic-bezier(.4,0,.2,1); width: 0%; }
+  .prog-num-modal { font-size: 13px; font-weight: 800; color: var(--pine); white-space: nowrap; }
+
+  /* QUESTIONS AREA dentro del modal */
+  .q-area-modal { padding: 8px 28px 30px; }
+  @media(max-width:480px){
+    .prog-wrap-modal{padding:14px 18px 2px;}
+    .q-area-modal{padding:6px 18px 22px;}
+  }
+
+  .qcard { display: none; animation: fadeSlide .38s ease; }
+  .qcard.active { display: block; }
   @keyframes fadeSlide { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
-  /* question heading */
   .qhd { display:flex; align-items:flex-start; gap:13px; padding-top:16px; margin-bottom:18px; }
   .qnum-badge {
     width:50px; height:50px; border-radius:12px; flex-shrink:0;
@@ -140,7 +225,6 @@
   .q3 .qhd-era { color:var(--slate); }
   .qhd-body p { font-size:14.5px; font-weight:600; color:var(--text); line-height:1.48; }
 
-  /* options */
   .opts { display:flex; flex-direction:column; gap:10px; margin-bottom:13px; }
   .opt {
     background:var(--surface); border:2px solid var(--border);
@@ -165,7 +249,6 @@
   .opt.incorrect .olet { background:var(--wrong); border-color:var(--wrong); color:#fff; border-radius:50%; }
   .opt:disabled { cursor:default; }
 
-  /* feedback */
   .fb { display:none; border-radius:13px; padding:15px 17px; margin-top:6px; animation:fadeIn .32s ease; }
   .fb.show { display:block; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
@@ -180,7 +263,6 @@
   .fb-body strong { color:var(--text); }
   .fb-body em { font-style:italic; color:var(--pine); }
 
-  /* nav */
   .nav-row { display:flex; justify-content:flex-end; margin-top:16px; }
   .navbtn {
     display:none; align-items:center; gap:8px;
@@ -190,16 +272,15 @@
   }
   .navbtn.show { display:flex; }
   .q1 .navbtn { background:var(--rust); }
-  .q1 .navbtn:hover { background:#7A2A08; transform:translateY(-1px); box-shadow:0 5px 18px rgba(138,58,16,.30); }
+  .q1 .navbtn:hover { background:#7A2A08; transform:translateY(-1px); }
   .q2 .navbtn { background:var(--pine); }
-  .q2 .navbtn:hover { background:#1A3C2C; transform:translateY(-1px); box-shadow:0 5px 18px rgba(42,80,64,.30); }
+  .q2 .navbtn:hover { background:#1A3C2C; }
   .q3 .navbtn { background:var(--slate); }
-  .q3 .navbtn:hover { background:#1A2C4A; transform:translateY(-1px); box-shadow:0 5px 18px rgba(42,58,90,.30); }
-  .navbtn:focus-visible { outline:3px solid var(--pine); outline-offset:2px; }
+  .q3 .navbtn:hover { background:#1A2C4A; }
 
-  /* ── RESULTS ── */
-  .results { display:none; animation:fadeSlide .45s ease; padding-top:10px; }
-  .results.active { display:block; }
+  /* RESULTS dentro del modal */
+  .results-modal { display: none; animation: fadeSlide .45s ease; padding: 8px 28px 30px; }
+  .results-modal.active { display: block; }
 
   .res-hero {
     background:linear-gradient(135deg,#0E1C14 0%,#2A5038 100%);
@@ -224,21 +305,21 @@
   .concl strong { display:block; font-size:14px; font-weight:800; color:var(--text); margin-bottom:6px; }
   .concl p { font-size:13px; font-weight:500; color:var(--sub); line-height:1.65; }
 
-  .restart-btn { width:100%; margin-top:18px; background:var(--pine); color:#fff; border:none; border-radius:13px; padding:14px; font-family:'DM Sans',sans-serif; font-size:14.5px; font-weight:700; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; }
-  .restart-btn:hover { background:#1A3C2C; transform:translateY(-1px); box-shadow:0 6px 22px rgba(42,80,64,.30); }
+  .restart-btn-modal { width:100%; margin-top:18px; background:var(--pine); color:#fff; border:none; border-radius:13px; padding:14px; font-family:'DM Sans',sans-serif; font-size:14.5px; font-weight:700; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .restart-btn-modal:hover { background:#1A3C2C; transform:translateY(-1px); }
 </style>
 </head>
 <body>
 
 <header class="hdr" role="banner">
-  <div class="era-pill">🌿 Semana 7 · Caso de Estudio</div>
-  <h1>Historia Gastronómica<br><em>Aplicada al Turismo</em></h1>
+ 
+  <h1>Historia Gastronómica <em>Aplicada al Turismo</em></h1>
   <p class="byline">Fundamentos del Turismo y la Gastronomía · Prof. Mgs. Natalia Soledad Bustamante Sánchez</p>
 </header>
 
 <main class="main" role="main" aria-label="Caso de estudio interactivo">
 
-  <!-- CONTEXT -->
+  <!-- CONTEXT (siempre visible) -->
   <section class="ctx" aria-labelledby="ctx-title">
     <p class="eyebrow">Contexto del caso</p>
     <h2 id="ctx-title">La ruta de los sabores ancestrales del cantón Piedra Alta</h2>
@@ -253,244 +334,290 @@
     <p class="cta" role="note">¡Mucha suerte tomando las decisiones correctas!</p>
   </section>
 
-  <!-- TIMELINE STRIPE -->
+  <!-- TIMELINE STRIPE (solo decorativo, no interactivo en principal) -->
   <div class="timeline-stripe" aria-label="Etapas históricas del caso" role="list">
     <div class="tl-step" role="listitem">
-      <div class="tl-dot active" id="tld1" aria-label="Pregunta 1">🌽</div>
+      <div class="tl-dot" id="mainTl1">🌽</div>
       <span class="tl-label">Intercambio colombino</span>
     </div>
-    <div class="tl-line" id="tll1"></div>
+    <div class="tl-line" id="mainLine1"></div>
     <div class="tl-step" role="listitem">
-      <div class="tl-dot" id="tld2" aria-label="Pregunta 2">🔥</div>
+      <div class="tl-dot" id="mainTl2">🔥</div>
       <span class="tl-label">Fuego ancestral</span>
     </div>
-    <div class="tl-line" id="tll2"></div>
+    <div class="tl-line" id="mainLine2"></div>
     <div class="tl-step" role="listitem">
-      <div class="tl-dot" id="tld3" aria-label="Pregunta 3">🌱</div>
+      <div class="tl-dot" id="mainTl3">🌱</div>
       <span class="tl-label">Cocina sostenible</span>
     </div>
   </div>
 
-  <!-- PROGRESS -->
-  <div class="prog-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-label="Progreso del quiz" id="progRegion">
-    <span class="prog-lbl">Progreso</span>
-    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
-    <span class="prog-num" id="progNum">0 / 3</span>
+  <!-- Botón iniciar -->
+  <div class="start-section">
+    <button class="start-quiz-btn" id="openQuizBtn">📋 Iniciar análisis estratégico →</button>
   </div>
-
-  <div class="q-area">
-
-    <!-- Q1 -->
-    <article class="qcard q1 active" id="q1" aria-labelledby="q1-title">
-      <div class="qhd">
-        <div class="qnum-badge" role="img" aria-label="Pregunta 1 de 3">P<br>01</div>
-        <div class="qhd-body">
-          <div class="qhd-era">🌽 Intercambio colombino</div>
-          <p id="q1-title">Al elaborar el relato histórico de la gastronomía de Piedra Alta, el comité debe explicar por qué en la cocina local coexisten ingredientes de origen americano (maíz, papa, ajíes, cacao) con productos que llegaron de otros continentes (trigo, arroz, cítricos, ganado vacuno). ¿Cuál es la explicación histórica más precisa?</p>
-        </div>
-      </div>
-      <div class="opts" role="group" aria-label="Opciones de respuesta">
-        <button class="opt" data-correct="false" onclick="pick(this,1)" aria-pressed="false">
-          <span class="olet">A</span>
-          <span class="otxt">Esta diversidad se debe a que los habitantes de la región fueron incorporando productos importados de forma <strong>espontánea</strong> a lo largo de los siglos, sin un proceso histórico particular que lo explique.</span>
-        </button>
-        <button class="opt" data-correct="true" onclick="pick(this,1)" aria-pressed="false">
-          <span class="olet">B</span>
-          <span class="otxt">Esta coexistencia es resultado del <strong>intercambio colombino</strong>, el proceso de intercambio de productos entre América, Europa, África y Asia a partir del siglo XVI, que transformó profundamente la gastronomía mundial y consolidó a América Latina como una región de enorme diversidad alimentaria.</span>
-        </button>
-      </div>
-      <div class="fb fb-ok" id="fb1-ok" role="alert" aria-live="polite">
-        <div class="fb-hd"><span class="fb-icon">✅</span><span class="fb-lbl">¡Muy bien!</span></div>
-        <p class="fb-body">El intercambio colombino, documentado por Crosby (2003), fue uno de los cambios más trascendentales en la historia de la gastronomía. América aportó al mundo productos como el maíz, la papa, el tomate, el cacao y los ajíes, mientras que recibió trigo, arroz, café, ganado vacuno y especias. Comprender este proceso permite explicar con precisión por qué la cocina latinoamericana, y la de Piedra Alta en particular, es una fusión de tradiciones indígenas, europeas y africanas.</p>
-      </div>
-      <div class="fb fb-err" id="fb1-err" role="alert" aria-live="polite">
-        <div class="fb-hd"><span class="fb-icon">⚠️</span><span class="fb-lbl">Atención con esto</span></div>
-        <p class="fb-body">Atribuir la diversidad de ingredientes a una incorporación espontánea ignora el proceso histórico que la explica. El intercambio colombino fue un fenómeno de escala global que transformó la alimentación de todos los continentes a partir del siglo XVI. Sin este marco histórico, el relato de la gastronomía del cantón carecería de fundamento académico y de la profundidad que el visitante espera encontrar en una ruta con enfoque cultural.</p>
-      </div>
-      <div class="nav-row">
-        <button class="navbtn" id="nav1" onclick="goTo(2)">Siguiente pregunta <span aria-hidden="true">→</span></button>
-      </div>
-    </article>
-
-    <!-- Q2 -->
-    <article class="qcard q2" id="q2" aria-labelledby="q2-title">
-      <div class="qhd">
-        <div class="qnum-badge" role="img" aria-label="Pregunta 2 de 3">P<br>02</div>
-        <div class="qhd-body">
-          <div class="qhd-era">🔥 Fuego ancestral</div>
-          <p id="q2-title">La chef local propone incluir en la ruta una experiencia donde los visitantes observen la cocción de alimentos directamente sobre leña y brasas, una técnica que las familias del cantón han practicado por generaciones. El historiador sugiere vincular esta práctica con un relato más amplio sobre la evolución de la cocina. ¿Cuál es el enfoque más apropiado para presentar esta experiencia al visitante?</p>
-        </div>
-      </div>
-      <div class="opts" role="group" aria-label="Opciones de respuesta">
-        <button class="opt" data-correct="false" onclick="pick(this,2)" aria-pressed="false">
-          <span class="olet">A</span>
-          <span class="otxt">Presentarla simplemente como una <strong>demostración gastronómica típica</strong> de la zona rural, sin mayor contexto histórico, ya que al turista le interesa principalmente probar la comida.</span>
-        </button>
-        <button class="opt" data-correct="true" onclick="pick(this,2)" aria-pressed="false">
-          <span class="olet">B</span>
-          <span class="otxt">Enmarcarla dentro de la <strong>evolución histórica de la gastronomía</strong>, explicando que el dominio del fuego fue el primer acto cultural de la alimentación humana, y que esta técnica ancestral de cocción representa una continuidad entre las prácticas prehispánicas y la cocina actual del cantón, conectando al visitante con la memoria culinaria del territorio.</span>
-        </button>
-      </div>
-      <div class="fb fb-ok" id="fb2-ok" role="alert" aria-live="polite">
-        <div class="fb-hd"><span class="fb-icon">✅</span><span class="fb-lbl">¡Exacto!</span></div>
-        <p class="fb-body">Según Montanari (2010), el uso del fuego es <em>"el primer acto cultural de la alimentación humana"</em>, ya que implica una intervención consciente sobre la naturaleza para transformar el alimento. Vincular la cocción en leña con este hito histórico enriquece la experiencia turística, le otorga profundidad cultural y permite al visitante comprender que la cocina refleja la cultura, la memoria y las tradiciones de las sociedades.</p>
-      </div>
-      <div class="fb fb-err" id="fb2-err" role="alert" aria-live="polite">
-        <div class="fb-hd"><span class="fb-icon">⚠️</span><span class="fb-lbl">Podemos enriquecer más</span></div>
-        <p class="fb-body">Presentar la experiencia sin contexto histórico desaprovecha su valor cultural y educativo. El turismo gastronómico con enfoque histórico busca que el visitante no solo deguste, sino que comprenda el significado de lo que come. La cocción con fuego directo tiene miles de años de historia y conecta las prácticas locales con los orígenes mismos de la gastronomía, lo cual enriquece significativamente la propuesta turística.</p>
-      </div>
-      <div class="nav-row">
-        <button class="navbtn" id="nav2" onclick="goTo(3)">Siguiente pregunta <span aria-hidden="true">→</span></button>
-      </div>
-    </article>
-
-    <!-- Q3 -->
-    <article class="qcard q3" id="q3" aria-labelledby="q3-title">
-      <div class="qhd">
-        <div class="qnum-badge" role="img" aria-label="Pregunta 3 de 3">P<br>03</div>
-        <div class="qhd-body">
-          <div class="qhd-era">🌱 Tendencias contemporáneas</div>
-          <p id="q3-title">Para el tramo final de la ruta, el comité debate qué tipo de experiencia gastronómica contemporánea ofrecer que conecte la tradición con las tendencias actuales. ¿Cuál es la opción más coherente con la evolución histórica de la gastronomía?</p>
-        </div>
-      </div>
-      <div class="opts" role="group" aria-label="Opciones de respuesta">
-        <button class="opt" data-correct="true" onclick="pick(this,3)" aria-pressed="false">
-          <span class="olet">A</span>
-          <span class="otxt">Ofrecer una experiencia de <strong>cocina sostenible</strong> que utilice productos locales de temporada (cacao fino de aroma, café de altura, granos andinos), combinando técnicas ancestrales con propuestas contemporáneas, y explicando cómo la gastronomía ecuatoriana ha evolucionado desde sus raíces regionales hasta alcanzar reconocimiento internacional.</span>
-        </button>
-        <button class="opt" data-correct="false" onclick="pick(this,3)" aria-pressed="false">
-          <span class="olet">B</span>
-          <span class="otxt">Incluir un espacio de <strong>cocina molecular</strong> donde se apliquen técnicas científicas avanzadas con ingredientes importados, ya que este tipo de experiencia es la tendencia más innovadora a nivel mundial.</span>
-        </button>
-      </div>
-      <div class="fb fb-ok" id="fb3-ok" role="alert" aria-live="polite">
-        <div class="fb-hd"><span class="fb-icon">✅</span><span class="fb-lbl">¡Correcto!</span></div>
-        <p class="fb-body">La cocina sostenible es una de las tendencias contemporáneas más relevantes, caracterizada por la responsabilidad ambiental y el uso de productos locales. Esta propuesta es coherente con la evolución histórica de la gastronomía del cantón porque integra las raíces prehispánicas, los aportes del intercambio colombino y las tendencias actuales en un mismo relato. Además, productos ecuatorianos como el cacao fino de aroma y el café de altura han alcanzado reconocimiento internacional, lo cual fortalece la propuesta turística.</p>
-      </div>
-      <div class="fb fb-err" id="fb3-err" role="alert" aria-live="polite">
-        <div class="fb-hd"><span class="fb-icon">⚠️</span><span class="fb-lbl">Revisemos la coherencia</span></div>
-        <p class="fb-body">Si bien la cocina molecular es una tendencia innovadora surgida en el siglo XXI, incorporar ingredientes importados desconectaría la experiencia de la identidad gastronómica del territorio. La ruta tiene un enfoque histórico-cultural, por lo que el tramo final debe reflejar cómo la tradición local ha evolucionado hasta las tendencias contemporáneas, manteniendo la coherencia con los productos y sabores que caracterizan a la región.</p>
-      </div>
-      <div class="nav-row">
-        <button class="navbtn" id="nav3" onclick="showResults()">Ver resultados <span aria-hidden="true">🏁</span></button>
-      </div>
-    </article>
-
-    <!-- RESULTS -->
-    <section class="results" id="resultsScreen" aria-labelledby="res-title">
-      <div class="res-hero">
-        <div class="trophy" aria-hidden="true">🏆</div>
-        <h2 id="res-title">¡Perfecto, ha tomado las decisiones correctas!</h2>
-        <div class="score-big" id="scoreBig" aria-live="polite">3 / 3</div>
-        <p class="score-lbl">respuestas correctas</p>
-      </div>
-
-      <p class="dec-ttl">Resumen de decisiones estratégicas</p>
-      <div class="dec-list">
-        <div class="dec-item">
-          <div class="dec-num" aria-hidden="true">1</div>
-          <p><strong>Intercambio colombino:</strong> Explicar la diversidad de ingredientes a partir del intercambio colombino permitió dar un sustento histórico a la cocina local y enriquecer la experiencia del visitante.</p>
-        </div>
-        <div class="dec-item">
-          <div class="dec-num" aria-hidden="true">2</div>
-          <p><strong>Fuego ancestral:</strong> Vincular la cocción ancestral en leña con la evolución de la gastronomía aportó valor cultural y transformó la actividad en una experiencia significativa.</p>
-        </div>
-        <div class="dec-item">
-          <div class="dec-num" aria-hidden="true">3</div>
-          <p><strong>Cocina sostenible:</strong> Incorporar una experiencia de cocina sostenible con productos locales conectó la tradición con las tendencias actuales.</p>
-        </div>
-      </div>
-      <div class="concl" role="note">
-        <strong>📌 Conclusión académica</strong>
-        <p>Las decisiones estratégicas del comité gestor de Piedra Alta fueron clave para construir una ruta gastronómica sólida y con identidad. En conjunto, evidencian que la <strong>historia gastronómica es fundamental para diseñar experiencias turísticas auténticas y diferenciadas</strong>.</p>
-      </div>
-      <button class="restart-btn" onclick="restart()" aria-label="Volver a intentar">
-        <span aria-hidden="true">🔄</span> Volver a intentar
-      </button>
-    </section>
-
-  </div><!-- /q-area -->
 </main>
 
+<!-- VISTA DE PREGUNTAS (modal aparte) -->
+<div id="quizOverlay" class="quiz-overlay">
+  <div class="quiz-modal">
+    <div class="quiz-header">
+      <h3>📌 Evaluación de decisiones · Piedra Alta</h3>
+      <button class="close-quiz" id="closeQuizBtn">✕</button>
+    </div>
+    
+    <!-- PROGRESS dentro del modal -->
+    <div class="prog-wrap-modal" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-label="Progreso del quiz">
+      <span class="prog-lbl">Progreso</span>
+      <div class="prog-track-modal"><div class="prog-fill-modal" id="progFillModal"></div></div>
+      <span class="prog-num-modal" id="progNumModal">0 / 3</span>
+    </div>
+
+    <div class="q-area-modal">
+      <!-- Q1 -->
+      <article class="qcard q1 active" id="mq1">
+        <div class="qhd">
+          <div class="qnum-badge">P<br>01</div>
+          <div class="qhd-body">
+            <div class="qhd-era">🌽 Intercambio colombino</div>
+            <p>Al elaborar el relato histórico de la gastronomía de Piedra Alta, el comité debe explicar por qué en la cocina local coexisten ingredientes de origen americano (maíz, papa, ajíes, cacao) con productos que llegaron de otros continentes (trigo, arroz, cítricos, ganado vacuno). ¿Cuál es la explicación histórica más precisa?</p>
+          </div>
+        </div>
+        <div class="opts">
+          <button class="opt" data-correct="false"><span class="olet">A</span><span class="otxt">Esta diversidad se debe a que los habitantes de la región fueron incorporando productos importados de forma <strong>espontánea</strong> a lo largo de los siglos, sin un proceso histórico particular que lo explique.</span></button>
+          <button class="opt" data-correct="true"><span class="olet">B</span><span class="otxt">Esta coexistencia es resultado del <strong>intercambio colombino</strong>, el proceso de intercambio de productos entre América, Europa, África y Asia a partir del siglo XVI, que transformó profundamente la gastronomía mundial y consolidó a América Latina como una región de enorme diversidad alimentaria.</span></button>
+        </div>
+        <div class="fb fb-ok" id="mfb1-ok"><div class="fb-hd"><span class="fb-icon">✅</span><span class="fb-lbl">¡Muy bien!</span></div><p class="fb-body">El intercambio colombino, documentado por Crosby (2003), fue uno de los cambios más trascendentales en la historia de la gastronomía. América aportó al mundo productos como el maíz, la papa, el tomate, el cacao y los ajíes, mientras que recibió trigo, arroz, café, ganado vacuno y especias. Comprender este proceso permite explicar con precisión por qué la cocina latinoamericana, y la de Piedra Alta en particular, es una fusión de tradiciones indígenas, europeas y africanas.</p></div>
+        <div class="fb fb-err" id="mfb1-err"><div class="fb-hd"><span class="fb-icon">⚠️</span><span class="fb-lbl">Atención con esto</span></div><p class="fb-body">Atribuir la diversidad de ingredientes a una incorporación espontánea ignora el proceso histórico que la explica. El intercambio colombino fue un fenómeno de escala global que transformó la alimentación de todos los continentes a partir del siglo XVI. Sin este marco histórico, el relato de la gastronomía del cantón carecería de fundamento académico y de la profundidad que el visitante espera encontrar en una ruta con enfoque cultural.</p></div>
+        <div class="nav-row"><button class="navbtn" data-next="2">Siguiente pregunta <span aria-hidden="true">→</span></button></div>
+      </article>
+
+      <!-- Q2 -->
+      <article class="qcard q2" id="mq2">
+        <div class="qhd">
+          <div class="qnum-badge">P<br>02</div>
+          <div class="qhd-body">
+            <div class="qhd-era">🔥 Fuego ancestral</div>
+            <p>La chef local propone incluir en la ruta una experiencia donde los visitantes observen la cocción de alimentos directamente sobre leña y brasas, una técnica que las familias del cantón han practicado por generaciones. El historiador sugiere vincular esta práctica con un relato más amplio sobre la evolución de la cocina. ¿Cuál es el enfoque más apropiado para presentar esta experiencia al visitante?</p>
+          </div>
+        </div>
+        <div class="opts">
+          <button class="opt" data-correct="false"><span class="olet">A</span><span class="otxt">Presentarla simplemente como una <strong>demostración gastronómica típica</strong> de la zona rural, sin mayor contexto histórico, ya que al turista le interesa principalmente probar la comida.</span></button>
+          <button class="opt" data-correct="true"><span class="olet">B</span><span class="otxt">Enmarcarla dentro de la <strong>evolución histórica de la gastronomía</strong>, explicando que el dominio del fuego fue el primer acto cultural de la alimentación humana, y que esta técnica ancestral de cocción representa una continuidad entre las prácticas prehispánicas y la cocina actual del cantón, conectando al visitante con la memoria culinaria del territorio.</span></button>
+        </div>
+        <div class="fb fb-ok" id="mfb2-ok"><div class="fb-hd"><span class="fb-icon">✅</span><span class="fb-lbl">¡Exacto!</span></div><p class="fb-body">Según Montanari (2010), el uso del fuego es <em>"el primer acto cultural de la alimentación humana"</em>, ya que implica una intervención consciente sobre la naturaleza para transformar el alimento. Vincular la cocción en leña con este hito histórico enriquece la experiencia turística, le otorga profundidad cultural y permite al visitante comprender que la cocina refleja la cultura, la memoria y las tradiciones de las sociedades.</p></div>
+        <div class="fb fb-err" id="mfb2-err"><div class="fb-hd"><span class="fb-icon">⚠️</span><span class="fb-lbl">Podemos enriquecer más</span></div><p class="fb-body">Presentar la experiencia sin contexto histórico desaprovecha su valor cultural y educativo. El turismo gastronómico con enfoque histórico busca que el visitante no solo deguste, sino que comprenda el significado de lo que come. La cocción con fuego directo tiene miles de años de historia y conecta las prácticas locales con los orígenes mismos de la gastronomía, lo cual enriquece significativamente la propuesta turística.</p></div>
+        <div class="nav-row"><button class="navbtn" data-next="3">Siguiente pregunta <span aria-hidden="true">→</span></button></div>
+      </article>
+
+      <!-- Q3 -->
+      <article class="qcard q3" id="mq3">
+        <div class="qhd">
+          <div class="qnum-badge">P<br>03</div>
+          <div class="qhd-body">
+            <div class="qhd-era">🌱 Tendencias contemporáneas</div>
+            <p>Para el tramo final de la ruta, el comité debate qué tipo de experiencia gastronómica contemporánea ofrecer que conecte la tradición con las tendencias actuales. ¿Cuál es la opción más coherente con la evolución histórica de la gastronomía?</p>
+          </div>
+        </div>
+        <div class="opts">
+          <button class="opt" data-correct="true"><span class="olet">A</span><span class="otxt">Ofrecer una experiencia de <strong>cocina sostenible</strong> que utilice productos locales de temporada (cacao fino de aroma, café de altura, granos andinos), combinando técnicas ancestrales con propuestas contemporáneas, y explicando cómo la gastronomía ecuatoriana ha evolucionado desde sus raíces regionales hasta alcanzar reconocimiento internacional.</span></button>
+          <button class="opt" data-correct="false"><span class="olet">B</span><span class="otxt">Incluir un espacio de <strong>cocina molecular</strong> donde se apliquen técnicas científicas avanzadas con ingredientes importados, ya que este tipo de experiencia es la tendencia más innovadora a nivel mundial.</span></button>
+        </div>
+        <div class="fb fb-ok" id="mfb3-ok"><div class="fb-hd"><span class="fb-icon">✅</span><span class="fb-lbl">¡Correcto!</span></div><p class="fb-body">La cocina sostenible es una de las tendencias contemporáneas más relevantes, caracterizada por la responsabilidad ambiental y el uso de productos locales. Esta propuesta es coherente con la evolución histórica de la gastronomía del cantón porque integra las raíces prehispánicas, los aportes del intercambio colombino y las tendencias actuales en un mismo relato. Además, productos ecuatorianos como el cacao fino de aroma y el café de altura han alcanzado reconocimiento internacional, lo cual fortalece la propuesta turística.</p></div>
+        <div class="fb fb-err" id="mfb3-err"><div class="fb-hd"><span class="fb-icon">⚠️</span><span class="fb-lbl">Revisemos la coherencia</span></div><p class="fb-body">Si bien la cocina molecular es una tendencia innovadora surgida en el siglo XXI, incorporar ingredientes importados desconectaría la experiencia de la identidad gastronómica del territorio. La ruta tiene un enfoque histórico-cultural, por lo que el tramo final debe reflejar cómo la tradición local ha evolucionado hasta las tendencias contemporáneas, manteniendo la coherencia con los productos y sabores que caracterizan a la región.</p></div>
+        <div class="nav-row"><button class="navbtn" id="finalQuizBtn">Ver resultados <span aria-hidden="true">🏁</span></button></div>
+      </article>
+
+      <!-- RESULTS dentro del modal -->
+      <div class="results-modal" id="resultsModal">
+        <div class="res-hero">
+          <div class="trophy">🏆</div>
+          <h2 id="resTitleModal">¡Perfecto, ha tomado las decisiones correctas!</h2>
+          <div class="score-big" id="scoreDisplayModal">3 / 3</div>
+          <p class="score-lbl">respuestas correctas</p>
+        </div>
+        <p class="dec-ttl">Resumen de decisiones estratégicas</p>
+        <div class="dec-list">
+          <div class="dec-item"><div class="dec-num">1</div><p><strong>Intercambio colombino:</strong> Explicar la diversidad de ingredientes a partir del intercambio colombino permitió dar un sustento histórico a la cocina local y enriquecer la experiencia del visitante.</p></div>
+          <div class="dec-item"><div class="dec-num">2</div><p><strong>Fuego ancestral:</strong> Vincular la cocción ancestral en leña con la evolución de la gastronomía aportó valor cultural y transformó la actividad en una experiencia significativa.</p></div>
+          <div class="dec-item"><div class="dec-num">3</div><p><strong>Cocina sostenible:</strong> Incorporar una experiencia de cocina sostenible con productos locales conectó la tradición con las tendencias actuales.</p></div>
+        </div>
+        <div class="concl"><strong>📌 Conclusión académica</strong><p>Las decisiones estratégicas del comité gestor de Piedra Alta fueron clave para construir una ruta gastronómica sólida y con identidad. En conjunto, evidencian que la <strong>historia gastronómica es fundamental para diseñar experiencias turísticas auténticas y diferenciadas</strong>.</p></div>
+        <button class="restart-btn-modal" id="restartModalBtn">🔄 Volver a intentar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  // Estado del quiz
   let answered = [false, false, false];
   let score = 0;
 
-  function pick(btn, q) {
-    if (answered[q-1]) return;
-    answered[q-1] = true;
-    const isOk = btn.dataset.correct === 'true';
-    if (isOk) score++;
+  const overlay = document.getElementById('quizOverlay');
+  const openBtn = document.getElementById('openQuizBtn');
+  const closeBtn = document.getElementById('closeQuizBtn');
+  const progFill = document.getElementById('progFillModal');
+  const progNumSpan = document.getElementById('progNumModal');
+  const resultsDiv = document.getElementById('resultsModal');
+  const scoreDisplaySpan = document.getElementById('scoreDisplayModal');
+  const resTitleSpan = document.getElementById('resTitleModal');
 
-    // mark options
-    document.querySelectorAll(`#q${q} .opt`).forEach(b => {
+  function updateProgressModal() {
+    const done = answered.filter(Boolean).length;
+    const percent = (done / 3) * 100;
+    progFill.style.width = percent + '%';
+    progNumSpan.textContent = done + ' / 3';
+  }
+
+  function selectModal(btn, qNum) {
+    if (answered[qNum-1]) return;
+    answered[qNum-1] = true;
+    const isCorrect = btn.dataset.correct === 'true';
+    if (isCorrect) score++;
+
+    const qContainer = document.getElementById(`mq${qNum}`);
+    const allOpts = qContainer.querySelectorAll('.opt');
+    allOpts.forEach(b => {
       b.disabled = true;
       if (b.dataset.correct === 'true') b.classList.add('correct');
     });
-    if (!isOk) btn.classList.add('incorrect');
+    if (!isCorrect) btn.classList.add('incorrect');
 
-    // show feedback
-    document.getElementById(`fb${q}-${isOk?'ok':'err'}`).classList.add('show');
-    // show nav
-    document.getElementById(`nav${q}`).classList.add('show');
+    const fbId = `mfb${qNum}-${isCorrect ? 'ok' : 'err'}`;
+    document.getElementById(fbId).classList.add('show');
+    
+    const navBtn = qContainer.querySelector('.navbtn');
+    if (navBtn) navBtn.classList.add('show');
+    
+    updateProgressModal();
+  }
 
-    // advance timeline
-    const dot = document.getElementById('tld' + q);
-    dot.textContent = isOk ? '✓' : '✗';
-    dot.classList.remove('active');
-    dot.classList.add('done');
-    dot.style.background = isOk ? 'var(--correct)' : 'var(--wrong)';
-    dot.style.borderColor = isOk ? 'var(--correct)' : 'var(--wrong)';
-    if (q < 3) {
-      document.getElementById('tll' + q).classList.add('done');
-      document.getElementById('tld' + (q+1)).classList.add('active');
+  function nextModal(nextIdx) {
+    const currentIdx = nextIdx - 1;
+    document.getElementById(`mq${currentIdx}`).classList.remove('active');
+    document.getElementById(`mq${nextIdx}`).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showResultsModal() {
+    if (!answered[0] || !answered[1] || !answered[2]) {
+      alert("Por favor, responde todas las preguntas antes de ver los resultados.");
+      return;
     }
-
-    updateProg();
-  }
-
-  function updateProg() {
-    const done = answered.filter(Boolean).length;
-    document.getElementById('progFill').style.width = (done/3*100) + '%';
-    document.getElementById('progNum').textContent = done + ' / 3';
-    document.getElementById('progRegion').setAttribute('aria-valuenow', done);
-  }
-
-  function goTo(n) {
-    document.getElementById('q'+(n-1)).classList.remove('active');
-    document.getElementById('q'+n).classList.add('active');
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
-
-  function showResults() {
-    document.getElementById('q3').classList.remove('active');
-    document.getElementById('scoreBig').textContent = score + ' / 3';
-    document.getElementById('resultsScreen').classList.add('active');
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
-
-  function restart() {
-    answered = [false,false,false]; score = 0;
-    document.querySelectorAll('.opt').forEach(b => {
-      b.classList.remove('correct','incorrect'); b.disabled = false;
-    });
-    document.querySelectorAll('.fb').forEach(f => f.classList.remove('show'));
-    document.querySelectorAll('.navbtn').forEach(n => n.classList.remove('show'));
-    document.getElementById('resultsScreen').classList.remove('active');
     document.querySelectorAll('.qcard').forEach(q => q.classList.remove('active'));
-    document.getElementById('q1').classList.add('active');
-    // reset timeline
-    ['tld1','tld2','tld3'].forEach((id,i) => {
-      const d = document.getElementById(id);
-      d.classList.remove('done');
-      d.style.background = ''; d.style.borderColor = '';
-      d.textContent = ['🌽','🔥','🌱'][i];
-    });
-    document.getElementById('tld1').classList.add('active');
-    ['tll1','tll2'].forEach(id => document.getElementById(id).classList.remove('done'));
-    updateProg();
-    window.scrollTo({top:0, behavior:'smooth'});
+    resultsDiv.classList.add('active');
+    scoreDisplaySpan.textContent = score + ' / 3';
+    
+    const allCorrect = score === 3;
+    if (!allCorrect) {
+      resTitleSpan.innerHTML = '📋 Resultado del análisis';
+      const heroDiv = resultsDiv.querySelector('.res-hero');
+      heroDiv.querySelector('.trophy').innerHTML = '🔄';
+      heroDiv.querySelector('.score-lbl').textContent = 'respuestas correctas · acierta todas para la felicitación completa';
+    } else {
+      resTitleSpan.innerHTML = '🎉 ¡Perfecto, ha tomado las decisiones correctas! 🎉';
+      const heroDiv = resultsDiv.querySelector('.res-hero');
+      heroDiv.querySelector('.trophy').innerHTML = '🏆';
+      heroDiv.querySelector('.score-lbl').textContent = 'respuestas correctas · ¡felicitaciones!';
+    }
   }
+
+  function restartModal() {
+    answered = [false, false, false];
+    score = 0;
+    for (let i = 1; i <= 3; i++) {
+      const qContainer = document.getElementById(`mq${i}`);
+      const opts = qContainer.querySelectorAll('.opt');
+      opts.forEach(opt => {
+        opt.classList.remove('correct', 'incorrect');
+        opt.disabled = false;
+      });
+      const fbOk = document.getElementById(`mfb${i}-ok`);
+      const fbErr = document.getElementById(`mfb${i}-err`);
+      if (fbOk) fbOk.classList.remove('show');
+      if (fbErr) fbErr.classList.remove('show');
+      const navBtn = qContainer.querySelector('.navbtn');
+      if (navBtn) navBtn.classList.remove('show');
+    }
+    resultsDiv.classList.remove('active');
+    document.querySelectorAll('.qcard').forEach(q => q.classList.remove('active'));
+    document.getElementById('mq1').classList.add('active');
+    updateProgressModal();
+    resTitleSpan.innerHTML = '🎉 ¡Perfecto, ha tomado las decisiones correctas! 🎉';
+    const heroDiv = resultsDiv.querySelector('.res-hero');
+    heroDiv.querySelector('.trophy').innerHTML = '🏆';
+    heroDiv.querySelector('.score-lbl').textContent = 'respuestas correctas';
+  }
+
+  // Event binding
+  function bindModalEvents() {
+    document.querySelectorAll('#quizOverlay .opt').forEach(btn => {
+      btn.removeEventListener('click', modalOptHandler);
+      btn.addEventListener('click', modalOptHandler);
+    });
+    document.querySelectorAll('#quizOverlay .navbtn').forEach(btn => {
+      btn.removeEventListener('click', modalNavHandler);
+      btn.addEventListener('click', modalNavHandler);
+    });
+    const finalBtn = document.getElementById('finalQuizBtn');
+    if (finalBtn) {
+      finalBtn.removeEventListener('click', finalHandler);
+      finalBtn.addEventListener('click', finalHandler);
+    }
+    const restartBtn = document.getElementById('restartModalBtn');
+    if (restartBtn) {
+      restartBtn.removeEventListener('click', restartModal);
+      restartBtn.addEventListener('click', restartModal);
+    }
+  }
+
+  function modalOptHandler(e) {
+    const btn = e.currentTarget;
+    const qContainer = btn.closest('.qcard');
+    let qNum = 1;
+    if (qContainer.id === 'mq1') qNum = 1;
+    else if (qContainer.id === 'mq2') qNum = 2;
+    else if (qContainer.id === 'mq3') qNum = 3;
+    selectModal(btn, qNum);
+  }
+
+  function modalNavHandler(e) {
+    const btn = e.currentTarget;
+    const nextVal = btn.getAttribute('data-next');
+    if (nextVal && !isNaN(parseInt(nextVal))) {
+      nextModal(parseInt(nextVal));
+    }
+  }
+
+  function finalHandler() {
+    if (answered[0] && answered[1] && answered[2]) {
+      showResultsModal();
+    } else {
+      alert("Responde todas las preguntas antes de ver el resultado final.");
+    }
+  }
+
+  function openQuizModal() {
+    restartModal();
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    bindModalEvents();
+  }
+
+  function closeQuizModal() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  openBtn.addEventListener('click', openQuizModal);
+  closeBtn.addEventListener('click', closeQuizModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeQuizModal();
+  });
+
+  restartModal();
+  bindModalEvents();
 </script>
 </body>
 </html>
