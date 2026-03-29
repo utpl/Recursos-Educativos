@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Una misma lluvia, distintos impactos</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --panel-bg: #f5f0e8;
+  --panel-border: #2c2c2a;
+  --sky-blue: #a8d8ea;
+  --rain-blue: #4a90d9;
+  --danger-red: #c0392b;
+  --safe-green: #27ae60;
+  --earth: #8b6914;
+  --speech-bg: #ffffff;
+  --narrator-bg: #2c2c2a;
+  --narrator-text: #f5f0e8;
+  --accent: #e67e22;
+  --text-dark: #1a1a1a;
+  --primary: #185FA5;
+  --radius: 8px;
+  --font: 'Segoe UI', -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  width: 100%;
+  max-width: 800px;
+  background: #12122a;
+  padding: 14px 24px 12px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.topbar-meta { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #888; }
+.topbar-title { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+.topbar-sub { font-size: 12px; color: #aaa; }
+
+/* ── MAIN CANVAS ── */
+.comic-wrap {
+  width: 100%;
+  max-width: 800px;
+  background: var(--panel-bg);
+  position: relative;
+}
+
+/* ── PAGES ── */
+.page {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+.page.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ── PANEL ILLUSTRATION ── */
+.panel-illus {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 3px solid var(--panel-border);
+}
+.panel-illus svg { width: 100%; height: 100%; display: block; }
+
+/* ── PANEL TEXT AREA ── */
+.panel-text {
+  padding: 16px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.narrator-box {
+  background: var(--narrator-bg);
+  color: var(--narrator-text);
+  font-size: 12.5px;
+  font-style: italic;
+  padding: 8px 14px;
+  border-radius: 0 var(--radius) var(--radius) var(--radius);
+  border-left: 3px solid var(--accent);
+  line-height: 1.5;
+}
+
+.speech-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.speech-row.right { flex-direction: row-reverse; }
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--panel-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  overflow: hidden;
+}
+
+.bubble {
+  background: var(--speech-bg);
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  max-width: calc(100% - 56px);
+  position: relative;
+}
+.bubble .char-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 3px;
+}
+.bubble em { font-style: normal; font-weight: 700; color: var(--danger-red); }
+
+.page-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #888;
+  text-align: center;
+  padding: 6px 0 2px;
+}
+.panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-align: center;
+  padding: 0 16px 8px;
+  border-bottom: 2px solid var(--panel-border);
+}
+
+/* ── FORMULA HIGHLIGHT ── */
+.formula-box {
+  background: #fff8ec;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a4000;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.formula-box span { color: var(--danger-red); }
+
+/* ── NAV ── */
+.nav-bar {
+  background: #12122a;
+  width: 100%;
+  max-width: 800px;
+  padding: 14px 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-nav {
+  background: none;
+  border: 1.5px solid #444;
+  border-radius: 20px;
+  color: #ccc;
+  font-size: 13px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  min-width: 90px;
+}
+.btn-nav:hover:not(:disabled) { background: #2a2a4a; border-color: #888; color: #fff; }
+.btn-nav:disabled { opacity: 0.3; cursor: default; }
+.btn-nav.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-nav.primary:hover { background: #1a6fc0; }
+
+.page-dots {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #444;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.dot.active { background: #fff; transform: scale(1.3); }
+.dot.visited { background: #888; }
+
+.progress-strip {
+  height: 3px;
+  background: #333;
+  width: 100%;
+  max-width: 800px;
+}
+.progress-strip-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s;
+}
+
+/* ── REFERENCE ── */
+.ref-box {
+  padding: 14px 20px 18px;
+  font-size: 11.5px;
+  color: #888;
+  font-style: italic;
+  line-height: 1.6;
+  border-top: 1px solid #ddd;
+  margin-top: 6px;
+}
+
+/* ── CONCEPT BADGES (page 7-9) ── */
+.concept-badge {
+  display: inline-block;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  margin-right: 4px;
+}
+.badge-amenaza { background: #fde8e8; color: #a32d2d; border: 1px solid #f09595; }
+.badge-exposicion { background: #e8f4fd; color: #185fa5; border: 1px solid #85b7eb; }
+.badge-vulnerabilidad { background: #fff8ec; color: #854f0b; border: 1px solid #fac775; }
+
+/* ── MOBILE ── */
+@media (max-width: 600px) {
+  .topbar { padding: 12px 16px; }
+  .topbar-title { font-size: 15px; }
+  .panel-illus { height: 220px; }
+  .panel-text { padding: 12px 14px 0; gap: 8px; }
+  .bubble { font-size: 12.5px; }
+  .narrator-box { font-size: 12px; }
+  .btn-nav { padding: 8px 14px; font-size: 12px; min-height: 44px; }
+  .dot { width: 9px; height: 9px; }
+  .formula-box { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-meta">PREV_1003 · Semana 2 · Storytelling</div>
+  <div class="topbar-title">Una misma lluvia, distintos impactos</div>
+  <div class="topbar-sub">Introducción a los Riesgos de Desastres</div>
+</div>
+
+<div class="progress-strip"><div class="progress-strip-fill" id="pstrip" style="width:10%"></div></div>
+
+<div class="comic-wrap">
+
+<!-- PAGE 1 -->
+<div class="page active" id="p1">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <!-- sky -->
+      <rect width="800" height="320" fill="#dbeeff"/>
+      <!-- desk/floor -->
+      <rect y="230" width="800" height="90" fill="#c8b89a"/>
+      <rect y="225" width="800" height="10" fill="#8b6914" rx="2"/>
+      <!-- screen glow -->
+      <rect x="290" y="70" width="220" height="140" rx="8" fill="#1a2a4a"/>
+      <rect x="298" y="78" width="204" height="124" rx="5" fill="#2a4a8a"/>
+      <!-- screen text lines -->
+      <rect x="315" y="105" width="120" height="8" rx="3" fill="#a8d8ff" opacity="0.8"/>
+      <rect x="315" y="120" width="160" height="6" rx="3" fill="#7ab8e8" opacity="0.6"/>
+      <rect x="315" y="133" width="140" height="6" rx="3" fill="#7ab8e8" opacity="0.5"/>
+      <rect x="315" y="146" width="100" height="6" rx="3" fill="#7ab8e8" opacity="0.4"/>
+      <!-- screen title -->
+      <text x="400" y="95" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold" font-family="sans-serif">Introducción al Riesgo de Desastres</text>
+      <!-- sofia body -->
+      <ellipse cx="400" cy="260" rx="30" ry="15" fill="#7a5c3a"/>
+      <rect x="372" y="210" width="56" height="55" rx="8" fill="#e8a87c"/>
+      <!-- sofia head -->
+      <ellipse cx="400" cy="200" rx="22" ry="24" fill="#e8b48a"/>
+      <!-- hair -->
+      <ellipse cx="400" cy="183" rx="22" ry="14" fill="#3d2b1f"/>
+      <ellipse cx="380" cy="200" rx="7" ry="14" fill="#3d2b1f"/>
+      <!-- eyes -->
+      <ellipse cx="393" cy="200" rx="3" ry="3.5" fill="#3d2b1f"/>
+      <ellipse cx="407" cy="200" rx="3" ry="3.5" fill="#3d2b1f"/>
+      <!-- smile -->
+      <path d="M393 210 Q400 215 407 210" stroke="#7a5c3a" stroke-width="1.5" fill="none"/>
+      <!-- arms to keyboard -->
+      <line x1="376" y1="230" x2="345" y2="255" stroke="#e8a87c" stroke-width="10" stroke-linecap="round"/>
+      <line x1="424" y1="230" x2="455" y2="255" stroke="#e8a87c" stroke-width="10" stroke-linecap="round"/>
+      <!-- keyboard -->
+      <rect x="330" y="255" width="140" height="20" rx="4" fill="#ccc"/>
+      <!-- question marks floating -->
+      <text x="480" y="140" fill="#185FA5" font-size="28" font-family="sans-serif" opacity="0.7">?</text>
+      <text x="460" y="110" fill="#185FA5" font-size="18" font-family="sans-serif" opacity="0.5">?</text>
+      <text x="500" y="160" fill="#185FA5" font-size="14" font-family="sans-serif" opacity="0.4">?</text>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 1 · Primera semana</div>
+    <div class="panel-title">Primera semana</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Dicen que 'los desastres son naturales'... ¿será verdad?"
+      </div>
+    </div>
+    <div class="narrator-box">
+      Semana 1: entender qué hace que un evento se convierta en desastre.
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="p2">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <!-- dark sky with clouds -->
+      <rect width="800" height="320" fill="#2c3e50"/>
+      <!-- clouds -->
+      <ellipse cx="200" cy="60" rx="80" ry="40" fill="#4a5568"/>
+      <ellipse cx="260" cy="50" rx="70" ry="35" fill="#5a6880"/>
+      <ellipse cx="150" cy="70" rx="50" ry="30" fill="#4a5568"/>
+      <ellipse cx="550" cy="70" rx="90" ry="40" fill="#4a5568"/>
+      <ellipse cx="620" cy="55" rx="70" ry="35" fill="#5a6880"/>
+      <!-- rain lines -->
+      <g stroke="#7ab8e8" stroke-width="1.5" opacity="0.7">
+        <line x1="100" y1="100" x2="88" y2="140"/><line x1="130" y1="110" x2="118" y2="155"/>
+        <line x1="160" y1="100" x2="148" y2="145"/><line x1="190" y1="108" x2="178" y2="150"/>
+        <line x1="220" y1="100" x2="208" y2="142"/><line x1="250" y1="110" x2="238" y2="154"/>
+        <line x1="500" y1="105" x2="488" y2="148"/><line x1="530" y1="100" x2="518" y2="143"/>
+        <line x1="560" y1="108" x2="548" y2="152"/><line x1="590" y1="100" x2="578" y2="144"/>
+        <line x1="620" y1="110" x2="608" y2="155"/><line x1="650" y1="105" x2="638" y2="149"/>
+      </g>
+      <!-- ground / street -->
+      <rect y="240" width="800" height="80" fill="#1a1a2e"/>
+      <rect y="237" width="800" height="8" fill="#333"/>
+      <!-- sofia with phone -->
+      <ellipse cx="400" cy="265" rx="30" ry="14" fill="#7a5c3a"/>
+      <rect x="374" y="218" width="52" height="50" rx="8" fill="#c08860"/>
+      <ellipse cx="400" cy="207" rx="20" ry="22" fill="#e8b48a"/>
+      <ellipse cx="400" cy="192" rx="20" ry="12" fill="#3d2b1f"/>
+      <ellipse cx="383" cy="207" rx="6" ry="12" fill="#3d2b1f"/>
+      <ellipse cx="394" cy="208" rx="3" ry="3" fill="#3d2b1f"/>
+      <ellipse cx="406" cy="208" rx="3" ry="3" fill="#3d2b1f"/>
+      <!-- phone in hand -->
+      <rect x="430" y="225" width="28" height="44" rx="4" fill="#1a1a2e"/>
+      <rect x="433" y="229" width="22" height="36" rx="3" fill="#2a4a8a"/>
+      <text x="444" y="248" text-anchor="middle" fill="#7ab8e8" font-size="6" font-family="sans-serif">LLUVIAS</text>
+      <text x="444" y="258" text-anchor="middle" fill="#7ab8e8" font-size="5.5" font-family="sans-serif">INTENSAS</text>
+      <line x1="424" y1="230" x2="432" y2="240" stroke="#e8a87c" stroke-width="9" stroke-linecap="round"/>
+      <!-- puddle -->
+      <ellipse cx="400" cy="278" rx="60" ry="8" fill="#4a6a8a" opacity="0.5"/>
+      <!-- lightning -->
+      <polyline points="680,40 665,80 675,80 655,120" stroke="#f1c40f" stroke-width="3" fill="none" opacity="0.8"/>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 2 · La noticia</div>
+    <div class="panel-title">La noticia</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Otra vez lluvia fuerte... ¿y qué? Si siempre llueve."
+      </div>
+    </div>
+    <div class="narrator-box">
+      La lluvia es un fenómeno. Pero... ¿siempre genera desastre?
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="p3">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <!-- sky with light clouds -->
+      <rect width="800" height="200" fill="#c8dff0"/>
+      <ellipse cx="200" cy="60" rx="90" ry="40" fill="#e8f0f8" opacity="0.9"/>
+      <ellipse cx="600" cy="50" rx="80" ry="38" fill="#e8f0f8" opacity="0.9"/>
+      <!-- rain arrows from single cloud center -->
+      <ellipse cx="400" cy="55" rx="70" ry="35" fill="#4a6a8a"/>
+      <g stroke="#7ab8e8" stroke-width="2" opacity="0.8">
+        <line x1="330" y1="90" x2="320" y2="125"/><line x1="360" y1="92" x2="350" y2="128"/>
+        <line x1="390" y1="90" x2="380" y2="127"/><line x1="420" y1="92" x2="410" y2="128"/>
+        <line x1="450" y1="90" x2="440" y2="125"/><line x1="475" y1="88" x2="465" y2="124"/>
+      </g>
+      <text x="400" y="48" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="sans-serif">MISMA LLUVIA</text>
+      <!-- ground -->
+      <rect y="200" width="800" height="120" fill="#8ab87a"/>
+      <!-- divider road -->
+      <rect x="380" y="200" width="40" height="120" fill="#888"/>
+      <rect x="396" y="205" width="8" height="20" fill="#fff" opacity="0.7"/>
+      <rect x="396" y="235" width="8" height="20" fill="#fff" opacity="0.7"/>
+      <rect x="396" y="265" width="8" height="20" fill="#fff" opacity="0.7"/>
+      <rect x="396" y="295" width="8" height="20" fill="#fff" opacity="0.7"/>
+      <!-- ZONA A left -->
+      <rect x="30" y="200" width="340" height="120" fill="#c8e6c9"/>
+      <!-- zona A label -->
+      <rect x="40" y="210" width="80" height="22" rx="4" fill="#27ae60"/>
+      <text x="80" y="225" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="sans-serif">ZONA A</text>
+      <!-- houses zona a -->
+      <g transform="translate(50,240)">
+        <rect x="0" y="20" width="40" height="30" fill="#e8c87a"/>
+        <polygon points="0,20 20,0 40,20" fill="#c0392b"/>
+        <rect x="14" y="32" width="12" height="18" fill="#7ab8e8"/>
+      </g>
+      <g transform="translate(110,238)">
+        <rect x="0" y="20" width="44" height="32" fill="#d4a574"/>
+        <polygon points="0,20 22,0 44,20" fill="#a93226"/>
+        <rect x="16" y="30" width="12" height="22" fill="#7ab8e8"/>
+      </g>
+      <g transform="translate(175,242)">
+        <rect x="0" y="18" width="38" height="28" fill="#f0d890"/>
+        <polygon points="0,18 19,0 38,18" fill="#c0392b"/>
+        <rect x="13" y="28" width="12" height="18" fill="#7ab8e8"/>
+      </g>
+      <!-- drainage channel -->
+      <path d="M50 310 Q200 290 350 295" stroke="#7ab8e8" stroke-width="6" fill="none" opacity="0.8"/>
+      <text x="180" y="318" text-anchor="middle" fill="#1a6f3a" font-size="9" font-family="sans-serif">Drenaje funcional · Zona segura</text>
+      <!-- ZONA B right -->
+      <rect x="430" y="200" width="340" height="120" fill="#ffccbc"/>
+      <!-- zona B label -->
+      <rect x="440" y="210" width="80" height="22" rx="4" fill="#c0392b"/>
+      <text x="480" y="225" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="sans-serif">ZONA B</text>
+      <!-- quebrada water -->
+      <path d="M430 260 Q520 250 600 255 Q660 260 770 250" stroke="#3498db" stroke-width="14" fill="none" opacity="0.7"/>
+      <!-- houses zona b near water -->
+      <g transform="translate(450,230)">
+        <rect x="0" y="18" width="36" height="26" fill="#e8a87c"/>
+        <polygon points="0,18 18,0 36,18" fill="#922b21"/>
+      </g>
+      <g transform="translate(510,225)">
+        <rect x="0" y="18" width="40" height="28" fill="#e8b48a"/>
+        <polygon points="0,18 20,0 40,18" fill="#922b21"/>
+      </g>
+      <g transform="translate(575,228)">
+        <rect x="0" y="18" width="36" height="26" fill="#d4956c"/>
+        <polygon points="0,18 18,0 36,18" fill="#922b21"/>
+      </g>
+      <text x="590" y="318" text-anchor="middle" fill="#922b21" font-size="9" font-family="sans-serif">Junto a quebrada · Viviendas bajas</text>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 3 · Dos lugares</div>
+    <div class="panel-title">Dos lugares, la misma lluvia</div>
+    <div class="narrator-box">
+      La misma lluvia caerá en ambos lugares. <strong>Zona A:</strong> barrio con buen drenaje y viviendas en zona segura. <strong>Zona B:</strong> barrio junto a la quebrada con viviendas bajas.
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 4 -->
+<div class="page" id="p4">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="320" fill="#d4edda"/>
+      <!-- street and infrastructure -->
+      <rect y="230" width="800" height="90" fill="#9ab88a"/>
+      <!-- clean drains -->
+      <rect x="100" y="250" width="600" height="12" rx="4" fill="#7ab8e8" opacity="0.5"/>
+      <!-- drain grates -->
+      <g fill="#555">
+        <rect x="150" y="248" width="20" height="16" rx="2"/>
+        <rect x="300" y="248" width="20" height="16" rx="2"/>
+        <rect x="450" y="248" width="20" height="16" rx="2"/>
+        <rect x="600" y="248" width="20" height="16" rx="2"/>
+      </g>
+      <!-- canaletas -->
+      <rect x="60" y="220" width="680" height="10" rx="3" fill="#b0c4de"/>
+      <!-- sign post -->
+      <rect x="680" y="140" width="6" height="90" fill="#888"/>
+      <rect x="640" y="120" width="90" height="35" rx="4" fill="#27ae60"/>
+      <text x="685" y="134" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif">ZONA SEGURA</text>
+      <text x="685" y="148" text-anchor="middle" fill="#fff" font-size="8" font-family="sans-serif">↑ Evacuación</text>
+      <!-- houses safe zone -->
+      <g transform="translate(80,130)">
+        <rect x="0" y="50" width="90" height="70" fill="#e8c87a"/>
+        <polygon points="0,50 45,10 90,50" fill="#2e86ab"/>
+        <rect x="34" y="80" width="22" height="40" fill="#7ab8e8"/>
+        <rect x="10" y="65" width="20" height="20" fill="#b0d8f0"/>
+        <rect x="62" y="65" width="20" height="20" fill="#b0d8f0"/>
+      </g>
+      <g transform="translate(240,140)">
+        <rect x="0" y="45" width="80" height="65" fill="#d4a574"/>
+        <polygon points="0,45 40,8 80,45" fill="#1a6f3a"/>
+        <rect x="30" y="72" width="20" height="38" fill="#7ab8e8"/>
+        <rect x="8" y="60" width="18" height="18" fill="#b0d8f0"/>
+        <rect x="54" y="60" width="18" height="18" fill="#b0d8f0"/>
+      </g>
+      <!-- vecino character -->
+      <ellipse cx="550" cy="265" rx="25" ry="12" fill="#3a6a3a"/>
+      <rect x="528" y="220" width="44" height="48" rx="6" fill="#4a8a5a"/>
+      <ellipse cx="550" cy="212" rx="18" ry="20" fill="#c8a870"/>
+      <ellipse cx="550" cy="198" rx="18" ry="10" fill="#2c1810"/>
+      <ellipse cx="543" cy="213" rx="2.5" ry="3" fill="#2c1810"/>
+      <ellipse cx="557" cy="213" rx="2.5" ry="3" fill="#2c1810"/>
+      <path d="M543 222 Q550 226 557 222" stroke="#7a5c3a" stroke-width="1.5" fill="none"/>
+      <!-- thumbs up -->
+      <text x="580" y="235" font-size="24" font-family="sans-serif">👍</text>
+      <!-- water flowing in drain OK -->
+      <text x="400" y="300" text-anchor="middle" fill="#1a6f3a" font-size="11" font-weight="bold" font-family="sans-serif">Alcantarillado funcionando · Canaletas limpias · Señalización</text>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 4 · Zona A</div>
+    <div class="panel-title">En la Zona A</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d4edda;">🏘️</div>
+      <div class="bubble">
+        <div class="char-name">Vecino A</div>
+        "Llovió duro, pero todo siguió normal."
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 5 -->
+<div class="page" id="p5">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="320" fill="#2c3e50"/>
+      <!-- flood water rising -->
+      <rect y="200" width="800" height="120" fill="#2a5a8a" opacity="0.8"/>
+      <!-- water waves -->
+      <path d="M0 200 Q100 190 200 200 Q300 210 400 200 Q500 190 600 200 Q700 210 800 200" stroke="#5a9ad4" stroke-width="3" fill="none" opacity="0.6"/>
+      <path d="M0 215 Q80 205 180 215 Q280 225 380 215 Q480 205 580 215 Q680 225 800 215" stroke="#5a9ad4" stroke-width="2" fill="none" opacity="0.4"/>
+      <!-- quebrada -->
+      <path d="M0 235 Q200 220 400 225 Q600 230 800 215" fill="#1a4a7a" opacity="0.7"/>
+      <!-- blocked drains -->
+      <g fill="#6a3010">
+        <ellipse cx="200" cy="205" rx="18" ry="8"/>
+        <ellipse cx="400" cy="202" rx="16" ry="7"/>
+        <ellipse cx="600" cy="207" rx="18" ry="8"/>
+      </g>
+      <text x="200" y="222" text-anchor="middle" fill="#f0a060" font-size="8" font-family="sans-serif">TAPADA</text>
+      <text x="400" y="220" text-anchor="middle" fill="#f0a060" font-size="8" font-family="sans-serif">TAPADA</text>
+      <text x="600" y="224" text-anchor="middle" fill="#f0a060" font-size="8" font-family="sans-serif">TAPADA</text>
+      <!-- house with water entering -->
+      <g transform="translate(80,100)">
+        <rect x="0" y="50" width="120" height="85" fill="#c8803a" opacity="0.9"/>
+        <polygon points="0,50 60,5 120,50" fill="#922b21"/>
+        <rect x="45" y="88" width="30" height="47" fill="#7ab8e8" opacity="0.6"/>
+        <!-- water splash at door -->
+        <path d="M40 135 Q60 125 80 135" stroke="#7ab8e8" stroke-width="4" fill="none"/>
+        <text x="60" y="170" text-anchor="middle" fill="#f1c40f" font-size="10" font-family="sans-serif">LOCAL</text>
+      </g>
+      <!-- don luis character distressed -->
+      <ellipse cx="620" cy="270" rx="28" ry="13" fill="#5a3a1a"/>
+      <rect x="596" y="220" width="48" height="52" rx="6" fill="#a0522d"/>
+      <ellipse cx="620" cy="212" rx="20" ry="21" fill="#d4956c"/>
+      <ellipse cx="620" cy="197" rx="19" ry="10" fill="#2c1810"/>
+      <ellipse cx="612" cy="212" rx="2.5" ry="3" fill="#2c1810"/>
+      <ellipse cx="628" cy="212" rx="2.5" ry="3" fill="#2c1810"/>
+      <!-- worried mouth -->
+      <path d="M612 222 Q620 218 628 222" stroke="#7a5c3a" stroke-width="2" fill="none"/>
+      <!-- exclamation -->
+      <text x="665" y="200" fill="#e74c3c" font-size="32" font-weight="bold" font-family="sans-serif">!</text>
+      <!-- sofia with question bubble -->
+      <ellipse cx="400" cy="270" rx="25" ry="12" fill="#5a3a1a"/>
+      <rect x="378" y="228" width="44" height="44" rx="6" fill="#c08860"/>
+      <ellipse cx="400" cy="220" rx="18" ry="19" fill="#e8b48a"/>
+      <ellipse cx="400" cy="207" rx="17" ry="9" fill="#3d2b1f"/>
+      <ellipse cx="393" cy="220" rx="2.5" ry="3" fill="#3d2b1f"/>
+      <ellipse cx="407" cy="220" rx="2.5" ry="3" fill="#3d2b1f"/>
+      <!-- rain lines -->
+      <g stroke="#7ab8e8" stroke-width="1.5" opacity="0.6">
+        <line x1="280" y1="60" x2="268" y2="100"/><line x1="310" y1="55" x2="298" y2="96"/>
+        <line x1="340" y1="62" x2="328" y2="102"/><line x1="370" y1="58" x2="358" y2="98"/>
+        <line x1="450" y1="60" x2="438" y2="100"/><line x1="480" y1="55" x2="468" y2="96"/>
+        <line x1="510" y1="62" x2="498" y2="102"/><line x1="540" y1="58" x2="528" y2="98"/>
+      </g>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 5 · Zona B</div>
+    <div class="panel-title">En la Zona B</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🏪</div>
+      <div class="bubble">
+        <div class="char-name">Don Luis</div>
+        "¡Se está metiendo el agua al local!"
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Pero... es la misma lluvia, ¿por qué aquí es peor?"
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 6 -->
+<div class="page" id="p6">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="320" fill="#ecf0f1"/>
+      <!-- background wall / map -->
+      <rect x="40" y="40" width="480" height="240" rx="6" fill="#fff" stroke="#ccc" stroke-width="1.5"/>
+      <!-- croquis map on wall -->
+      <text x="280" y="68" text-anchor="middle" fill="#555" font-size="11" font-family="sans-serif">CROQUIS DEL CANTÓN</text>
+      <!-- zona A on map -->
+      <rect x="70" y="80" width="180" height="120" rx="4" fill="#c8e6c9" stroke="#27ae60" stroke-width="1.5"/>
+      <text x="160" y="145" text-anchor="middle" fill="#1a6f3a" font-size="10" font-weight="bold" font-family="sans-serif">ZONA A</text>
+      <!-- zona B on map -->
+      <rect x="280" y="80" width="180" height="120" rx="4" fill="#ffccbc" stroke="#c0392b" stroke-width="1.5"/>
+      <text x="370" y="145" text-anchor="middle" fill="#922b21" font-size="10" font-weight="bold" font-family="sans-serif">ZONA B</text>
+      <!-- arrow pointing to zona b -->
+      <line x1="370" y1="200" x2="370" y2="230" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arr)"/>
+      <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#c0392b"/></marker></defs>
+      <!-- label RIESGO -->
+      <rect x="305" y="235" width="130" height="24" rx="4" fill="#c0392b"/>
+      <text x="370" y="251" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="sans-serif">RIESGO</text>
+      <!-- Ing Rivera -->
+      <ellipse cx="660" cy="275" rx="30" ry="14" fill="#2a4a6a"/>
+      <rect x="634" y="215" width="52" height="62" rx="6" fill="#2a5a8a"/>
+      <!-- chaleco amarillo -->
+      <rect x="634" y="215" width="52" height="40" rx="4" fill="#f1c40f" opacity="0.8"/>
+      <text x="660" y="238" text-anchor="middle" fill="#7a4a00" font-size="7" font-weight="bold" font-family="sans-serif">ING.</text>
+      <ellipse cx="660" cy="207" rx="20" ry="21" fill="#c8a870"/>
+      <ellipse cx="660" cy="193" rx="19" ry="10" fill="#2c1810"/>
+      <ellipse cx="652" cy="208" rx="2.5" ry="3" fill="#2c1810"/>
+      <ellipse cx="668" cy="208" rx="2.5" ry="3" fill="#2c1810"/>
+      <path d="M652 217 Q660 222 668 217" stroke="#7a5c3a" stroke-width="1.5" fill="none"/>
+      <!-- pointer stick -->
+      <line x1="636" y1="240" x2="490" y2="200" stroke="#555" stroke-width="2" stroke-dasharray="6,3"/>
+      <!-- sofía listening -->
+      <ellipse cx="550" cy="275" rx="25" ry="12" fill="#5a3a1a"/>
+      <rect x="528" y="232" width="44" height="46" rx="6" fill="#c08860"/>
+      <ellipse cx="550" cy="225" rx="18" ry="19" fill="#e8b48a"/>
+      <ellipse cx="550" cy="212" rx="17" ry="9" fill="#3d2b1f"/>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 6 · Aparece la técnica</div>
+    <div class="panel-title">Aparece la técnica</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "No es solo la lluvia. Aquí el problema es el <em>riesgo</em>."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "¿Riesgo? ¿No es lo mismo que amenaza?"
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 7 -->
+<div class="page" id="p7">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="320" fill="#1a2a4a"/>
+      <!-- dramatic sky -->
+      <rect width="800" height="200" fill="#2c3e50"/>
+      <!-- MASSIVE storm cloud -->
+      <ellipse cx="400" cy="70" rx="200" ry="60" fill="#3a4a5a"/>
+      <ellipse cx="280" cy="80" rx="100" ry="50" fill="#4a5a6a"/>
+      <ellipse cx="520" cy="75" rx="110" ry="52" fill="#4a5a6a"/>
+      <ellipse cx="400" cy="50" rx="150" ry="45" fill="#5a6a7a"/>
+      <!-- lightning bolts -->
+      <polyline points="350,120 335,155 345,155 325,195" stroke="#f1c40f" stroke-width="4" fill="none"/>
+      <polyline points="450,118 438,150 448,150 430,190" stroke="#f1c40f" stroke-width="3" fill="none" opacity="0.7"/>
+      <!-- heavy rain -->
+      <g stroke="#7ab8e8" stroke-width="2" opacity="0.8">
+        <line x1="120" y1="130" x2="104" y2="175"/><line x1="160" y1="128" x2="144" y2="172"/>
+        <line x1="200" y1="132" x2="184" y2="178"/><line x1="240" y1="130" x2="224" y2="175"/>
+        <line x1="500" y1="130" x2="484" y2="175"/><line x1="540" y1="128" x2="524" y2="172"/>
+        <line x1="580" y1="132" x2="564" y2="178"/><line x1="620" y1="130" x2="604" y2="175"/>
+        <line x1="660" y1="130" x2="644" y2="175"/><line x1="700" y1="128" x2="684" y2="172"/>
+      </g>
+      <!-- ground -->
+      <rect y="200" width="800" height="120" fill="#1a1a2e"/>
+      <!-- AMENAZA badge big -->
+      <rect x="280" y="205" width="240" height="60" rx="8" fill="#a32d2d"/>
+      <text x="400" y="228" text-anchor="middle" fill="#fff" font-size="11" font-family="sans-serif" letter-spacing="0.08em">AMENAZA</text>
+      <text x="400" y="248" text-anchor="middle" fill="#f5c6c6" font-size="10" font-family="sans-serif">Fenómeno: lluvia intensa</text>
+      <!-- arrow from cloud to badge -->
+      <line x1="400" y1="135" x2="400" y2="202" stroke="#f1c40f" stroke-width="2.5" stroke-dasharray="6,4"/>
+      <!-- icons for natural phenomena -->
+      <text x="80" y="240" text-anchor="middle" fill="#aaa" font-size="36" font-family="sans-serif">🌧️</text>
+      <text x="720" y="240" text-anchor="middle" fill="#aaa" font-size="36" font-family="sans-serif">⚡</text>
+      <text x="80" y="285" text-anchor="middle" fill="#666" font-size="9" font-family="sans-serif">Lluvia intensa</text>
+      <text x="720" y="285" text-anchor="middle" fill="#666" font-size="9" font-family="sans-serif">Tormenta</text>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 7 · La amenaza</div>
+    <div class="panel-title">La amenaza <span class="concept-badge badge-amenaza">amenaza</span></div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "La <em>amenaza</em> es el fenómeno: la lluvia intensa."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Entonces, la lluvia es la amenaza... ¿y lo demás?"
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 8 -->
+<div class="page" id="p8">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="320" fill="#e8f0f8"/>
+      <!-- aerial map view -->
+      <rect x="50" y="30" width="700" height="260" rx="6" fill="#c8dfa0"/>
+      <!-- cauce river -->
+      <path d="M0 200 Q200 180 400 190 Q600 200 800 185" fill="#6aacdc" opacity="0.7"/>
+      <path d="M0 215 Q200 198 400 205 Q600 215 800 200" fill="#4a90c4" opacity="0.5"/>
+      <!-- buildings on flood zone -->
+      <!-- school -->
+      <g transform="translate(120,90)">
+        <rect x="0" y="0" width="100" height="70" fill="#e8d870"/>
+        <rect x="0" y="0" width="100" height="12" fill="#c8b840"/>
+        <text x="50" y="10" text-anchor="middle" fill="#7a6a00" font-size="8" font-weight="bold" font-family="sans-serif">ESCUELA</text>
+        <rect x="35" y="28" width="30" height="42" fill="#7ab8e8"/>
+        <rect x="8" y="25" width="20" height="20" fill="#b0d8e8"/>
+        <rect x="72" y="25" width="20" height="20" fill="#b0d8e8"/>
+      </g>
+      <!-- houses -->
+      <g transform="translate(310,70)">
+        <rect x="0" y="40" width="70" height="55" fill="#e8c87a"/>
+        <polygon points="0,40 35,5 70,40" fill="#c0392b"/>
+        <rect x="25" y="64" width="20" height="31" fill="#7ab8e8"/>
+        <text x="35" y="108" text-anchor="middle" fill="#7a4000" font-size="8" font-family="sans-serif">Casas</text>
+      </g>
+      <!-- don luis local -->
+      <g transform="translate(490,100)">
+        <rect x="0" y="0" width="100" height="75" fill="#d4956c"/>
+        <rect x="0" y="0" width="100" height="14" fill="#a0522d"/>
+        <text x="50" y="11" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" font-family="sans-serif">LOCAL · DON LUIS</text>
+        <rect x="35" y="22" width="30" height="53" fill="#7ab8e8"/>
+        <!-- edge marker -->
+        <rect x="90" y="0" width="10" height="75" fill="#e74c3c" opacity="0.5"/>
+        <text x="95" y="40" fill="#c0392b" font-size="7" font-family="sans-serif" transform="rotate(90,95,40)">AL BORDE</text>
+      </g>
+      <!-- exposition badge -->
+      <rect x="270" y="250" width="260" height="30" rx="6" fill="#185fa5"/>
+      <text x="400" y="270" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="sans-serif">EXPOSICIÓN: lo que está en el lugar</text>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 8 · La exposición</div>
+    <div class="panel-title">La exposición <span class="concept-badge badge-exposicion">exposición</span></div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "La <em>exposición</em> es lo que está en el lugar: casas, escuela, negocios."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🏪</div>
+      <div class="bubble">
+        <div class="char-name">Don Luis</div>
+        "Mi local está justo aquí, al borde..."
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 9 -->
+<div class="page" id="p9">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="320" fill="#fff8ec"/>
+      <!-- cracked walls -->
+      <rect x="30" y="60" width="130" height="200" rx="4" fill="#e8c87a" stroke="#8b6914" stroke-width="2"/>
+      <path d="M80 90 L95 130 L78 160 L100 200" stroke="#8b6914" stroke-width="2" fill="none" opacity="0.7"/>
+      <path d="M110 100 L120 145 L108 175" stroke="#8b6914" stroke-width="1.5" fill="none" opacity="0.6"/>
+      <text x="95" y="275" text-anchor="middle" fill="#7a4000" font-size="8.5" font-family="sans-serif">Paredes sin protección</text>
+      <!-- blocked drain -->
+      <g transform="translate(220,100)">
+        <rect x="0" y="0" width="120" height="90" rx="4" fill="#d4b896"/>
+        <rect x="0" y="90" width="120" height="15" rx="2" fill="#888"/>
+        <!-- trash in drain -->
+        <ellipse cx="60" cy="106" rx="40" ry="10" fill="#6a4a2a"/>
+        <text x="60" y="110" text-anchor="middle" fill="#f0a060" font-size="7" font-family="sans-serif">TAPADA</text>
+        <text x="60" y="50" text-anchor="middle" fill="#555" font-size="9" font-weight="bold" font-family="sans-serif">Alcantarilla</text>
+        <text x="60" y="66" text-anchor="middle" fill="#888" font-size="8" font-family="sans-serif">sin mantenimiento</text>
+      </g>
+      <!-- family without plan -->
+      <g transform="translate(430,80)">
+        <!-- family icons -->
+        <ellipse cx="40" cy="30" rx="15" ry="16" fill="#e8b48a"/>
+        <rect x="28" y="46" width="24" height="35" rx="4" fill="#c08860"/>
+        <ellipse cx="85" cy="35" rx="13" ry="14" fill="#d4956c"/>
+        <rect x="74" y="49" width="22" height="30" rx="4" fill="#a06040"/>
+        <ellipse cx="130" cy="40" rx="10" ry="11" fill="#e8c8a0"/>
+        <rect x="122" y="51" width="16" height="24" rx="3" fill="#c8a870"/>
+        <!-- confused arrows -->
+        <text x="60" y="100" text-anchor="middle" fill="#c0392b" font-size="28" font-family="sans-serif">?</text>
+        <text x="30" y="105" fill="#e74c3c" font-size="18" font-family="sans-serif">?</text>
+        <text x="100" y="108" fill="#e74c3c" font-size="22" font-family="sans-serif">?</text>
+        <text x="80" y="145" text-anchor="middle" fill="#922b21" font-size="8.5" font-family="sans-serif">Sin rutas de evacuación</text>
+      </g>
+      <!-- señora marta -->
+      <ellipse cx="680" cy="270" rx="28" ry="13" fill="#5a3a1a"/>
+      <rect x="655" y="215" width="50" height="58" rx="6" fill="#9b59b6" opacity="0.8"/>
+      <ellipse cx="680" cy="207" rx="19" ry="20" fill="#c8a870"/>
+      <ellipse cx="680" cy="194" rx="18" ry="10" fill="#3d2b1f"/>
+      <ellipse cx="672" cy="208" rx="2.5" ry="3" fill="#3d2b1f"/>
+      <ellipse cx="688" cy="208" rx="2.5" ry="3" fill="#3d2b1f"/>
+      <!-- vulnerability badge -->
+      <rect x="240" y="255" width="320" height="30" rx="6" fill="#854f0b"/>
+      <text x="400" y="274" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="sans-serif">VULNERABILIDAD: susceptibilidad al daño</text>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 9 · La vulnerabilidad</div>
+    <div class="panel-title">La vulnerabilidad <span class="concept-badge badge-vulnerabilidad">vulnerabilidad</span></div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "La <em>vulnerabilidad</em> es qué tan susceptible es todo esto a dañarse: drenaje deficiente, construcción frágil, falta de organización."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#f8e8f8;">👩</div>
+      <div class="bubble">
+        <div class="char-name">Señora Marta</div>
+        "No tenemos señalización ni plan barrial... y nadie sabe a dónde ir."
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 10 -->
+<div class="page" id="p10">
+  <div class="panel-illus">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="320" fill="#f0f8ff"/>
+      <!-- chalkboard / whiteboard -->
+      <rect x="100" y="20" width="600" height="240" rx="8" fill="#1a3a5a"/>
+      <rect x="110" y="30" width="580" height="220" rx="6" fill="#1e4a70"/>
+      <!-- chalk text: formula -->
+      <text x="400" y="80" text-anchor="middle" fill="#fff" font-size="13" font-weight="bold" font-family="'Courier New', monospace" letter-spacing="0.05em">Riesgo de desastres =</text>
+      <text x="400" y="110" text-anchor="middle" fill="#f1c40f" font-size="13" font-weight="bold" font-family="'Courier New', monospace">f ( amenaza × exposición × vulnerabilidad )</text>
+      <!-- three circles with icons -->
+      <circle cx="220" cy="175" r="45" fill="#a32d2d" opacity="0.85"/>
+      <text x="220" y="168" text-anchor="middle" fill="#fff" font-size="22" font-family="sans-serif">🌧️</text>
+      <text x="220" y="186" text-anchor="middle" fill="#ffc" font-size="9" font-weight="bold" font-family="sans-serif">AMENAZA</text>
+      <circle cx="400" cy="175" r="45" fill="#185fa5" opacity="0.85"/>
+      <text x="400" y="168" text-anchor="middle" fill="#fff" font-size="22" font-family="sans-serif">🏘️</text>
+      <text x="400" y="186" text-anchor="middle" fill="#cef" font-size="9" font-weight="bold" font-family="sans-serif">EXPOSICIÓN</text>
+      <circle cx="580" cy="175" r="45" fill="#854f0b" opacity="0.85"/>
+      <text x="580" y="168" text-anchor="middle" fill="#fff" font-size="22" font-family="sans-serif">⚠️</text>
+      <text x="580" y="186" text-anchor="middle" fill="#ffe8c0" font-size="9" font-weight="bold" font-family="sans-serif">VULNERABILIDAD</text>
+      <!-- connecting plus signs -->
+      <text x="310" y="182" text-anchor="middle" fill="#f1c40f" font-size="24" font-weight="bold" font-family="sans-serif">×</text>
+      <text x="490" y="182" text-anchor="middle" fill="#f1c40f" font-size="24" font-weight="bold" font-family="sans-serif">×</text>
+      <!-- arrow down to RIESGO -->
+      <line x1="400" y1="222" x2="400" y2="238" stroke="#f1c40f" stroke-width="2.5"/>
+      <text x="400" y="252" text-anchor="middle" fill="#f1c40f" font-size="12" font-weight="bold" font-family="'Courier New', monospace" letter-spacing="0.1em">= RIESGO</text>
+      <!-- sofia at board -->
+      <ellipse cx="740" cy="295" rx="28" ry="13" fill="#5a3a1a"/>
+      <rect x="716" y="245" width="48" height="52" rx="6" fill="#c08860"/>
+      <ellipse cx="740" cy="237" rx="18" ry="19" fill="#e8b48a"/>
+      <ellipse cx="740" cy="224" rx="17" ry="9" fill="#3d2b1f"/>
+      <!-- arm raised -->
+      <line x1="718" y1="260" x2="700" y2="230" stroke="#e8a87c" stroke-width="9" stroke-linecap="round"/>
+      <!-- chalk in hand -->
+      <rect x="694" y="224" width="10" height="20" rx="3" fill="#fff" transform="rotate(-20,699,234)"/>
+    </svg>
+  </div>
+  <div class="panel-text">
+    <div class="page-label">Hoja 10 · La frase que lo conecta todo</div>
+    <div class="panel-title">La frase que lo conecta todo</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Entonces el riesgo aparece cuando se juntan..."
+      </div>
+    </div>
+    <div class="formula-box">
+      Riesgo de desastres = f(<span>amenaza</span>, exposición, vulnerabilidad)
+    </div>
+    <div class="narrator-box">
+      No basta con la amenaza. Si reducimos exposición o vulnerabilidad, el riesgo baja. Eso es gestionar el riesgo.
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+</div><!-- /comic-wrap -->
+
+<!-- NAV -->
+<div class="nav-bar">
+  <button class="btn-nav" id="btn-prev" disabled>← Anterior</button>
+  <div class="page-dots" id="dots"></div>
+  <button class="btn-nav primary" id="btn-next">Siguiente →</button>
+</div>
+
+<script>
+  const TOTAL = 10;
+  let current = 1;
+  const visited = new Set([1]);
+
+  const dotsEl = document.getElementById('dots');
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 1 ? ' active visited' : '');
+    d.dataset.page = i;
+    d.title = 'Hoja ' + i;
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    document.getElementById('p' + current).classList.remove('active');
+    current = n;
+    document.getElementById('p' + current).classList.add('active');
+    visited.add(n);
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i + 1 === n);
+      d.classList.toggle('visited', visited.has(i + 1));
+    });
+    document.getElementById('btn-prev').disabled = n === 1;
+    document.getElementById('btn-next').disabled = n === TOTAL;
+    document.getElementById('pstrip').style.width = (n / TOTAL * 100) + '%';
+    document.querySelector('.comic-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.getElementById('btn-next').addEventListener('click', () => { if (current < TOTAL) goTo(current + 1); });
+  document.getElementById('btn-prev').addEventListener('click', () => { if (current > 1) goTo(current - 1); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' && current < TOTAL) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+</body>
+</html>
