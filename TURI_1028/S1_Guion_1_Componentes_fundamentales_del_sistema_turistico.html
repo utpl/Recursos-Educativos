@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Componentes del Sistema Turístico</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:      #F2EDE4;
+    --card:    #FFFFFF;
+    --text:    #1A1510;
+    --sub:     #5A5040;
+    --border:  #DDD6CA;
+    --shadow:  0 4px 22px rgba(26,21,16,.10);
+    --shadowlg:0 14px 50px rgba(26,21,16,.20);
+    /* component colours */
+    --c1:#E07820; --c1l:#FDF4E6; /* turista */
+    --c2:#2A8A50; --c2l:#E4F6EC; /* emisora */
+    --c3:#2A6AAA; --c3l:#E4F0FA; /* tránsito */
+    --c4:#7A3AB0; --c4l:#F4EAFC; /* receptora */
+    --c5:#B8820A; --c5l:#F6F0DC; /* industria */
+    --radius:18px;
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'Nunito', sans-serif;
+    background:var(--bg); color:var(--text);
+    min-height:100vh; padding:20px 14px 56px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+
+  /* ── HEADER ── */
+  .hdr { width:100%; max-width:800px; text-align:center; margin-bottom:22px; }
+  .hdr .pill { display:inline-flex; align-items:center; gap:7px; background:var(--text); color:#fff; font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; padding:5px 15px; border-radius:20px; margin-bottom:13px; }
+  .hdr h1 { font-family:'Playfair Display',serif; font-size:clamp(22px,5.5vw,34px); font-weight:700; line-height:1.18; margin-bottom:7px; }
+  .hdr h1 em { font-style:italic; color:var(--c3); }
+  .hdr .sub { font-size:13px; color:var(--sub); font-weight:600; line-height:1.5; }
+  .hdr .instr { margin-top:12px; display:inline-flex; align-items:center; gap:8px; background:var(--card); border:1.5px dashed var(--border); border-radius:10px; padding:8px 16px; font-size:12.5px; font-weight:600; color:var(--sub); }
+
+  /* ── MAIN CARD ── */
+  .main { width:100%; max-width:800px; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+
+  /* ── HERO ── */
+  .hero { background:linear-gradient(135deg,#0E1C2E 0%,#1A3050 55%,#243A60 100%); padding:24px 28px 20px; position:relative; overflow:hidden; }
+  .hero::before { content:'🌐'; position:absolute; right:12px; top:-14px; font-size:96px; opacity:.08; pointer-events:none; }
+  .hero::after  { content:''; position:absolute; bottom:-40px; left:-40px; width:140px; height:140px; border-radius:50%; background:rgba(255,255,255,.04); pointer-events:none; }
+  .hero .htag { font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:8px; }
+  .hero h2 { font-family:'Playfair Display',serif; font-size:clamp(16px,3.8vw,21px); font-weight:700; color:#fff; line-height:1.25; margin-bottom:9px; position:relative; z-index:1; }
+  .hero p  { font-size:13px; color:rgba(255,255,255,.80); font-weight:600; line-height:1.65; position:relative; z-index:1; }
+
+  /* ── WHEEL SECTION ── */
+  .wheel-section { padding:32px 20px 28px; display:flex; flex-direction:column; align-items:center; }
+
+  /* DESKTOP: pentagon wheel */
+  .wheel-wrap {
+    position:relative; width:100%; max-width:520px; aspect-ratio:1/1; margin:0 auto 4px;
+  }
+  @media(max-width:559px){ .wheel-wrap { display:none; } }
+
+  /* orbit SVG */
+  .orbit-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+
+  /* Hub */
+  .hub {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:23%; aspect-ratio:1/1; border-radius:50%;
+    background:linear-gradient(135deg,#1A3050,#2A4870);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; z-index:10; box-shadow:0 6px 28px rgba(26,48,80,.42);
+    text-align:center; padding:10px;
+    border:3px solid rgba(255,255,255,.14);
+    cursor:default;
+  }
+  .hub .h-icon { font-size:clamp(18px,3.5vw,28px); line-height:1; }
+  .hub .h-lbl  { font-size:clamp(7px,1.3vw,10px); font-weight:800; color:rgba(255,255,255,.9); letter-spacing:.5px; text-transform:uppercase; line-height:1.2; }
+
+  /* Nodes */
+  .cnode {
+    position:absolute; width:20%; aspect-ratio:1/1; border-radius:50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; text-align:center; padding:8px;
+    cursor:pointer; border:3px solid; background:var(--card);
+    transition:all .25s cubic-bezier(.4,0,.2,1);
+    z-index:8;
+  }
+  .cnode:hover { transform:scale(1.12); box-shadow:var(--shadowlg); z-index:15; }
+  .cnode:focus-visible { outline:3px solid var(--c3); outline-offset:3px; z-index:15; }
+  .cn-icon { font-size:clamp(16px,3vw,24px); line-height:1; }
+  .cn-num  { font-size:clamp(7.5px,1.2vw,10px); font-weight:900; letter-spacing:.6px; text-transform:uppercase; }
+  .cn-name { font-size:clamp(8px,1.3vw,11px); font-weight:800; color:var(--text); line-height:1.2; }
+
+  .cn0 { border-color:var(--c1); background:var(--c1l); } .cn0 .cn-num { color:var(--c1); }
+  .cn1 { border-color:var(--c2); background:var(--c2l); } .cn1 .cn-num { color:var(--c2); }
+  .cn2 { border-color:var(--c3); background:var(--c3l); } .cn2 .cn-num { color:var(--c3); }
+  .cn3 { border-color:var(--c4); background:var(--c4l); } .cn3 .cn-num { color:var(--c4); }
+  .cn4 { border-color:var(--c5); background:var(--c5l); } .cn4 .cn-num { color:var(--c5); }
+
+  /* ── MOBILE: grid ── */
+  .mob-grid { display:none; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
+  @media(max-width:559px){ .mob-grid { display:grid; } }
+  .mg-btn { border-radius:13px; padding:13px 14px; display:flex; align-items:center; gap:10px; cursor:pointer; border:2px solid; background:none; text-align:left; transition:all .2s; width:100%; }
+  .mg-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.10); }
+  .mg-btn:focus-visible { outline:3px solid var(--c3); outline-offset:2px; }
+  .mg-icon { font-size:22px; flex-shrink:0; }
+  .mg-num  { font-size:9px; font-weight:800; letter-spacing:.8px; text-transform:uppercase; margin-bottom:2px; }
+  .mg-name { font-size:12px; font-weight:800; color:var(--text); line-height:1.25; }
+  .mg0 { border-color:var(--c1); background:var(--c1l); } .mg0 .mg-num { color:var(--c1); }
+  .mg1 { border-color:var(--c2); background:var(--c2l); } .mg1 .mg-num { color:var(--c2); }
+  .mg2 { border-color:var(--c3); background:var(--c3l); } .mg2 .mg-num { color:var(--c3); }
+  .mg3 { border-color:var(--c4); background:var(--c4l); } .mg3 .mg-num { color:var(--c4); }
+  .mg4 { border-color:var(--c5); background:var(--c5l); } .mg4 .mg-num { color:var(--c5); }
+
+  /* ── LEGEND ── */
+  .legend { padding:10px 22px 16px; border-top:1px solid var(--border); background:#F8F5EE; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; }
+  .lg-chip { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--sub); }
+  .lg-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+  /* ── MODAL ── */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(26,21,16,.54); backdrop-filter:blur(6px); z-index:200; align-items:flex-end; justify-content:center; }
+  @media(min-width:600px){ .overlay{align-items:center;padding:20px;} }
+  .overlay.open { display:flex; animation:fadeOv .25s ease; }
+  @keyframes fadeOv{from{opacity:0}to{opacity:1}}
+  .modal { background:var(--card); width:100%; max-width:560px; border-radius:22px 22px 0 0; max-height:88vh; overflow-y:auto; animation:slideUp .33s cubic-bezier(.34,1.3,.7,1); }
+  @media(min-width:600px){ .modal{border-radius:22px;animation:zoomIn .3s cubic-bezier(.34,1.2,.7,1);} }
+  @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes zoomIn{from{transform:scale(.9) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  .m-handle { width:36px; height:4px; border-radius:2px; background:var(--border); margin:12px auto 0; }
+  @media(min-width:600px){.m-handle{display:none;}}
+  .m-top { padding:18px 22px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; }
+  .m-icon { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; border:3px solid; }
+  .m-head { flex:1; }
+  .m-num   { font-size:9.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  .m-title { font-family:'Playfair Display',serif; font-size:clamp(18px,4vw,22px); font-weight:700; color:var(--text); line-height:1.2; }
+  .mclose  { background:var(--bg); border:none; border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:16px; color:var(--sub); display:flex; align-items:center; justify-content:center; transition:background .2s; flex-shrink:0; }
+  .mclose:hover{background:var(--border);}
+  .mclose:focus-visible{outline:3px solid var(--c3);outline-offset:2px;}
+  .m-body { padding:18px 22px 26px; display:flex; flex-direction:column; gap:10px; }
+  .m-point { display:flex; align-items:flex-start; gap:11px; padding:9px 0; border-bottom:1px solid var(--border); }
+  .m-point:last-of-type { border-bottom:none; }
+  .mp-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+  .mp-text { font-size:13.5px; font-weight:500; color:var(--sub); line-height:1.68; }
+  .mp-text strong { color:var(--text); font-weight:700; }
+  .m-ref { margin-top:6px; padding:12px 14px; border-radius:11px; font-size:12px; font-weight:500; color:var(--sub); line-height:1.65; font-style:italic; border-left:3px solid var(--border); background:var(--bg); }
+  .m-ref strong { font-style:normal; font-weight:800; color:var(--text); display:block; margin-bottom:3px; font-size:11px; letter-spacing:.5px; text-transform:uppercase; }
+  .m-nav { display:flex; justify-content:space-between; align-items:center; padding:12px 22px; border-top:1px solid var(--border); background:#F8F5EE; border-radius:0 0 22px 22px; }
+  @media(max-width:599px){.m-nav{border-radius:0;}}
+  .mnav-btn { display:flex; align-items:center; gap:6px; background:none; border:1.5px solid var(--border); border-radius:10px; padding:8px 14px; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; color:var(--sub); cursor:pointer; transition:all .2s; }
+  .mnav-btn:hover{background:var(--bg);border-color:var(--text);color:var(--text);}
+  .mnav-btn:disabled{opacity:.3;cursor:default;}
+  .mnav-btn:focus-visible{outline:3px solid var(--c3);outline-offset:2px;}
+  .m-counter { font-size:12px; font-weight:600; color:var(--sub); }
+</style>
+</head>
+<body>
+
+<header class="hdr" role="banner">
+  <div class="pill">🌐 Semana 1 · Infografía interactiva</div>
+  <h1>Componentes del <em>Sistema Turístico</em></h1>
+  <p class="sub">Fundamentos del Turismo y la Gastronomía · Prof. Mgs. Natalia Soledad Bustamante Sánchez</p>
+  <div class="instr" role="note"><span aria-hidden="true">👆</span> Haga clic en el componente para visualizar el contenido</div>
+</header>
+
+<main class="main" role="main" aria-label="Infografía del sistema turístico">
+
+  <div class="hero">
+    <p class="htag">Enfoque sistémico · Unidad 1</p>
+    <h2>El sistema turístico y sus componentes fundamentales</h2>
+    <p>El turismo funciona como un sistema de elementos interdependientes. Explore cada componente y comprenda su rol dentro de la dinámica turística global.</p>
+  </div>
+
+  <div class="wheel-section">
+
+    <!-- DESKTOP wheel -->
+    <div class="wheel-wrap" role="list" aria-label="Componentes del sistema turístico en disposición orbital">
+
+      <svg class="orbit-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <!-- orbit ring -->
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#DDD6CA" stroke-width=".65" stroke-dasharray="3,2"/>
+        <!-- spoke lines -->
+        <line x1="50" y1="50" x2="50"  y2="12"  stroke="#CCC6BA" stroke-width=".5"/>
+        <line x1="50" y1="50" x2="86"  y2="30"  stroke="#CCC6BA" stroke-width=".5"/>
+        <line x1="50" y1="50" x2="74"  y2="84"  stroke="#CCC6BA" stroke-width=".5"/>
+        <line x1="50" y1="50" x2="26"  y2="84"  stroke="#CCC6BA" stroke-width=".5"/>
+        <line x1="50" y1="50" x2="14"  y2="30"  stroke="#CCC6BA" stroke-width=".5"/>
+        <!-- arc arrows clockwise -->
+        <defs>
+          <marker id="arr" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+            <path d="M0,0 L0,4 L4,2 z" fill="#CCC6BA"/>
+          </marker>
+        </defs>
+        <path d="M 66 13 A 38 38 0 0 1 87 40" fill="none" stroke="#DDD6CA" stroke-width=".7" marker-end="url(#arr)"/>
+        <path d="M 87 62 A 38 38 0 0 1 68 87" fill="none" stroke="#DDD6CA" stroke-width=".7" marker-end="url(#arr)"/>
+        <path d="M 32 87 A 38 38 0 0 1 13 62" fill="none" stroke="#DDD6CA" stroke-width=".7" marker-end="url(#arr)"/>
+        <path d="M 13 38 A 38 38 0 0 1 34 13" fill="none" stroke="#DDD6CA" stroke-width=".7" marker-end="url(#arr)"/>
+      </svg>
+
+      <!-- Hub -->
+      <div class="hub" aria-hidden="true">
+        <span class="h-icon">🌐</span>
+        <span class="h-lbl">Sistema<br>Turístico</span>
+      </div>
+
+      <!-- 5 nodes (positioned by JS) -->
+      <button class="cnode cn0" id="cn0" onclick="openModal(0)" tabindex="0" role="listitem" aria-label="El Turista">
+        <span class="cn-icon">🧳</span>
+        <span class="cn-num">01</span>
+        <span class="cn-name">El<br>Turista</span>
+      </button>
+      <button class="cnode cn1" id="cn1" onclick="openModal(1)" tabindex="0" role="listitem" aria-label="Área Emisora">
+        <span class="cn-icon">🏠</span>
+        <span class="cn-num">02</span>
+        <span class="cn-name">Área<br>Emisora</span>
+      </button>
+      <button class="cnode cn2" id="cn2" onclick="openModal(2)" tabindex="0" role="listitem" aria-label="Ruta de Tránsito">
+        <span class="cn-icon">✈️</span>
+        <span class="cn-num">03</span>
+        <span class="cn-name">Ruta de<br>Tránsito</span>
+      </button>
+      <button class="cnode cn3" id="cn3" onclick="openModal(3)" tabindex="0" role="listitem" aria-label="Área Receptora">
+        <span class="cn-icon">🎯</span>
+        <span class="cn-num">04</span>
+        <span class="cn-name">Área<br>Receptora</span>
+      </button>
+      <button class="cnode cn4" id="cn4" onclick="openModal(4)" tabindex="0" role="listitem" aria-label="Industria Turística">
+        <span class="cn-icon">🏨</span>
+        <span class="cn-num">05</span>
+        <span class="cn-name">Industria<br>Turística</span>
+      </button>
+    </div>
+
+    <!-- MOBILE grid -->
+    <div class="mob-grid" role="list" aria-label="Componentes del sistema turístico">
+      <button class="mg-btn mg0" onclick="openModal(0)"><span class="mg-icon">🧳</span><div><div class="mg-num">01</div><div class="mg-name">El Turista</div></div></button>
+      <button class="mg-btn mg1" onclick="openModal(1)"><span class="mg-icon">🏠</span><div><div class="mg-num">02</div><div class="mg-name">Área Emisora</div></div></button>
+      <button class="mg-btn mg2" onclick="openModal(2)"><span class="mg-icon">✈️</span><div><div class="mg-num">03</div><div class="mg-name">Ruta de Tránsito</div></div></button>
+      <button class="mg-btn mg3" onclick="openModal(3)"><span class="mg-icon">🎯</span><div><div class="mg-num">04</div><div class="mg-name">Área Receptora</div></div></button>
+      <button class="mg-btn mg4" onclick="openModal(4)"><span class="mg-icon">🏨</span><div><div class="mg-num">05</div><div class="mg-name">Industria Turística</div></div></button>
+    </div>
+
+  </div>
+
+  <div class="legend" aria-label="Leyenda de componentes">
+    <div class="lg-chip"><div class="lg-dot" style="background:var(--c1)"></div>El Turista</div>
+    <div class="lg-chip"><div class="lg-dot" style="background:var(--c2)"></div>Área Emisora</div>
+    <div class="lg-chip"><div class="lg-dot" style="background:var(--c3)"></div>Ruta de Tránsito</div>
+    <div class="lg-chip"><div class="lg-dot" style="background:var(--c4)"></div>Área Receptora</div>
+    <div class="lg-chip"><div class="lg-dot" style="background:var(--c5)"></div>Industria Turística</div>
+  </div>
+
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="mTitle"
+  onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal" tabindex="-1">
+    <div class="m-handle" aria-hidden="true"></div>
+    <div class="m-top">
+      <div class="m-icon" id="mIcon"></div>
+      <div class="m-head">
+        <div class="m-num"   id="mNum"></div>
+        <div class="m-title" id="mTitle"></div>
+      </div>
+      <button class="mclose" onclick="closeModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="m-body" id="mBody"></div>
+    <div class="m-nav">
+      <button class="mnav-btn" id="btnPrev" onclick="navigate(-1)">← Anterior</button>
+      <span class="m-counter" id="mCounter">1 de 5</span>
+      <button class="mnav-btn" id="btnNext" onclick="navigate(1)">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {
+    icon:'🧳', num:'Componente 01', title:'El Turista',
+    color:'var(--c1)', colorl:'var(--c1l)',
+    points:[
+      'El turista constituye el <strong>núcleo del sistema</strong>, ya que la actividad turística existe a partir de sus motivaciones, expectativas y necesidades.',
+      'El estudio del comportamiento del turista resulta clave para comprender la evolución del turismo, especialmente en el contexto actual, donde se evidencian cambios significativos en las preferencias de viaje.',
+      'En el escenario postpandemia, el turista tiende a valorar con mayor énfasis la <strong>sostenibilidad, el contacto con la naturaleza y la búsqueda de experiencias auténticas</strong>, aspectos que influyen directamente en la configuración de la oferta turística.',
+    ],
+    ref:'Leiper, N. (1990). Tourist attraction systems. <em>Annals of Tourism Research, 17</em>(3), 367–384. https://doi.org/10.1016/0160-7383(90)90004-B'
+  },
+  {
+    icon:'🏠', num:'Componente 02', title:'Área Emisora',
+    color:'var(--c2)', colorl:'var(--c2l)',
+    points:[
+      'El área emisora corresponde al <strong>lugar de origen</strong> desde el cual se planifica y decide el viaje.',
+      'Este espacio influye en el perfil del turista, sus expectativas, capacidad de gasto y preferencias, condicionando la forma en que se desarrolla la experiencia turística.',
+      'Factores <strong>socioculturales y económicos</strong> del área emisora moldean la demanda turística y la segmentación de mercados.',
+    ],
+    ref:'Gunn, C. A., & Var, T. (2002). <em>Tourism planning: Basics, concepts, cases</em> (4th ed.). Routledge.'
+  },
+  {
+    icon:'✈️', num:'Componente 03', title:'Ruta de Tránsito',
+    color:'var(--c3)', colorl:'var(--c3l)',
+    points:[
+      'La ruta de tránsito comprende las <strong>vías de comunicación y los medios de transporte</strong> utilizados para el desplazamiento hacia el destino.',
+      'Según Leiper (1990), el tránsito forma parte integral de la experiencia turística, ya que puede incidir en la percepción de calidad y en la satisfacción final del visitante.',
+      'La <strong>accesibilidad y conectividad</strong> determinan en gran medida la competitividad de un destino turístico.',
+    ],
+    ref:'Leiper, N. (1990). Tourist attraction systems. <em>Annals of Tourism Research, 17</em>(3), 367–384. https://doi.org/10.1016/0160-7383(90)90004-B'
+  },
+  {
+    icon:'🎯', num:'Componente 04', title:'Área Receptora',
+    color:'var(--c4)', colorl:'var(--c4l)',
+    points:[
+      'El área receptora es el <strong>destino turístico donde se desarrolla la experiencia</strong>. Este espacio geográfico integra atractivos naturales y culturales, actividades recreativas, servicios turísticos y una comunidad anfitriona.',
+      'En él se concentran las manifestaciones del turismo y se generan los principales <strong>impactos sociales, económicos y culturales</strong> de la actividad turística.',
+      'La gestión sostenible del área receptora garantiza la conservación del patrimonio y el bienestar local.',
+    ],
+    ref:'Gunn, C. A. (1994). <em>Tourism planning: Basics, concepts, cases</em>. Taylor & Francis.'
+  },
+  {
+    icon:'🏨', num:'Componente 05', title:'Industria Turística',
+    color:'var(--c5)', colorl:'var(--c5l)',
+    points:[
+      'La industria turística comprende el conjunto de servicios que facilitan y hacen posible la experiencia del visitante: <strong>alojamiento, alimentos y bebidas, transporte, recreación e intermediación</strong>.',
+      'De acuerdo con Gunn y Var (2002), esta industria constituye el <strong>soporte operativo del sistema turístico</strong>, permitiendo su funcionamiento articulado.',
+      'La sinergia entre empresas públicas y privadas fortalece la <strong>competitividad y la calidad</strong> de la experiencia turística.',
+    ],
+    ref:'Gunn, C. A., & Var, T. (2002). <em>Tourism planning: Basics, concepts, cases</em> (4th ed.). Routledge.'
+  }
+];
+
+let current = 0;
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v.replace('var(','').replace(')','')).trim(); }
+
+/* Position nodes in pentagon */
+function positionNodes(){
+  const wrap = document.querySelector('.wheel-wrap');
+  if(!wrap) return;
+  const n=5, r=38;
+  for(let i=0;i<n;i++){
+    const angle = (i*2*Math.PI/n) - Math.PI/2;
+    const cx = 50 + r*Math.cos(angle);
+    const cy = 50 + r*Math.sin(angle);
+    const el = document.getElementById('cn'+i);
+    if(!el) continue;
+    const half = 10;
+    el.style.left  = (cx-half)+'%';
+    el.style.top   = (cy-half)+'%';
+    el.style.transform = 'none';
+  }
+}
+
+function openModal(idx){ current=idx; render(); document.getElementById('overlay').classList.add('open'); document.getElementById('modal').focus(); }
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+function navigate(d){ current=Math.max(0,Math.min(DATA.length-1,current+d)); render(); }
+
+function render(){
+  const d = DATA[current];
+  const col  = css(d.color);
+  const coll = css(d.colorl);
+
+  const ic = document.getElementById('mIcon');
+  ic.textContent = d.icon; ic.style.background = coll; ic.style.borderColor = col;
+
+  const nm = document.getElementById('mNum'); nm.textContent = d.num; nm.style.color = col;
+  document.getElementById('mTitle').textContent = d.title;
+
+  const pts = d.points.map(p=>`
+    <div class="m-point">
+      <div class="mp-dot" style="background:${col}"></div>
+      <div class="mp-text">${p}</div>
+    </div>`).join('');
+
+  document.getElementById('mBody').innerHTML = pts +
+    `<div class="m-ref"><strong>📘 Referencia APA 7</strong>${d.ref}</div>`;
+
+  document.getElementById('btnPrev').disabled = current===0;
+  document.getElementById('btnNext').disabled = current===DATA.length-1;
+  document.getElementById('mCounter').textContent = (current+1)+' de '+DATA.length;
+  document.getElementById('modal').scrollTop = 0;
+}
+
+document.addEventListener('keydown', e=>{
+  if(!document.getElementById('overlay').classList.contains('open')) return;
+  if(e.key==='Escape') closeModal();
+  if(e.key==='ArrowRight') navigate(1);
+  if(e.key==='ArrowLeft')  navigate(-1);
+});
+
+positionNodes();
+window.addEventListener('resize', positionNodes);
+</script>
+</body>
+</html>
