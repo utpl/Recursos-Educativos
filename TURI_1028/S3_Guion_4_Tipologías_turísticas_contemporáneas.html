@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tipologías Turísticas — Arrastrar y Soltar</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #F4F1EB;
+    --surface: #FFFFFF;
+    --text: #1A1A2E;
+    --sub: #52527A;
+    --border: #E0DAD0;
+    --green: #2A7A5C;
+    --greenl: #E8F5EF;
+    --red: #C0392B;
+    --redl: #FDF0EE;
+    --gold: #C9A227;
+    --goldl: #FDF8E8;
+    --blue: #2563A8;
+    --bluel: #E8F2FB;
+    --purple: #6C3DBE;
+    --purplel: #F0ECFB;
+    --teal: #2A8A8A;
+    --teall: #E8F5F5;
+    --amber: #D96B2A;
+    --amberl: #FDF2E8;
+    --radius: 16px;
+    --shadow: 0 4px 20px rgba(26,26,46,.10);
+    --shadow-md: 0 8px 32px rgba(26,26,46,.15);
+    --shadow-drag: 0 20px 60px rgba(26,26,46,.25);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 18px 14px 48px; display: flex; flex-direction: column; align-items: center; }
+
+  /* HEADER */
+  .hdr { width: 100%; max-width: 800px; text-align: center; margin-bottom: 20px; }
+  .hdr .pill { display: inline-block; background: var(--text); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 12px; }
+  .hdr h1 { font-family: 'Playfair Display', serif; font-size: clamp(22px, 5vw, 32px); font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
+  .hdr h1 em { font-style: italic; color: var(--green); }
+  .hdr .desc { font-size: 13.5px; color: var(--sub); font-weight: 600; line-height: 1.5; }
+
+  /* MAIN WRAP */
+  .wrap { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* INSTRUCTION CARD */
+  .instr-card { background: var(--surface); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); display: flex; gap: 14px; align-items: flex-start; border-left: 4px solid var(--green); }
+  .instr-icon { font-size: 26px; flex-shrink: 0; margin-top: 1px; }
+  .instr-card p { font-size: 13.5px; font-weight: 600; color: var(--sub); line-height: 1.6; }
+  .instr-card strong { color: var(--text); }
+
+  /* SCORE BAR */
+  .score-bar { background: var(--surface); border-radius: var(--radius); padding: 13px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .score-bar .sc-label { font-size: 12px; font-weight: 700; color: var(--sub); letter-spacing: .5px; text-transform: uppercase; }
+  .score-track { flex: 1; min-width: 120px; height: 10px; background: #EBE8E0; border-radius: 10px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--green), #4CC48A); border-radius: 10px; transition: width .5s cubic-bezier(.4,0,.2,1); width: 0%; }
+  .score-count { font-size: 15px; font-weight: 900; color: var(--green); white-space: nowrap; min-width: 40px; text-align: right; }
+  .btn-reset { margin-left: auto; background: none; border: 1.5px solid var(--border); border-radius: 10px; padding: 6px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: var(--sub); cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 5px; }
+  .btn-reset:hover { background: var(--bg); border-color: var(--text); color: var(--text); }
+
+  /* GAME LAYOUT */
+  .game-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width: 560px) { .game-layout { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .panel-head { padding: 12px 16px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .panel-head .ph-icon { font-size: 18px; }
+  .panel-head h2 { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: .3px; }
+  .panel-head .ph-tag { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--sub); background: var(--bg); border-radius: 20px; padding: 2px 9px; border: 1px solid var(--border); }
+
+  /* TIPOLOGÍAS LIST */
+  .tipologias-list { padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 7px; }
+
+  .tipo-item {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 11px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: grab;
+    transition: all .2s cubic-bezier(.4,0,.2,1);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    position: relative;
+  }
+  .tipo-item:hover { border-color: var(--green); background: var(--greenl); transform: translateX(2px); box-shadow: 0 3px 12px rgba(42,122,92,.12); }
+  .tipo-item.dragging { opacity: .4; transform: scale(.97); cursor: grabbing; }
+  .tipo-item.matched { cursor: default; opacity: .55; }
+  .tipo-item.matched:hover { transform: none; box-shadow: none; border-color: var(--border); background: var(--bg); }
+  .tipo-num { width: 26px; height: 26px; border-radius: 50%; background: var(--text); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; flex-shrink: 0; transition: background .2s; }
+  .tipo-item.matched .tipo-num { background: var(--green); }
+  .tipo-name { font-size: 12.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .tipo-drag-hint { margin-left: auto; font-size: 14px; color: var(--border); flex-shrink: 0; transition: color .2s; }
+  .tipo-item:hover .tipo-drag-hint { color: var(--green); }
+  .tipo-item.matched .tipo-drag-hint { display: none; }
+  .tipo-check { display: none; margin-left: auto; font-size: 14px; color: var(--green); flex-shrink: 0; }
+  .tipo-item.matched .tipo-check { display: block; }
+
+  /* DESCRIPTIONS LIST */
+  .desc-list { padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 7px; }
+
+  .desc-drop {
+    border: 2px dashed var(--border);
+    border-radius: 11px;
+    padding: 10px 12px;
+    min-height: 64px;
+    transition: all .2s;
+    position: relative;
+    background: var(--bg);
+  }
+  .desc-drop.drag-over { border-color: var(--green); background: var(--greenl); border-style: solid; transform: scale(1.01); box-shadow: 0 4px 16px rgba(42,122,92,.12); }
+  .desc-drop.matched-ok { border-color: var(--green); background: var(--greenl); border-style: solid; }
+  .desc-drop.matched-err { border-color: var(--red); background: var(--redl); border-style: solid; animation: shake .4s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+  .desc-letter { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--sub); margin-bottom: 4px; }
+  .desc-text { font-size: 12px; font-weight: 600; color: var(--sub); line-height: 1.55; }
+  .desc-drop.matched-ok .desc-text { color: var(--text); }
+  .desc-drop .drop-placeholder { font-size: 11.5px; font-weight: 600; color: #B0ACC5; font-style: italic; }
+  .matched-badge { position: absolute; top: 8px; right: 10px; background: var(--green); color: #fff; border-radius: 20px; font-size: 10px; font-weight: 800; padding: 2px 8px; display: none; }
+  .desc-drop.matched-ok .matched-badge { display: block; }
+  .desc-drop .match-tipo { font-size: 11px; font-weight: 800; color: var(--green); margin-top: 5px; display: none; }
+  .desc-drop.matched-ok .match-tipo { display: block; }
+
+  /* MOBILE TOUCH FALLBACK: SELECT MODE */
+  .tipo-item.selected { border-color: var(--blue); background: var(--bluel); box-shadow: 0 0 0 3px rgba(37,99,168,.18); }
+  .desc-drop.selectable { cursor: pointer; }
+  .desc-drop.selectable:hover { border-color: var(--blue); background: var(--bluel); }
+
+  /* DRAG GHOST */
+  .drag-ghost { position: fixed; pointer-events: none; z-index: 9999; opacity: .9; transform: rotate(3deg) scale(1.04); box-shadow: var(--shadow-drag); border-radius: 11px; padding: 10px 14px; background: var(--surface); border: 2px solid var(--green); font-family: 'Nunito', sans-serif; font-size: 12.5px; font-weight: 700; color: var(--text); max-width: 200px; display: none; }
+
+  /* RESULTS MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(26,26,46,.5); backdrop-filter: blur(5px); z-index: 100; align-items: flex-end; justify-content: center; padding: 0; }
+  @media(min-width:600px){ .overlay{align-items:center;padding:20px;} }
+  .overlay.open { display: flex; animation: fadeOv .25s ease; }
+  @keyframes fadeOv{from{opacity:0}to{opacity:1}}
+  .modal { background: var(--surface); width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 28px 24px 32px; animation: slideUp .32s cubic-bezier(.34,1.3,.7,1); text-align: center; }
+  @media(min-width:600px){ .modal{border-radius:20px;animation:zoomIn .3s cubic-bezier(.34,1.2,.7,1);} }
+  @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes zoomIn{from{transform:scale(.9) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  .modal-emoji { font-size: 52px; margin-bottom: 10px; }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: clamp(18px,4vw,24px); font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.2; }
+  .modal p { font-size: 13.5px; font-weight: 600; color: var(--sub); line-height: 1.65; margin-bottom: 20px; }
+  .modal .score-big { font-size: 42px; font-weight: 900; color: var(--green); line-height: 1; margin: 10px 0 4px; }
+  .modal .score-label { font-size: 13px; font-weight: 600; color: var(--sub); margin-bottom: 18px; }
+  .btn-primary { width: 100%; background: var(--green); color: #fff; border: none; border-radius: 12px; padding: 14px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-primary:hover { background: #1F6B4E; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(42,122,92,.28); }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="pill">🌍 Semanas 2 y 3 · Actividad Interactiva</div>
+  <h1>Tipologías Turísticas <em>Contemporáneas</em></h1>
+  <p class="desc">Fundamentos del Turismo y la Gastronomía · Prof. Mgs. Natalia Soledad Bustamante Sánchez</p>
+</header>
+
+<div class="wrap">
+
+  <div class="instr-card" role="note">
+    <span class="instr-icon" aria-hidden="true">🖱️</span>
+    <p><strong>Participe arrastrando y soltando</strong> cada tipología turística con su descripción correspondiente. Lea con atención y relacione correctamente los elementos para reforzar lo aprendido sobre las modalidades o tipologías de turismo estudiadas en las semanas 2 y 3. <strong>En móvil: toque una tipología y luego toque la descripción correspondiente.</strong></p>
+  </div>
+
+  <div class="score-bar" role="status" aria-live="polite" aria-label="Progreso de la actividad">
+    <span class="sc-label">Aciertos</span>
+    <div class="score-track"><div class="score-fill" id="scoreFill"></div></div>
+    <span class="score-count" id="scoreCount">0 / 10</span>
+    <button class="btn-reset" onclick="resetGame()" aria-label="Reiniciar actividad">↺ Reiniciar</button>
+  </div>
+
+  <div class="game-layout">
+
+    <!-- LEFT: TIPOLOGÍAS -->
+    <div class="panel" role="list" aria-label="Tipologías turísticas para arrastrar">
+      <div class="panel-head">
+        <span class="ph-icon" aria-hidden="true">🏷️</span>
+        <h2>Tipologías</h2>
+        <span class="ph-tag">Arrastra →</span>
+      </div>
+      <div class="tipologias-list" id="tipoList">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+    <!-- RIGHT: DESCRIPTIONS -->
+    <div class="panel" role="list" aria-label="Descripciones donde soltar">
+      <div class="panel-head">
+        <span class="ph-icon" aria-hidden="true">📋</span>
+        <h2>Descripciones</h2>
+        <span class="ph-tag">Suelta aquí</span>
+      </div>
+      <div class="desc-list" id="descList">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DRAG GHOST -->
+<div class="drag-ghost" id="dragGhost" aria-hidden="true"></div>
+
+<!-- RESULTS MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-emoji" aria-hidden="true">🏆</div>
+    <h2 id="modalTitle">¡Felicitaciones, ha clasificado correctamente las tipologías turísticas!</h2>
+    <div class="score-big" id="modalScore">10/10</div>
+    <p class="score-label">respuestas correctas</p>
+    <p>Ha demostrado comprender las principales modalidades o tipologías turísticas estudiadas en las semanas 2 y 3. Al relacionarlas correctamente, evidencia que reconoce tanto las tipologías tradicionales como las contemporáneas. Estas reflejan la diversidad del turismo y su adaptación a los cambios actuales. ¡Continúe profundizando en su estudio para fortalecer su aplicación en distintos contextos, especialmente en el Ecuador!</p>
+    <button class="btn-primary" onclick="resetGame()"><span aria-hidden="true">↺</span> Volver a intentar</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  tipos: [
+    { id: 1, name: 'Turismo de sol y playa', correctDesc: 'C' },
+    { id: 2, name: 'Turismo cultural', correctDesc: 'E' },
+    { id: 3, name: 'Turismo de naturaleza, ecológico o verde', correctDesc: 'J' },
+    { id: 4, name: 'Turismo rural', correctDesc: 'A' },
+    { id: 5, name: 'Turismo deportivo', correctDesc: 'G' },
+    { id: 6, name: 'Turismo de salud', correctDesc: 'I' },
+    { id: 7, name: 'Turismo de cruceros', correctDesc: 'B' },
+    { id: 8, name: 'Turismo solidario', correctDesc: 'F' },
+    { id: 9, name: 'Turismo vivencial', correctDesc: 'H' },
+    { id: 10, name: 'Turismo científico', correctDesc: 'D' },
+  ],
+  descs: [
+    { letter: 'A', text: 'Se desarrolla en espacios rurales y se vincula con modos de vida campesinos, producción local y convivencia con comunidades; puede incluir actividades agrícolas como cosecha, ordeño o crianza de animales.' },
+    { letter: 'B', text: 'Actividad que se remonta al siglo XIX y que hoy permite a diversos segmentos de la población recorrer destinos por el Mediterráneo, Grecia o el Caribe a bordo de grandes embarcaciones, con duraciones que van desde una semana hasta más de cien días.' },
+    { letter: 'C', text: 'Se da en localidades costeras con condiciones climáticas favorables; en el Ecuador se desarrolla a lo largo de la Ruta del Spondylus y en las Islas Galápagos, generando un crecimiento significativo en el gasto turístico.' },
+    { letter: 'D', text: 'Modalidad orientada al desplazamiento hacia lugares específicos con el propósito de estudiar, investigar y aprender a partir de las características del paisaje, la flora o la fauna, vinculando directamente con la generación de conocimiento.' },
+    { letter: 'E', text: 'Se realiza para conocer las costumbres, tradiciones e historia de un destino a través de sus manifestaciones culturales, la visita a monumentos y barrios, y la degustación de la gastronomía típica; incluye submodalidades como el turismo gastronómico, religioso, literario e idiomático.' },
+    { letter: 'F', text: 'Modalidad orientada a la lucha contra la pobreza y al fortalecimiento de un turismo ético y socialmente responsable, que promueve la convivencia directa con comunidades locales en territorios con situaciones complejas desde el punto de vista político, económico o social.' },
+    { letter: 'G', text: 'Los turistas viajan motivados por la práctica de algún deporte; incluye submodalidades como el turismo náutico, blanco, cinegético y activo o de aventura.' },
+    { letter: 'H', text: 'Se caracteriza por la convivencia directa del viajero con una familia del destino visitado, compartiendo costumbres, tradiciones y formas de vida cotidiana, generalmente en zonas rurales con actividades agrícolas, ganaderas o pesqueras.' },
+    { letter: 'I', text: 'Modalidad que busca equilibrar lo físico y lo psíquico mediante terapias naturales, aguas termales o intervenciones médicas incluidas en paquetes turísticos; destinos como Alemania son referentes en cirugía especializada.' },
+    { letter: 'J', text: 'Se desarrolla en espacios protegidos por el Estado, como parques nacionales y reservas naturales, en escenarios de alto valor ambiental; ejemplos incluyen los glaciares de Islandia, el Gran Cañón del Colorado y las Islas Galápagos.' },
+  ]
+};
+
+// shuffle helper
+function shuffle(arr) { return [...arr].sort(() => Math.random() - .5); }
+
+const COLORS = ['--green','--blue','--purple','--teal','--amber','--red','--gold'];
+function getAccentVars(i) {
+  const keys = ['green','blue','purple','teal','amber'];
+  const k = keys[i % keys.length];
+  return { bg: `var(--${k}l)`, border: `var(--${k})`, text: `var(--${k})` };
+}
+
+let matched = {}; // descLetter -> tipoId
+let score = 0;
+let selectedTipo = null; // for touch/click mode
+let shuffledDescs = [];
+
+function render() {
+  const tipoList = document.getElementById('tipoList');
+  const descList = document.getElementById('descList');
+  shuffledDescs = shuffle(DATA.descs);
+
+  // Render tipos
+  tipoList.innerHTML = '';
+  DATA.tipos.forEach((t, i) => {
+    const ac = getAccentVars(i);
+    const div = document.createElement('div');
+    div.className = 'tipo-item';
+    div.id = 'tipo-' + t.id;
+    div.draggable = true;
+    div.setAttribute('role', 'listitem');
+    div.setAttribute('aria-label', t.name + ', tipología ' + t.id);
+    div.setAttribute('tabindex', '0');
+    div.dataset.id = t.id;
+    div.innerHTML = `
+      <div class="tipo-num">${t.id}</div>
+      <span class="tipo-name">${t.name}</span>
+      <span class="tipo-drag-hint" aria-hidden="true">⠿</span>
+      <span class="tipo-check" aria-hidden="true">✓</span>
+    `;
+    // Desktop drag
+    div.addEventListener('dragstart', onDragStart);
+    div.addEventListener('dragend', onDragEnd);
+    // Touch/click select
+    div.addEventListener('click', onTipoClick);
+    div.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') onTipoClick.call(div, e); });
+    tipoList.appendChild(div);
+  });
+
+  // Render descriptions
+  descList.innerHTML = '';
+  shuffledDescs.forEach((d) => {
+    const div = document.createElement('div');
+    div.className = 'desc-drop selectable';
+    div.id = 'desc-' + d.letter;
+    div.setAttribute('role', 'listitem');
+    div.setAttribute('aria-label', 'Descripción ' + d.letter);
+    div.setAttribute('tabindex', '0');
+    div.dataset.letter = d.letter;
+    div.innerHTML = `
+      <div class="desc-letter">Descripción ${d.letter}</div>
+      <div class="desc-text">${d.text}</div>
+      <div class="drop-placeholder">Suelta aquí una tipología…</div>
+      <div class="matched-badge">✓ Correcto</div>
+      <div class="match-tipo" id="mt-${d.letter}"></div>
+    `;
+    // Desktop drop
+    div.addEventListener('dragover', onDragOver);
+    div.addEventListener('dragleave', onDragLeave);
+    div.addEventListener('drop', onDrop);
+    // Touch/click
+    div.addEventListener('click', onDescClick);
+    div.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') onDescClick.call(div, e); });
+    descList.appendChild(div);
+  });
+
+  updateScore();
+}
+
+// ── DRAG & DROP ──
+let draggingId = null;
+const ghost = document.getElementById('dragGhost');
+
+function onDragStart(e) {
+  const t = DATA.tipos.find(x => x.id == this.dataset.id);
+  if (!t || isMatched(t.id)) return;
+  draggingId = t.id;
+  this.classList.add('dragging');
+  ghost.textContent = t.name;
+  ghost.style.display = 'block';
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', t.id);
+  try { e.dataTransfer.setDragImage(document.createElement('div'), 0, 0); } catch(err) {}
+}
+document.addEventListener('dragover', e => {
+  if (!draggingId) return;
+  ghost.style.left = (e.clientX + 14) + 'px';
+  ghost.style.top = (e.clientY - 16) + 'px';
+});
+function onDragEnd() {
+  this.classList.remove('dragging');
+  ghost.style.display = 'none';
+  draggingId = null;
+  document.querySelectorAll('.desc-drop').forEach(d => d.classList.remove('drag-over'));
+}
+function onDragOver(e) {
+  if (!draggingId) return;
+  e.preventDefault();
+  if (!this.classList.contains('matched-ok')) this.classList.add('drag-over');
+}
+function onDragLeave() { this.classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+  const id = parseInt(e.dataTransfer.getData('text/plain') || draggingId);
+  if (!id) return;
+  tryMatch(id, this.dataset.letter);
+}
+
+// ── CLICK / TOUCH SELECT MODE ──
+function onTipoClick() {
+  const id = parseInt(this.dataset.id);
+  if (isMatched(id)) return;
+  if (selectedTipo === id) { clearSelection(); return; }
+  clearSelection();
+  selectedTipo = id;
+  this.classList.add('selected');
+  document.querySelectorAll('.desc-drop').forEach(d => {
+    if (!d.classList.contains('matched-ok')) d.classList.add('selectable');
+  });
+}
+function onDescClick() {
+  if (selectedTipo === null) return;
+  if (this.classList.contains('matched-ok')) return;
+  tryMatch(selectedTipo, this.dataset.letter);
+  clearSelection();
+}
+function clearSelection() {
+  selectedTipo = null;
+  document.querySelectorAll('.tipo-item').forEach(t => t.classList.remove('selected'));
+}
+
+// ── MATCH LOGIC ──
+function isMatched(tipoId) {
+  return Object.values(matched).includes(tipoId);
+}
+function tryMatch(tipoId, descLetter) {
+  const tipo = DATA.tipos.find(t => t.id === tipoId);
+  if (!tipo) return;
+  const descEl = document.getElementById('desc-' + descLetter);
+  if (!descEl || descEl.classList.contains('matched-ok')) return;
+
+  if (tipo.correctDesc === descLetter) {
+    // Correct!
+    matched[descLetter] = tipoId;
+    score++;
+    descEl.classList.add('matched-ok');
+    descEl.querySelector('.drop-placeholder').style.display = 'none';
+    descEl.querySelector('#mt-' + descLetter).textContent = '→ ' + tipo.id + '. ' + tipo.name;
+    document.getElementById('tipo-' + tipoId).classList.add('matched');
+    updateScore();
+    if (score === DATA.tipos.length) setTimeout(showResults, 700);
+  } else {
+    // Wrong
+    descEl.classList.add('matched-err');
+    setTimeout(() => descEl.classList.remove('matched-err'), 500);
+  }
+}
+
+// ── SCORE ──
+function updateScore() {
+  document.getElementById('scoreCount').textContent = score + ' / ' + DATA.tipos.length;
+  document.getElementById('scoreFill').style.width = (score / DATA.tipos.length * 100) + '%';
+}
+function showResults() {
+  document.getElementById('modalScore').textContent = score + '/' + DATA.tipos.length;
+  document.getElementById('overlay').classList.add('open');
+}
+function resetGame() {
+  matched = {}; score = 0; selectedTipo = null;
+  document.getElementById('overlay').classList.remove('open');
+  render();
+}
+
+document.getElementById('overlay').addEventListener('click', e => { if(e.target === document.getElementById('overlay')) resetGame(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') document.getElementById('overlay').classList.remove('open'); });
+
+render();
+</script>
+</body>
+</html>

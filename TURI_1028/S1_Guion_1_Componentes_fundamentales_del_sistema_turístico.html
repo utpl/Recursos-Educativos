@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Infografía interactiva sobre los componentes fundamentales del sistema turístico">
+    <title>Sistema Turístico · Infografía Interactiva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9f0f5 0%, #dce5ec 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+        
+        }
+
+        /* contenedor principal: estrictamente 800x800 */
+        .infographic-card {
+            width: 800px;
+            height: 800px;
+            background: #ffffff;
+            
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+        }
+
+        /* header elegante */
+        .hero-header {
+            background: linear-gradient(112deg, #0b2b3f 0%, #1b4a6e 100%);
+            padding: 1.2rem 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+        .hero-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #f6ad55, #f68742, #9f7aea, #48bb78);
+        }
+        .hero-header h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .hero-header p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.85);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* zona principal ocupa espacio restante y centra círculos */
+        .viz-area {
+            flex: 1;
+            position: relative;
+            background: #fefef9;
+            background-image: radial-gradient(circle at 25% 40%, rgba(200,212,220,0.2) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        /* canvas de posicionamiento absoluto para los 5 círculos + hub central */
+        .circle-canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* círculo central decorativo / sistema */
+        .core-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle at 30% 25%, #2c5a7a, #0f3b54);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.05rem;
+            box-shadow: 0 12px 20px -8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            z-index: 2;
+            backdrop-filter: blur(2px);
+            border: 2px solid rgba(255,215,150,0.6);
+            line-height: 1.3;
+            padding: 0 12px;
+        }
+        .core-badge span {
+            display: block;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        /* círculos interactivos - posición armónica (circunferencia suave) */
+        .turista-circle, .emisor-circle, .transito-circle, .receptor-circle, .industria-circle {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 12px 18px -8px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.6) inset;
+            border: 2.5px solid;
+            z-index: 5;
+            backdrop-filter: blur(2px);
+            background: rgba(255, 255, 255, 0.98);
+        }
+
+        /* colores de borde por componente */
+        .turista-circle { border-color: #ed8936; }
+        .emisor-circle { border-color: #38a169; }
+        .transito-circle { border-color: #3182ce; }
+        .receptor-circle { border-color: #805ad5; }
+        .industria-circle { border-color: #d69e2e; }
+
+        .turista-circle:hover, .emisor-circle:hover, .transito-circle:hover,
+        .receptor-circle:hover, .industria-circle:hover {
+            transform: scale(1.07);
+            box-shadow: 0 20px 28px -12px rgba(0, 0, 0, 0.35);
+            background: white;
+        }
+
+        /* íconos y texto dentro del círculo */
+        .circle-icon {
+            font-size: 2.6rem;
+            margin-bottom: 6px;
+        }
+        .circle-label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1e2a3a;
+            text-align: center;
+            letter-spacing: -0.2px;
+            background: rgba(255,255,240,0.7);
+            padding: 2px 8px;
+            border-radius: 40px;
+        }
+
+        /* posiciones exactas — distribucion armoniosa tipo pentágono suave dentro de 800x800 */
+        .turista-circle { top: 12%; left: 50%; transform: translateX(-50%); }
+        .emisor-circle { top: 33%; right: 9%; }
+        .transito-circle { bottom: 18%; right: 15%; }
+        .receptor-circle { bottom: 18%; left: 15%; }
+        .industria-circle { top: 33%; left: 9%; }
+
+        /* para que en pantallas pequeñas dentro del contenedor mantenga relación */
+        @media (max-width: 820px) {
+            .infographic-card {
+                width: 800px;
+                height: 800px;
+                transform: scale(0.98);
+            }
+        }
+
+        /* ========== MODAL MODERNO (sin acordeones, fácil abrir/cerrar) ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-container {
+            width: 460px;
+            max-width: 88vw;
+            background: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transform: scale(0.96);
+            transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            animation: modalPop 0.3s ease-out forwards;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.92); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid #eef2f6;
+            background: #fefefe;
+        }
+        .modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-icon {
+            font-size: 2rem;
+        }
+        .modal-title {
+            font-size: 1.55rem;
+            font-weight: 700;
+            margin: 0;
+            color: #0f2c3f;
+        }
+        .modal-close {
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.7rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #2d3e50;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: #c00;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 1.8rem 1.8rem 2rem;
+            background: white;
+            color: #1e2f3e;
+            font-size: 0.98rem;
+            line-height: 1.55;
+        }
+        .modal-body ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .modal-body li {
+            margin-bottom: 1rem;
+            padding-left: 1.6rem;
+            position: relative;
+        }
+        .modal-body li::before {
+            content: "◆";
+            position: absolute;
+            left: 0;
+            color: #2c7a4d;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .reference-block {
+            margin-top: 1.5rem;
+            background: #f8fafc;
+            padding: 0.9rem 1rem;
+            border-left: 4px solid #2b6a8f;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            color: #2c5282;
+        }
+        .ref-label {
+            font-weight: 800;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #1e4a76;
+        }
+
+        /* botón de cerrar flotante desde modal */
+        .modal-close-btn {
+            background: none;
+            border: none;
+        }
+
+        /* accesibilidad focus */
+        .turista-circle:focus-visible, .emisor-circle:focus-visible, .transito-circle:focus-visible,
+        .receptor-circle:focus-visible, .industria-circle:focus-visible {
+            outline: 3px solid #3182ce;
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="infographic-card">
+    <div class="hero-header">
+        <h1>🏞️ Componentes del Sistema Turístico</h1>
+        <p>Fundamentos del Turismo y la Gastronomía · Enfoque sistémico interactivo</p>
+    </div>
+
+    <div class="viz-area">
+        <div class="circle-canvas">
+            <!-- núcleo central -->
+            <div class="core-badge" aria-hidden="true">
+                <span>🌐</span> SISTEMA <br> TURÍSTICO
+            </div>
+
+            <!-- 5 círculos interactivos posicionados armónicamente -->
+            <button class="turista-circle" data-modal="turista" aria-label="Abrir modal: El Turista">
+                <div class="circle-icon">🧳</div>
+                <div class="circle-label">El Turista</div>
+            </button>
+            <button class="emisor-circle" data-modal="emisor" aria-label="Abrir modal: Área Emisora">
+                <div class="circle-icon">🏠</div>
+                <div class="circle-label">Área Emisora</div>
+            </button>
+            <button class="transito-circle" data-modal="transito" aria-label="Abrir modal: Ruta de Tránsito">
+                <div class="circle-icon">✈️</div>
+                <div class="circle-label">Ruta de Tránsito</div>
+            </button>
+            <button class="receptor-circle" data-modal="receptor" aria-label="Abrir modal: Área Receptora">
+                <div class="circle-icon">🎯</div>
+                <div class="circle-label">Área Receptora</div>
+            </button>
+            <button class="industria-circle" data-modal="industria" aria-label="Abrir modal: Industria Turística">
+                <div class="circle-icon">🏨</div>
+                <div class="circle-label">Industria Turística</div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ESTRUCTURA ÚNICA (se rellena dinámicamente) -->
+<div id="globalModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <span id="modalIconDisplay" class="modal-icon">🧳</span>
+                <h2 id="modalTitle" class="modal-title">Título</h2>
+            </div>
+            <button class="modal-close" id="closeModalBtn" aria-label="Cerrar modal">✕</button>
+        </div>
+        <div class="modal-body" id="modalBodyContent">
+            <!-- contenido dinámico inyectado -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== BASE DE DATOS DE CONTENIDO (MODAL) ====================
+    const modalData = {
+        turista: {
+            icon: "🧳",
+            title: "El Turista",
+            content: `
+                <ul>
+                    <li>El turista constituye el <strong>núcleo del sistema</strong>, ya que la actividad turística existe a partir de sus motivaciones, expectativas y necesidades.</li>
+                    <li>El estudio del comportamiento del turista resulta clave para comprender la evolución del turismo, especialmente en el contexto actual, donde se evidencian cambios significativos en las preferencias de viaje.</li>
+                    <li>En el escenario postpandemia, el turista tiende a valorar con mayor énfasis la sostenibilidad, el contacto con la naturaleza y la búsqueda de experiencias auténticas, aspectos que influyen directamente en la configuración de la oferta turística.</li>
+                </ul>
+                <div class="reference-block">
+                    <span class="ref-label">📘 Referencia académica</span>
+                    Leiper, N. (1990). Tourist attraction systems. Annals of Tourism Research, 17(3), 367-384.
+                </div>
+            `
+        },
+        emisor: {
+            icon: "🏠",
+            title: "Área Emisora",
+            content: `
+                <ul>
+                    <li>El área emisora corresponde al lugar de origen desde el cual se planifica y decide el viaje.</li>
+                    <li>Este espacio influye en el perfil del turista, sus expectativas, capacidad de gasto y preferencias, condicionando la forma en que se desarrolla la experiencia turística.</li>
+                    <li>Factores socioculturales y económicos del área emisora moldean la demanda turística y la segmentación de mercados.</li>
+                </ul>
+                <div class="reference-block">
+                    <span class="ref-label">🌍 Enfoque sistémico</span>
+                    Gunn, C. A. & Var, T. (2002). Tourism planning: Basics, concepts, cases (4th ed.). Routledge.
+                </div>
+            `
+        },
+        transito: {
+            icon: "✈️",
+            title: "Ruta de Tránsito",
+            content: `
+                <ul>
+                    <li>La ruta de tránsito comprende las vías de comunicación y los medios de transporte utilizados para el desplazamiento hacia el destino.</li>
+                    <li>Según Leiper (1990), el tránsito forma parte integral de la experiencia turística, ya que puede incidir en la percepción de calidad y en la satisfacción final del visitante.</li>
+                    <li>La accesibilidad y conectividad determinan en gran medida la competitividad de un destino turístico.</li>
+                </ul>
+                <div class="reference-block">
+                    <span class="ref-label">✈️ Referencia clave</span>
+                    Leiper, N. (1990). Tourist attraction systems. Annals of Tourism Research, 17(3), 367-384. 
+                    <br>https://doi.org/10.1016/0160-7383(90)90004-B
+                </div>
+            `
+        },
+        receptor: {
+            icon: "🎯",
+            title: "Área Receptora",
+            content: `
+                <ul>
+                    <li>El área receptora es el destino turístico donde se desarrolla la experiencia.</li>
+                    <li>Este espacio geográfico integra atractivos naturales y culturales, actividades recreativas, servicios turísticos y una comunidad anfitriona.</li>
+                    <li>En él se concentran las manifestaciones del turismo y se generan los principales impactos sociales, económicos y culturales de la actividad turística.</li>
+                    <li>La gestión sostenible del área receptora garantiza la conservación del patrimonio y el bienestar local.</li>
+                </ul>
+                <div class="reference-block">
+                    <span class="ref-label">🏞️ Modelo sistémico</span>
+                    Gunn, C. A. (1994). Tourism planning: Basics, concepts, cases. Taylor & Francis.
+                </div>
+            `
+        },
+        industria: {
+            icon: "🏨",
+            title: "Industria Turística",
+            content: `
+                <ul>
+                    <li>La industria turística comprende el conjunto de servicios que facilitan y hacen posible la experiencia del visitante, como el alojamiento, los alimentos y bebidas, el transporte, la recreación y la intermediación.</li>
+                    <li>De acuerdo con Gunn y Var (2002), esta industria constituye el soporte operativo del sistema turístico, permitiendo su funcionamiento articulado.</li>
+                    <li>La sinergia entre empresas públicas y privadas fortalece la competitividad y la calidad de la experiencia turística.</li>
+                </ul>
+                <div class="reference-block">
+                    <span class="ref-label">📊 Referencia esencial</span>
+                    Gunn, C. A. y Var, T. (2002). <em>Tourism planning: Basics, concepts, cases</em> (4th ed.). Routledge.
+                </div>
+            `
+        }
+    };
+
+    // elementos del DOM
+    const modalOverlay = document.getElementById('globalModal');
+    const modalTitleElem = document.getElementById('modalTitle');
+    const modalIconSpan = document.getElementById('modalIconDisplay');
+    const modalBodyDiv = document.getElementById('modalBodyContent');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // Función para abrir modal con datos específicos
+    function openModal(componentId) {
+        const data = modalData[componentId];
+        if (!data) return;
+
+        // Actualizar contenido
+        modalIconSpan.textContent = data.icon;
+        modalTitleElem.textContent = data.title;
+        modalBodyDiv.innerHTML = data.content;
+
+        // Mostrar overlay con animación
+        modalOverlay.classList.add('active');
+        // Prevenir scroll del body (opcional)
+        document.body.style.overflow = 'hidden';
+        // Enfocar el modal para accesibilidad (primer elemento enfocable dentro es el botón cerrar)
+        closeModalBtn.focus();
+    }
+
+    // Función para cerrar modal
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        // opcional: retornar foco al último círculo que abrió? mejor no enredo, pero es buena práctica
+        // simplemente se limpia
+    }
+
+    // Eventos para cada botón círculo
+    const turistaBtn = document.querySelector('.turista-circle');
+    const emisorBtn = document.querySelector('.emisor-circle');
+    const transitoBtn = document.querySelector('.transito-circle');
+    const receptorBtn = document.querySelector('.receptor-circle');
+    const industriaBtn = document.querySelector('.industria-circle');
+
+    if (turistaBtn) turistaBtn.addEventListener('click', () => openModal('turista'));
+    if (emisorBtn) emisorBtn.addEventListener('click', () => openModal('emisor'));
+    if (transitoBtn) transitoBtn.addEventListener('click', () => openModal('transito'));
+    if (receptorBtn) receptorBtn.addEventListener('click', () => openModal('receptor'));
+    if (industriaBtn) industriaBtn.addEventListener('click', () => openModal('industria'));
+
+    // Cerrar modal con botón X
+    closeModalBtn.addEventListener('click', closeModal);
+    // Cerrar modal si se hace clic en el fondo (overlay)
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    // Cerrar con tecla ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    // Pequeño detalle: para que el modal sea fácil de abrir/cerrar sin conflictos.
+    // También prevenir que al abrir modal se propague algún evento extraño
+    const allCircles = document.querySelectorAll('.turista-circle, .emisor-circle, .transito-circle, .receptor-circle, .industria-circle');
+    allCircles.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
+    // Asegurar que la infografía mantiene dimensiones 800x800 incluso si hay resize
+    window.addEventListener('resize', () => {
+        const container = document.querySelector('.infographic-card');
+        if (container && (container.offsetWidth !== 800 || container.offsetHeight !== 800)) {
+            // solo asegurar visual si se fuerza zoom, pero el estilo ya define width/height fijo
+            container.style.width = '800px';
+            container.style.height = '800px';
+        }
+    });
+</script>
+</body>
+</html>

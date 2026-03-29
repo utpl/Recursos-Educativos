@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Personajes Clave en la Historia del Turismo</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,700;1,600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #EEEAE2;
+    --surface: #FAFAF7;
+    --card: #FFFFFF;
+    --text: #18181B;
+    --sub: #52526E;
+    --border: #DDD9CF;
+    --shadow: 0 3px 18px rgba(24,24,27,.09);
+    --shadow-md: 0 8px 30px rgba(24,24,27,.14);
+    --shadow-drag: 0 22px 56px rgba(24,24,27,.28);
+    /* accent palette — one per personaje */
+    --p1: #B8610A; --p1l: #FDF3E8;   /* Thomas Cook — amber */
+    --p2: #1A5FA8; --p2l: #E8F0FB;   /* César Ritz — navy */
+    --p3: #7B3FA0; --p3l: #F3ECFB;   /* Escoffier — violet */
+    --p4: #1A7A6A; --p4l: #E6F5F2;   /* Pullman — teal */
+    --p5: #A82550; --p5l: #FCE8EF;   /* Wells & Fargo — crimson */
+    --p6: #5A6E1A; --p6l: #EEF3E0;   /* Heródoto — olive */
+    --correct: #2A7A5C;
+    --correct-l: #E8F5EF;
+    --wrong: #C0392B;
+    --wrong-l: #FDF0EE;
+    --radius: 16px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px 14px 52px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* ── HEADER ── */
+  .hdr { width: 100%; max-width: 800px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .hdr .era-tag { display: inline-flex; align-items: center; gap: 7px; background: var(--text); color: #fff; font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 13px; }
+  .hdr h1 { font-family: 'Lora', serif; font-size: clamp(22px,5vw,34px); font-weight: 700; line-height: 1.2; margin-bottom: 7px; }
+  .hdr h1 span { font-style: italic; color: var(--p1); }
+  .hdr .sub { font-size: 13.5px; color: var(--sub); font-weight: 500; line-height: 1.5; }
+
+  /* ── WRAP ── */
+  .wrap { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* ── INSTRUCTION ── */
+  .instr { background: var(--card); border-radius: var(--radius); padding: 14px 18px; box-shadow: var(--shadow); display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid var(--p1); }
+  .instr-icon { font-size: 24px; flex-shrink: 0; }
+  .instr p { font-size: 13px; font-weight: 500; color: var(--sub); line-height: 1.62; }
+  .instr strong { color: var(--text); font-weight: 700; }
+
+  /* ── SCORE BAR ── */
+  .score-bar { background: var(--card); border-radius: var(--radius); padding: 12px 18px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .sc-lbl { font-size: 11.5px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .6px; white-space: nowrap; }
+  .sc-track { flex: 1; min-width: 100px; height: 9px; background: #E4E0D8; border-radius: 9px; overflow: hidden; }
+  .sc-fill { height: 100%; border-radius: 9px; background: linear-gradient(90deg, var(--correct), #4CC48A); transition: width .5s cubic-bezier(.4,0,.2,1); width: 0%; }
+  .sc-num { font-size: 16px; font-weight: 900; color: var(--correct); white-space: nowrap; }
+  .btn-reset { margin-left: auto; background: none; border: 1.5px solid var(--border); border-radius: 9px; padding: 6px 13px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; color: var(--sub); cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 4px; }
+  .btn-reset:hover { background: var(--bg); border-color: var(--text); color: var(--text); }
+  .btn-reset:focus-visible { outline: 3px solid var(--correct); outline-offset: 2px; }
+
+  /* ── TWO-COLUMN GAME ── */
+  .game { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:540px) { .game { grid-template-columns: 1fr; } }
+
+  /* ── PANELS ── */
+  .panel { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .panel-hd { padding: 11px 16px 9px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .panel-hd h2 { font-size: 13px; font-weight: 800; color: var(--text); }
+  .panel-hd .htag { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--sub); background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 2px 9px; }
+  .panel-body { padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+
+  /* ── PERSONAJE CARDS ── */
+  .pcard {
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    padding: 11px 13px;
+    display: flex; align-items: center; gap: 11px;
+    cursor: grab;
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+    transition: all .2s cubic-bezier(.4,0,.2,1);
+    background: var(--bg);
+  }
+  .pcard:hover { transform: translateX(3px); box-shadow: 0 4px 14px rgba(24,24,27,.12); }
+  .pcard:focus-visible { outline: 3px solid var(--correct); outline-offset: 2px; }
+  .pcard.dragging { opacity: .35; cursor: grabbing; }
+  .pcard.matched { cursor: default; opacity: .5; }
+  .pcard.matched:hover { transform: none; box-shadow: none; }
+  .pcard.selected { border-color: var(--p2); background: var(--p2l); box-shadow: 0 0 0 3px rgba(26,95,168,.18); }
+
+  .pcard .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    border: 2px solid;
+    transition: all .2s;
+  }
+  .pcard .pinfo { flex: 1; min-width: 0; }
+  .pcard .pnum { font-size: 9.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 2px; }
+  .pcard .pname { font-size: 12.5px; font-weight: 800; color: var(--text); line-height: 1.25; }
+  .pcard .pdrag { font-size: 13px; color: var(--border); flex-shrink: 0; transition: color .2s; }
+  .pcard:hover .pdrag { color: var(--correct); }
+  .pcard .pcheck { font-size: 14px; color: var(--correct); flex-shrink: 0; display: none; }
+  .pcard.matched .pdrag { display: none; }
+  .pcard.matched .pcheck { display: block; }
+
+  /* ── CONTRIBUTION DROPS ── */
+  .cdrop {
+    border-radius: 12px;
+    border: 2px dashed var(--border);
+    padding: 11px 13px;
+    min-height: 72px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: all .2s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .cdrop:focus-visible { outline: 3px solid var(--correct); outline-offset: 2px; }
+  .cdrop.drag-over { border-style: solid; border-color: var(--correct); background: var(--correct-l); transform: scale(1.01); box-shadow: 0 4px 16px rgba(42,122,92,.13); }
+  .cdrop.ok { border-style: solid; border-color: var(--correct); background: var(--correct-l); cursor: default; }
+  .cdrop.err { border-style: solid; border-color: var(--wrong); background: var(--wrong-l); animation: shake .38s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  .cdrop .cletter { font-size: 9.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--sub); margin-bottom: 4px; }
+  .cdrop .ctext { font-size: 12px; font-weight: 500; color: var(--sub); line-height: 1.55; }
+  .cdrop.ok .ctext { color: var(--text); }
+  .cdrop .cplaceholder { font-size: 11px; font-weight: 600; color: #B8B4C8; font-style: italic; margin-top: 5px; }
+  .cdrop.ok .cplaceholder { display: none; }
+  .cdrop .cmatch { display: none; margin-top: 6px; font-size: 11px; font-weight: 800; color: var(--correct); }
+  .cdrop.ok .cmatch { display: block; }
+  .cbadge { display: none; position: absolute; top: 8px; right: 10px; background: var(--correct); color: #fff; border-radius: 20px; font-size: 9.5px; font-weight: 800; padding: 2px 8px; }
+  .cdrop.ok .cbadge { display: block; }
+
+  /* ── GHOST ── */
+  .ghost { position: fixed; pointer-events: none; z-index: 9999; background: var(--card); border-radius: 12px; padding: 9px 14px; box-shadow: var(--shadow-drag); font-size: 12.5px; font-weight: 700; color: var(--text); max-width: 180px; display: none; transform: rotate(3deg) scale(1.05); border: 2px solid var(--correct); }
+
+  /* ── RESULT MODAL ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(24,24,27,.52); backdrop-filter: blur(6px); z-index: 200; align-items: flex-end; justify-content: center; }
+  @media(min-width:600px){ .overlay { align-items: center; padding: 20px; } }
+  .overlay.open { display: flex; animation: fadeOv .25s ease; }
+  @keyframes fadeOv { from{opacity:0} to{opacity:1} }
+  .modal { background: var(--card); width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 30px 24px 34px; text-align: center; animation: slideUp .32s cubic-bezier(.34,1.3,.7,1); }
+  @media(min-width:600px) { .modal { border-radius: 22px; animation: zoomIn .3s cubic-bezier(.34,1.2,.7,1); } }
+  @keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes zoomIn { from{transform:scale(.9) translateY(20px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+  .modal-emoji { font-size: 54px; margin-bottom: 10px; }
+  .modal h2 { font-family: 'Lora', serif; font-size: clamp(18px,4vw,22px); font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+  .modal .big-score { font-size: 46px; font-weight: 900; color: var(--correct); line-height: 1; margin: 8px 0 3px; }
+  .modal .score-sub { font-size: 12.5px; color: var(--sub); font-weight: 600; margin-bottom: 16px; }
+  .modal p { font-size: 13px; font-weight: 500; color: var(--sub); line-height: 1.65; margin-bottom: 22px; }
+  .btn-main { width: 100%; background: var(--p1); color: #fff; border: none; border-radius: 12px; padding: 14px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-main:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(184,97,10,.28); }
+
+  /* ── ACCENT HELPERS ── */
+  .ac1 { color: var(--p1); border-color: var(--p1); background: var(--p1l); }
+  .ac2 { color: var(--p2); border-color: var(--p2); background: var(--p2l); }
+  .ac3 { color: var(--p3); border-color: var(--p3); background: var(--p3l); }
+  .ac4 { color: var(--p4); border-color: var(--p4); background: var(--p4l); }
+  .ac5 { color: var(--p5); border-color: var(--p5); background: var(--p5l); }
+  .ac6 { color: var(--p6); border-color: var(--p6); background: var(--p6l); }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="era-tag">🏛️ Semana 4 · Actividad interactiva</div>
+  <h1>Personajes <span>Clave</span> en la<br>Historia del Turismo</h1>
+  <p class="sub">Fundamentos del Turismo y la Gastronomía · Prof. Mgs. Natalia Soledad Bustamante Sánchez</p>
+</header>
+
+<div class="wrap">
+
+  <div class="instr" role="note">
+    <span class="instr-icon" aria-hidden="true">🖱️</span>
+    <p><strong>Participe arrastrando y soltando</strong> cada personaje histórico con su contribución correspondiente al desarrollo del turismo. Lea con atención y relacione correctamente los elementos para reforzar lo aprendido en la semana 4. <strong>En móvil: toque un personaje y luego la contribución correspondiente.</strong></p>
+  </div>
+
+  <div class="score-bar" role="status" aria-live="polite">
+    <span class="sc-lbl">Aciertos</span>
+    <div class="sc-track"><div class="sc-fill" id="scFill"></div></div>
+    <span class="sc-num" id="scNum">0 / 6</span>
+    <button class="btn-reset" onclick="reset()" aria-label="Reiniciar">↺ Reiniciar</button>
+  </div>
+
+  <div class="game">
+    <!-- Personajes -->
+    <div class="panel">
+      <div class="panel-hd">
+        <span aria-hidden="true">👤</span>
+        <h2>Personajes</h2>
+        <span class="htag">Arrastra →</span>
+      </div>
+      <div class="panel-body" id="personajesList" role="list" aria-label="Personajes históricos"></div>
+    </div>
+    <!-- Contribuciones -->
+    <div class="panel">
+      <div class="panel-hd">
+        <span aria-hidden="true">📜</span>
+        <h2>Contribuciones</h2>
+        <span class="htag">Suelta aquí</span>
+      </div>
+      <div class="panel-body" id="contribList" role="list" aria-label="Contribuciones históricas"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Ghost -->
+<div class="ghost" id="ghost" aria-hidden="true"></div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal">
+    <div class="modal-emoji">🏅</div>
+    <h2 id="mTitle">¡Felicidades, ha completado con éxito el reto!</h2>
+    <div class="big-score" id="mScore">6/6</div>
+    <p class="score-sub">respuestas correctas</p>
+    <p>Ha demostrado comprender la importancia de los personajes clave en la historia del turismo. Al relacionarlos con sus aportes, reconoce que el turismo moderno es resultado de diversas contribuciones, desde los primeros relatos de viaje hasta el desarrollo del transporte, la hotelería y los servicios turísticos. ¡Continúe profundizando en la evolución del turismo hasta la actualidad!</p>
+    <button class="btn-main" onclick="reset()"><span aria-hidden="true">↺</span> Volver a intentar</button>
+  </div>
+</div>
+
+<script>
+const PERSONAS = [
+  { id:1, name:'Thomas Cook',            era:'S. XIX', emoji:'🚂', ac:'ac1', correct:'B' },
+  { id:2, name:'César Ritz',             era:'S. XIX', emoji:'🏨', ac:'ac2', correct:'C' },
+  { id:3, name:'Auguste Escoffier',      era:'S. XIX', emoji:'👨‍🍳', ac:'ac3', correct:'D' },
+  { id:4, name:'George Mortimer Pullman',era:'S. XIX', emoji:'🛏️', ac:'ac4', correct:'E' },
+  { id:5, name:'Henry Wells y\nWilliam Fargo', era:'S. XIX', emoji:'💳', ac:'ac5', correct:'F' },
+  { id:6, name:'Heródoto',               era:'Antigüedad', emoji:'📖', ac:'ac6', correct:'A' },
+];
+const CONTRIBS = [
+  { letter:'A', text:'Considerado uno de los primeros cronistas de viajes, relató recorridos y descripciones de los pueblos y territorios que visitó en la Antigüedad.' },
+  { letter:'B', text:'Organizó uno de los primeros viajes colectivos en el siglo XIX y fundó una de las primeras agencias de viajes, siendo pionero del turismo moderno.' },
+  { letter:'C', text:'Innovó en la gestión hotelera incorporando estándares de confort, baños privados en habitaciones y la figura del sommelier en hoteles europeos.' },
+  { letter:'D', text:'Reorganizó el funcionamiento de las cocinas profesionales y elevó el nivel gastronómico en hoteles de prestigio como el Savoy y el Carlton de Londres.' },
+  { letter:'E', text:'Presentó los primeros coches-cama en 1867, considerados hoteles sobre ruedas, que mejoran la comodidad en el transporte ferroviario.' },
+  { letter:'F', text:'Impulsaron la creación de American Express e introdujeron los cheques de viajero, facilitando el traslado seguro de dinero durante los viajes.' },
+];
+
+function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
+
+let matched={}, score=0, selectedId=null, shuffledC=[];
+
+function render(){
+  matched={}; score=0; selectedId=null;
+  shuffledC=shuffle(CONTRIBS);
+
+  const pList=document.getElementById('personajesList');
+  pList.innerHTML='';
+  PERSONAS.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='pcard '+p.ac;
+    d.id='p-'+p.id;
+    d.draggable=true;
+    d.setAttribute('role','listitem');
+    d.setAttribute('tabindex','0');
+    d.setAttribute('aria-label',p.name.replace('\n',' ')+', '+p.era);
+    d.dataset.id=p.id;
+    d.innerHTML=`
+      <div class="avatar ${p.ac}">${p.emoji}</div>
+      <div class="pinfo">
+        <div class="pnum">${p.era}</div>
+        <div class="pname">${p.name.replace('\n','<br>')}</div>
+      </div>
+      <span class="pdrag" aria-hidden="true">⠿</span>
+      <span class="pcheck" aria-hidden="true">✓</span>
+    `;
+    d.addEventListener('dragstart', onDS);
+    d.addEventListener('dragend', onDE);
+    d.addEventListener('click', onPC);
+    d.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') onPC.call(d,e); });
+    pList.appendChild(d);
+  });
+
+  const cList=document.getElementById('contribList');
+  cList.innerHTML='';
+  shuffledC.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='cdrop';
+    d.id='c-'+c.letter;
+    d.dataset.letter=c.letter;
+    d.setAttribute('role','listitem');
+    d.setAttribute('tabindex','0');
+    d.setAttribute('aria-label','Contribución '+c.letter);
+    d.innerHTML=`
+      <div class="cletter">Contribución ${c.letter}</div>
+      <div class="ctext">${c.text}</div>
+      <div class="cplaceholder">Suelta aquí un personaje…</div>
+      <div class="cmatch" id="cm-${c.letter}"></div>
+      <div class="cbadge">✓</div>
+    `;
+    d.addEventListener('dragover', onDO);
+    d.addEventListener('dragleave', onDL);
+    d.addEventListener('drop', onDrop);
+    d.addEventListener('click', onCC);
+    d.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') onCC.call(d,e); });
+    cList.appendChild(d);
+  });
+
+  updateScore();
+}
+
+// ── DRAG ──
+let draggingId=null;
+const ghost=document.getElementById('ghost');
+
+function onDS(e){
+  const id=parseInt(this.dataset.id);
+  if(isMatched(id)) return;
+  draggingId=id;
+  this.classList.add('dragging');
+  const p=PERSONAS.find(x=>x.id===id);
+  ghost.textContent=p.name.replace('\n',' ');
+  ghost.style.display='block';
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',''+id);
+  try{ e.dataTransfer.setDragImage(document.createElement('div'),0,0); }catch(err){}
+}
+document.addEventListener('dragover', e=>{
+  if(!draggingId) return;
+  ghost.style.left=(e.clientX+16)+'px';
+  ghost.style.top=(e.clientY-14)+'px';
+});
+function onDE(){
+  this.classList.remove('dragging');
+  ghost.style.display='none';
+  draggingId=null;
+  document.querySelectorAll('.cdrop').forEach(d=>d.classList.remove('drag-over'));
+}
+function onDO(e){
+  if(!draggingId) return;
+  e.preventDefault();
+  if(!this.classList.contains('ok')) this.classList.add('drag-over');
+}
+function onDL(){ this.classList.remove('drag-over'); }
+function onDrop(e){
+  e.preventDefault();
+  this.classList.remove('drag-over');
+  const id=parseInt(e.dataTransfer.getData('text/plain')||draggingId);
+  if(!id) return;
+  tryMatch(id, this.dataset.letter);
+}
+
+// ── CLICK ──
+function onPC(){
+  const id=parseInt(this.dataset.id);
+  if(isMatched(id)) return;
+  if(selectedId===id){ clearSel(); return; }
+  clearSel();
+  selectedId=id;
+  this.classList.add('selected');
+}
+function onCC(){
+  if(selectedId===null) return;
+  if(this.classList.contains('ok')) return;
+  tryMatch(selectedId, this.dataset.letter);
+  clearSel();
+}
+function clearSel(){
+  selectedId=null;
+  document.querySelectorAll('.pcard').forEach(c=>c.classList.remove('selected'));
+}
+
+// ── MATCH ──
+function isMatched(id){ return Object.values(matched).includes(id); }
+function tryMatch(id, letter){
+  const p=PERSONAS.find(x=>x.id===id);
+  if(!p) return;
+  const el=document.getElementById('c-'+letter);
+  if(!el||el.classList.contains('ok')) return;
+  if(p.correct===letter){
+    matched[letter]=id;
+    score++;
+    el.classList.add('ok');
+    document.getElementById('cm-'+letter).textContent='→ '+p.name.replace('\n',' ');
+    document.getElementById('p-'+id).classList.add('matched');
+    updateScore();
+    if(score===PERSONAS.length) setTimeout(showModal,700);
+  } else {
+    el.classList.add('err');
+    setTimeout(()=>el.classList.remove('err'),450);
+  }
+}
+function updateScore(){
+  document.getElementById('scNum').textContent=score+' / '+PERSONAS.length;
+  document.getElementById('scFill').style.width=(score/PERSONAS.length*100)+'%';
+}
+function showModal(){
+  document.getElementById('mScore').textContent=score+'/'+PERSONAS.length;
+  document.getElementById('overlay').classList.add('open');
+}
+function reset(){
+  document.getElementById('overlay').classList.remove('open');
+  render();
+}
+document.getElementById('overlay').addEventListener('click',e=>{ if(e.target===document.getElementById('overlay')) reset(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.getElementById('overlay').classList.remove('open'); });
+
+render();
+</script>
+</body>
+</html>

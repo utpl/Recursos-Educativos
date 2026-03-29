@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Modalidades de la Gastronomía — Unir con Líneas</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #F0EDE6;
+    --surface: #FAFAF7;
+    --card: #FFFFFF;
+    --text: #1A1714;
+    --sub: #5A5448;
+    --border: #DDD8D0;
+    --shadow: 0 3px 18px rgba(26,23,20,.09);
+    --shadowmd: 0 10px 36px rgba(26,23,20,.15);
+    /* accent colors per modality */
+    --c1:#B85C2A; --c1l:#FDF2EC; /* tradicional */
+    --c2:#9A3FA0; --c2l:#F7ECFB; /* contemporánea */
+    --c3:#3A7A50; --c3l:#E6F4EC; /* territorial */
+    --c4:#6050C0; --c4l:#EEEDFB; /* enológica */
+    --c5:#B8820A; --c5l:#FDF6E4; /* festiva */
+    --c6:#1A7A8A; --c6l:#E4F4F6; /* comunitaria */
+    --c7:#4A8A2A; --c7l:#EEF6E6; /* sostenible */
+    --c8:#8A3050; --c8l:#FBEEF3; /* científica */
+    --c9:#D05820; --c9l:#FDF0E8; /* fusión */
+    --correct:#2A7A50;
+    --wrong:#AA3020;
+    --radius:16px;
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'Plus Jakarta Sans',sans-serif;
+    background:var(--bg); color:var(--text);
+    min-height:100vh; padding:20px 14px 56px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+
+  /* ── HEADER ── */
+  .hdr { width:100%; max-width:800px; text-align:center; margin-bottom:20px; }
+  .hdr .pill { display:inline-flex; align-items:center; gap:7px; background:var(--text); color:#fff; font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; padding:5px 15px; border-radius:20px; margin-bottom:12px; }
+  .hdr h1 { font-family:'Fraunces',serif; font-size:clamp(22px,5.5vw,34px); font-weight:700; line-height:1.18; margin-bottom:7px; }
+  .hdr h1 em { font-style:italic; color:var(--c1); }
+  .hdr .sub { font-size:13px; color:var(--sub); font-weight:500; line-height:1.5; }
+
+  /* ── WRAP ── */
+  .wrap { width:100%; max-width:800px; display:flex; flex-direction:column; gap:14px; }
+
+  /* ── INSTRUCTION ── */
+  .instr { background:var(--card); border-radius:var(--radius); padding:14px 18px; box-shadow:var(--shadow); display:flex; gap:12px; align-items:flex-start; border-left:4px solid var(--c1); }
+  .instr p { font-size:13px; font-weight:500; color:var(--sub); line-height:1.62; }
+  .instr strong { color:var(--text); }
+
+  /* ── SCORE BAR ── */
+  .sbar { background:var(--card); border-radius:var(--radius); padding:12px 18px; box-shadow:var(--shadow); display:flex; align-items:center; gap:11px; flex-wrap:wrap; }
+  .slbl { font-size:11px; font-weight:700; color:var(--sub); text-transform:uppercase; letter-spacing:.7px; white-space:nowrap; }
+  .strack { flex:1; min-width:100px; height:8px; background:#E4E0D8; border-radius:8px; overflow:hidden; }
+  .sfill { height:100%; border-radius:8px; background:linear-gradient(90deg,var(--correct),#4CC88A); transition:width .5s cubic-bezier(.4,0,.2,1); width:0%; }
+  .snum { font-size:15px; font-weight:800; color:var(--correct); white-space:nowrap; }
+  .breset { margin-left:auto; background:none; border:1.5px solid var(--border); border-radius:9px; padding:6px 13px; font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:700; color:var(--sub); cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:4px; }
+  .breset:hover { background:var(--bg); border-color:var(--text); color:var(--text); }
+  .breset:focus-visible { outline:3px solid var(--correct); outline-offset:2px; }
+
+  /* ── GAME AREA ── */
+  .game-wrap { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+  .game-head { padding:13px 20px 11px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .game-head h2 { font-size:13.5px; font-weight:800; color:var(--text); }
+  .game-head .ght { margin-left:auto; font-size:11px; font-weight:700; color:var(--sub); background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:3px 10px; }
+
+  /* ── SVG CONNECTOR ── */
+  .connector-wrap { position:relative; width:100%; }
+  svg#lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5; overflow:visible; }
+
+  /* ── TWO COLUMNS ── */
+  .cols { display:grid; grid-template-columns:1fr 60px 1fr; padding:16px 14px 20px; gap:0; }
+  @media(max-width:540px) { .cols { grid-template-columns:1fr 40px 1fr; padding:12px 10px 16px; } }
+
+  .col-head { font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--sub); margin-bottom:10px; padding:0 4px; }
+
+  /* ── NODE ITEMS ── */
+  .node-list { display:flex; flex-direction:column; gap:7px; }
+
+  .concept-node {
+    border-radius:11px; padding:10px 12px;
+    display:flex; align-items:center; gap:9px;
+    cursor:pointer; border:2px solid var(--border);
+    background:var(--bg); transition:all .2s cubic-bezier(.4,0,.2,1);
+    position:relative; user-select:none;
+  }
+  .concept-node:hover { transform:translateX(2px); }
+  .concept-node:focus-visible { outline:3px solid var(--correct); outline-offset:2px; }
+  .concept-node.selected { border-style:solid; transform:translateX(3px); }
+  .concept-node.matched { cursor:default; opacity:.65; }
+  .concept-node.matched:hover { transform:none; }
+  .cn-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; border:2px solid; }
+  .cn-label { font-size:12px; font-weight:700; color:var(--text); line-height:1.3; flex:1; }
+  .cn-port { width:14px; height:14px; border-radius:50%; border:2.5px solid var(--border); margin-left:auto; flex-shrink:0; background:var(--card); transition:all .2s; position:relative; z-index:10; }
+  .concept-node.selected .cn-port { border-color:currentColor; background:currentColor; }
+  .concept-node.matched .cn-port { border-color:var(--correct); background:var(--correct); }
+  .cn-check { font-size:11px; color:var(--correct); margin-left:4px; display:none; }
+  .concept-node.matched .cn-check { display:inline; }
+
+  .def-node {
+    border-radius:11px; padding:10px 12px;
+    cursor:pointer; border:2px dashed var(--border);
+    background:var(--bg); transition:all .2s cubic-bezier(.4,0,.2,1);
+    position:relative; user-select:none;
+  }
+  .def-node:hover { border-style:solid; }
+  .def-node:focus-visible { outline:3px solid var(--correct); outline-offset:2px; }
+  .def-node.active { border-style:solid; border-color:#888; }
+  .def-node.matched-ok { border-style:solid; border-color:var(--correct); background:var(--correctl,#E6F4EC); cursor:default; }
+  .def-node.matched-err { border-style:solid; border-color:var(--wrong); background:#FCEEE8; animation:shake .35s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 30%{transform:translateX(-5px)} 70%{transform:translateX(5px)} }
+  .def-node .dletter { font-size:9.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--sub); margin-bottom:3px; }
+  .def-node .dtext { font-size:11.5px; font-weight:500; color:var(--sub); line-height:1.55; }
+  .def-node.matched-ok .dtext { color:var(--text); }
+  .def-port { width:14px; height:14px; border-radius:50%; border:2.5px solid var(--border); flex-shrink:0; background:var(--card); transition:all .2s; position:absolute; left:-7px; top:50%; transform:translateY(-50%); z-index:10; }
+  .def-node.matched-ok .def-port { border-color:var(--correct); background:var(--correct); }
+  .def-match-name { display:none; margin-top:5px; font-size:10.5px; font-weight:800; color:var(--correct); }
+  .def-node.matched-ok .def-match-name { display:block; }
+
+  /* middle gutter */
+  .gutter { display:flex; align-items:stretch; }
+
+  /* ── MODAL ── */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(26,23,20,.52); backdrop-filter:blur(6px); z-index:200; align-items:flex-end; justify-content:center; }
+  @media(min-width:600px){ .overlay{align-items:center;padding:20px;} }
+  .overlay.open { display:flex; animation:fadeOv .25s ease; }
+  @keyframes fadeOv{from{opacity:0}to{opacity:1}}
+  .modal { background:var(--card); width:100%; max-width:480px; border-radius:22px 22px 0 0; padding:28px 24px 34px; text-align:center; animation:slideUp .32s cubic-bezier(.34,1.3,.7,1); }
+  @media(min-width:600px){ .modal{border-radius:22px;animation:zoomIn .3s cubic-bezier(.34,1.2,.7,1);} }
+  @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes zoomIn{from{transform:scale(.9) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  .moji { font-size:52px; margin-bottom:8px; }
+  .modal h2 { font-family:'Fraunces',serif; font-size:clamp(17px,4vw,22px); font-weight:700; color:var(--text); margin-bottom:8px; line-height:1.25; }
+  .big-sc { font-size:46px; font-weight:800; color:var(--correct); line-height:1; margin:8px 0 3px; }
+  .sc-sub { font-size:12.5px; color:var(--sub); font-weight:600; margin-bottom:15px; }
+  .modal p { font-size:13px; font-weight:500; color:var(--sub); line-height:1.65; margin-bottom:22px; }
+  .mbtn { width:100%; background:var(--c1); color:#fff; border:none; border-radius:12px; padding:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .mbtn:hover { filter:brightness(1.1); transform:translateY(-1px); box-shadow:0 6px 20px rgba(184,92,42,.28); }
+
+  /* correctl helper */
+  .correctl { background: #E6F4EC; }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="pill">🍽️ Semana 6 · Actividad interactiva</div>
+  <h1>Modalidades de la <em>Gastronomía</em></h1>
+  <p class="sub">Fundamentos del Turismo y la Gastronomía · Prof. Mgs. Natalia Soledad Bustamante Sánchez</p>
+</header>
+
+<div class="wrap">
+
+  <div class="instr" role="note">
+    <span style="font-size:24px;flex-shrink:0">🔗</span>
+    <p><strong>Estimado estudiante, participe en este juego uniendo con líneas</strong> cada modalidad gastronómica con su descripción o ejemplo representativo. En móvil: toque un concepto y luego la descripción correspondiente.</p>
+  </div>
+
+  <div class="sbar" role="status" aria-live="polite">
+    <span class="slbl">Aciertos</span>
+    <div class="strack"><div class="sfill" id="sfill"></div></div>
+    <span class="snum" id="snum">0 / 9</span>
+    <button class="breset" onclick="reset()" aria-label="Reiniciar">↺ Reiniciar</button>
+  </div>
+
+  <div class="game-wrap">
+    <div class="game-head">
+      <span aria-hidden="true">🧩</span>
+      <h2>Une cada modalidad con su descripción</h2>
+      <span class="ght">Toca / Haz clic</span>
+    </div>
+    <div class="connector-wrap" id="connWrap">
+      <svg id="lines" aria-hidden="true"></svg>
+      <div class="cols" id="cols">
+        <!-- left -->
+        <div>
+          <div class="col-head">Modalidades</div>
+          <div class="node-list" id="leftList"></div>
+        </div>
+        <!-- gutter -->
+        <div class="gutter"></div>
+        <!-- right -->
+        <div>
+          <div class="col-head">Definiciones / Ejemplos</div>
+          <div class="node-list" id="rightList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- modal -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal">
+    <div class="moji">🏅</div>
+    <h2 id="mTitle">¡Felicidades, ha completado con éxito el juego!</h2>
+    <div class="big-sc" id="msc">9/9</div>
+    <p class="sc-sub">conexiones correctas</p>
+    <p>Ha identificado correctamente las principales modalidades de la gastronomía y sus características. Esto le permite reconocer su papel en el turismo como patrimonio, experiencia, producto o estrategia de diferenciación. Comprender estas modalidades es clave para valorar la gastronomía como un recurso estratégico en el desarrollo turístico.</p>
+    <button class="mbtn" onclick="reset()"><span aria-hidden="true">↺</span> Volver a intentar</button>
+  </div>
+</div>
+
+<script>
+/* ─── DATA ─── */
+const CONCEPTS = [
+  { id:1, label:'Gastronomía tradicional',                    color:'var(--c1)', colorl:'var(--c1l)', correct:'B' },
+  { id:2, label:'Gastronomía contemporánea o de autor',       color:'var(--c2)', colorl:'var(--c2l)', correct:'E' },
+  { id:3, label:'Gastronomía territorial o de origen',        color:'var(--c3)', colorl:'var(--c3l)', correct:'H' },
+  { id:4, label:'Gastronomía enológica (enoturismo)',         color:'var(--c4)', colorl:'var(--c4l)', correct:'D' },
+  { id:5, label:'Gastronomía festiva y ritual',               color:'var(--c5)', colorl:'var(--c5l)', correct:'F' },
+  { id:6, label:'Gastronomía comunitaria y vivencial',        color:'var(--c6)', colorl:'var(--c6l)', correct:'G' },
+  { id:7, label:'Gastronomía sostenible',                     color:'var(--c7)', colorl:'var(--c7l)', correct:'A' },
+  { id:8, label:'Gastronomía científica, tecnológica y sensorial', color:'var(--c8)', colorl:'var(--c8l)', correct:'I' },
+  { id:9, label:'Gastronomía fusión',                         color:'var(--c9)', colorl:'var(--c9l)', correct:'C' },
+];
+
+const DEFS = [
+  { letter:'A', text:'Modalidad que integra el respeto al medioambiente, el comercio justo, la economía circular y el uso responsable de los recursos. Se vincula con el turismo responsable y los Objetivos de Desarrollo Sostenible (ODS).' },
+  { letter:'B', text:'Platos, técnicas, ingredientes y rituales culinarios transmitidos de generación en generación. Uso de ingredientes locales y técnicas ancestrales. Ejemplo: el cuy asado en la sierra, la fanesca o el bollo manabita.' },
+  { letter:'C', text:'Combinación de tradiciones culinarias provenientes de diferentes culturas, reflejo de la globalización alimentaria y el intercambio cultural. Ejemplo: la cocina Nikkei (Japón-Perú) o la Tex-Mex (Estados Unidos-México).' },
+  { letter:'D', text:'Modalidad centrada en el vino y otras bebidas fermentadas, así como en las experiencias turísticas asociadas a su producción y consumo. Incluye visitas a viñedos, rutas del vino y catas. Ejemplo: Valle de Colchagua en Chile y Mendoza en Argentina.' },
+  { letter:'E', text:'Surge de la creatividad, la innovación y la reinterpretación de recetas tradicionales. Los chefs combinan productos locales con técnicas modernas y conceptos estéticos. Ejemplo: restaurantes ecuatorianos que reinterpretan la mashua, el chocho o la quinua.' },
+  { letter:'F', text:'Vinculada a celebraciones, fiestas religiosas y eventos culturales donde la comida adquiere un valor simbólico central. Ejemplo: la colada morada y las guaguas de pan en el Día de Difuntos, o la fanesca en Semana Santa.' },
+  { letter:'G', text:'Permite un acercamiento directo a las prácticas culinarias locales a través de la convivencia con comunidades anfitrionas. Promueve la participación activa en la preparación de alimentos. Ejemplo: comunidades como Saraguro, Yunguilla o Zuleta en Ecuador.' },
+  { letter:'H', text:'Vincula estrechamente la cocina con su lugar de origen, considerando la geografía, el clima y los productos locales. Se relaciona con el concepto de denominación de origen. Ejemplo: el cacao Arriba o el café lojano en Ecuador.' },
+  { letter:'I', text:'Se relaciona con la investigación de los alimentos, el análisis sensorial y el uso de técnicas de laboratorio aplicadas a la cocina. Incluye esferificaciones, gelificaciones y food pairing. Ejemplo: las propuestas de Ferran Adrià en El Bulli.' },
+];
+
+function shuffle(a) { return [...a].sort(() => Math.random() - .5); }
+
+let selected = null;   // concept id currently selected
+let matched  = {};     // conceptId -> defLetter
+let score    = 0;
+let shuffled = [];
+
+/* ─── RENDER ─── */
+function render() {
+  selected = null; matched = {}; score = 0;
+  shuffled = shuffle(DEFS);
+
+  const lList = document.getElementById('leftList');
+  const rList = document.getElementById('rightList');
+  lList.innerHTML = ''; rList.innerHTML = '';
+  document.getElementById('lines').innerHTML = '';
+
+  CONCEPTS.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'concept-node';
+    div.id = 'cn-' + c.id;
+    div.dataset.id = c.id;
+    div.tabIndex = 0;
+    div.setAttribute('aria-label', c.label);
+    div.style.setProperty('--ac', c.color);
+    div.style.setProperty('--acl', c.colorl);
+    div.innerHTML = `
+      <div class="cn-dot" style="background:${c.color};border-color:${c.color}"></div>
+      <span class="cn-label">${c.label}</span>
+      <span class="cn-check" aria-hidden="true">✓</span>
+      <div class="cn-port" id="port-c-${c.id}"></div>
+    `;
+    div.style.color = c.color;
+    div.addEventListener('click', () => onConceptClick(c.id));
+    div.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') onConceptClick(c.id); });
+    lList.appendChild(div);
+  });
+
+  shuffled.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'def-node';
+    div.id = 'dn-' + d.letter;
+    div.dataset.letter = d.letter;
+    div.tabIndex = 0;
+    div.setAttribute('aria-label', 'Definición ' + d.letter);
+    div.innerHTML = `
+      <div class="def-port" id="port-d-${d.letter}"></div>
+      <div class="dletter">Definición ${d.letter}</div>
+      <div class="dtext">${d.text}</div>
+      <div class="def-match-name" id="dmn-${d.letter}"></div>
+    `;
+    div.addEventListener('click', () => onDefClick(d.letter));
+    div.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') onDefClick(d.letter); });
+    rList.appendChild(div);
+  });
+
+  updateScore();
+}
+
+/* ─── INTERACTION ─── */
+function onConceptClick(id) {
+  const already = Object.keys(matched).find(k => matched[k] === id);
+  if (already) return; // already matched
+
+  if (selected === id) { clearSel(); return; }
+  clearSel();
+  selected = id;
+  const node = document.getElementById('cn-' + id);
+  const c = CONCEPTS.find(x => x.id === id);
+  node.classList.add('selected');
+  node.style.borderColor = c.color;
+  node.style.background  = c.colorl;
+
+  // highlight available defs
+  document.querySelectorAll('.def-node:not(.matched-ok)').forEach(d => d.classList.add('active'));
+}
+
+function onDefClick(letter) {
+  if (selected === null) return;
+  const defEl = document.getElementById('dn-' + letter);
+  if (defEl.classList.contains('matched-ok')) return;
+
+  const c = CONCEPTS.find(x => x.id === selected);
+  if (c.correct === letter) {
+    // correct
+    matched[selected] = letter;
+    score++;
+    const cNode = document.getElementById('cn-' + selected);
+    cNode.classList.remove('selected');
+    cNode.classList.add('matched');
+    cNode.style.borderColor = 'var(--correct)';
+    cNode.style.background  = '';
+
+    defEl.classList.remove('active');
+    defEl.classList.add('matched-ok');
+    document.getElementById('dmn-' + letter).textContent = '→ ' + c.label;
+
+    drawLine(selected, letter, c.color);
+    clearSel();
+    updateScore();
+    if (score === CONCEPTS.length) setTimeout(showModal, 600);
+  } else {
+    // wrong
+    defEl.classList.add('matched-err');
+    setTimeout(() => defEl.classList.remove('matched-err'), 420);
+  }
+}
+
+function clearSel() {
+  if (selected !== null) {
+    const already = Object.keys(matched).find(k => matched[k] === selected);
+    if (!already) {
+      const node = document.getElementById('cn-' + selected);
+      if (node) {
+        node.classList.remove('selected');
+        node.style.borderColor = '';
+        node.style.background  = '';
+      }
+    }
+  }
+  selected = null;
+  document.querySelectorAll('.def-node').forEach(d => d.classList.remove('active'));
+}
+
+/* ─── DRAW LINES ─── */
+function drawLine(cId, dLetter, color) {
+  const svg = document.getElementById('lines');
+  const wrap = document.getElementById('connWrap');
+  const wRect = wrap.getBoundingClientRect();
+
+  const portC = document.getElementById('port-c-' + cId);
+  const portD = document.getElementById('port-d-' + dLetter);
+  if (!portC || !portD) return;
+
+  const rc = portC.getBoundingClientRect();
+  const rd = portD.getBoundingClientRect();
+
+  const x1 = rc.left + rc.width/2  - wRect.left;
+  const y1 = rc.top  + rc.height/2 - wRect.top;
+  const x2 = rd.left + rd.width/2  - wRect.left;
+  const y2 = rd.top  + rd.height/2 - wRect.top;
+
+  const cp = (x2 - x1) * .45;
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d', `M${x1},${y1} C${x1+cp},${y1} ${x2-cp},${y2} ${x2},${y2}`);
+  path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width', '2.5');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('opacity', '0.85');
+  path.id = 'line-' + cId;
+  svg.appendChild(path);
+}
+
+function redrawAll() {
+  document.getElementById('lines').innerHTML = '';
+  Object.entries(matched).forEach(([cId, letter]) => {
+    const c = CONCEPTS.find(x => x.id === parseInt(cId));
+    if (c) drawLine(parseInt(cId), letter, c.color);
+  });
+}
+
+/* ─── SCORE ─── */
+function updateScore() {
+  document.getElementById('sfill').style.width = (score / CONCEPTS.length * 100) + '%';
+  document.getElementById('snum').textContent = score + ' / ' + CONCEPTS.length;
+}
+
+function showModal() {
+  document.getElementById('msc').textContent = score + '/' + CONCEPTS.length;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function reset() {
+  document.getElementById('overlay').classList.remove('open');
+  render();
+}
+
+/* Redraw lines on resize */
+window.addEventListener('resize', redrawAll);
+
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('overlay')) reset();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open');
+});
+
+render();
+</script>
+</body>
+</html>
