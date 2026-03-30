@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resumen de la Asignatura</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --bg-light: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .resource-container {
+            width: 800px;
+            height: 800px;
+            max-width: 100%;
+            background: var(--bg-light);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .header-emojis {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            opacity: 0.15;
+            font-size: 6rem;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 2;
+        }
+
+        .instruction-pill {
+            position: absolute;
+            bottom: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            z-index: 10;
+            border: 2px solid var(--border);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 40px 32px 32px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Vista de Índice */
+        .index-view {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            height: 100%;
+        }
+
+        .week-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 24px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .week-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .week-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent);
+        }
+
+        .week-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .week-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .week-number {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .week-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        /* Vista de Detalle */
+        .detail-view {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .detail-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .btn-back {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-back:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateX(-3px);
+        }
+
+        .detail-title-group {
+            flex: 1;
+        }
+
+        .detail-week {
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .detail-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .detail-content {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+        }
+
+        .detail-content h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin: 24px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .detail-content ul {
+            margin: 12px 0 12px 24px;
+        }
+
+        .detail-content li {
+            margin-bottom: 8px;
+        }
+
+        .image-placeholder {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .image-placeholder .placeholder-icon {
+            font-size: 3rem;
+            opacity: 0.5;
+        }
+
+        .reference-box {
+            background: white;
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 24px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .reference-label {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                background: var(--bg-light);
+            }
+
+            .resource-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+            }
+
+            header {
+                padding: 24px 20px 32px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .instruction-pill {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                transform: none;
+                margin-top: 16px;
+                font-size: 0.85rem;
+                width: fit-content;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+
+            .index-view {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .week-card {
+                padding: 20px 12px;
+            }
+
+            .week-emoji {
+                font-size: 2rem;
+            }
+
+            .week-title {
+                font-size: 0.8rem;
+            }
+
+            .detail-header {
+                flex-wrap: wrap;
+            }
+
+            .detail-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Accessibility */
+        button:focus, .week-card:focus {
+            outline: 3px solid #60a5fa;
+            outline-offset: 2px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="resource-container">
+    <header>
+        <div class="header-emojis" aria-hidden="true">📚</div>
+        <h1>Resumen de la Asignatura</h1>
+        <p class="subtitle">PREV_1003 - Introducción a los Riesgos de Desastres</p>
+        <div class="instruction-pill">
+            👆 Haga clic en los temas para visualizar la información
+        </div>
+    </header>
+
+    <div class="content-area">
+        <!-- Vista de Índice -->
+        <div class="index-view" id="indexView">
+            <div class="week-card" onclick="showWeek(1)" tabindex="0" role="button">
+                <div class="week-emoji">🗺️</div>
+                <div class="week-number">Semana 1</div>
+                <div class="week-title">Fundamentos y Territorio</div>
+            </div>
+
+            <div class="week-card" onclick="showWeek(2)" tabindex="0" role="button">
+                <div class="week-emoji">⚠️</div>
+                <div class="week-number">Semana 2</div>
+                <div class="week-title">Amenazas y Exposición</div>
+            </div>
+
+            <div class="week-card" onclick="showWeek(3)" tabindex="0" role="button">
+                <div class="week-emoji">📊</div>
+                <div class="week-number">Semana 3</div>
+                <div class="week-title">Análisis de Riesgo</div>
+            </div>
+
+            <div class="week-card" onclick="showWeek(4)" tabindex="0" role="button">
+                <div class="week-emoji">👥</div>
+                <div class="week-number">Semana 4</div>
+                <div class="week-title">Vulnerabilidad Social</div>
+            </div>
+
+            <div class="week-card" onclick="showWeek(5)" tabindex="0" role="button">
+                <div class="week-emoji">🎯</div>
+                <div class="week-number">Semana 5</div>
+                <div class="week-title">Evaluación de Riesgo</div>
+            </div>
+
+            <div class="week-card" onclick="showWeek(6)" tabindex="0" role="button">
+                <div class="week-emoji">🏛️</div>
+                <div class="week-number">Semana 6</div>
+                <div class="week-title">Sistemas de Gestión</div>
+            </div>
+
+            <div class="week-card" onclick="showWeek(7)" tabindex="0" role="button">
+                <div class="week-emoji">🌱</div>
+                <div class="week-number">Semana 7</div>
+                <div class="week-title">Desarrollo Sostenible</div>
+            </div>
+
+            <div class="week-card" onclick="showWeek(8)" tabindex="0" role="button">
+                <div class="week-emoji">🛡️</div>
+                <div class="week-number">Semana 8</div>
+                <div class="week-title">Gestión Integral</div>
+            </div>
+        </div>
+
+        <!-- Vistas de Detalle (Semanas) -->
+        <div class="detail-view" id="week1">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 1</div>
+                    <div class="detail-title">Fundamentos del Riesgo y Territorio</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>🗺️ 1.1. Territorio y sistemas expuestos</h3>
+                <p>Es donde se organiza la vida cotidiana, la infraestructura, los servicios, los ecosistemas y las decisiones políticas. Comprender el riesgo exige mirar el territorio como un sistema.</p>
+                
+                <h3>🎯 Propósito del espacio</h3>
+                <ul>
+                    <li>El espacio como contenedor donde ocurren los hechos</li>
+                    <li>El espacio como reflejo de la sociedad</li>
+                    <li>El espacio como dimensión integrada a los procesos sociales</li>
+                </ul>
+
+                <h3>🔄 1.3. Relación entre Territorio y Riesgo</h3>
+                <p>Los desastres socio naturales enfatizan que, aunque el fenómeno tenga origen natural, la forma en que el desastre se produce está mediada por la acción humana: decisiones de ocupación del suelo, desigualdades sociales, calidad de infraestructura y capacidades institucionales.</p>
+
+                <div class="image-placeholder">
+                    <div class="placeholder-icon">🖼️</div>
+                    <div>[ Espacio para imagen: Dimensiones de desigualdad ]</div>
+                </div>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Elaboración propia con base en contenidos de la Semana 1.
+            </div>
+        </div>
+
+        <div class="detail-view" id="week2">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 2</div>
+                    <div class="detail-title">Identificación y Análisis de Amenazas</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>⚠️ 2.1. Componente 1: Amenaza</h3>
+                <p>Fenómeno con potencial de generar consecuencias negativas en la sociedad, economía o ambiente.</p>
+                
+                <ul>
+                    <li><strong>Amenazas geofísicas:</strong> Terremotos, erupciones volcánicas, deslizamientos, tsunamis</li>
+                    <li><strong>Amenazas hidrometeorológicas:</strong> Inundaciones, huracanes, incendios forestales, olas de calor, sequías</li>
+                </ul>
+
+                <h3>🏠 2.2. Componente 2: Exposición</h3>
+                <p>Todo aquello ubicado en el área donde una amenaza puede impactar: población, viviendas, infraestructura, servicios y activos físicos.</p>
+
+                <h3>💔 2.3. Componente 3: Vulnerabilidad</h3>
+                <p>Características que hacen que un sistema sea más propenso a sufrir daños:</p>
+                <ul>
+                    <li><strong>Física/estructural:</strong> Calidad de construcciones, materiales, diseño</li>
+                    <li><strong>Social:</strong> Edad, salud, acceso a información, redes de apoyo</li>
+                    <li><strong>Económica:</strong> Ingresos, ahorros, empleo, acceso a seguros</li>
+                    <li><strong>Ambiental:</strong> Degradación de suelos, deforestación</li>
+                </ul>
+
+                <div class="image-placeholder">
+                    <div class="placeholder-icon">🖼️</div>
+                    <div>[ Espacio para imagen: Componentes del Riesgo ]</div>
+                </div>
+
+                <h3>📈 Tipos de Riesgo</h3>
+                <p><strong>Riesgo intensivo:</strong> Eventos de alta severidad, baja frecuencia<br>
+                <strong>Riesgo extensivo:</strong> Eventos de menor severidad pero frecuentes<br>
+                <strong>Riesgo total:</strong> Suma de pérdidas posibles en todos los escenarios</p>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Elaboración propia con base en contenidos de la Semana 2.
+            </div>
+        </div>
+
+        <div class="detail-view" id="week3">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 3</div>
+                    <div class="detail-title">Antecedentes e Identificación</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>📜 2.5. Antecedentes Históricos</h3>
+                <p>En América Latina predominan eventos geofísicos, aunque también aparecen inundaciones, sequías, epidemias y ciclones. La mirada histórica permite comprender procesos de desigualdad, ocupación del territorio y vulnerabilidades acumuladas.</p>
+
+                <h3>🔍 2.6. Identificación de Amenazas</h3>
+                <p>Cualquier proceso o fenómeno que puede provocar consecuencias negativas: muertes, lesiones, daños a viviendas, interrupciones económicas o impactos ambientales.</p>
+
+                <div class="image-placeholder">
+                    <div class="placeholder-icon">🖼️</div>
+                    <div>[ Espacio para imagen: Catálogo Nacional de Eventos Peligrosos ]</div>
+                </div>
+
+                <h3>⛰️ 2.7. Criterios para Caracterización</h3>
+                <p>Para amenazas por movimientos en masa se consideran:</p>
+                <ul>
+                    <li>Condición geológica del sector</li>
+                    <li>Evidencias y controles estructurales</li>
+                    <li>Pendiente del terreno</li>
+                    <li>Ubicación geográfica y condiciones del entorno</li>
+                    <li>Tipo de suelo y cobertura vegetal</li>
+                </ul>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Elaboración propia con base en contenidos de la Semana 3.
+            </div>
+        </div>
+
+        <div class="detail-view" id="week4">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 4</div>
+                    <div class="detail-title">Evaluación de Vulnerabilidad</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>👥 3.1. Mirada Social sobre los Desastres</h3>
+                <p>Evolución histórica desde interpretaciones religiosas hacia análisis científicos que incorporan causas naturales, decisiones humanas y condiciones sociales.</p>
+
+                <h3>📊 3.3. Dimensiones de la Vulnerabilidad</h3>
+                
+                <h3>🏗️ Físico/Ambiental</h3>
+                <ul>
+                    <li>Hábitat y vivienda</li>
+                    <li>Uso de suelo</li>
+                    <li>Conectividad y accesibilidad</li>
+                    <li>Calidad ambiental y biodiversidad</li>
+                    <li>Servicios ecosistémicos</li>
+                </ul>
+
+                <h3>👨‍👩‍👧‍👦 Social</h3>
+                <ul>
+                    <li>Salud</li>
+                    <li>Estructura demográfica</li>
+                    <li>Niveles de educación</li>
+                    <li>Integración social</li>
+                </ul>
+
+                <h3>💵 Económica</h3>
+                <ul>
+                    <li>Empleo y actividades productivas</li>
+                    <li>Acceso a financiamiento</li>
+                    <li>Componentes fiscales</li>
+                    <li>Integración socioeconómica (pobreza, indigencia)</li>
+                </ul>
+
+                <h3>🏛️ Político/Institucional</h3>
+                <ul>
+                    <li>Gobernabilidad</li>
+                    <li>Disponibilidad y gestión de recursos públicos</li>
+                    <li>Capacidad institucional</li>
+                    <li>Instrumentos de planificación</li>
+                </ul>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Elaboración propia con base en contenidos de la Semana 4.
+            </div>
+        </div>
+
+        <div class="detail-view" id="week5">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 5</div>
+                    <div class="detail-title">Evaluación para Decisiones</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>🎯 3.5. ¿Para qué medir el riesgo?</h3>
+                <p>Convertir preocupaciones generales en criterios comparables que permitan:</p>
+                <ul>
+                    <li>Comparar amenazas (¿cuál es más crítica?)</li>
+                    <li>Priorizar zonas o grupos de atención</li>
+                    <li>Justificar medidas y acciones efectivas</li>
+                </ul>
+
+                <h3>📋 Enfoque Cualitativo</h3>
+                <p>Permite ordenar información disponible, reconocer amenazas relevantes y priorizar medidas razonables mediante la <strong>matriz de riesgo</strong>.</p>
+
+                <h3>🔢 Enfoque Cuantitativo</h3>
+                <p>Estima pérdidas probables combinando:</p>
+                <ul>
+                    <li>Frecuencia/probabilidad anual del evento</li>
+                    <li>Daño que generaría si ocurre</li>
+                    <li>Factores: vulnerabilidad, amenaza y exposición</li>
+                </ul>
+
+                <h3>📌 3.6. Priorización de Medidas</h3>
+                <p>Elaboración del Plan de Gestión del Riesgo de Desastres y Cambio Climático (PGRD) para convertir diagnósticos en decisiones concretas.</p>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Barandiarán, M., et al. (2019). Metodología de evaluación del riesgo de desastres (IDB-TN-01771). BID.
+            </div>
+        </div>
+
+        <div class="detail-view" id="week6">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 6</div>
+                    <div class="detail-title">Sistemas de Gestión del Riesgo</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>🌐 4.1. Acuerdos Internacionales</h3>
+                
+                <h3>📜 Marco de Sendai (2015-2030)</h3>
+                <p><strong>Resultado esperado:</strong> Disminuir significativamente el riesgo de desastres y las pérdidas generadas.<br>
+                <strong>Objetivo:</strong> Evitar nuevos riesgos y reducir los existentes mediante acciones integrales e inclusivas.</p>
+
+                <h3>🌍 Acuerdo de París</h3>
+                <p>Acciones para enfrentar el cambio climático y sus impactos, vinculando adaptación con reducción de riesgo.</p>
+
+                <h3>⚖️ Acuerdo de Escazú</h3>
+                <p>Garantiza acceso a información, participación ciudadana y justicia en asuntos ambientales.</p>
+
+                <h3>🧠 4.2. Saberes Locales</h3>
+                <p>Importancia del conocimiento tradicional y comunitario en la reducción del riesgo, complementando la información técnica con experiencia local.</p>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Elaboración propia con base en contenidos de la Semana 6.
+            </div>
+        </div>
+
+        <div class="detail-view" id="week7">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 7</div>
+                    <div class="detail-title">Desarrollo Sostenible</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>♻️ 5.1. ¿Qué es el Desarrollo Sostenible?</h3>
+                <p>Análisis de sistemas complejos que integran economía, sociedad, ambiente y decisiones políticas. Se consolida mediante aprendizaje, monitoreo y ajustes continuos.</p>
+
+                <div class="image-placeholder">
+                    <div class="placeholder-icon">🖼️</div>
+                    <div>[ Espacio para imagen: Semáforo de Sostenibilidad ]</div>
+                </div>
+
+                <h3>🚦 Trayectoria de Mejora Continua</h3>
+                <ul>
+                    <li><strong>No sostenible:</strong> Aumento de asentamientos en zonas de riesgo, drenaje colapsado</li>
+                    <li><strong>Aprende y ajusta:</strong> Ordenamiento territorial, soluciones basadas en naturaleza</li>
+                    <li><strong>Mide y corrige:</strong> Indicadores de personas expuestas, pérdidas económicas, tiempo de recuperación</li>
+                </ul>
+
+                <h3>⚖️ 5.3. Relación Bidireccional</h3>
+                <p><strong>Desastres limitan desarrollo:</strong> Pérdida de vidas, destrucción de activos, deterioro productivo.<br>
+                <strong>Desarrollo no sostenible provoca riesgo:</strong> Consumo irresponsable, explotación laboral, mala planificación.<br>
+                <strong>Desarrollo sostenible reduce riesgo:</strong> Acceso a servicios, consumo responsable, planificación territorial.</p>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Elaboración propia con base en contenidos de la Semana 7.
+            </div>
+        </div>
+
+        <div class="detail-view" id="week8">
+            <div class="detail-header">
+                <button class="btn-back" onclick="showIndex()" aria-label="Volver al índice">←</button>
+                <div class="detail-title-group">
+                    <div class="detail-week">Semana 8</div>
+                    <div class="detail-title">Gestión Integral del Riesgo</div>
+                </div>
+            </div>
+            <div class="detail-content">
+                <h3>🔄 5.4. Reducción y Gestión del Riesgo</h3>
+                <p>La relación es bidireccional: los desastres frenan el desarrollo, pero las decisiones de desarrollo pueden incrementar o reducir el riesgo.</p>
+
+                <h3>📋 Gestión como Política Transversal</h3>
+                <p>La GRD se articula con:</p>
+                <ul>
+                    <li>Ordenamiento territorial</li>
+                    <li>Políticas ambientales y sociales</li>
+                    <li>Inversión pública e infraestructura</li>
+                    <li>Protección social y seguridad humana</li>
+                </ul>
+
+                <h3>🎯 Enfoques de Gestión</h3>
+                <ul>
+                    <li><strong>Prospectivo:</strong> Evitar generación de nuevos riesgos</li>
+                    <li><strong>Correctivo:</strong> Reducir riesgos existentes</li>
+                    <li><strong>Compensatoria:</strong> Compartir y diversificar el riesgo</li>
+                    <li><strong>Emergencias:</strong> Respuesta y recuperación</li>
+                </ul>
+
+                <h3>💡 Componentes Clave</h3>
+                <p>La forma más efectiva de prevenir pérdidas no es solo reaccionar, sino <strong>reducir condiciones que generan exposición y vulnerabilidad</strong>. La GRD busca evitar nuevos riesgos, reducir existentes, y compartir/diversificar el riesgo para proteger el desarrollo.</p>
+            </div>
+            <div class="reference-box">
+                <span class="reference-label">Referencia</span>
+                Elaboración propia.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showWeek(weekNum) {
+        // Ocultar índice
+        document.getElementById('indexView').style.display = 'none';
+        
+        // Ocultar todas las vistas de detalle
+        document.querySelectorAll('.detail-view').forEach(view => {
+            view.classList.remove('active');
+        });
+        
+        // Mostrar la semana seleccionada
+        document.getElementById('week' + weekNum).classList.add('active');
+    }
+
+    function showIndex() {
+        // Mostrar índice
+        document.getElementById('indexView').style.display = 'grid';
+        
+        // Ocultar todas las vistas de detalle
+        document.querySelectorAll('.detail-view').forEach(view => {
+            view.classList.remove('active');
+        });
+    }
+
+    // Teclado accesible
+    document.querySelectorAll('.week-card').forEach((card, index) => {
+        card.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                showWeek(index + 1);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
