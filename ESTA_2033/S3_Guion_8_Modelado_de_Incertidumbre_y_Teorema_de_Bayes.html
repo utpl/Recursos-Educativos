@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelado de Incertidumbre y Teorema de Bayes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c1:#E84855;--c2:#F4A261;--c3:#2A9D8F;--c4:#457B9D;
+  --dark:#1A1A2E;--dark2:#16213E;
+  --surface:#FFFFFF;--bg:#F8F5F0;--text:#2C2C3E;
+  --muted:#6B6B80;--border:#E2DED8;
+  --font-d:'Playfair Display',serif;
+  --font-b:'DM Sans',sans-serif;
+  --font-m:'DM Mono',monospace;
+  --r:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font-b);
+  background:
+    radial-gradient(ellipse at 18% 12%,rgba(232,72,85,.13) 0%,transparent 50%),
+    radial-gradient(ellipse at 82% 88%,rgba(69,123,157,.13) 0%,transparent 50%),
+    #EDE9E1;
+  min-height:100vh;display:flex;justify-content:center;
+  align-items:flex-start;padding:28px 16px;
+}
+
+/* ── CANVAS ── */
+.canvas{
+  width:800px;min-height:500px;max-height:800px;
+  background:var(--bg);border-radius:28px;overflow:hidden;
+  box-shadow:0 24px 80px rgba(26,26,46,.22);
+  display:flex;flex-direction:column;
+}
+
+/* ── HEADER ── */
+.header{background:var(--dark);flex-shrink:0;position:relative;overflow:hidden;}
+.h-stripe{height:4px;background:linear-gradient(90deg,var(--c1) 0%,var(--c2) 33%,var(--c3) 66%,var(--c4) 100%);}
+.h-glow{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 10% 120%,rgba(232,72,85,.2) 0%,transparent 55%),
+             radial-gradient(ellipse at 90% -20%,rgba(69,123,157,.2) 0%,transparent 55%);
+  pointer-events:none;}
+.h-inner{position:relative;z-index:1;padding:18px 36px 16px;display:flex;align-items:center;gap:18px;}
+.h-embl{
+  width:50px;height:50px;flex-shrink:0;border-radius:14px;
+  background:linear-gradient(135deg,rgba(244,162,97,.22),rgba(232,72,85,.18));
+  border:1.5px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.h-meta{flex:1;}
+.h-course{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:4px;}
+.h-title{font-family:var(--font-d);font-size:19px;color:#fff;line-height:1.22;letter-spacing:-.02em;}
+.h-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;}
+.h-sub strong{color:rgba(255,255,255,.75);font-weight:600;}
+
+/* ── PROGRESS ── */
+.prog-bar{background:var(--dark2);padding:10px 36px;flex-shrink:0;display:flex;align-items:center;gap:14px;}
+.prog-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38);white-space:nowrap;}
+.prog-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--c1),var(--c2));border-radius:99px;transition:width .45s ease;}
+.prog-count{font-size:10.5px;font-weight:600;color:rgba(255,255,255,.45);white-space:nowrap;}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow:hidden;position:relative;}
+.slide{
+  position:absolute;inset:0;overflow-y:auto;
+  opacity:0;pointer-events:none;transform:translateX(28px);
+  transition:opacity .32s ease,transform .32s ease;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.exit{opacity:0;transform:translateX(-28px);}
+
+/* ── INTRO SLIDE ── */
+.s-intro{padding:24px 36px;display:flex;flex-direction:column;gap:14px;}
+.intro-kicker{font-size:9.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--c2);}
+.intro-hed{font-family:var(--font-d);font-size:22px;color:var(--dark);line-height:1.2;letter-spacing:-.02em;}
+.case-dark{background:var(--dark);border-radius:var(--r);padding:20px 24px;position:relative;overflow:hidden;}
+.case-dark::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 90% 10%,rgba(244,162,97,.2) 0%,transparent 60%),
+             radial-gradient(ellipse at 10% 90%,rgba(42,157,143,.15) 0%,transparent 60%);}
+.cd-tag{font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--c2);margin-bottom:6px;position:relative;}
+.cd-title{font-family:var(--font-d);font-size:15px;color:#fff;margin-bottom:10px;position:relative;}
+.cd-body{font-size:12.5px;color:rgba(255,255,255,.72);line-height:1.72;position:relative;}
+
+/* stats row */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-box{
+  background:var(--surface);border-radius:12px;padding:12px 14px;
+  border:1.5px solid var(--border);text-align:center;
+}
+.stat-val{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--sb-color,var(--dark));margin-bottom:2px;}
+.stat-lbl{font-size:10px;color:var(--muted);line-height:1.4;}
+
+/* Bayes tree SVG */
+.tree-wrap{
+  background:var(--surface);border-radius:var(--r);
+  border:1.5px solid var(--border);overflow:hidden;
+}
+.tree-top{background:var(--dark);padding:8px 16px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.tree-svg-area{padding:8px 10px;}
+
+/* bayes calc box */
+.bayes-calc{
+  background:var(--dark);border-radius:var(--r);padding:16px 20px;
+  position:relative;overflow:hidden;
+}
+.bayes-calc::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 100% 0%,rgba(42,157,143,.2) 0%,transparent 60%);}
+.bc-label{font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:10px;position:relative;}
+.bc-formula{font-family:var(--font-m);font-size:12px;color:rgba(255,255,255,.75);line-height:1.9;position:relative;}
+.bc-formula strong{color:#fff;}
+.bc-result{
+  margin-top:10px;padding:10px 14px;border-radius:10px;
+  background:rgba(42,157,143,.18);border:1.5px solid rgba(42,157,143,.35);
+  font-size:13px;font-weight:700;color:var(--c3);
+  font-family:var(--font-m);position:relative;
+}
+
+.intro-inst{
+  background:linear-gradient(135deg,rgba(244,162,97,.1),rgba(232,72,85,.07));
+  border:1px solid rgba(244,162,97,.25);border-radius:12px;
+  padding:12px 16px;font-size:12px;color:var(--text);line-height:1.65;
+  display:flex;gap:10px;align-items:flex-start;
+}
+
+/* ── QUESTION SLIDE ── */
+.s-q{padding:24px 36px;display:flex;flex-direction:column;gap:14px;}
+.q-toprow{display:flex;align-items:center;gap:10px;}
+.q-badge{
+  width:36px;height:36px;border-radius:10px;background:var(--dark);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.q-meta{flex:1;}
+.q-label{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.q-topic{font-size:11px;font-weight:600;color:var(--dark);margin-top:1px;}
+.q-ico{font-size:22px;margin-left:auto;}
+
+.q-visual{border-radius:12px;overflow:hidden;border:1.5px solid var(--border);background:var(--surface);}
+.qv-top{background:var(--dark);padding:7px 14px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.qv-body{padding:10px 14px;}
+
+.q-text{font-size:14px;color:var(--dark);line-height:1.72;font-weight:400;}
+.opts{display:flex;flex-direction:column;gap:9px;}
+.opt{
+  background:var(--surface);border:2px solid var(--border);border-radius:14px;
+  padding:13px 17px;display:flex;align-items:flex-start;gap:13px;
+  cursor:pointer;text-align:left;font-family:var(--font-b);
+  transition:border-color .18s,background .18s,transform .15s,box-shadow .18s;
+  min-height:44px;
+}
+.opt:hover:not(:disabled){border-color:var(--dark);background:#FFFDF9;transform:translateX(4px);box-shadow:0 4px 18px rgba(26,26,46,.08);}
+.opt-lt{
+  width:28px;height:28px;border-radius:8px;
+  background:var(--bg);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;
+  transition:background .18s,color .18s,border-color .18s;
+}
+.opt-txt{font-size:13px;color:var(--text);line-height:1.6;padding-top:2px;}
+.opt.correct{border-color:var(--c3);background:rgba(42,157,143,.06);cursor:default;transform:none;}
+.opt.correct .opt-lt{background:var(--c3);color:#fff;border-color:var(--c3);}
+.opt.wrong{border-color:var(--c1);background:rgba(232,72,85,.05);cursor:default;}
+.opt.wrong .opt-lt{background:var(--c1);color:#fff;border-color:var(--c1);}
+.opt.neutral{opacity:.42;cursor:default;}
+.opt:disabled{cursor:default;}
+
+/* feedback carta */
+.fb-carta{border-radius:14px;overflow:hidden;opacity:0;transform:translateY(12px);transition:opacity .35s ease .05s,transform .35s ease .05s;pointer-events:none;}
+.fb-carta.show{opacity:1;transform:translateY(0);pointer-events:auto;}
+.fb-head{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--dark);position:relative;overflow:hidden;}
+.fb-head::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--fb-col);}
+.fb-head-ico{width:38px;height:38px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:color-mix(in srgb,var(--fb-col) 22%,rgba(255,255,255,.05));}
+.fb-verdict{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--fb-col);margin-bottom:3px;}
+.fb-body{font-size:12.5px;color:rgba(255,255,255,.78);line-height:1.68;}
+
+/* ── FINAL SLIDE ── */
+.s-final{padding:24px 36px;display:flex;flex-direction:column;gap:14px;}
+.trophy{text-align:center;}
+.trophy-ico{font-size:50px;display:block;margin-bottom:8px;}
+.f-kicker{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:5px;}
+.f-title{font-family:var(--font-d);font-size:24px;color:var(--dark);line-height:1.2;margin-bottom:6px;}
+.f-sub{font-size:12.5px;color:var(--muted);line-height:1.65;}
+.summary-dark{background:var(--dark);border-radius:var(--r);padding:18px 22px;position:relative;overflow:hidden;}
+.summary-dark::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 100% 0%,rgba(42,157,143,.2) 0%,transparent 55%);}
+.sd-label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:12px;position:relative;}
+.sd-list{list-style:none;display:flex;flex-direction:column;gap:10px;position:relative;}
+.sd-item{display:flex;align-items:flex-start;gap:11px;font-size:12.5px;color:rgba(255,255,255,.75);line-height:1.65;}
+.sd-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:1px;background:rgba(42,157,143,.2);border:1.5px solid var(--c3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--c3);font-weight:700;}
+.sd-item strong{color:rgba(255,255,255,.95);}
+.f-conclusion{border:1.5px solid rgba(42,157,143,.3);border-radius:12px;padding:14px 18px;font-size:12.5px;color:var(--text);line-height:1.7;}
+
+/* ── NAV ROW ── */
+.nav-row{padding:12px 36px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.nav-btn{display:flex;align-items:center;gap:7px;padding:9px 20px;border-radius:11px;border:2px solid var(--border);background:transparent;font-family:var(--font-b);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;min-height:44px;}
+.nav-btn:hover:not(:disabled){border-color:var(--dark);color:var(--dark);background:var(--bg);}
+.nav-btn:disabled{opacity:.3;cursor:default;}
+.nav-btn.primary{background:var(--dark);color:#fff;border-color:var(--dark);}
+.nav-btn.primary:hover:not(:disabled){background:var(--dark2);border-color:var(--dark2);}
+.nav-dots{display:flex;gap:6px;}
+.ndot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .22s,width .22s;}
+.ndot.done{background:var(--c3);}
+.ndot.active{background:var(--dark);width:20px;border-radius:4px;}
+
+@media(max-width:840px){
+  body{padding:0;background:var(--bg);}
+  .canvas{width:100%;max-width:100%;max-height:none;border-radius:0;}
+  .h-inner,.prog-bar,.s-intro,.s-q,.s-final,.nav-row{padding-left:20px;padding-right:20px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="h-stripe"></div>
+    <div class="h-glow"></div>
+    <div class="h-inner">
+      <div class="h-embl">🧬</div>
+      <div class="h-meta">
+        <div class="h-course">Estadística para Análisis de Datos</div>
+        <div class="h-title">Modelado de Incertidumbre y Teorema de Bayes</div>
+        <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-bar">
+    <div class="prog-lbl">Progreso</div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-count" id="progCount">0 / 4</div>
+  </div>
+
+  <!-- SLIDES -->
+  <div class="content" id="contentArea">
+
+    <!-- SLIDE 0: INTRO -->
+    <div class="slide s-intro active" id="slide-0">
+      <div class="intro-kicker">🏥 Caso de estudio — Diagnóstico Médico</div>
+      <div class="intro-hed">El Dilema del Diagnóstico Médico</div>
+
+      <div class="case-dark">
+        <div class="cd-tag">Contexto — Hospital</div>
+        <div class="cd-title">Prueba diagnóstica con probabilidad a priori</div>
+        <div class="cd-body">En un hospital, se analiza una enfermedad que afecta al 5% de la población (probabilidad a priori). Se aplica una prueba diagnóstica que tiene una eficacia del 90% para detectar a los enfermos (sensibilidad), pero que también da un 10% de falsos positivos en personas sanas. El objetivo es determinar la probabilidad real de que un paciente esté enfermo si su resultado fue positivo.</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" style="--sb-color:var(--c1)">5%</div>
+          <div class="stat-lbl">Prevalencia<br>(P. a priori)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="--sb-color:var(--c3)">90%</div>
+          <div class="stat-lbl">Sensibilidad<br>(Verdaderos +)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="--sb-color:var(--c2)">10%</div>
+          <div class="stat-lbl">Tasa Falsos<br>Positivos</div>
+        </div>
+      </div>
+
+      <!-- Probability Tree -->
+      <div class="tree-wrap">
+        <div class="tree-top">🌳 Árbol de probabilidad</div>
+        <div class="tree-svg-area">
+          <svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+            <!-- Root node -->
+            <circle cx="60" cy="90" r="22" fill="#1A1A2E" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
+            <text x="60" y="86" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.7)" font-family="DM Sans,sans-serif" font-weight="700">Paciente</text>
+            <text x="60" y="97" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.7)" font-family="DM Sans,sans-serif">aleatorio</text>
+
+            <!-- Branch Enfermo -->
+            <line x1="82" y1="78" x2="198" y2="44" stroke="var(--c1)" stroke-width="2" stroke-linecap="round"/>
+            <text x="128" y="52" text-anchor="middle" font-size="9.5" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">P(E) = 0.05</text>
+
+            <!-- Branch Sano -->
+            <line x1="82" y1="102" x2="198" y2="136" stroke="var(--c3)" stroke-width="2" stroke-linecap="round"/>
+            <text x="128" y="132" text-anchor="middle" font-size="9.5" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">P(S) = 0.95</text>
+
+            <!-- Node Enfermo -->
+            <circle cx="218" cy="40" r="18" fill="rgba(232,72,85,.18)" stroke="var(--c1)" stroke-width="1.8"/>
+            <text x="218" y="37" text-anchor="middle" font-size="9" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">Enf.</text>
+            <text x="218" y="47" text-anchor="middle" font-size="8" fill="var(--c1)" font-family="DM Sans,sans-serif">0.05</text>
+
+            <!-- Node Sano -->
+            <circle cx="218" cy="140" r="18" fill="rgba(42,157,143,.18)" stroke="var(--c3)" stroke-width="1.8"/>
+            <text x="218" y="137" text-anchor="middle" font-size="9" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">Sano</text>
+            <text x="218" y="147" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif">0.95</text>
+
+            <!-- From Enfermo: + and - -->
+            <line x1="236" y1="34" x2="360" y2="18" stroke="var(--c1)" stroke-width="1.5" stroke-dasharray="4,2"/>
+            <text x="296" y="18" text-anchor="middle" font-size="9" fill="var(--c1)" font-family="DM Sans,sans-serif">P(+|E)=0.90</text>
+            <line x1="236" y1="46" x2="360" y2="60" stroke="rgba(232,72,85,.4)" stroke-width="1.5" stroke-dasharray="4,2"/>
+            <text x="296" y="68" text-anchor="middle" font-size="9" fill="rgba(232,72,85,.5)" font-family="DM Sans,sans-serif">P(−|E)=0.10</text>
+
+            <!-- From Sano: + and - -->
+            <line x1="236" y1="134" x2="360" y2="118" stroke="rgba(244,162,97,.9)" stroke-width="1.5" stroke-dasharray="4,2"/>
+            <text x="296" y="115" text-anchor="middle" font-size="9" fill="var(--c2)" font-family="DM Sans,sans-serif">P(+|S)=0.10</text>
+            <line x1="236" y1="146" x2="360" y2="162" stroke="rgba(42,157,143,.4)" stroke-width="1.5" stroke-dasharray="4,2"/>
+            <text x="296" y="172" text-anchor="middle" font-size="9" fill="rgba(42,157,143,.5)" font-family="DM Sans,sans-serif">P(−|S)=0.90</text>
+
+            <!-- Result nodes -->
+            <rect x="362" y="6" width="90" height="24" rx="5" fill="#1A1A2E" stroke="var(--c1)" stroke-width="1.5"/>
+            <text x="407" y="22" text-anchor="middle" font-size="9" fill="var(--c1)" font-family="DM Mono,monospace" font-weight="500">0.05×0.90=0.045</text>
+
+            <rect x="362" y="48" width="90" height="24" rx="5" fill="#1A1A2E" stroke="rgba(232,72,85,.35)" stroke-width="1.5"/>
+            <text x="407" y="64" text-anchor="middle" font-size="9" fill="rgba(232,72,85,.55)" font-family="DM Mono,monospace" font-weight="500">0.05×0.10=0.005</text>
+
+            <rect x="362" y="106" width="90" height="24" rx="5" fill="#1A1A2E" stroke="var(--c2)" stroke-width="1.5"/>
+            <text x="407" y="122" text-anchor="middle" font-size="9" fill="var(--c2)" font-family="DM Mono,monospace" font-weight="500">0.95×0.10=0.095</text>
+
+            <rect x="362" y="150" width="90" height="24" rx="5" fill="#1A1A2E" stroke="rgba(42,157,143,.35)" stroke-width="1.5"/>
+            <text x="407" y="166" text-anchor="middle" font-size="9" fill="rgba(42,157,143,.55)" font-family="DM Mono,monospace" font-weight="500">0.95×0.90=0.855</text>
+
+            <!-- Highlight positives -->
+            <rect x="458" y="10" width="108" height="16" rx="4" fill="rgba(232,72,85,.15)" stroke="var(--c1)" stroke-width="1"/>
+            <text x="512" y="22" text-anchor="middle" font-size="8.5" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">✓ Verdadero +</text>
+            <rect x="458" y="110" width="108" height="16" rx="4" fill="rgba(244,162,97,.15)" stroke="var(--c2)" stroke-width="1"/>
+            <text x="512" y="122" text-anchor="middle" font-size="8.5" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="700">✗ Falso +</text>
+
+            <!-- Sum of positives arrow -->
+            <line x1="570" y1="18" x2="608" y2="68" stroke="rgba(255,255,255,.2)" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="570" y1="118" x2="608" y2="72" stroke="rgba(255,255,255,.2)" stroke-width="1" stroke-dasharray="3,2"/>
+            <rect x="610" y="56" width="68" height="28" rx="6" fill="var(--dark2)" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+            <text x="644" y="67" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.6)" font-family="DM Sans,sans-serif">P(+) total</text>
+            <text x="644" y="78" text-anchor="middle" font-size="9" fill="#fff" font-family="DM Mono,monospace" font-weight="500">= 0.140</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Bayes Calc -->
+      <div class="bayes-calc">
+        <div class="bc-label">📐 Cálculo — Teorema de Bayes</div>
+        <div class="bc-formula">
+          P(Enfermo | +) = <strong>P(+|E) × P(E)</strong> / P(+)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <strong>0.90 × 0.05</strong> / (0.045 + 0.095)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <strong>0.045 / 0.140</strong>
+        </div>
+        <div class="bc-result">P(Enfermo | Positivo) ≈ 0.321 → 32.1%</div>
+      </div>
+
+      <div class="intro-inst">
+        <div style="font-size:18px;flex-shrink:0;">💡</div>
+        <div>Se invita a poner en práctica los conceptos de probabilidad y modelado de incertidumbre mediante la resolución del caso que se presenta.</div>
+      </div>
+    </div>
+
+    <!-- SLIDES 1–4 built by JS -->
+
+    <!-- SLIDE 5: FINAL -->
+    <div class="slide s-final" id="slide-5">
+      <div class="trophy">
+        <span class="trophy-ico">🏆</span>
+        <div class="f-kicker">Actividad completada</div>
+        <div class="f-title">¡Felicidades!</div>
+        <div class="f-sub">Ha completado con éxito el análisis de probabilidad aplicada.</div>
+      </div>
+
+      <div class="summary-dark">
+        <div class="sd-label">Pilares del modelado de incertidumbre</div>
+        <ul class="sd-list">
+          <li class="sd-item">
+            <div class="sd-dot">1</div>
+            <div><strong>Espacio Muestral y Eventos:</strong> Antes de calcular cualquier dato, es vital definir el universo de resultados posibles.</div>
+          </li>
+          <li class="sd-item">
+            <div class="sd-dot">2</div>
+            <div><strong>Árbol de Probabilidad:</strong> Aplicó el principio multiplicativo para determinar la probabilidad de ocurrencia de eventos conjuntos en etapas sucesivas.</div>
+          </li>
+          <li class="sd-item">
+            <div class="sd-dot">3</div>
+            <div><strong>Teorema de Bayes:</strong> Logró actualizar una creencia inicial ante la aparición de nueva evidencia, una competencia crítica para el análisis de datos moderno.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="f-conclusion">Este ejercicio demuestra que la intuición a veces nos engaña, pero el rigor de las leyes probabilísticas nos permite obtener conclusiones precisas y científicamente respaldadas. ¡Siga aplicando este pensamiento analítico en sus futuros estudios!</div>
+    </div>
+
+  </div>
+
+  <!-- NAV ROW -->
+  <div class="nav-row">
+    <button class="nav-btn" id="btnPrev" onclick="navigate(-1)" disabled>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Anterior
+    </button>
+    <div class="nav-dots" id="navDots"></div>
+    <button class="nav-btn primary" id="btnNext" onclick="navigate(1)">
+      Comenzar
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+</div>
+
+<script>
+const QS = [
+  {
+    icon:'🎯', topic:'Espacio muestral y eventos',
+    text:'Si definimos el "espacio muestral" en este contexto, ¿qué representaría?',
+    visual:`<svg viewBox="0 0 560 60" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:60px;">
+      <rect x="8" y="8" width="544" height="46" rx="6" fill="rgba(69,123,157,.08)" stroke="rgba(69,123,157,.3)" stroke-width="1.5"/>
+      <text x="30" y="26" font-size="9" fill="rgba(69,123,157,.7)" font-family="DM Sans,sans-serif" font-weight="800">ESPACIO MUESTRAL Ω</text>
+      <rect x="20" y="30" width="120" height="18" rx="4" fill="rgba(232,72,85,.2)" stroke="var(--c1)" stroke-width="1.2"/>
+      <text x="80" y="42" text-anchor="middle" font-size="8" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">Pacientes enfermos</text>
+      <rect x="150" y="30" width="130" height="18" rx="4" fill="rgba(42,157,143,.2)" stroke="var(--c3)" stroke-width="1.2"/>
+      <text x="215" y="42" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">Pacientes sanos</text>
+      <rect x="290" y="30" width="120" height="18" rx="4" fill="rgba(244,162,97,.2)" stroke="var(--c2)" stroke-width="1.2"/>
+      <text x="350" y="42" text-anchor="middle" font-size="8" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="700">En observación</text>
+      <text x="430" y="42" text-anchor="start" font-size="8" fill="rgba(69,123,157,.6)" font-family="DM Sans,sans-serif">… todos los resultados</text>
+    </svg>`,
+    options:[
+      {text:'El conjunto de todos los resultados posibles, en este caso, todos los pacientes que se someten a la prueba.',correct:true},
+      {text:'Únicamente el grupo de pacientes que ya sabemos que están enfermos.',correct:false}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!',body:'El espacio muestral abarca la totalidad de los eventos simples posibles en un experimento aleatorio.',icon:'✅'},
+      wrong:  {verdict:'Incorrecto',body:'Ese sería solo un subconjunto o evento específico, no el espacio muestral completo.',icon:'❌'}
+    }
+  },
+  {
+    icon:'🌳', topic:'Árbol de probabilidad — Principio multiplicativo',
+    text:'Al utilizar un árbol de probabilidad, ¿qué operación debemos realizar con las "ramas" para calcular la probabilidad de que alguien esté enfermo Y salga positivo?',
+    visual:`<svg viewBox="0 0 420 64" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:64px;">
+      <circle cx="40" cy="32" r="18" fill="#1A1A2E" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
+      <text x="40" y="29" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.7)" font-family="DM Sans,sans-serif">Inicio</text>
+      <text x="40" y="38" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.5)" font-family="DM Sans,sans-serif">Ω</text>
+      <line x1="58" y1="22" x2="148" y2="12" stroke="var(--c1)" stroke-width="2" stroke-linecap="round"/>
+      <text x="100" y="11" text-anchor="middle" font-size="9" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">P(E)=0.05</text>
+      <circle cx="165" cy="10" r="14" fill="rgba(232,72,85,.18)" stroke="var(--c1)" stroke-width="1.5"/>
+      <text x="165" y="14" text-anchor="middle" font-size="8" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">Enf.</text>
+      <line x1="179" y1="10" x2="255" y2="10" stroke="var(--c1)" stroke-width="1.8" stroke-dasharray="4,2"/>
+      <text x="215" y="8" text-anchor="middle" font-size="9" fill="var(--c1)" font-family="DM Sans,sans-serif">P(+|E)=0.90</text>
+      <rect x="258" y="2" width="80" height="16" rx="4" fill="#1A1A2E" stroke="var(--c1)" stroke-width="1.5"/>
+      <text x="298" y="13" text-anchor="middle" font-size="9" fill="var(--c1)" font-family="DM Mono,monospace">0.05 × 0.90</text>
+      <text x="360" y="13" text-anchor="start" font-size="12" fill="var(--c1)" font-weight="700">=</text>
+      <rect x="372" y="2" width="42" height="16" rx="4" fill="var(--c1)"/>
+      <text x="393" y="13" text-anchor="middle" font-size="9.5" fill="#fff" font-family="DM Mono,monospace" font-weight="700">0.045</text>
+      <text x="298" y="40" text-anchor="middle" font-size="10" fill="rgba(244,162,97,.8)" font-family="DM Sans,sans-serif" font-weight="700">✕ Multiplicamos etapas</text>
+      <text x="298" y="56" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="DM Sans,sans-serif">La suma es para eventos disjuntos (OR)</text>
+    </svg>`,
+    options:[
+      {text:'Sumar las probabilidades de cada rama independiente.',correct:false},
+      {text:'Multiplicar las probabilidades de las ramas consecutivas (Etapa 1 × Etapa 2).',correct:true}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!',body:'Multiplicamos la probabilidad de estar enfermo (0.05) por la probabilidad de dar positivo dado que está enfermo (0.90). Resultado: 0.05 × 0.90 = 0.045.',icon:'✅'},
+      wrong:  {verdict:'Incorrecto',body:'La suma se utiliza para eventos disjuntos, no para la intersección de etapas.',icon:'❌'}
+    }
+  },
+  {
+    icon:'🔄', topic:'Teorema de Bayes — Actualización de creencias',
+    text:'Si la prueba arroja un resultado positivo, pero sabemos que hay muchas más personas sanas que enfermas en la población total, ¿qué herramienta permite actualizar nuestra creencia inicial?',
+    visual:`<svg viewBox="0 0 480 64" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:64px;">
+      <rect x="8" y="8" width="96" height="48" rx="8" fill="rgba(244,162,97,.1)" stroke="var(--c2)" stroke-width="1.5"/>
+      <text x="56" y="28" text-anchor="middle" font-size="8.5" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="700">Creencia inicial</text>
+      <text x="56" y="40" text-anchor="middle" font-size="10" fill="var(--c2)" font-family="DM Mono,monospace" font-weight="500">P(E)=0.05</text>
+      <text x="56" y="52" text-anchor="middle" font-size="8" fill="rgba(244,162,97,.6)" font-family="DM Sans,sans-serif">A priori</text>
+      <text x="118" y="36" text-anchor="middle" font-size="18" fill="rgba(255,255,255,.2)">+</text>
+      <rect x="130" y="8" width="100" height="48" rx="8" fill="rgba(69,123,157,.1)" stroke="var(--c4)" stroke-width="1.5"/>
+      <text x="180" y="28" text-anchor="middle" font-size="8.5" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="700">Nueva evidencia</text>
+      <text x="180" y="40" text-anchor="middle" font-size="9.5" fill="var(--c4)" font-family="DM Mono,monospace">Prueba (+)</text>
+      <text x="180" y="52" text-anchor="middle" font-size="8" fill="rgba(69,123,157,.6)" font-family="DM Sans,sans-serif">Verosimilitud</text>
+      <path d="M242,32 L272,32" stroke="rgba(42,157,143,.8)" stroke-width="2" marker-end="url(#arr)"/>
+      <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="rgba(42,157,143,.8)"/></marker></defs>
+      <text x="258" y="26" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">BAYES</text>
+      <rect x="276" y="8" width="100" height="48" rx="8" fill="rgba(42,157,143,.12)" stroke="var(--c3)" stroke-width="2"/>
+      <text x="326" y="28" text-anchor="middle" font-size="8.5" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">Creencia actualizada</text>
+      <text x="326" y="42" text-anchor="middle" font-size="12" fill="var(--c3)" font-family="DM Mono,monospace" font-weight="700">32.1%</text>
+      <text x="326" y="54" text-anchor="middle" font-size="8" fill="rgba(42,157,143,.6)" font-family="DM Sans,sans-serif">A posteriori</text>
+    </svg>`,
+    options:[
+      {text:'El Teorema de Bayes, que vincula la probabilidad condicional con la información previa (a priori).',correct:true},
+      {text:'La desviación estándar, para medir qué tan dispersos están los resultados positivos.',correct:false}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!',body:'Bayes nos permite calcular la probabilidad de estar realmente enfermo dado un positivo, ajustando el dato por la prevalencia de la enfermedad.',icon:'✅'},
+      wrong:  {verdict:'Incorrecto',body:'La desviación estándar es una medida de variabilidad, no de actualización de probabilidades condicionales.',icon:'❌'}
+    }
+  },
+  {
+    icon:'📊', topic:'Interpretación — Falsos positivos y prevalencia',
+    text:'Según el cálculo del caso, si una persona sale positiva, su probabilidad real de estar enferma es del 32.1%. ¿A qué se debe este valor relativamente bajo?',
+    visual:`<svg viewBox="0 0 480 70" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:70px;">
+      <text x="10" y="14" font-size="9" fill="var(--muted)" font-family="DM Sans,sans-serif" font-weight="700">De 1000 pacientes → 50 enfermos / 950 sanos</text>
+      <rect x="10" y="20" width="460" height="22" rx="4" fill="var(--border)"/>
+      <!-- 950 sanos -->
+      <rect x="10" y="20" width="437" height="22" rx="4" fill="rgba(42,157,143,.2)" stroke="none"/>
+      <!-- 50 enfermos -->
+      <rect x="10" y="20" width="23" height="22" rx="4" fill="rgba(232,72,85,.7)" stroke="none"/>
+      <text x="22" y="35" text-anchor="middle" font-size="8" fill="#fff" font-family="DM Sans,sans-serif" font-weight="700">50</text>
+      <text x="250" y="35" text-anchor="middle" font-size="8.5" fill="rgba(42,157,143,.8)" font-family="DM Sans,sans-serif" font-weight="700">950 sanos</text>
+      <text x="10" y="56" font-size="8.5" fill="var(--c1)" font-family="DM Sans,sans-serif">✓ 45 verdaderos + (50×0.90)</text>
+      <text x="10" y="68" font-size="8.5" fill="var(--c2)" font-family="DM Sans,sans-serif">✗ 95 falsos + (950×0.10) ← superan en número a los verdaderos +</text>
+    </svg>`,
+    options:[
+      {text:'A que la prueba es de mala calidad y no detecta bien a los enfermos.',correct:false},
+      {text:'A que la gran cantidad de personas sanas genera un número de falsos positivos que "pesa" más que los verdaderos positivos.',correct:true}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!',body:'Como el 95% de la población está sana, el 10% de falsos positivos supera en cantidad absoluta a los aciertos del 5% de enfermos. De cada 140 positivos, solo 45 son verdaderos.',icon:'✅'},
+      wrong:  {verdict:'Incorrecto',body:'La prueba tiene un 90% de eficacia, lo cual es alto. El efecto se debe a la baja prevalencia (5%), no a la calidad de la prueba.',icon:'❌'}
+    }
+  }
+];
+
+const TOTAL = 6;
+let cur = 0;
+const answered = new Array(4).fill(null);
+const LETS = ['A','B','C','D'];
+
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+function buildSlides(){
+  const area = document.getElementById('contentArea');
+  const fin  = document.getElementById('slide-5');
+  QS.forEach((q,qi)=>{
+    const shuffled = shuffle(q.options);
+    const div = document.createElement('div');
+    div.className='slide s-q';div.id=`slide-${qi+1}`;
+    const opts = shuffled.map((o,idx)=>{
+      const L=LETS[idx];
+      return `<button class="opt" id="opt-${qi}-${idx}" onclick="pick(${qi},${idx},${o.correct})" data-correct="${o.correct}">
+        <div class="opt-lt">${L}</div>
+        <div class="opt-txt"><strong>Opción ${L}:</strong> ${o.text}</div>
+      </button>`;
+    }).join('');
+    div.innerHTML=`
+      <div class="q-toprow">
+        <div class="q-badge">${qi+1}</div>
+        <div class="q-meta"><div class="q-label">Pregunta ${qi+1} de 4</div><div class="q-topic">${q.topic}</div></div>
+        <div class="q-ico">${q.icon}</div>
+      </div>
+      <div class="q-visual">
+        <div class="qv-top">Referencia visual</div>
+        <div class="qv-body">${q.visual}</div>
+      </div>
+      <div class="q-text">${q.text}</div>
+      <div class="opts" id="opts-${qi}">${opts}</div>
+      <div class="fb-carta" id="fb-c-${qi}" style="--fb-col:var(--c3)">
+        <div class="fb-head"><div class="fb-head-ico">${q.fb.correct.icon}</div><div><div class="fb-verdict">${q.fb.correct.verdict}</div><div class="fb-body">${q.fb.correct.body}</div></div></div>
+      </div>
+      <div class="fb-carta" id="fb-w-${qi}" style="--fb-col:var(--c1)">
+        <div class="fb-head"><div class="fb-head-ico">${q.fb.wrong.icon}</div><div><div class="fb-verdict">${q.fb.wrong.verdict}</div><div class="fb-body">${q.fb.wrong.body}</div></div></div>
+      </div>`;
+    area.insertBefore(div,fin);
+  });
+}
+
+function pick(qi,idx,isCorrect){
+  if(answered[qi]!==null)return;
+  answered[qi]=isCorrect?'correct':'wrong';
+  document.getElementById(`opts-${qi}`).querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===idx){b.classList.add(isCorrect?'correct':'wrong');}
+    else if(!isCorrect&&b.dataset.correct==='true'){b.classList.add('correct');}
+    else{b.classList.add('neutral');}
+  });
+  document.getElementById(isCorrect?`fb-c-${qi}`:`fb-w-${qi}`).classList.add('show');
+  updateProg();updateNav();
+}
+
+function navigate(dir){
+  const next=cur+dir;if(next<0||next>=TOTAL)return;
+  const c=document.getElementById(`slide-${cur}`);
+  c.classList.add('exit');c.classList.remove('active');
+  setTimeout(()=>c.classList.remove('exit'),380);
+  cur=next;
+  const n=document.getElementById(`slide-${cur}`);
+  n.classList.add('active');n.scrollTop=0;
+  updateNav();updateProg();
+}
+
+function updateProg(){
+  const done=answered.filter(a=>a!==null).length;
+  document.getElementById('progFill').style.width=(done/4*100)+'%';
+  document.getElementById('progCount').textContent=done+' / 4';
+}
+
+function updateNav(){
+  document.getElementById('btnPrev').disabled=cur===0;
+  const dots=document.getElementById('navDots');
+  dots.innerHTML='';
+  for(let i=1;i<=4;i++){
+    const d=document.createElement('div');
+    d.className='ndot'+(i===cur?' active':answered[i-1]!==null?' done':'');
+    dots.appendChild(d);
+  }
+  const btn=document.getElementById('btnNext');
+  if(cur===0){
+    btn.innerHTML='Comenzar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    btn.disabled=false;btn.onclick=()=>navigate(1);
+  } else if(cur>=1&&cur<=4){
+    const done=answered[cur-1]!==null;
+    btn.innerHTML=(cur===4&&done?'Ver resultados':'Siguiente')+' <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    btn.disabled=!done;btn.onclick=()=>navigate(1);
+  } else if(cur===5){
+    btn.innerHTML='Reintentar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/></svg>';
+    btn.disabled=false;btn.onclick=restart;
+  }
+}
+
+function restart(){
+  for(let i=0;i<4;i++)answered[i]=null;
+  for(let i=1;i<=4;i++){const s=document.getElementById(`slide-${i}`);if(s)s.remove();}
+  buildSlides();
+  document.getElementById('slide-5').classList.remove('active');
+  cur=0;document.getElementById('slide-0').classList.add('active');
+  document.getElementById('btnNext').onclick=()=>navigate(1);
+  updateNav();updateProg();
+}
+
+buildSlides();updateNav();updateProg();
+</script>
+</body>
+</html>

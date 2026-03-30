@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aplicación de conceptos del sistema financiero</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1e3a8a;
+    --blue-mid: #2563eb;
+    --blue-light: #3b82f6;
+    --accent: #06b6d4;
+    --accent2: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --bg: #f0f6ff;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --nav-h: 56px;
+  }
+
+  html, body {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* ── DESKTOP: mantiene el comportamiento original de escala ── */
+  @media (min-width: 768px) {
+    html, body { height: 100%; overflow: hidden; }
+    #app {
+      width: 1280px; height: 720px;
+      position: absolute; top: 50%; left: 50%;
+      transform-origin: top left;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .slide { position: absolute; inset: 0; display: none; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    #nav { position: absolute; bottom: 0; left: 0; right: 0; }
+    .game-slide { padding: 24px 32px 70px; }
+    #s1 { padding: 40px 60px 62px; }
+    #s0 { padding-bottom: 52px; }
+    #s5 { padding-bottom: 52px; }
+  }
+
+  /* ── MOBILE: layout natural, sin escala ── */
+  @media (max-width: 767px) {
+    html, body { overflow-x: hidden; }
+    #app { width: 100%; position: static; transform: none !important; }
+    .slide { display: none; width: 100%; min-height: calc(100vh - var(--nav-h)); }
+    .slide.active { display: flex; }
+    #nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; }
+    .game-slide { padding: 18px 16px calc(var(--nav-h) + 18px); }
+    #s1 { padding: 24px 16px calc(var(--nav-h) + 16px); }
+    #s0 { padding-bottom: calc(var(--nav-h) + 16px); }
+    #s5 { padding-bottom: calc(var(--nav-h) + 16px); }
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ══ NAV ══ */
+  #nav {
+    height: var(--nav-h);
+    background: white; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,.06);
+    overflow-x: auto; padding: 0 8px;
+    scrollbar-width: none;
+  }
+  #nav::-webkit-scrollbar { display: none; }
+  #nav button {
+    height: 36px; padding: 0 12px; border-radius: 20px; border: none; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; transition: all .2s;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  #nav .nav-prev, #nav .nav-next {
+    background: var(--blue); color: white; width: 34px; height: 34px; padding: 0;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  #nav .nav-prev:hover, #nav .nav-next:hover { background: var(--blue-mid); transform: scale(1.05); }
+  #nav .nav-tab { background: var(--border); color: var(--text); }
+  #nav .nav-tab.on { background: var(--blue-mid); color: white; }
+  #nav .nav-tab:hover:not(.on) { background: #cbd5e1; }
+  #slide-counter { font-size: 11px; color: var(--muted); min-width: 44px; text-align: center; flex-shrink: 0; }
+
+  /* ══ SLIDE 0: PORTADA ══ */
+  #s0 {
+    background: linear-gradient(135deg, #0f2460 0%, #1e3a8a 40%, #1d4ed8 70%, #0ea5e9 100%);
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 0;
+  }
+  #s0 h1 { color: white; font-size: clamp(22px, 5vw, 38px); font-weight: 800; line-height: 1.2; max-width: 90%; margin-bottom: 8px; }
+  #s0 h1 span { color: #67e8f9; }
+  #s0 .sub { color: rgba(255,255,255,.75); font-size: 14px; margin-bottom: 20px; }
+  #s0 .meta { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+  #s0 .meta-card {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+    border-radius: 14px; padding: 10px 18px; color: white; text-align: center; min-width: 80px;
+  }
+  #s0 .meta-card .val { font-size: 20px; font-weight: 800; }
+  #s0 .meta-card .lbl { font-size: 11px; opacity: .7; margin-top: 2px; }
+  #s0 .activities { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; padding: 0 16px; }
+  #s0 .act-pill {
+    background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3);
+    border-radius: 30px; padding: 8px 16px; color: white; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all .2s;
+  }
+  #s0 .act-pill:hover { background: rgba(255,255,255,.3); transform: translateY(-2px); }
+  #s0 .index-btn {
+    background: white; color: var(--blue); border: none;
+    border-radius: 30px; padding: 10px 28px; font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px;
+  }
+  #s0 .index-btn:hover { background: #e0f2fe; transform: translateY(-2px); }
+
+  /* ══ SLIDE 1: ÍNDICE ══ */
+  #s1 { flex-direction: column; }
+  #s1 h2 { font-size: clamp(18px, 4vw, 26px); font-weight: 800; color: var(--blue); margin-bottom: 6px; }
+  #s1 .desc { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  #s1 .cards { display: flex; gap: 16px; flex: 1; align-items: stretch; flex-wrap: wrap; }
+  .idx-card {
+    flex: 1 1 220px; background: white; border-radius: 20px; padding: 22px 20px;
+    box-shadow: 0 4px 24px rgba(30,58,138,.08); border: 1px solid var(--border);
+    display: flex; flex-direction: column; cursor: pointer; transition: all .25s;
+  }
+  .idx-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(30,58,138,.15); }
+  .idx-card .num { font-size: 36px; font-weight: 900; margin-bottom: 10px; }
+  .idx-card .type-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .idx-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .idx-card p { font-size: 13px; color: var(--muted); flex: 1; }
+  .idx-card .go-btn {
+    margin-top: 16px; align-self: flex-start; border: none; border-radius: 20px;
+    padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .c1 { --cc: #06b6d4; } .c1 .num { color: #06b6d4; }
+  .c1 .type-badge { background: #ecfeff; color: #0891b2; }
+  .c1 .go-btn { background: #ecfeff; color: #0891b2; }
+  .c2 { --cc: #6366f1; } .c2 .num { color: #6366f1; }
+  .c2 .type-badge { background: #eef2ff; color: #4f46e5; }
+  .c2 .go-btn { background: #eef2ff; color: #4f46e5; }
+  .c3 { --cc: #f59e0b; } .c3 .num { color: #f59e0b; }
+  .c3 .type-badge { background: #fffbeb; color: #d97706; }
+  .c3 .go-btn { background: #fffbeb; color: #d97706; }
+
+  /* ══ GAME SLIDES ══ */
+  .game-slide { flex-direction: column; }
+  .slide-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .slide-header .icon-box {
+    width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .slide-header h2 { font-size: clamp(14px, 3.5vw, 20px); font-weight: 800; color: var(--blue); }
+  .instructions-box {
+    background: #f0f6ff; border-left: 4px solid var(--blue-mid);
+    border-radius: 0 10px 10px 0; padding: 10px 14px;
+    font-size: 13px; margin-bottom: 14px;
+  }
+
+  /* ══ SOPA DE LETRAS ══ */
+  #s2 .game-area { display: flex; gap: 16px; flex: 1; min-height: 0; }
+  #ws-grid { border-collapse: collapse; user-select: none; }
+  #ws-grid td {
+    width: 34px; height: 34px; text-align: center; font-size: 15px; font-weight: 600;
+    border: 1px solid #e2e8f0; cursor: pointer; transition: background .15s; text-transform: uppercase;
+  }
+  #ws-grid td:hover { background: #dbeafe; }
+  #ws-grid td.selected { background: #bfdbfe; }
+  #ws-grid td.found { background: #d1fae5; color: #065f46; font-weight: 700; }
+
+  .right-panel { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .words-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .word-chip {
+    background: white; border: 2px solid var(--border); border-radius: 20px;
+    padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: default;
+    text-transform: uppercase;
+  }
+  .word-chip.found { background: #d1fae5; border-color: #10b981; color: #065f46; text-decoration: line-through; }
+  .progress-bar-wrap { background: #e2e8f0; border-radius: 10px; height: 8px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue-mid), var(--accent)); transition: width .4s; }
+  #ws-feedback {
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;
+    padding: 12px 16px; font-size: 13px; display: none;
+  }
+  .word-def { margin-bottom: 4px; }
+  .word-def strong { color: var(--blue); }
+
+  /* ── Sopa móvil: grilla pequeña + lista debajo ── */
+  @media (max-width: 767px) {
+    #s2 .game-area { flex-direction: column; overflow-y: auto; gap: 12px; }
+    .grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #ws-grid td { width: 26px; height: 26px; font-size: 11px; }
+    .right-panel { flex: none; }
+  }
+
+  /* ══ CRUCIGRAMAS ══ */
+  .cw-wrap { display: flex; gap: 20px; flex: 1; min-height: 0; overflow: hidden; }
+  .cw-grid-area { flex: 0 0 auto; overflow: auto; }
+  .cw-table { border-collapse: collapse; }
+  .cw-table td {
+    width: 38px; height: 38px; border: 1px solid #cbd5e1; position: relative; background: white;
+  }
+  .cw-table td.black { background: #1e293b; border-color: #1e293b; }
+  .cw-table td input {
+    width: 100%; height: 100%; border: none; background: transparent;
+    text-align: center; font-size: 16px; font-weight: 700; text-transform: uppercase;
+    font-family: 'Inter', sans-serif; color: var(--text); outline: none;
+  }
+  .cw-table td input.correct { color: #065f46; background: #d1fae5; }
+  .cw-table td input.wrong { color: #991b1b; background: #fee2e2; }
+  .cell-num {
+    position: absolute; top: 1px; left: 2px; font-size: 8px; font-weight: 700;
+    color: var(--muted); pointer-events: none;
+  }
+  .cw-clues { flex: 1; overflow-y: auto; padding-right: 4px; min-width: 0; }
+  .cw-clues::-webkit-scrollbar { width: 4px; }
+  .cw-clues::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  .clue-section h4 { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
+  .clue-item {
+    display: flex; gap: 10px; margin-bottom: 8px; font-size: 12px;
+    padding: 8px 10px; border-radius: 8px;
+  }
+  .clue-item:hover { background: #f1f5f9; }
+  .clue-num { font-weight: 700; color: var(--blue-mid); min-width: 20px; }
+  .cw-check-btn {
+    background: var(--blue-mid); color: white; border: none; border-radius: 20px;
+    padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .cw-feedback {
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; margin-top: 10px; display: none;
+  }
+
+  /* ── Crucigrama móvil: grilla arriba, pistas abajo ── */
+  @media (max-width: 767px) {
+    .cw-wrap { flex-direction: column; overflow: visible; min-height: 0; }
+    .cw-grid-area { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .cw-table td { width: 32px; height: 32px; }
+    .cw-table td input { font-size: 13px; }
+    .cw-clues { overflow: visible; max-height: none; }
+  }
+
+  /* ══ SLIDE 5: FINAL ══ */
+  #s5 {
+    background: linear-gradient(135deg,#0f2460,#1e3a8a,#0ea5e9);
+    flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  }
+  #s5 .big-icon { font-size: 56px; margin-bottom: 14px; }
+  #s5 h2 { color: white; font-size: clamp(20px, 5vw, 30px); font-weight: 800; }
+  #s5 .fb-text { color: rgba(255,255,255,.85); font-size: 14px; text-align: center; max-width: 90%; margin-top: 10px; }
+  #s5 .achievement-row { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; justify-content: center; padding: 0 16px; }
+  #s5 .ach-card {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+    border-radius: 16px; padding: 14px 18px; color: white; text-align: center; font-size: 13px;
+  }
+  #s5 .restart-btn {
+    margin-top: 24px; background: white; color: var(--blue); border: none;
+    border-radius: 30px; padding: 10px 28px; font-weight: 700; cursor: pointer; font-size: 14px;
+  }
+
+  /* ══ MODAL ══ */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55);
+    z-index: 200; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: white; border-radius: 20px; padding: 24px 28px;
+    max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  .modal-box h3 { font-size: 18px; font-weight: 700; color: var(--blue); margin-bottom: 12px; }
+  .modal-close {
+    background: var(--blue-mid); color: white; border: none; border-radius: 20px;
+    padding: 8px 20px; font-weight: 600; cursor: pointer; margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- SLIDE 0: PORTADA -->
+  <div class="slide active" id="s0">
+    <h1>Aplicación de conceptos del<br><span>Sistema Financiero</span></h1>
+    <div class="meta">
+      <div class="meta-card"><div class="val">3</div><div class="lbl">Actividades</div></div>
+      <div class="meta-card"><div class="val">15</div><div class="lbl">Palabras</div></div>
+      <div class="meta-card"><div class="val">15</div><div class="lbl">Pistas</div></div>
+    </div>
+    <div class="activities">
+      <div class="act-pill" onclick="goTo(2)"><i class="fa-solid fa-magnifying-glass"></i> Sopa de letras</div>
+      <div class="act-pill" onclick="goTo(3)"><i class="fa-solid fa-table-cells"></i> Crucigrama global</div>
+      <div class="act-pill" onclick="goTo(4)"><i class="fa-solid fa-flag"></i> Crucigrama Ecuador</div>
+    </div>
+    <button class="index-btn" onclick="goTo(1)"><i class="fa-solid fa-list"></i> Ver actividades</button>
+  </div>
+
+  <!-- SLIDE 1: ÍNDICE -->
+  <div class="slide" id="s1">
+    <h2><i class="fa-solid fa-list-check" style="color:var(--blue-mid);margin-right:8px"></i>Índice de actividades</h2>
+    <p class="desc">Selecciona una actividad para comenzar</p>
+    <div class="cards">
+      <div class="idx-card c1" onclick="goTo(2)">
+        <div class="num">01</div>
+        <div class="type-badge"><i class="fa-solid fa-magnifying-glass"></i> Sopa de letras</div>
+        <h3>Elementos y conceptos clave</h3>
+        <p>Encuentra las palabras que definen las bases del sistema financiero según los temas vistos en las unidades 1 y 2.</p>
+        <button class="go-btn"><i class="fa-solid fa-play"></i> Iniciar</button>
+      </div>
+      <div class="idx-card c2" onclick="goTo(3)">
+        <div class="num">02</div>
+        <div class="type-badge"><i class="fa-solid fa-table-cells"></i> Crucigrama</div>
+        <h3>Fundamentos del sistema financiero</h3>
+        <p>Complete el crucigrama identificando los componentes esenciales del sistema financiero, mecanismos de intermediación y tipos de activos.</p>
+        <button class="go-btn"><i class="fa-solid fa-play"></i> Iniciar</button>
+      </div>
+      <div class="idx-card c3" onclick="goTo(4)">
+        <div class="num">03</div>
+        <div class="type-badge"><i class="fa-solid fa-flag"></i> Crucigrama</div>
+        <h3>Sistema financiero ecuatoriano</h3>
+        <p>Complete el crucigrama utilizando conceptos sobre la estructura y normativa nacional.</p>
+        <button class="go-btn"><i class="fa-solid fa-play"></i> Iniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: SOPA DE LETRAS -->
+  <div class="slide game-slide" id="s2">
+    <div class="slide-header">
+      <div class="icon-box" style="background:#ecfeff;color:#0891b2;"><i class="fa-solid fa-magnifying-glass"></i></div>
+      <div><h2>Sopa de letras: elementos y conceptos clave</h2></div>
+    </div>
+    <div class="instructions-box">
+      <strong>Instrucciones:</strong> Encuentra en la sopa de letras las palabras indicadas que definen las bases del sistema financiero según los temas vistos en las unidades 1 y 2.
+    </div>
+    <div class="game-area">
+      <div class="grid-wrap">
+        <table id="ws-grid"><tbody id="ws-tbody"></tbody></table>
+      </div>
+      <div class="right-panel">
+        <div>
+          <p style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;">PALABRAS A ENCONTRAR</p>
+          <div class="words-list" id="ws-chips"></div>
+        </div>
+        <div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="ws-prog" style="width:0%"></div></div>
+          <div class="progress-text" id="ws-prog-txt" style="font-size:12px;margin-top:4px;color:var(--muted);">0 de 6 palabras encontradas</div>
+        </div>
+        <div id="ws-feedback">
+          <h4>✅ Retroalimentación</h4>
+          <div id="ws-feedback-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: CRUCIGRAMA 1 -->
+  <div class="slide game-slide" id="s3">
+    <div class="slide-header">
+      <div class="icon-box" style="background:#eef2ff;color:#4f46e5;"><i class="fa-solid fa-table-cells"></i></div>
+      <div><h2>Crucigrama: fundamentos del sistema financiero</h2></div>
+    </div>
+    <div class="instructions-box">
+      <strong>Instrucciones:</strong> Complete el crucigrama identificando los componentes esenciales del sistema financiero.
+    </div>
+    <div class="cw-wrap" id="cw1-wrap">
+      <div class="cw-grid-area" id="cw1-grid"></div>
+      <div class="cw-clues" id="cw1-clues"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: CRUCIGRAMA 2 -->
+  <div class="slide game-slide" id="s4">
+    <div class="slide-header">
+      <div class="icon-box" style="background:#fffbeb;color:#d97706;"><i class="fa-solid fa-flag"></i></div>
+      <div><h2>Crucigrama: sistema financiero ecuatoriano</h2></div>
+    </div>
+    <div class="instructions-box">
+      <strong>Instrucciones:</strong> Complete el crucigrama utilizando los conceptos sobre la estructura y normativa nacional.
+    </div>
+    <div class="cw-wrap" id="cw2-wrap">
+      <div class="cw-grid-area" id="cw2-grid"></div>
+      <div class="cw-clues" id="cw2-clues"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: RETROALIMENTACIÓN FINAL -->
+  <div class="slide" id="s5">
+    <div class="big-icon">🎉</div>
+    <h2>¡Retroalimentación final!</h2>
+    <p class="fb-text">¡Felicitaciones! Consolidó conceptos esenciales del sistema financiero y fortaleció su comprensión sobre instituciones, normativa, funciones y procesos clave del contexto financiero ecuatoriano.</p>
+    <div class="achievement-row">
+      <div class="ach-card"><div style="font-size:24px;margin-bottom:6px;">🔍</div><div style="font-weight:700;">Sopa de letras</div><div style="opacity:.8;font-size:12px;">Bases del sistema</div></div>
+      <div class="ach-card"><div style="font-size:24px;margin-bottom:6px;">📊</div><div style="font-weight:700;">Mercados</div><div style="opacity:.8;font-size:12px;">Renta fija/variable</div></div>
+      <div class="ach-card"><div style="font-size:24px;margin-bottom:6px;">🇪🇨</div><div style="font-weight:700;">Ecuador</div><div style="opacity:.8;font-size:12px;">Normativa</div></div>
+    </div>
+    <button class="restart-btn" onclick="goTo(0)"><i class="fa-solid fa-home"></i> Volver al inicio</button>
+  </div>
+
+  <!-- NAV -->
+  <div id="nav">
+    <button class="nav-prev" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="nav-tab" onclick="goTo(0)">Inicio</button>
+    <button class="nav-tab" onclick="goTo(1)">Índice</button>
+    <button class="nav-tab" onclick="goTo(2)">Sopa</button>
+    <button class="nav-tab" onclick="goTo(3)">Crucigrama I</button>
+    <button class="nav-tab" onclick="goTo(4)">Crucigrama II</button>
+    <button class="nav-tab" onclick="goTo(5)">Final</button>
+    <span id="slide-counter">1 / 6</span>
+    <button class="nav-next" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <button class="modal-close" onclick="closeModal()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+// ── ESCALADO (solo desktop) ──
+function scaleApp(){
+  const isMobile = window.innerWidth < 768;
+  const app = document.getElementById('app');
+  if(isMobile){
+    app.style.transform = 'none';
+    app.style.position = 'static';
+    app.style.width = '100%';
+    app.style.height = 'auto';
+  } else {
+    const W = 1280, H = 720;
+    const sw = window.innerWidth, sh = window.innerHeight;
+    const scale = Math.min(sw/W, sh/H);
+    app.style.position = 'absolute';
+    app.style.width = W+'px';
+    app.style.height = H+'px';
+    app.style.transform = `scale(${scale}) translate(-50%,-50%)`;
+  }
+}
+scaleApp();
+window.addEventListener('resize', scaleApp);
+
+// ── NAVEGACIÓN ──
+const TOTAL = 6;
+let cur = 0;
+const slides = ['s0','s1','s2','s3','s4','s5'];
+function goTo(n){
+  document.getElementById(slides[cur]).classList.remove('active');
+  cur = n;
+  const el = document.getElementById(slides[cur]);
+  el.classList.add('active');
+  // scroll to top en móvil
+  window.scrollTo(0,0);
+  document.getElementById('slide-counter').textContent = (cur+1)+' / '+TOTAL;
+  const tabs = document.querySelectorAll('.nav-tab');
+  tabs.forEach((t,i) => t.classList.toggle('on', i===cur));
+}
+function nextSlide(){ if(cur < TOTAL-1) goTo(cur+1); }
+function prevSlide(){ if(cur > 0) goTo(cur-1); }
+
+// ── MODAL ──
+function openModal(title, html){
+  document.getElementById('modal-title').innerHTML = title;
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+// ══════════════════════════════════════════════
+// SOPA DE LETRAS
+// ══════════════════════════════════════════════
+const WS_WORDS = [
+  {word:'INTERMEDIACION', hint:'El rol de canalizar fondos de ahorradores a inversores.'},
+  {word:'LIQUIDEZ',       hint:'Facilidad para convertir un activo en efectivo sin pérdida de valor.'},
+  {word:'SENOREAJE',      hint:'Beneficio del gobierno por emitir moneda.'},
+  {word:'FINTECH',        hint:'Innovaciones tecnológicas aplicadas a los servicios financieros.'},
+  {word:'SUPERAVITARIO',  hint:'Agente que posee excedentes de dinero para ahorrar e invertir.'},
+  {word:'DEFICITARIO',    hint:'Agente que necesita recursos para consumo e inversión.'}
+];
+
+const GRID_SIZE = 14;
+let wsGrid = [];
+let wsFound = new Set();
+let wsPlaced = [];
+let wsSelected = [];
+let wsSelecting = false;
+
+function initWS(){
+  wsGrid = Array.from({length:GRID_SIZE},()=>Array(GRID_SIZE).fill(''));
+  wsPlaced = [];
+  const dirs = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
+  WS_WORDS.forEach(({word}) => {
+    let placed = false;
+    for(let attempt=0; attempt<1000 && !placed; attempt++) {
+      const dir = dirs[Math.floor(Math.random()*dirs.length)];
+      const r0 = Math.floor(Math.random() * GRID_SIZE);
+      const c0 = Math.floor(Math.random() * GRID_SIZE);
+      let ok = true;
+      for(let i=0; i<word.length; i++) {
+        const r = r0 + i*dir[0], c = c0 + i*dir[1];
+        if(r<0||r>=GRID_SIZE||c<0||c>=GRID_SIZE||(wsGrid[r][c]!==''&&wsGrid[r][c]!==word[i])){ok=false;break;}
+      }
+      if(ok){
+        const cells=[];
+        for(let i=0;i<word.length;i++){
+          const r=r0+i*dir[0], c=c0+i*dir[1];
+          wsGrid[r][c]=word[i]; cells.push([r,c]);
+        }
+        wsPlaced.push({word,cells}); placed=true;
+      }
+    }
+  });
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for(let r=0;r<GRID_SIZE;r++) for(let c=0;c<GRID_SIZE;c++)
+    if(wsGrid[r][c]==='') wsGrid[r][c]=chars[Math.floor(Math.random()*chars.length)];
+  renderWS();
+}
+
+function renderWS(){
+  const tbody = document.getElementById('ws-tbody');
+  tbody.innerHTML='';
+  for(let r=0;r<GRID_SIZE;r++){
+    const tr=document.createElement('tr');
+    for(let c=0;c<GRID_SIZE;c++){
+      const td=document.createElement('td');
+      td.textContent=wsGrid[r][c];
+      td.dataset.r=r; td.dataset.c=c;
+      wsPlaced.forEach(p=>{
+        if(wsFound.has(p.word)) p.cells.forEach(([fr,fc])=>{ if(fr===r&&fc===c) td.classList.add('found'); });
+      });
+      td.addEventListener('click',()=>wsCellClick(r,c,td));
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  const chips=document.getElementById('ws-chips');
+  chips.innerHTML='';
+  WS_WORDS.forEach(({word})=>{
+    const ch=document.createElement('div');
+    ch.className='word-chip'+(wsFound.has(word)?' found':'');
+    ch.textContent=word; ch.id='chip-'+word;
+    chips.appendChild(ch);
+  });
+}
+
+function wsCellClick(r,c,td){
+  if(td.classList.contains('found')) return;
+  if(!wsSelecting){
+    clearSelection();
+    wsSelected=[[r,c]];
+    td.classList.add('selected');
+    wsSelecting=true;
+  } else {
+    const [r1,c1]=wsSelected[0];
+    if(r1===r&&c1===c){clearSelection();return;}
+    const dr=r-r1, dc=c-c1;
+    const steps=Math.max(Math.abs(dr),Math.abs(dc));
+    const sr=dr===0?0:dr/Math.abs(dr), sc=dc===0?0:dc/Math.abs(dc);
+    if((dr!==0&&dc!==0&&Math.abs(dr)!==Math.abs(dc))||steps===0){clearSelection();return;}
+    const cells=[];
+    for(let i=0;i<=steps;i++){
+      const nr=r1+i*sr, nc=c1+i*sc;
+      if(nr<0||nr>=GRID_SIZE||nc<0||nc>=GRID_SIZE){clearSelection();return;}
+      const cell=document.querySelector(`#ws-tbody td[data-r="${nr}"][data-c="${nc}"]`);
+      if(cell&&cell.classList.contains('found')){clearSelection();return;}
+      cells.push([nr,nc]);
+    }
+    clearSelection(false);
+    cells.forEach(([nr,nc])=>{
+      const t=document.querySelector(`#ws-tbody td[data-r="${nr}"][data-c="${nc}"]`);
+      if(t) t.classList.add('selected');
+    });
+    const word=cells.map(([nr,nc])=>wsGrid[nr][nc]).join('');
+    const wordRev=word.split('').reverse().join('');
+    const found=wsPlaced.find(p=>!wsFound.has(p.word)&&(p.word===word||p.word===wordRev));
+    if(found){
+      wsFound.add(found.word);
+      found.cells.forEach(([nr,nc])=>{
+        const t=document.querySelector(`#ws-tbody td[data-r="${nr}"][data-c="${nc}"]`);
+        if(t){t.classList.add('found');t.classList.remove('selected');}
+      });
+      const chip=document.getElementById('chip-'+found.word);
+      if(chip) chip.classList.add('found');
+      updateWSProgress(); clearSelection();
+    } else { wsSelected=cells; }
+  }
+}
+function clearSelection(resetFlag=true){
+  document.querySelectorAll('#ws-tbody td.selected').forEach(td=>td.classList.remove('selected'));
+  wsSelected=[];
+  if(resetFlag) wsSelecting=false;
+}
+function updateWSProgress(){
+  const n=wsFound.size;
+  document.getElementById('ws-prog').style.width=(n/6*100)+'%';
+  document.getElementById('ws-prog-txt').textContent=n+' de 6 palabras encontradas';
+  if(n===6){
+    const fb=document.getElementById('ws-feedback');
+    fb.style.display='block';
+    document.getElementById('ws-feedback-content').innerHTML=
+      WS_WORDS.map(({word,hint})=>`<div class="word-def"><strong>${word}:</strong> ${hint}</div>`).join('');
+  }
+}
+
+// ══════════════════════════════════════════════
+// CRUCIGRAMA 1
+// ══════════════════════════════════════════════
+const CW1_ANSWERS = {
+  1:{word:'INTERMEDIARIO', dir:'H', r:0, c:0},
+  2:{word:'DERIVADO',      dir:'H', r:1, c:4},
+  3:{word:'ACCION',        dir:'H', r:3, c:4},
+  4:{word:'LIQUIDEZ',      dir:'H', r:5, c:0},
+  5:{word:'DIVISAS',       dir:'H', r:7, c:5},
+  6:{word:'MONETARIO',     dir:'H', r:10,c:5},
+  7:{word:'CREDITO',       dir:'V', r:1, c:1},
+  8:{word:'MERCADO',       dir:'V', r:0, c:5},
+  9:{word:'BANCARIO',      dir:'V', r:6, c:10},
+  10:{word:'BONO',         dir:'V', r:9, c:6}
+};
+const CW1_CLUES = {
+  H:[
+    {n:1, text:'Institución que media entre ahorradores y prestatarios asumiendo la gestión del riesgo.'},
+    {n:2, text:'Activo financiero cuya rentabilidad depende de la evolución de un activo subyacente.'},
+    {n:3, text:'Título de renta variable que otorga propiedad parcial en una empresa.'},
+    {n:4, text:'Cualidad que define la facilidad de convertir un activo en efectivo sin pérdida significativa.'},
+    {n:5, text:'Mercado global donde se negocian e intercambian monedas de distintos países.'},
+    {n:6, text:'Mercado especializado en activos financieros con alta liquidez y plazos menores a un año.'}
+  ],
+  V:[
+    {n:7, text:'Posibilidad de pérdida económica derivada de incumplimiento de obligaciones de pago.'},
+    {n:8, text:'Lugar donde se intercambian capitales.'},
+    {n:9, text:'Tipo de intermediario financiero que capta depósitos.'},
+    {n:10, text:'Instrumento de deuda de renta fija.'}
+  ]
+};
+
+function buildCW1(){
+  const grid=document.getElementById('cw1-grid');
+  grid.innerHTML='';
+  const table=document.createElement('table');
+  table.className='cw-table';
+  const ROWS=14, COLS=14;
+  for(let r=0;r<ROWS;r++){
+    const tr=document.createElement('tr');
+    for(let c=0;c<COLS;c++){
+      const td=document.createElement('td');
+      let hasLetter=false, num=null, correctChar='';
+      Object.entries(CW1_ANSWERS).forEach(([key,{word,dir,r:wr,c:wc}])=>{
+        for(let i=0;i<word.length;i++){
+          const nr=wr+(dir==='V'?i:0), nc=wc+(dir==='H'?i:0);
+          if(nr===r&&nc===c){hasLetter=true;correctChar=word[i];if(i===0)num=key;}
+        }
+      });
+      if(hasLetter){
+        if(num){const sp=document.createElement('span');sp.className='cell-num';sp.textContent=num;td.appendChild(sp);}
+        const inp=document.createElement('input');
+        inp.maxLength=1; inp.id=`cw1-${r}-${c}`; inp.dataset.correct=correctChar;
+        inp.addEventListener('input',function(){this.value=this.value.toUpperCase();});
+        td.appendChild(inp);
+      } else { td.className='black'; }
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+  grid.appendChild(table);
+  const cluesDiv=document.getElementById('cw1-clues');
+  cluesDiv.innerHTML='';
+  const hSec=document.createElement('div');hSec.className='clue-section';
+  hSec.innerHTML='<h4><i class="fa-solid fa-arrow-right"></i> Horizontales</h4>';
+  CW1_CLUES.H.forEach(cl=>{const d=document.createElement('div');d.className='clue-item';d.innerHTML=`<span class="clue-num">${cl.n}.</span> ${cl.text}`;hSec.appendChild(d);});
+  cluesDiv.appendChild(hSec);
+  const vSec=document.createElement('div');vSec.className='clue-section';
+  vSec.innerHTML='<h4><i class="fa-solid fa-arrow-down"></i> Verticales</h4>';
+  CW1_CLUES.V.forEach(cl=>{const d=document.createElement('div');d.className='clue-item';d.innerHTML=`<span class="clue-num">${cl.n}.</span> ${cl.text}`;vSec.appendChild(d);});
+  cluesDiv.appendChild(vSec);
+  const btn=document.createElement('button');btn.className='cw-check-btn';
+  btn.innerHTML='<i class="fa-solid fa-check"></i> Verificar';btn.onclick=()=>checkCW1();
+  cluesDiv.appendChild(btn);
+  const fb=document.createElement('div');fb.className='cw-feedback';fb.id='cw1-feedback';
+  cluesDiv.appendChild(fb);
+}
+
+function checkCW1(){
+  let correct=0, total=Object.keys(CW1_ANSWERS).length;
+  Object.entries(CW1_ANSWERS).forEach(([key,{word,dir,r,c}])=>{
+    let wordOk=true;
+    for(let i=0;i<word.length;i++){
+      const nr=r+(dir==='V'?i:0), nc=c+(dir==='H'?i:0);
+      const inp=document.getElementById(`cw1-${nr}-${nc}`);
+      if(inp){
+        if(inp.value.toUpperCase()===word[i]){inp.classList.add('correct');inp.classList.remove('wrong');}
+        else{inp.classList.add('wrong');inp.classList.remove('correct');wordOk=false;}
+      }
+    }
+    if(wordOk) correct++;
+  });
+  const fb=document.getElementById('cw1-feedback');
+  fb.style.display='block';
+  fb.innerHTML=correct===total?'✅ ¡Excelente! Ha completado correctamente el crucigrama.':`⚠️ ${correct} de ${total} palabras correctas. Revise las celdas en rojo.`;
+  fb.style.background=correct===total?'#f0fdf4':'#fffbeb';
+}
+
+// ══════════════════════════════════════════════
+// CRUCIGRAMA 2
+// ══════════════════════════════════════════════
+const CW2_ANSWERS = {
+  1:{word:'COMF',    dir:'H', r:6, c:1},
+  2:{word:'SEPS',    dir:'H', r:1, c:1},
+  3:{word:'POPULAR', dir:'V', r:0, c:6},
+  4:{word:'FERIADO', dir:'V', r:0, c:2},
+  5:{word:'QUITO',   dir:'H', r:3, c:0}
+};
+const CW2_CLUES = {
+  H:[
+    {n:1, text:'Ley creada en 2014 que regula al sistema financiero ecuatoriano (4 letras)'},
+    {n:2, text:'Siglas del control del sector popular y solidario'}
+  ],
+  V:[
+    {n:3, text:'Sector de cooperativas y mutualistas'},
+    {n:4, text:'Evento económico de 1999 que llevó al dólar'},
+    {n:5, text:'Ciudad con Bolsa de Valores'}
+  ]
+};
+
+function buildCW2(){
+  const grid=document.getElementById('cw2-grid');
+  grid.innerHTML='';
+  const table=document.createElement('table');
+  table.className='cw-table';
+  const ROWS=8, COLS=8;
+  for(let r=0;r<ROWS;r++){
+    const tr=document.createElement('tr');
+    for(let c=0;c<COLS;c++){
+      const td=document.createElement('td');
+      let hasLetter=false, num=null;
+      Object.entries(CW2_ANSWERS).forEach(([key,{word,dir,r:wr,c:wc}])=>{
+        for(let i=0;i<word.length;i++){
+          const nr=wr+(dir==='V'?i:0), nc=wc+(dir==='H'?i:0);
+          if(nr===r&&nc===c){hasLetter=true;if(i===0)num=key;}
+        }
+      });
+      if(hasLetter){
+        if(num){const sp=document.createElement('span');sp.className='cell-num';sp.textContent=num;td.appendChild(sp);}
+        const inp=document.createElement('input');
+        inp.maxLength=1; inp.id=`cw2-${r}-${c}`;
+        inp.addEventListener('input',function(){this.value=this.value.toUpperCase();});
+        td.appendChild(inp);
+      } else { td.className='black'; }
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+  grid.appendChild(table);
+  const cluesDiv=document.getElementById('cw2-clues');
+  cluesDiv.innerHTML='';
+  const hSec=document.createElement('div');hSec.className='clue-section';
+  hSec.innerHTML='<h4><i class="fa-solid fa-arrow-right"></i> Horizontales</h4>';
+  CW2_CLUES.H.forEach(cl=>{const d=document.createElement('div');d.className='clue-item';d.innerHTML=`<span class="clue-num">${cl.n}.</span> ${cl.text}`;hSec.appendChild(d);});
+  cluesDiv.appendChild(hSec);
+  const vSec=document.createElement('div');vSec.className='clue-section';
+  vSec.innerHTML='<h4><i class="fa-solid fa-arrow-down"></i> Verticales</h4>';
+  CW2_CLUES.V.forEach(cl=>{const d=document.createElement('div');d.className='clue-item';d.innerHTML=`<span class="clue-num">${cl.n}.</span> ${cl.text}`;vSec.appendChild(d);});
+  cluesDiv.appendChild(vSec);
+  const btn=document.createElement('button');btn.className='cw-check-btn';
+  btn.style.background='#d97706';
+  btn.innerHTML='<i class="fa-solid fa-check"></i> Verificar';btn.onclick=()=>checkCW2();
+  cluesDiv.appendChild(btn);
+  const fb=document.createElement('div');fb.className='cw-feedback';fb.id='cw2-feedback';
+  cluesDiv.appendChild(fb);
+}
+
+function checkCW2(){
+  let correct=0, total=Object.keys(CW2_ANSWERS).length;
+  Object.entries(CW2_ANSWERS).forEach(([key,{word,dir,r,c}])=>{
+    let wordOk=true;
+    for(let i=0;i<word.length;i++){
+      const nr=r+(dir==='V'?i:0), nc=c+(dir==='H'?i:0);
+      const inp=document.getElementById(`cw2-${nr}-${nc}`);
+      if(inp){
+        if(inp.value.toUpperCase()===word[i]){inp.classList.add('correct');inp.classList.remove('wrong');}
+        else{inp.classList.add('wrong');inp.classList.remove('correct');wordOk=false;}
+      }
+    }
+    if(wordOk) correct++;
+  });
+  const fb=document.getElementById('cw2-feedback');
+  fb.style.display='block';
+  fb.innerHTML=correct===total?'✅ ¡Excelente! Ha completado correctamente el crucigrama.':`⚠️ ${correct} de ${total} palabras correctas. Revise las celdas en rojo.`;
+  fb.style.background=correct===total?'#f0fdf4':'#fffbeb';
+}
+
+// ── INIT ──
+initWS();
+buildCW1();
+buildCW2();
+document.querySelectorAll('.nav-tab')[0].classList.add('on');
+</script>
+</body>
+</html>

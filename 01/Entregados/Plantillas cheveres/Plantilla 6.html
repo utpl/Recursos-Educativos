@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infografía Interactiva</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      --shadow: 0 10px 40px rgba(0,0,0,0.15);
+      --shadow-hover: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+      overflow-x: hidden;
+    }
+
+    /* === HEADER INTERACTIVO === */
+    .infographic-header {
+      text-align: center;
+      padding: 2rem;
+      color: white;
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.8s ease;
+    }
+    
+    .infographic-header h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .infographic-header p {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    /* === CONTROLES DE INTERACCIÓN === */
+    .controls {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.15);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .control-btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 50px;
+      background: white;
+      color: #667eea;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .control-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: var(--shadow-hover);
+      background: #667eea;
+      color: white;
+    }
+
+    .control-btn.active {
+      background: #764ba2;
+      color: white;
+    }
+
+    /* === TARJETAS INTERACTIVAS === */
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .card {
+      --card-color-1: #b2dc33;
+      --card-color-2: #9cd400;
+      position: relative;
+      border-radius: 24px;
+      padding: 2rem;
+      color: white;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+      overflow: hidden;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), 
+                    rgba(255,255,255,0.3) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .card:hover::before { opacity: 1; }
+    
+    .card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: var(--shadow-hover);
+      z-index: 10;
+    }
+
+    .card.expanded {
+      grid-column: 1 / -1;
+      transform: scale(1.05);
+      z-index: 20;
+    }
+
+    /* === NÚMERO DECORATIVO === */
+    .card-number {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      opacity: 0.2;
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      line-height: 1;
+      transition: var(--transition);
+    }
+    
+    .card:hover .card-number {
+      opacity: 0.4;
+      transform: scale(1.1);
+    }
+
+    /* === CONTENIDO DE LA TARJETA === */
+    .card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .card-title::before {
+      content: '✦';
+      font-size: 1.2rem;
+      animation: sparkle 2s infinite;
+    }
+
+    .card-text {
+      line-height: 1.6;
+      opacity: 0.95;
+      max-height: 100px;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+
+    .card.expanded .card-text {
+      max-height: 500px;
+    }
+
+    /* === BOTÓN EXPANDIR === */
+    .expand-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.25);
+      border: 2px solid white;
+      border-radius: 50px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .expand-btn:hover {
+      background: white;
+      color: var(--card-color-2);
+      transform: scale(1.05);
+    }
+
+    .expand-btn .icon {
+      transition: transform 0.3s ease;
+      display: inline-block;
+    }
+
+    .card.expanded .expand-btn .icon {
+      transform: rotate(180deg);
+    }
+
+    /* === TOOLTIPS INTERACTIVOS === */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      border-bottom: 2px dotted rgba(255,255,255,0.7);
+      cursor: help;
+    }
+
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      width: 220px;
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      text-align: center;
+      border-radius: 12px;
+      padding: 0.8rem;
+      position: absolute;
+      z-index: 100;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      opacity: 0;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .tooltip .tooltip-text::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.9) transparent transparent transparent;
+    }
+
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* === ANIMACIONES === */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.9); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .card:hover .card-title::before {
+      animation: pulse 1s infinite;
+    }
+
+    /* === PROGRESS INDICATOR === */
+    .progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      z-index: 1000;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #fff, #ffd93d);
+      transition: width 0.1s ease;
+      box-shadow: 0 0 10px rgba(255,217,61,0.5);
+    }
+
+    /* === MODAL PARA INFO EXTRA === */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+      padding: 2rem;
+    }
+
+    .modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 100%;
+      transform: scale(0.9);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .modal.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #f1f1f1;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: #ff6b6b;
+      color: white;
+      transform: rotate(90deg);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      body { padding: 1rem; }
+      .controls { flex-direction: column; align-items: center; }
+      .card { padding: 1.5rem; }
+    }
+
+    /* === TEMA OSCURO === */
+    body.dark-mode {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+    
+    body.dark-mode .card {
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+  <!-- Barra de progreso -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="infographic-header">
+    <h1>🍭 Infografía Interactiva</h1>
+    <p>Haz hover, clic y explora cada sección</p>
+  </header>
+
+  <!-- Controles -->
+  <div class="controls">
+    <button class="control-btn active" data-filter="all">✨ Todos</button>
+    <button class="control-btn" data-filter="sweet">🍰 Dulces</button>
+    <button class="control-btn" data-filter="chocolate">🍫 Chocolate</button>
+    <button class="control-btn" data-filter="fruity">🍓 Frutales</button>
+    <button class="control-btn" id="themeToggle">🌙 Tema</button>
+  </div>
+
+  <!-- Tarjetas -->
+  <div class="cards-container" id="cardsContainer">
+    
+    <article class="card" style="--card-color-1: #b2dc33; --card-color-2: #9cd400;" data-category="sweet">
+      <span class="card-number">01</span>
+      <div class="card-content">
+        <h3 class="card-title">Postres Clásicos</h3>
+        <p class="card-text">
+          Cake muffin donut chocolate cake jelly sesame snaps wafer tart pie sweet roll muffin chupa chups. 
+          Brownie ice cream <span class="tooltip">gingerbread<span class="tooltip-text">Pan de jengibre: especiado y perfecto para invierno</span></span> cookie lemon drops.
+        </p>
+        <button class="expand-btn">
+          <span>Ver más</span>
+          <span class="icon">▼</span>
+        </button>
+      </div>
+    </article>
+
+    <article class="card" style="--card-color-1: #f1ce02; --card-color-2: #fba502;" data-category="chocolate">
+      <span class="card-number">02</span>
+      <div class="card-content">
+        <h3 class="card-title">Delicias de Chocolate</h3>
+        <p class="card-text">
+          Cake cookie lemon drops muffin sugar plum. Liquorice pudding sugar plum topping macaroon pie chocolate. 
+          Dessert gingerbread jelly cake soufflé <span class="tooltip">chocolate cake<span class="tooltip-text">El favorito del 87% de los usuarios</span></span>.
+        </p>
+        <button class="expand-btn">
+          <span>Ver más</span>
+          <span class="icon">▼</span>
+        </button>
+      </div>
+    </article>
+
+    <article class="card" style="--card-color-1: #ff79ac; --card-color-2: #fd4c90;" data-category="fruity">
+      <span class="card-number">03</span>
+      <div class="card-content">
+        <h3 class="card-title">Sabores Frutales</h3>
+        <p class="card-text">
+          Cake muffin donut chocolate cake jelly sesame snaps wafer tart pie sweet roll muffin chupa chups. 
+          Brownie ice cream gingerbread cookie <span class="tooltip">lemon drops<span class="tooltip-text">Cítricos refrescantes con toque ácido</span></span>.
+        </p>
+        <button class="expand-btn">
+          <span>Ver más</span>
+          <span class="icon">▼</span>
+        </button>
+      </div>
+    </article>
+
+    <article class="card" style="--card-color-1: #bcb6ff; --card-color-2: #9d96f6;" data-category="sweet">
+      <span class="card-number">04</span>
+      <div class="card-content">
+        <h3 class="card-title">Especiales Premium</h3>
+        <p class="card-text">
+          Liquorice pudding sugar plum topping macaroon pie chocolate. Dessert gingerbread jelly cake soufflé. 
+          Apple pie chocolate bar topping donut powder muffin cake tart.
+        </p>
+        <button class="expand-btn">
+          <span>Ver más</span>
+          <span class="icon">▼</span>
+        </button>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <h3 id="modalTitle">Título</h3>
+      <p id="modalText" style="margin-top: 1rem; line-height: 1.7; color: #555;"></p>
+    </div>
+  </div>
+
+  <script>
+    // === EFECTO FOLLOWER DEL MOUSE EN TARJETAS ===
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--x', `${x}%`);
+        card.style.setProperty('--y', `${y}%`);
+      });
+    });
+
+    // === EXPANDIR/COLAPSAR TARJETAS ===
+    document.querySelectorAll('.expand-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const card = btn.closest('.card');
+        const isExpanded = card.classList.toggle('expanded');
+        btn.querySelector('span:first-child').textContent = isExpanded ? 'Contraer' : 'Ver más';
+        
+        // Efecto modal opcional al expandir
+        if(isExpanded) {
+          showModal(card.querySelector('.card-title').textContent, 
+                  card.querySelector('.card-text').textContent + '\n\n📊 Datos adicionales: Esta sección contiene información detallada sobre ingredientes, valores nutricionales y recomendaciones de maridaje.');
+        }
+      });
+    });
+
+    // === FILTRADO POR CATEGORÍA ===
+    document.querySelectorAll('.control-btn[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Actualizar estado activo
+        document.querySelectorAll('.control-btn[data-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.card').forEach(card => {
+          if(filter === 'all' || card.dataset.category === filter) {
+            card.style.display = 'block';
+            setTimeout(() => card.style.opacity = '1', 50);
+          } else {
+            card.style.opacity = '0';
+            setTimeout(() => card.style.display = 'none', 300);
+          }
+        });
+      });
+    });
+
+    // === CAMBIO DE TEMA ===
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️ Tema' : '🌙 Tema';
+    });
+
+    // === BARRA DE PROGRESO AL SCROLL ===
+    window.addEventListener('scroll', () => {
+      const scrollTop = document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (scrollTop / scrollHeight) * 100;
+      document.getElementById('progressBar').style.width = `${scrolled}%`;
+    });
+
+    // === MODAL FUNCIONALIDAD ===
+    const modal = document.getElementById('infoModal');
+    const modalClose = document.getElementById('modalClose');
+    
+    function showModal(title, text) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalText').textContent = text;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    
+    modalClose.addEventListener('click', hideModal);
+    modal.addEventListener('click', (e) => {
+      if(e.target === modal) hideModal();
+    });
+    
+    // Cerrar con tecla Escape
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape') hideModal();
+    });
+
+    // === EFECTO DE ENTRADA AL SCROLL ===
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if(entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }, index * 100);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      observer.observe(card);
+    });
+
+    // === EFECTO DE CLICK EN TARJETAS ===
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if(!e.target.closest('.expand-btn') && !e.target.closest('.tooltip')) {
+          // Efecto de "onda" al hacer clic
+          const ripple = document.createElement('span');
+          ripple.style.cssText = `
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+          `;
+          const rect = card.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          ripple.style.width = ripple.style.height = `${size}px`;
+          ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+          ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+          card.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 600);
+        }
+      });
+    });
+
+    // Animación para el efecto ripple
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        to { transform: scale(4); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

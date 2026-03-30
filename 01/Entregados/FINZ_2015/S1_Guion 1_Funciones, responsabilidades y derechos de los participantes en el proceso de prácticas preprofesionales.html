@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funciones, Responsabilidades y Derechos – Prácticas Preprofesionales</title>
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden; /* Previene scroll horizontal */
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      color: #1a2a3a;
+      padding: 32px 16px 56px;
+    }
+
+    /* ============================================================
+       INSTRUCCIÓN
+    ============================================================ */
+    .instruccion {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .instruccion span {
+      display: inline-block;
+      background: #e3f2fd;
+      border: 1.5px solid #90caf9;
+      border-radius: 20px;
+      padding: 7px 22px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #1565c0;
+      letter-spacing: 0.03em;
+    }
+
+    /* ============================================================
+       ENCABEZADO PRINCIPAL
+    ============================================================ */
+    .main-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .main-header .pre-title {
+      font-size: clamp(11px, 1.5vw, 14px);
+      letter-spacing: 0.12em;
+      color: #5a7a9a;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .main-header h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #0d6e9e;
+      letter-spacing: 0.01em;
+      line-height: 1.2;
+    }
+    .main-header h2 em {
+      font-style: normal;
+      color: #f9a825;
+    }
+
+    /* ============================================================
+       INTRO TEXT BOX
+    ============================================================ */
+    .intro-box {
+      background: #fff;
+      border-left: 5px solid #0d6e9e;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 22px;
+      max-width: 800px;
+      margin: 0 auto 30px;
+      font-size: 0.90rem;
+      line-height: 1.7;
+      color: #000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    /* ============================================================
+       GRID DE PASOS (3 PARTICIPANTES)
+    ============================================================ */
+    .steps-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    /* ============================================================
+       TARJETA DE PARTICIPANTE
+    ============================================================ */
+    .participant-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .participant-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+    }
+
+    /* Encabezado de la tarjeta */
+    .card-header {
+      padding: 20px 18px 16px;
+      text-align: center;
+      position: relative;
+    }
+    .card-header .step-num {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      opacity: 0.7;
+    }
+    .card-header .icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .card-header h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: #fff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .card-header p {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.88);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* Colores por participante */
+    .card-estudiante .card-header { background: linear-gradient(135deg, #1976d2, #42a5f5); }
+    .card-docente    .card-header { background: linear-gradient(135deg, #2e7d32, #66bb6a); }
+    .card-tutor      .card-header { background: linear-gradient(135deg, #e65100, #ffa726); }
+
+    /* Cuerpo de la tarjeta */
+    .card-body {
+      padding: 18px 20px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Sección de botón clickeable */
+    .section-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 13px 16px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+    .section-btn:hover {
+      transform: translateX(3px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .section-btn .btn-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .section-btn .btn-text { flex: 1; }
+    .section-btn .btn-plus {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      flex-shrink: 0;
+    }
+
+    /* Colores botones Estudiante */
+    .card-estudiante .btn-funciones {
+      background: #e3f2fd; color: #0d47a1; border: 1.5px solid #90caf9;
+    }
+    .card-estudiante .btn-derechos {
+      background: #e8f5e9; color: #1b5e20; border: 1.5px solid #a5d6a7;
+    }
+
+    /* Colores botones Docente */
+    .card-docente .btn-funciones {
+      background: #e8f5e9; color: #1b5e20; border: 1.5px solid #a5d6a7;
+    }
+    .card-docente .btn-derechos {
+      background: #f3e5f5; color: #4a148c; border: 1.5px solid #ce93d8;
+    }
+
+    /* Colores botones Tutor */
+    .card-tutor .btn-funciones {
+      background: #fff3e0; color: #bf360c; border: 1.5px solid #ffcc80;
+    }
+    .card-tutor .btn-derechos {
+      background: #fce4ec; color: #880e4f; border: 1.5px solid #f48fb1;
+    }
+    .card-tutor .btn-nota {
+      background: #fffde7; color: #795548; border: 1.5px solid #ffe082;
+    }
+
+    /* ============================================================
+       NOTA DESTACADA (Director de carrera)
+    ============================================================ */
+    .nota-box {
+      background: #fffde7;
+      border: 2px solid #f9a825;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.84rem;
+      color: #5d4037;
+      line-height: 1.6;
+    }
+    .nota-box .nota-title {
+      font-weight: 800;
+      color: #e65100;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ============================================================
+       MODAL OVERLAY
+    ============================================================ */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 30, 60, 0.55);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 18px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+      animation: modalIn 0.22s ease;
+    }
+    @keyframes modalIn {
+      from { transform: scale(0.9) translateY(24px); opacity: 0; }
+      to   { transform: scale(1) translateY(0);       opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 1;
+      border-radius: 18px 18px 0 0;
+    }
+    .modal-icon-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .badge-blue   { background: #e3f2fd; }
+    .badge-green  { background: #e8f5e9; }
+    .badge-orange { background: #fff3e0; }
+    .badge-purple { background: #f3e5f5; }
+    .badge-pink   { background: #fce4ec; }
+    .badge-yellow { background: #fffde7; }
+
+    .modal-header-text { flex: 1; }
+    .modal-header-text h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1a2a3a;
+    }
+    .modal-header-text span {
+      font-size: 0.78rem;
+      color: #6b7c93;
+    }
+
+    .modal-close {
+      background: #f0f2f5;
+      border: none;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: #dde1e8; }
+
+    .modal-body {
+      padding: 20px 24px 28px;
+    }
+    .modal-body p {
+      font-size: 0.92rem;
+      line-height: 1.72;
+      color: #2c3e50;
+      margin-bottom: 12px;
+    }
+    .modal-body ul {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+    .modal-body li {
+      font-size: 0.92rem;
+      line-height: 1.72;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    .modal-section-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #5a7a9a;
+      margin: 18px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #e8edf2;
+    }
+
+    /* ============================================================
+       RESPONSIVE (TABLETS Y MÓVILES)
+    ============================================================ */
+    
+    /* Tabletas y pantallas medianas */
+    @media (max-width: 900px) {
+      .steps-wrapper { grid-template-columns: repeat(2, 1fr); }
+      .main-header h2 { font-size: 1.6rem; }
+    }
+
+    /* Móviles (Ajustes generales) */
+    @media (max-width: 720px) {
+      body { padding: 20px 16px 40px; }
+      .steps-wrapper { grid-template-columns: 1fr; }
+      .main-header h2 { font-size: 1.5rem; }
+      .intro-box { padding: 14px 18px; font-size: 0.9rem; }
+    }
+
+    /* Móviles Pequeños (Ajustes específicos de UI) */
+    @media (max-width: 480px) {
+      .main-header h2 { font-size: 1.35rem; }
+      .instruccion span { font-size: 0.78rem; padding: 6px 16px; }
+      
+      /* Ajuste de botones en tarjetas */
+      .section-btn { padding: 12px 14px; font-size: 0.85rem; }
+      .section-btn .btn-icon { font-size: 1.2rem; }
+      .section-btn .btn-plus { width: 22px; height: 22px; font-size: 1rem; }
+      
+      /* Ajuste del Modal para parecer una app nativa (Bottom Sheet) */
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .modal {
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        margin-bottom: 0;
+      }
+      .modal-header { padding: 18px 20px 14px; }
+      .modal-icon-badge { width: 40px; height: 40px; font-size: 1.3rem; }
+      .modal-header-text h3 { font-size: 0.95rem; }
+      .modal-header-text span { font-size: 0.75rem; }
+      .modal-close { width: 30px; height: 30px; font-size: 1rem; }
+      .modal-body { padding: 16px 20px 24px; }
+      .modal-body li, .modal-body p { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       INSTRUCCIÓN
+  ============================================================ -->
+  <div class="instruccion">
+    <span>💡 Haga clic en el botón "+" para visualizar el contenido</span>
+  </div>
+
+  <!-- ============================================================
+       ENCABEZADO
+  ============================================================ -->
+  <div class="main-header">
+    <p class="pre-title">Prácticas Preprofesionales</p>
+    <h2>Funciones, Responsabilidades<br>y <em>Derechos</em> de los Participantes</h2>
+  </div>
+
+  <!-- ============================================================
+       INTRODUCCIÓN
+  ============================================================ -->
+  <div class="intro-box">
+    Las prácticas preprofesionales son desarrolladas por el estudiante y deben ser planificadas, monitoreadas y evaluadas por el tutor académico de la universidad (profesor del prácticum I) y por un tutor externo de la institución u organización receptora (prácticas externas). A continuación, se explican las tareas de cada uno de ellos:
+  </div>
+
+  <!-- ============================================================
+       TARJETAS DE PARTICIPANTES
+  ============================================================ -->
+  <div class="steps-wrapper">
+
+    <!-- ===== ESTUDIANTE ===== -->
+    <div class="participant-card card-estudiante">
+      <div class="card-header">
+        <div class="icon-circle">🎓</div>
+        <h3>Estudiantes</h3>
+      </div>
+      <div class="card-body">
+        <p style="font-size:0.84rem;color:#000;line-height:1.6;">
+          A continuación, podrá encontrar las funciones, responsabilidades y derechos del estudiante que, es considerado la figura principal del proceso de prácticas preprofesionales.
+        </p>
+
+        <!-- Botón Funciones y Responsabilidades -->
+        <button class="section-btn btn-funciones"
+                onclick="openModal('est-funciones')"
+                aria-label="Ver funciones y responsabilidades del estudiante">
+          <span class="btn-icon">📋</span>
+          <span class="btn-text">Funciones y responsabilidades</span>
+          <span class="btn-plus">+</span>
+        </button>
+
+        <!-- Botón Derechos -->
+        <button class="section-btn btn-derechos"
+                onclick="openModal('est-derechos')"
+                aria-label="Ver derechos del estudiante">
+          <span class="btn-icon">⚖️</span>
+          <span class="btn-text">Derechos del estudiante</span>
+          <span class="btn-plus">+</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== DOCENTES ===== -->
+    <div class="participant-card card-docente">
+      <div class="card-header">
+        <div class="icon-circle">👩‍🏫</div>
+        <h3>Docentes</h3>
+      </div>
+      <div class="card-body">
+        <p style="font-size:0.84rem;color:#000;line-height:1.6;">
+          En el proceso de prácticas preprofesionales los docentes que participan del proceso como autores y tutores tienen sus funciones, responsabilidades y derechos que se presentan a continuación:
+        </p>
+
+        <!-- Botón Funciones -->
+        <button class="section-btn btn-funciones"
+                onclick="openModal('doc-funciones')"
+                aria-label="Ver funciones y responsabilidades del profesor del prácticum">
+          <span class="btn-icon">📝</span>
+          <span class="btn-text">Funciones y responsabilidades</span>
+          <span class="btn-plus">+</span>
+        </button>
+
+        <!-- Botón Derechos -->
+        <button class="section-btn btn-derechos"
+                onclick="openModal('doc-derechos')"
+                aria-label="Ver derechos del profesor del prácticum">
+          <span class="btn-icon">🛡️</span>
+          <span class="btn-text">Derechos del profesor del Prácticum</span>
+          <span class="btn-plus">+</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== TUTOR EXTERNO ===== -->
+    <div class="participant-card card-tutor">
+      <div class="card-header">
+        <div class="icon-circle">🏢</div>
+        <h3>Tutor externo</h3>
+      </div>
+      <div class="card-body">
+        <p style="font-size:0.84rem;color:#000;line-height:1.6;">
+          Estimado estudiante, el tutor externo es el profesional de la organización receptora que lo acompañará en su entorno de práctica, el cual cumple un papel muy importante. Por ello, los invito a revisar a continuación de manera detallada cada una de las funciones, responsabilidades y derechos que tiene el tutor externo dentro de las prácticas preprofesionales.
+        </p>
+
+        <!-- Botón Funciones -->
+        <button class="section-btn btn-funciones"
+                onclick="openModal('tut-funciones')"
+                aria-label="Ver funciones y responsabilidades del tutor externo">
+          <span class="btn-icon">🤝</span>
+          <span class="btn-text">Funciones y responsabilidades</span>
+          <span class="btn-plus">+</span>
+        </button>
+
+        <!-- Botón Derechos -->
+        <button class="section-btn btn-derechos"
+                onclick="openModal('tut-derechos')"
+                aria-label="Ver derechos del tutor externo">
+          <span class="btn-icon">✅</span>
+          <span class="btn-text">Derechos del tutor externo</span>
+          <span class="btn-plus">+</span>
+        </button>
+
+        <!-- Nota Director de Carrera -->
+        <button class="section-btn btn-nota"
+                onclick="openModal('tut-nota')"
+                aria-label="Ver nota sobre el director de carrera">
+          <span class="btn-icon">📌</span>
+          <span class="btn-text">Nota: Director de carrera</span>
+          <span class="btn-plus">+</span>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /steps-wrapper -->
+
+  <!-- ============================================================
+       MODAL OVERLAY
+  ============================================================ -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog"
+       aria-modal="true" aria-labelledby="modalTitle"
+       onclick="closeOnOverlay(event)">
+    <div class="modal" id="modalBox">
+      <div class="modal-header">
+        <div class="modal-icon-badge" id="modalBadge"></div>
+        <div class="modal-header-text">
+          <h3 id="modalTitle"></h3>
+          <span id="modalSubtitle"></span>
+        </div>
+        <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+  ============================================================ -->
+  <script>
+    /* ---- Datos de los modales ---- */
+    const MODALS = {
+
+      'est-funciones': {
+        icon: '📋', badgeClass: 'badge-blue',
+        title: 'Funciones y responsabilidades del estudiante',
+        subtitle: 'Estudiantes · Prácticas Preprofesionales',
+        html: `
+          <ul>
+            <li>Postular a las plazas disponibles para el desarrollo de las prácticas preprofesionales a través del Sistema de Gestión de Prácticas Preprofesionales.</li>
+            <li>Realizar las actividades académicas, formativas y de prácticas asignadas en la organización en la que se vincula.</li>
+            <li>Cumplir con las actividades planificadas y con los horarios y número de horas establecidos con compromiso y responsabilidad y manteniendo la confidencialidad de la información de la organización vinculada.</li>
+            <li>Cuida los equipos, instrumentos, información que le sean entregados por la organización en la que se realizarán las prácticas preprofesionales.</li>
+            <li>Actuar con ética, respeto y disciplina conforme a las normas de la UTPL y de la organización.</li>
+            <li>Desarrollo las actividades, informes, memorias y evidencias del proceso de prácticas preprofesionales.</li>
+            <li>Elaborar y formalizar los documentos de desarrollo de las prácticas e ingresar las evidencias dentro de los plazos establecidos al sistema de prácticas preprofesionales.</li>
+            <li>Informa al tutor académico sobre, cualquier incidencia que afecte el desarrollo normal de la práctica.</li>
+          </ul>
+        `
+      },
+
+      'est-derechos': {
+        icon: '⚖️', badgeClass: 'badge-green',
+        title: 'Derechos del estudiante',
+        subtitle: 'Estudiantes · Prácticas Preprofesionales',
+        html: `
+          <ul>
+            <li>Recibir orientación y acompañamiento de su tutor académico y del tutor externo.</li>
+            <li>Acceder a un entorno de aprendizaje seguro, respetuoso y formativo.</li>
+            <li>Obtener una evaluación justa basada en su desempeño y cumplimiento de actividades.</li>
+          </ul>
+        `
+      },
+
+      'doc-funciones': {
+        icon: '📝', badgeClass: 'badge-green',
+        title: 'Funciones y responsabilidades del profesor del prácticum',
+        subtitle: 'Docentes · Prácticas Preprofesionales',
+        html: `
+          <ul>
+            <li>Cumplir con la planificación del plan docente.</li>
+            <li>Asignar y distribuir las plazas donde los estudiantes realizarán las prácticas.</li>
+            <li>El profesor autor y tutor deben desarrollar la planificación considerando que en los niveles del prácticum no hay división por bimestres, se registra una sola calificación.</li>
+            <li>La planificación no debe contemplar evaluaciones presenciales bimestrales y de recuperación.</li>
+            <li>No debe considerar la división de los componentes ya que en los niveles del prácticum las horas son netamente prácticas.</li>
+            <li>Debe orientar, acompañar y retroalimentar al estudiante durante las fases de inserción, diagnóstico, ejecución y evaluación de las prácticas preprofesionales.</li>
+            <li>Dar seguimiento a las actividades de prácticas preprofesionales con los aliados estratégicos y el cumplimiento de los objetivos académicos.</li>
+            <li>Realizar seguimiento permanente al desarrollo de la práctica.</li>
+            <li>Informar a estudiantes y tutores externos sobre las actividades y compromisos del plan docente.</li>
+          </ul>
+        `
+      },
+
+      'doc-derechos': {
+        icon: '🛡️', badgeClass: 'badge-purple',
+        title: 'Derechos del profesor del Prácticum',
+        subtitle: 'Docentes · Prácticas Preprofesionales',
+        html: `
+          <ul>
+            <li>Acceder a la información necesaria para el seguimiento y evaluación del estudiante.</li>
+            <li>Contar con la colaboración del tutor externo y de la organización receptora.</li>
+            <li>Participar en los procesos de mejora del modelo de prácticas preprofesionales.</li>
+          </ul>
+        `
+      },
+
+      'tut-funciones': {
+        icon: '🤝', badgeClass: 'badge-orange',
+        title: 'Funciones y responsabilidades del tutor externo',
+        subtitle: 'Tutor externo · Prácticas Preprofesionales',
+        html: `
+          <ul>
+            <li>Debe darse acompañamiento a los estudiantes en las actividades designadas en el escenario laboral (Practicum 1).</li>
+            <li>Coordina con el tutor académico las actividades de práctica que desarrolla el estudiante en la organización.</li>
+            <li>Dar seguimiento a las actividades de prácticas preprofesionales en el escenario laboral, supervisando el trabajo, verificando la asistencia a las actividades programadas y evaluando el desempeño del practicante.</li>
+            <li>Informa oportunamente al tutor académico sobre cualquier novedad o eventualidad.</li>
+            <li>Formalizar los documentos de desarrollo de las prácticas preprofesionales.</li>
+          </ul>
+        `
+      },
+
+      'tut-derechos': {
+        icon: '✅', badgeClass: 'badge-pink',
+        title: 'Derechos del tutor externo',
+        subtitle: 'Tutor externo · Prácticas Preprofesionales',
+        html: `
+          <ul>
+            <li>Ser reconocido como parte activa del proceso formativo.</li>
+            <li>Recibir información oportuna y coordinación por parte del tutor académico de los niveles del prácticum.</li>
+            <li>Evaluar objetivamente al estudiante en función de su desempeño y cumplimiento.</li>
+          </ul>
+        `
+      },
+
+      'tut-nota': {
+        icon: '📌', badgeClass: 'badge-yellow',
+        title: 'Nota: Rol del director de carrera',
+        subtitle: 'Tutor externo · Información complementaria',
+        html: `
+          <p>El director de la carrera también cumple con un rol muy importante en el proceso de prácticas preprofesionales, a continuación se detallan sus funciones y responsabilidades:</p>
+          <ul>
+            <li>Revisar la planificación del nivel del prácticum I, actividades y recursos a usar en este nivel del prácticum.</li>
+            <li>Aprobar las plazas de prácticas preprofesionales en el entorno laboral.</li>
+            <li>Dar seguimiento a las actividades de cumplimiento de subida de evidencias al repositorio de prácticas preprofesionales en las fechas establecidas.</li>
+            <li>Monitorear el proceso de prácticas preprofesionales de la carrera.</li>
+          </ul>
+        `
+      }
+    };
+
+    /* ---- Abrir modal ---- */
+    function openModal(key) {
+      const d = MODALS[key];
+      if (!d) return;
+
+      const badge = document.getElementById('modalBadge');
+      badge.className = 'modal-icon-badge ' + d.badgeClass;
+      badge.textContent = d.icon;
+
+      document.getElementById('modalTitle').textContent = d.title;
+      document.getElementById('modalSubtitle').textContent = d.subtitle;
+      document.getElementById('modalBody').innerHTML = d.html;
+
+      document.getElementById('modalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      setTimeout(() => {
+        const closeBtn = document.querySelector('.modal-close');
+        if (closeBtn) closeBtn.focus();
+      }, 50);
+    }
+
+    /* ---- Cerrar modal ---- */
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    /* ---- Cerrar al clic en overlay ---- */
+    function closeOnOverlay(e) {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    }
+
+    /* ---- Teclado: Enter/Space en botones, Escape para cerrar ---- */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>

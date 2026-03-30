@@ -1,19 +1,542 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Etapas del procedimiento SoVI</title>
-  <style>
-    .imagen-ajustada {
-      max-width: 800px;  /* nunca pasa de 800px */
-      width: 100%;       /* ocupa el ancho disponible */
-      height: auto;      /* mantiene proporción */
-      display: block;    /* elimina espacios extra */
-      margin: 0 auto;    /* centra la imagen */
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etapas del procedimiento SoVI</title>
+    <style>
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-card: rgba(20, 25, 50, 0.9);
+            --text-primary: #ffffff;
+            --text-secondary: #b8c2ff;
+            --accent-1: #00d4ff;
+            --accent-2: #00ff88;
+            --accent-3: #b829dd;
+            --accent-4: #ff6b35;
+            --accent-5: #ffd700;
+            --accent-6: #ff0080;
+            --accent-7: #0099ff;
+            --accent-8: #ccff00;
+            --accent-9: #ff3333;
+            --accent-10: #00ffcc;
+            --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #050714 0%, #0a0e27 50%, #050714 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-primary);
+            padding: 20px;
+        }
+
+        .sovi-container {
+            width: 800px;
+            height: 800px;
+            max-height: 800px;
+            background: radial-gradient(circle at center, rgba(20, 30, 80, 0.5) 0%, rgba(5, 7, 20, 0.95) 100%);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 60px rgba(0, 100, 255, 0.2), inset 0 0 100px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid rgba(100, 150, 255, 0.1);
+        }
+
+        .center-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at 30% 30%, #1a3a6c, #0a1a3a);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 0 0 40px rgba(0, 150, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(0, 200, 255, 0.3);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(0, 150, 255, 0.4); }
+            50% { box-shadow: 0 0 60px rgba(0, 200, 255, 0.6); }
+        }
+
+        .center-core h1 {
+            color: var(--text-primary);
+            font-size: 14pt;
+            font-weight: 700;
+            line-height: 1.3;
+            padding: 0 20px;
+            text-shadow: 0 0 10px rgba(0, 200, 255, 0.8);
+        }
+
+        .center-core::before {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border: 1px solid rgba(0, 200, 255, 0.2);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .orbit-line {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 600px;
+            height: 600px;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(100, 150, 255, 0.15);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .orbit-line:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            border-color: rgba(100, 150, 255, 0.1);
+        }
+
+        .node {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid;
+            backdrop-filter: blur(10px);
+            z-index: 20;
+            padding: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .node:hover, .node:focus {
+            transform: scale(1.15) !important;
+            z-index: 30;
+            box-shadow: 0 0 30px currentColor;
+            outline: none;
+        }
+
+        .node[data-stage="1"] { border-color: var(--accent-1); color: var(--accent-1); top: 10%; left: 50%; transform: translateX(-50%); }
+        .node[data-stage="2"] { border-color: var(--accent-2); color: var(--accent-2); top: 18%; right: 10%; }
+        .node[data-stage="3"] { border-color: var(--accent-3); color: var(--accent-3); top: 50%; right: 5%; transform: translateY(-50%); }
+        .node[data-stage="4"] { border-color: var(--accent-4); color: var(--accent-4); bottom: 18%; right: 10%; }
+        .node[data-stage="5"] { border-color: var(--accent-5); color: var(--accent-5); bottom: 10%; left: 50%; transform: translateX(-50%); }
+        .node[data-stage="6"] { border-color: var(--accent-6); color: var(--accent-6); bottom: 18%; left: 10%; }
+        .node[data-stage="7"] { border-color: var(--accent-7); color: var(--accent-7); top: 50%; left: 5%; transform: translateY(-50%); }
+        .node[data-stage="8"] { border-color: var(--accent-8); color: var(--accent-8); top: 18%; left: 10%; }
+        .node[data-stage="9"] { border-color: var(--accent-9); color: var(--accent-9); top: 35%; right: 22%; }
+        .node[data-stage="10"] { border-color: var(--accent-10); color: var(--accent-10); bottom: 35%; left: 22%; }
+
+        .node-number {
+            font-size: 24pt;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .node-title {
+            font-size: 8pt;
+            color: var(--text-primary);
+            font-weight: 600;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .connector {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 200px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
+            transform-origin: top center;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0f1429 100%);
+            border: 2px solid;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.8) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .modal-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28pt;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 16pt;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .modal-body {
+            color: var(--text-secondary);
+            font-size: 12pt;
+            line-height: 1.6;
+            padding-left: 75px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+       
+
+        @media (max-width: 820px) {
+            .sovi-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+                padding: 40px 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .center-core {
+                position: relative;
+                top: auto;
+                left: auto;
+                transform: none;
+                width: 180px;
+                height: 180px;
+                margin-bottom: 30px;
+            }
+
+            .orbit-line, .connector {
+                display: none;
+            }
+
+            .node {
+                position: relative;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                bottom: auto !important;
+                transform: none !important;
+                width: 100%;
+                max-width: 400px;
+                height: auto;
+                min-height: 80px;
+                border-radius: 15px;
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 20px;
+                gap: 20px;
+            }
+
+            .node:hover, .node:focus {
+                transform: scale(1.02) !important;
+            }
+
+            .node-number {
+                font-size: 28pt;
+                margin: 0;
+                width: 60px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255,255,255,0.1);
+                border-radius: 50%;
+            }
+
+            .node-title {
+                font-size: 12pt;
+                text-align: left;
+                text-transform: none;
+            }
+
+            .references {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                transform: none;
+                margin-top: 40px;
+                padding: 20px;
+                background: rgba(0,0,0,0.3);
+                border-radius: 10px;
+            }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
 </head>
 <body>
-  <img src="media/Imagen 1.png" alt="Imagen 1" class="imagen-ajustada">
+
+<main class="sovi-container" role="main">
+    <div class="orbit-line"></div>
+    <div class="orbit-line"></div>
+    
+    <div class="center-core" role="banner">
+        <h1>Etapas del procedimiento SoVI</h1>
+    </div>
+
+    <button class="node" data-stage="1" aria-label="Etapa 1: Delimitación del área">
+        <span class="node-number">1</span>
+        <span class="node-title">Delimitación del área</span>
+    </button>
+
+    <button class="node" data-stage="2" aria-label="Etapa 2: Marco conceptual">
+        <span class="node-number">2</span>
+        <span class="node-title">Marco conceptual</span>
+    </button>
+
+    <button class="node" data-stage="3" aria-label="Etapa 3: Revisión de datos">
+        <span class="node-number">3</span>
+        <span class="node-title">Revisión de datos</span>
+    </button>
+
+    <button class="node" data-stage="4" aria-label="Etapa 4: Unidad de análisis">
+        <span class="node-number">4</span>
+        <span class="node-title">Unidad de análisis</span>
+    </button>
+
+    <button class="node" data-stage="5" aria-label="Etapa 5: Selección de variables">
+        <span class="node-number">5</span>
+        <span class="node-title">Selección de variables</span>
+    </button>
+
+    <button class="node" data-stage="6" aria-label="Etapa 6: Evaluación de limitaciones">
+        <span class="node-number">6</span>
+        <span class="node-title">Evaluación de limitaciones</span>
+    </button>
+
+    <button class="node" data-stage="7" aria-label="Etapa 7: Estandarización">
+        <span class="node-number">7</span>
+        <span class="node-title">Estandarización</span>
+    </button>
+
+    <button class="node" data-stage="8" aria-label="Etapa 8: Reducción de factores">
+        <span class="node-number">8</span>
+        <span class="node-title">Reducción de factores</span>
+    </button>
+
+    <button class="node" data-stage="9" aria-label="Etapa 9: Construcción del índice">
+        <span class="node-number">9</span>
+        <span class="node-title">Construcción del índice</span>
+    </button>
+
+    <button class="node" data-stage="10" aria-label="Etapa 10: Mapeo de resultados">
+        <span class="node-number">10</span>
+        <span class="node-title">Mapeo de resultados</span>
+    </button>
+
+  
+</main>
+
+<div class="modal" id="stageModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content" role="document">
+        <button class="close-btn" onclick="closeModal()" aria-label="Cerrar modal">
+            <span aria-hidden="true">×</span>
+        </button>
+        <div class="modal-header">
+            <div class="modal-number" id="modalNumber"></div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    const stagesData = {
+        1: { title: "Delimitación del área", desc: "Delimitación y reconocimiento del área de estudio.", color: "#00d4ff" },
+        2: { title: "Marco conceptual", desc: "Definición de un marco conceptual de vulnerabilidad que guíe el análisis.", color: "#00ff88" },
+        3: { title: "Revisión de datos", desc: "Revisión y exploración de la base de datos disponible (calidad, cobertura, consistencia).", color: "#b829dd" },
+        4: { title: "Unidad de análisis", desc: "Definición de la unidad de análisis (por ejemplo, cantón, parroquia, barrio).", color: "#ff6b35" },
+        5: { title: "Selección de variables", desc: "Selección de variables/factores que representen la vulnerabilidad social.", color: "#ffd700" },
+        6: { title: "Evaluación de limitaciones", desc: "Evaluación de posibles errores o limitaciones (datos faltantes, sesgos, escalas).", color: "#ff0080" },
+        7: { title: "Estandarización", desc: "Normalización y estandarización de los indicadores para hacerlos comparables.", color: "#0099ff" },
+        8: { title: "Reducción de factores", desc: "Reducción de factores (por ejemplo, mediante técnicas estadísticas) para sintetizar información.", color: "#ccff00" },
+        9: { title: "Construcción del índice", desc: "Compilación del índice a partir de los factores/variables resultantes.", color: "#ff3333" },
+        10: { title: "Mapeo de resultados", desc: "Agregación y mapeo para representar espacialmente la vulnerabilidad.", color: "#00ffcc" }
+    };
+
+    const modal = document.getElementById('stageModal');
+    const modalNumber = document.getElementById('modalNumber');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalContent = document.querySelector('.modal-content');
+    let lastFocus = null;
+
+    document.querySelectorAll('.node').forEach(node => {
+        node.addEventListener('click', function() {
+            const stage = this.getAttribute('data-stage');
+            const data = stagesData[stage];
+            
+            lastFocus = this;
+            
+            modalNumber.textContent = stage;
+            modalNumber.style.backgroundColor = data.color;
+            modalNumber.style.boxShadow = `0 0 20px ${data.color}`;
+            
+            modalTitle.textContent = data.title;
+            modalBody.textContent = data.desc;
+            
+            modalContent.style.borderColor = data.color;
+            
+            modal.classList.add('active');
+            document.querySelector('.close-btn').focus();
+        });
+    });
+
+    function closeModal() {
+        modal.classList.remove('active');
+        if (lastFocus) lastFocus.focus();
+    }
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+        if (e.key === 'Enter' || e.key === ' ') {
+            if (document.activeElement.classList.contains('node')) {
+                e.preventDefault();
+                document.activeElement.click();
+            }
+        }
+    });
+
+    // Posicionar nodos en círculo perfecto para escritorio
+    function positionNodes() {
+        if (window.innerWidth > 820) {
+            const nodes = document.querySelectorAll('.node');
+            const radius = 280;
+            const centerX = 400;
+            const centerY = 400;
+            
+            nodes.forEach((node, index) => {
+                const angle = (index * 36 - 90) * (Math.PI / 180);
+                const x = centerX + radius * Math.cos(angle) - 70;
+                const y = centerY + radius * Math.sin(angle) - 70;
+                
+                node.style.left = x + 'px';
+                node.style.top = y + 'px';
+                node.style.right = 'auto';
+                node.style.bottom = 'auto';
+                node.style.transform = 'none';
+            });
+        }
+    }
+
+    window.addEventListener('load', positionNodes);
+    window.addEventListener('resize', positionNodes);
+</script>
+
 </body>
 </html>

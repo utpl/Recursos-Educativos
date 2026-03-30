@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificación de Variables Aleatorias</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --c1: #E84855;
+            --c2: #F4A261;
+            --c3: #2A9D8F;
+            --c4: #457B9D;
+            --dark: #1A1A2E;
+            --dark2: #16213E;
+            --surface: #FFFFFF;
+            --bg: #F8F5F0;
+            --text: #2C2C3E;
+            --muted: #6B6B80;
+            --border: #E2DED8;
+            --disc: #457B9D;
+            /* discreta */
+            --cont: #2A9D8F;
+            /* continua */
+            --imp: #E84855;
+            /* importante */
+            --font-d: 'Playfair Display', serif;
+            --font-b: 'DM Sans', sans-serif;
+            --font-m: 'DM Mono', monospace;
+            --r: 16px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: var(--font-b);
+            background:
+                radial-gradient(ellipse at 18% 12%, rgba(69, 123, 157, .14) 0%, transparent 50%),
+                radial-gradient(ellipse at 82% 88%, rgba(42, 157, 143, .14) 0%, transparent 50%),
+                #EDE9E1;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 28px 16px;
+        }
+
+        /* ── CANVAS ── */
+        .canvas {
+            width: 800px;
+            min-height: 500px;
+            max-height: 800px;
+            background: var(--bg);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(26, 26, 46, .22);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: var(--dark);
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .h-stripe {
+            height: 4px;
+            background: linear-gradient(90deg, var(--c1) 0%, var(--c2) 33%, var(--c3) 66%, var(--c4) 100%);
+        }
+
+        .h-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 10% 120%, rgba(69, 123, 157, .25) 0%, transparent 55%),
+                radial-gradient(ellipse at 90% -20%, rgba(42, 157, 143, .22) 0%, transparent 55%);
+            pointer-events: none;
+        }
+
+        .h-inner {
+            position: relative;
+            z-index: 1;
+            padding: 18px 36px 16px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .h-embl {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(69, 123, 157, .3), rgba(42, 157, 143, .22));
+            border: 1.5px solid rgba(255, 255, 255, .12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .h-meta {
+            flex: 1;
+        }
+
+        .h-course {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .38);
+            margin-bottom: 4px;
+        }
+
+        .h-title {
+            font-family: var(--font-d);
+            font-size: 20px;
+            color: #fff;
+            line-height: 1.2;
+            letter-spacing: -.02em;
+        }
+
+        .h-sub {
+            font-size: 11px;
+            color: rgba(255, 255, 255, .45);
+            margin-top: 4px;
+        }
+
+        .h-sub strong {
+            color: rgba(255, 255, 255, .75);
+            font-weight: 600;
+        }
+
+        /* ── INTRO BAND ── */
+        .intro-band {
+            background: var(--dark2);
+            padding: 12px 36px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .ib-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .ib-text {
+            font-size: 12.5px;
+            color: rgba(255, 255, 255, .65);
+            line-height: 1.7;
+        }
+
+        .ib-text strong {
+            color: rgba(255, 255, 255, .9);
+        }
+
+        /* ── MAIN AREA ── */
+        .main-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 36px 24px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ── COMPARE GRID ── */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* ── TYPE CARD ── */
+        .type-card {
+            background: var(--surface);
+            border-radius: var(--r);
+            border: 2px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tc-header {
+            padding: 14px 18px 12px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tc-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--tc-color);
+        }
+
+        .tc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: color-mix(in srgb, var(--tc-color) 12%, transparent);
+            border: 1px solid color-mix(in srgb, var(--tc-color) 25%, transparent);
+            border-radius: 20px;
+            padding: 3px 10px;
+            margin-bottom: 8px;
+        }
+
+        .tc-badge-ico {
+            font-size: 12px;
+        }
+
+        .tc-badge-lbl {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--tc-color);
+        }
+
+        .tc-name {
+            font-family: var(--font-d);
+            font-size: 17px;
+            color: var(--dark);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .tc-def {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* ── EXAMPLES SECTION ── */
+        .tc-examples {
+            padding: 12px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .ex-label {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--tc-color);
+            margin-bottom: 2px;
+        }
+
+        /* example buttons (resaltado amarillo → botones) */
+        .ex-btn {
+            background: color-mix(in srgb, var(--tc-color) 7%, var(--bg));
+            border: 1.5px solid color-mix(in srgb, var(--tc-color) 22%, transparent);
+            border-radius: 10px;
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-family: var(--font-b);
+            transition: border-color .18s, background .18s, transform .15s, box-shadow .18s;
+            min-height: 44px;
+            width: 100%;
+        }
+
+        .ex-btn:hover {
+            border-color: var(--tc-color);
+            background: color-mix(in srgb, var(--tc-color) 12%, transparent);
+            transform: translateX(2px);
+            box-shadow: 0 4px 14px rgba(26, 26, 46, .09);
+        }
+
+        .ex-btn.active {
+            border-color: var(--tc-color);
+            background: color-mix(in srgb, var(--tc-color) 14%, transparent);
+            transform: translateX(2px);
+        }
+
+        .ex-ico {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .ex-txt {
+            font-size: 12px;
+            color: var(--text);
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        /* detail panel */
+        .ex-detail {
+            background: var(--dark);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 2px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, .75);
+            line-height: 1.65;
+            display: none;
+            animation: fdIn .22s ease;
+            border-left: 3px solid var(--tc-color);
+        }
+
+        .ex-detail.show {
+            display: block;
+        }
+
+        @keyframes fdIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ── IMPORTANTE ROW ── */
+        .importante-row {
+            background: var(--dark);
+            border-radius: var(--r);
+            padding: 18px 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .importante-row::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 95% 5%, rgba(232, 72, 85, .2) 0%, transparent 55%),
+                radial-gradient(ellipse at 5% 95%, rgba(69, 123, 157, .15) 0%, transparent 55%);
+        }
+
+        .imp-label {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--imp);
+            margin-bottom: 12px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .imp-label::after {
+            content: '';
+            flex: 1;
+            height: 1.5px;
+            background: rgba(232, 72, 85, .25);
+            border-radius: 1px;
+        }
+
+        .imp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            position: relative;
+        }
+
+        .imp-col {
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+
+        .imp-col.disc {
+            background: rgba(69, 123, 157, .12);
+            border: 1px solid rgba(69, 123, 157, .25);
+        }
+
+        .imp-col.cont {
+            background: rgba(42, 157, 143, .12);
+            border: 1px solid rgba(42, 157, 143, .25);
+        }
+
+        .imp-col-head {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .imp-col.disc .imp-col-head {
+            color: var(--disc);
+        }
+
+        .imp-col.cont .imp-col-head {
+            color: var(--cont);
+        }
+
+        .imp-formula {
+            font-family: var(--font-m);
+            font-size: 13px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .imp-desc {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, .65);
+            line-height: 1.6;
+        }
+
+        /* ── VISUAL BAR ── */
+        .visual-bar {
+            background: var(--surface);
+            border-radius: var(--r);
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+        }
+
+        .vb-top {
+            background: var(--dark);
+            padding: 8px 16px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .5);
+        }
+
+        .vb-body {
+            padding: 14px 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .vb-col {}
+
+        .vb-col-lbl {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--vbc);
+            margin-bottom: 8px;
+        }
+
+        .vb-line-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .vb-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--vbc);
+        }
+
+        .vb-track {
+            flex: 1;
+            height: 10px;
+            background: var(--border);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .vb-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--vbc), color-mix(in srgb, var(--vbc) 65%, #fff));
+            transition: width .6s cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        .vb-val {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--vbc);
+            width: 24px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .vb-caption {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* continuous curve */
+        .vb-curve-wrap {
+            position: relative;
+        }
+
+        .vb-note {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        /* ── REF BAR ── */
+        .ref-bar {
+            background: var(--dark);
+            padding: 9px 36px;
+            flex-shrink: 0;
+            font-size: 10px;
+            color: rgba(255, 255, 255, .28);
+            font-style: italic;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 26, 46, .75);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s ease;
+            padding: 16px;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 32px 100px rgba(26, 26, 46, .35);
+            transform: scale(.93) translateY(16px);
+            transition: transform .28s cubic-bezier(.34, 1.56, .64, 1);
+            scrollbar-width: thin;
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-head {
+            background: var(--dark);
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-head::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--mc);
+        }
+
+        .modal-head-ico {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: color-mix(in srgb, var(--mc) 22%, rgba(255, 255, 255, .05));
+        }
+
+        .modal-head-txt {
+            flex: 1;
+        }
+
+        .modal-type {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--mc);
+            margin-bottom: 4px;
+        }
+
+        .modal-title {
+            font-family: var(--font-d);
+            font-size: 17px;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .modal-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: rgba(255, 255, 255, .1);
+            color: rgba(255, 255, 255, .7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: background .18s;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, .2);
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 20px 22px 24px;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.72;
+        }
+
+        @media(max-width:840px) {
+            body {
+                padding: 0;
+                background: var(--bg);
+            }
+
+            .canvas {
+                width: 100%;
+                max-width: 100%;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            .h-inner,
+            .intro-band,
+            .main-area,
+            .ref-bar {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .compare-grid,
+            .imp-grid,
+            .vb-body {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="canvas">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="h-stripe"></div>
+            <div class="h-glow"></div>
+            <div class="h-inner">
+                <div class="h-embl">🎲</div>
+                <div class="h-meta">
+                    <div class="h-course">Estadística para análisis de datos</div>
+                    <div class="h-title">Clasificación de variables aleatorias</div>
+                    <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTRO BAND -->
+        <div class="intro-band">
+            <div class="ib-icon">📖</div>
+            <div class="ib-text">En el análisis de datos, una <strong>variable aleatoria</strong> es una función que
+                asigna un número real a cada resultado de un experimento aleatorio. Dependiendo de la naturaleza de los
+                valores que puede tomar, se clasifican en dos grandes grupos:</div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="main-area">
+
+            <!-- COMPARE GRID -->
+            <div class="compare-grid">
+
+                <!-- DISCRETA -->
+                <div class="type-card" style="--tc-color:var(--disc)">
+                    <div class="tc-header">
+                        <div class="tc-badge">
+                            <span class="tc-badge-ico">🔢</span>
+                            <span class="tc-badge-lbl">Discreta</span>
+                        </div>
+                        <div class="tc-name">Variable aleatoria discreta</div>
+                        <div class="tc-def">Es aquella que toma valores en un conjunto finito o numerable (se pueden
+                            contar: 1, 2, 3...).</div>
+                    </div>
+                    <div class="tc-examples">
+                        <div class="ex-label">Ejemplos</div>
+                        <button class="ex-btn" style="--tc-color:var(--disc)" onclick="openModal('d1')">
+                            <span class="ex-ico">📚</span>
+                            <span class="ex-txt">Número de estudiantes que entran a la biblioteca en una hora.</span>
+                        </button>
+                        <button class="ex-btn" style="--tc-color:var(--disc)" onclick="openModal('d2')">
+                            <span class="ex-ico">📞</span>
+                            <span class="ex-txt">Número de llamadas recibidas en un call center en un minuto.</span>
+                        </button>
+                        <button class="ex-btn" style="--tc-color:var(--disc)" onclick="openModal('d3')">
+                            <span class="ex-ico">🏥</span>
+                            <span class="ex-txt">Número de pacientes atendidos en urgencias durante un turno.</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CONTINUA -->
+                <div class="type-card" style="--tc-color:var(--cont)">
+                    <div class="tc-header">
+                        <div class="tc-badge">
+                            <span class="tc-badge-ico">〰️</span>
+                            <span class="tc-badge-lbl">Continua</span>
+                        </div>
+                        <div class="tc-name">Variable aleatoria continua</div>
+                        <div class="tc-def">Es aquella que puede tomar infinitos valores dentro en un intervalo de los
+                            reales.</div>
+                    </div>
+                    <div class="tc-examples">
+                        <div class="ex-label">Ejemplos</div>
+                        <button class="ex-btn" style="--tc-color:var(--cont)" onclick="openModal('c1')">
+                            <span class="ex-ico">⏱️</span>
+                            <span class="ex-txt">Tiempo de espera hasta la atención médica.</span>
+                        </button>
+                        <button class="ex-btn" style="--tc-color:var(--cont)" onclick="openModal('c2')">
+                            <span class="ex-ico">📏</span>
+                            <span class="ex-txt">Estatura, peso, presión arterial.</span>
+                        </button>
+                        <button class="ex-btn" style="--tc-color:var(--cont)" onclick="openModal('c3')">
+                            <span class="ex-ico">📱</span>
+                            <span class="ex-txt">Proporción de tiempo conectado a redes sociales en un día.</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+      
+
+            <!-- IMPORTANTE -->
+            <div class="importante-row">
+                <div class="imp-label">⚠️ Importante — Fíjese en este detalle</div>
+                <div class="imp-grid">
+                    <div class="imp-col disc">
+                        <div class="imp-col-head">🔢 V.A. Discreta</div>
+                        <div class="imp-formula">P(X = 3)</div>
+                        <div class="imp-desc">Tiene sentido hablar de P(X = 3) y sumarlo con otros valores.</div>
+                    </div>
+                    <div class="imp-col cont">
+                        <div class="imp-col-head">〰️ V.A. Continua</div>
+                        <div class="imp-formula">P(X = a) = 0</div>
+                        <div class="imp-desc">La probabilidad de un valor exacto P(X = a) suele ser 0; lo que importa
+                            son los intervalos (por ejemplo, P(2 ≤ X ≤ 3)).</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- REF BAR -->
+        <div class="ref-bar">Elaboración propia.</div>
+
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay" onclick="handleOverlay(event)">
+        <div class="modal" id="modal">
+            <div class="modal-head" id="modalHead">
+                <div class="modal-head-ico" id="modalIco"></div>
+                <div class="modal-head-txt">
+                    <div class="modal-type" id="modalType"></div>
+                    <div class="modal-title" id="modalTitle"></div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const MODALS = {
+            d1: {
+                color: 'var(--disc)', ico: '📚', type: 'Variable aleatoria discreta',
+                title: 'Número de estudiantes que entran a la biblioteca en una hora.',
+                body: `Esta variable toma valores enteros no negativos (0, 1, 2, 3, ...). Es discreta porque podemos <strong>contar</strong> el número exacto de estudiantes: no tiene sentido hablar de 2.7 estudiantes. La distribución de Poisson es frecuentemente usada para modelar este tipo de conteos por unidad de tiempo.`
+            },
+            d2: {
+                color: 'var(--disc)', ico: '📞', type: 'Variable aleatoria discreta',
+                title: 'Número de llamadas recibidas en un call center en un minuto.',
+                body: `El número de llamadas solo puede ser un entero (0, 1, 2, ...). Es un ejemplo clásico de variable aleatoria discreta modelada con la <strong>distribución de Poisson</strong>. Cada llamada es un evento contable, separado e identificable.`
+            },
+            d3: {
+                color: 'var(--disc)', ico: '🏥', type: 'Variable aleatoria discreta',
+                title: 'Número de pacientes atendidos en urgencias durante un turno.',
+                body: `Se cuentan pacientes como unidades enteras. No es posible atender 3.5 pacientes. Es una variable discreta con valores en {0, 1, 2, 3, ...}. La frecuencia de llegada de pacientes suele modelarse con distribuciones discretas como la <strong>binomial</strong> o la <strong>de Poisson</strong>.`
+            },
+            c1: {
+                color: 'var(--cont)', ico: '⏱️', type: 'Variable aleatoria continua',
+                title: 'Tiempo de espera hasta la atención médica.',
+                body: `El tiempo puede tomar cualquier valor real positivo: 4.37 minutos, 12.003 segundos, etc. Es continua porque no hay saltos entre valores posibles. Se modela habitualmente con la <strong>distribución exponencial</strong>, adecuada para tiempos entre eventos.`
+            },
+            c2: {
+                color: 'var(--cont)', ico: '📏', type: 'Variable aleatoria continua',
+                title: 'Estatura, peso, presión arterial.',
+                body: `Estas mediciones pueden tomar cualquier valor dentro de un rango: la estatura puede ser 1.723 m, 1.7231 m, etc. Son variables continuas que habitualmente se modelan con la <strong>distribución normal</strong>. La precisión solo está limitada por el instrumento de medición.`
+            },
+            c3: {
+                color: 'var(--cont)', ico: '📱', type: 'Variable aleatoria continua',
+                title: 'Proporción de tiempo conectado a redes sociales en un día.',
+                body: `Esta variable toma valores en el intervalo [0, 1] (de 0% a 100% del día). Al ser una proporción continua, puede tomar infinitos valores. Se modela con la <strong>distribución Beta</strong>, apropiada para variables acotadas entre 0 y 1.`
+            }
+        };
+
+        function openModal(key) {
+            const d = MODALS[key];
+            const ov = document.getElementById('modalOverlay');
+            ov.style.setProperty('--mc', d.color);
+            document.getElementById('modalIco').textContent = d.ico;
+            document.getElementById('modalType').textContent = d.type;
+            document.getElementById('modalTitle').textContent = d.title;
+            document.getElementById('modalBody').innerHTML = d.body;
+            ov.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function handleOverlay(e) {
+            if (e.target === document.getElementById('modalOverlay')) closeModal();
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        // Animate bars on load
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.vb-fill').forEach(f => {
+                setTimeout(() => { f.style.width = f.dataset.w; }, 300);
+            });
+        });
+    </script>
+</body>
+
+</html>
