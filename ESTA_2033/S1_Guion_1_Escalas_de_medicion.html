@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escalas de Medición</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nominal: #E84855;
+    --ordinal: #F4A261;
+    --intervalo: #2A9D8F;
+    --razon: #457B9D;
+    --bg: #F8F5F0;
+    --surface: #FFFFFF;
+    --dark: #1A1A2E;
+    --text: #2C2C3E;
+    --muted: #6B6B80;
+    --border: #E2DED8;
+    --accent-light: #FFF9F0;
+    --modal-bg: rgba(26, 26, 46, 0.72);
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(26,26,46,0.12);
+    --shadow-hover: 0 16px 48px rgba(26,26,46,0.18);
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: #EDE9E1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+ 
+  }
+
+  .canvas {
+    width: 800px;
+    min-height: 500px;
+    max-height: 800px;
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(26,26,46,0.2);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--dark);
+    padding: 20px 32px 16px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(228,72,85,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 50%, rgba(69,123,157,0.18) 0%, transparent 60%);
+  }
+  .header-inner { position: relative; z-index: 1; }
+  .course-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    color: #FFFFFF;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 6px;
+    font-weight: 400;
+  }
+  .header-sub strong { color: rgba(255,255,255,0.85); font-weight: 600; }
+
+  /* ── INSTRUCTION BAR ── */
+  .instruction {
+    background: var(--accent-light);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 32px;
+    font-size: 11.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .instruction svg { flex-shrink: 0; opacity: 0.6; }
+
+  /* ── INTRO SECTION ── */
+  .intro-band {
+    padding: 14px 32px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .intro-band p {
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  /* ── GRID ── */
+  .scale-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 20px 32px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .scale-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 12px rgba(26,26,46,0.07);
+    transition: all 0.22s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .scale-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--card-color);
+    transition: height 0.22s ease;
+  }
+  .scale-card:hover {
+    border-color: var(--card-color);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+  .scale-card:hover::before { height: 6px; }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--card-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .card-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--card-color);
+    margin-bottom: 2px;
+  }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--dark);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  .card-preview {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    flex: 1;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 4px;
+  }
+  .tag {
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--card-color) 12%, transparent);
+    color: var(--card-color);
+    font-weight: 600;
+  }
+  .card-cta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--card-color);
+    margin-top: auto;
+  }
+  .card-cta svg { transition: transform 0.2s; }
+  .scale-card:hover .card-cta svg { transform: translateX(3px); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-bg);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 16px;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 82vh;
+    overflow-y: auto;
+    box-shadow: 0 32px 100px rgba(26,26,46,0.35);
+    transform: scale(0.93) translateY(16px);
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .modal-overlay.open .modal {
+    transform: scale(1) translateY(0);
+  }
+
+  .modal-header {
+    position: sticky;
+    top: 0;
+    background: var(--dark);
+    padding: 20px 28px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    z-index: 10;
+    border-radius: 20px 20px 0 0;
+  }
+  .modal-header-accent {
+    width: 6px;
+    border-radius: 3px;
+    background: var(--modal-color);
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+  .modal-header-text { flex: 1; }
+  .modal-type {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--modal-color);
+    margin-bottom: 4px;
+  }
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: #FFFFFF;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .modal-close {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.7);
+    transition: background 0.18s;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+  .modal-body { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+  .modal-section { display: flex; flex-direction: column; gap: 8px; }
+  .section-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--modal-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--modal-color) 20%, transparent);
+  }
+
+  .modal-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.75;
+  }
+  .modal-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .modal-list li {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.65;
+    padding-left: 18px;
+    position: relative;
+  }
+  .modal-list li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--modal-color);
+    font-size: 16px;
+    font-weight: 700;
+    top: -1px;
+  }
+
+  .examples-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .example-chip {
+    background: color-mix(in srgb, var(--modal-color) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--modal-color) 20%, transparent);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .example-chip-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--modal-color);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .example-chip-values {
+    font-size: 11.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .application-box {
+    background: color-mix(in srgb, var(--modal-color) 7%, var(--bg));
+    border-left: 3px solid var(--modal-color);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ── REFERENCE ── */
+  .reference-bar {
+    border-top: 1px solid var(--border);
+    padding: 10px 32px;
+    font-size: 10.5px;
+    color: var(--muted);
+    background: var(--surface);
+    flex-shrink: 0;
+    font-style: italic;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 699px) {
+    body { padding: 0; align-items: stretch; background: var(--bg); }
+    .canvas {
+      width: 100%;
+      max-width: 100%;
+      max-height: none;
+      min-height: 100dvh;
+      border-radius: 0;
+    }
+    .scale-grid { grid-template-columns: 1fr; overflow: visible; }
+    .header { padding: 16px 20px 14px; }
+    .header h1 { font-size: 22px; }
+    .intro-band, .instruction { padding-left: 20px; padding-right: 20px; }
+    .scale-grid { padding: 16px 20px; }
+    .reference-bar { padding: 10px 20px; }
+    .modal-body { padding: 18px 20px 24px; }
+    .modal-header { padding: 18px 20px; }
+    .examples-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas" id="canvas">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-inner">
+      <div class="course-tag">Estadística para Análisis de Datos</div>
+      <h1>Escalas de medición</h1>
+      <div class="header-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+    </div>
+  </div>
+
+  <!-- INSTRUCTION BAR -->
+  <div class="instruction">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+    Haga clic en los temas para visualizar la información
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro-band">
+    <p>Explore cada escala de medición y profundice en sus características:</p>
+  </div>
+
+  <!-- GRID -->
+  <div class="scale-grid">
+
+    <!-- Nominal -->
+    <div class="scale-card" style="--card-color: var(--nominal)" onclick="openModal('nominal')" role="button" tabindex="0" aria-label="Escala nominal">
+      <div class="card-icon">🏷️</div>
+      <div>
+        <div class="card-label">Escala 01</div>
+        <div class="card-title">Nominal</div>
+      </div>
+      <div class="card-preview">Clasifica datos en categorías sin orden. Las etiquetas solo sirven para diferenciar grupos.</div>
+      <div class="card-tags">
+        <span class="tag">Frecuencias</span>
+        <span class="tag">Moda</span>
+        <span class="tag">Sin orden</span>
+      </div>
+      <div class="card-cta">
+        Ver detalles
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <!-- Ordinal -->
+    <div class="scale-card" style="--card-color: var(--ordinal)" onclick="openModal('ordinal')" role="button" tabindex="0" aria-label="Escala ordinal">
+      <div class="card-icon">📊</div>
+      <div>
+        <div class="card-label">Escala 02</div>
+        <div class="card-title">Ordinal</div>
+      </div>
+      <div class="card-preview">Las categorías tienen un orden, pero las distancias entre ellas no son necesariamente iguales.</div>
+      <div class="card-tags">
+        <span class="tag">Moda</span>
+        <span class="tag">Mediana</span>
+        <span class="tag">Orden</span>
+      </div>
+      <div class="card-cta">
+        Ver detalles
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <!-- Intervalo -->
+    <div class="scale-card" style="--card-color: var(--intervalo)" onclick="openModal('intervalo')" role="button" tabindex="0" aria-label="Escala de intervalo">
+      <div class="card-icon">📏</div>
+      <div>
+        <div class="card-label">Escala 03</div>
+        <div class="card-title">Intervalo</div>
+      </div>
+      <div class="card-preview">Valores numéricos con diferencias interpretables, pero el cero no representa ausencia absoluta.</div>
+      <div class="card-tags">
+        <span class="tag">Media</span>
+        <span class="tag">Varianza</span>
+        <span class="tag">Sin cero absoluto</span>
+      </div>
+      <div class="card-cta">
+        Ver detalles
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <!-- Razón -->
+    <div class="scale-card" style="--card-color: var(--razon)" onclick="openModal('razon')" role="button" tabindex="0" aria-label="Escala de razón">
+      <div class="card-icon">⚖️</div>
+      <div>
+        <div class="card-label">Escala 04</div>
+        <div class="card-title">Razón</div>
+      </div>
+      <div class="card-preview">La más "rica": posee cero absoluto, que representa la ausencia total de la característica.</div>
+      <div class="card-tags">
+        <span class="tag">Cero absoluto</span>
+        <span class="tag">Proporciones</span>
+        <span class="tag">Todo permitido</span>
+      </div>
+      <div class="card-cta">
+        Ver detalles
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="reference-bar">Elaboración propia.</div>
+
+</div>
+
+<!-- MODAL OVERLAY -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modalHeader">
+      <div class="modal-header-accent" id="modalAccent"></div>
+      <div class="modal-header-text">
+        <div class="modal-type" id="modalType"></div>
+        <div class="modal-title" id="modalTitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const data = {
+  nominal: {
+    color: 'var(--nominal)',
+    label: 'Escala 01',
+    title: 'Escala nominal',
+    definicion: [
+      'La escala nominal clasifica los datos en categorías sin orden.',
+      'Las etiquetas solo sirven para diferenciar grupos; no tiene sentido decir que una categoría es "mayor" o "menor" que otra.'
+    ],
+    permitidas: [
+      'Solo se pueden realizar operaciones como: contar frecuencias, calcular proporciones, identificar la moda (categoría más frecuente).'
+    ],
+    noPermitidas: [
+      'No se pueden calcular medias ni ordenar las categorías de forma significativa.'
+    ],
+    ejemplos: [
+      { label: 'Sexo', values: 'Masculino, femenino, otro.' },
+      { label: 'Tipo de seguro de salud', values: 'Público, privado, ninguno.' },
+      { label: 'Modalidad de estudio', values: 'Presencial, virtual, híbrida.' },
+      { label: 'Carrera universitaria', values: 'Medicina, Ingeniería, Derecho, Psicología, etc.' }
+    ],
+    aplicacion: 'En educación, si se registra la "modalidad de estudio" de cada estudiante, no tiene sentido calcular un promedio numérico de las modalidades, pero sí se puede construir una tabla de frecuencias o un gráfico de barras.'
+  },
+  ordinal: {
+    color: 'var(--ordinal)',
+    label: 'Escala 02',
+    title: 'Escala ordinal',
+    definicion: [
+      'En la escala ordinal las categorías sí tienen un orden, pero las distancias entre ellas no son necesariamente iguales ni medibles de forma precisa.'
+    ],
+    permitidas: [
+      'Se pueden ordenar las categorías de menor a mayor.',
+      'Se puede calcular la moda y la mediana (o percentiles, si se codifican ordinalmente).'
+    ],
+    noPermitidas: [
+      'No es estrictamente correcto suponer que la diferencia entre categorías es uniforme, aunque a veces se haga aproximadamente.'
+    ],
+    ejemplos: [
+      { label: 'Nivel socioeconómico', values: 'Bajo · Medio · Alto' },
+      { label: 'Grado de acuerdo', values: 'Nada · Poco · De acuerdo · Muy de acuerdo' },
+      { label: 'Nivel de dolor', values: 'Leve · Moderado · Severo' },
+      { label: 'Desempeño académico', values: 'Insuficiente · Suficiente · Bueno · Excelente' }
+    ],
+    aplicacion: 'En una encuesta de satisfacción estudiantil con opciones "muy insatisfecho, insatisfecho, neutral, satisfecho, muy satisfecho", es claro que hay un orden, pero no está garantizado que la distancia entre "insatisfecho" y "neutral" sea la misma que entre "satisfecho" y "muy satisfecho".'
+  },
+  intervalo: {
+    color: 'var(--intervalo)',
+    label: 'Escala 03',
+    title: 'Escala de intervalo',
+    definicion: [
+      'En la escala de intervalo los valores son numéricos, existe un orden, y las diferencias entre valores son interpretables, pero el cero no representa ausencia absoluta de la característica. Por eso, las proporciones (el doble, la mitad, etc.) no tienen pleno sentido.'
+    ],
+    permitidas: [
+      'Se pueden sumar y restar valores, interpretar diferencias.',
+      'Es posible calcular media, mediana, varianza, etc.'
+    ],
+    noPermitidas: [
+      'No tiene sentido decir "el doble" en términos absolutos.'
+    ],
+    ejemplos: [
+      { label: 'Temperatura en °C', values: 'La diferencia entre 10 °C y 20 °C es la misma que entre 20 °C y 30 °C, pero 0 °C no significa "no hay temperatura".' },
+      { label: 'Temperatura en °F', values: 'Mismo razonamiento que Celsius.' },
+      { label: 'Calificación en escala arbitraria', values: 'Por ejemplo, un test psicológico que usa una escala de −10 a +10 puntos.' }
+    ],
+    aplicacion: 'En educación, algunas pruebas estandarizadas se construyen con escalas "centradas" (por ejemplo, media 500, desviación estándar 100), donde los valores negativos serían conceptualmente posibles si se redefiniera la escala: el cero no es ausencia de habilidad, sino un punto de referencia.'
+  },
+  razon: {
+    color: 'var(--razon)',
+    label: 'Escala 04',
+    title: 'Escala de razón',
+    definicion: [
+      'La escala de razón es la más "rica": tiene todas las propiedades de la escala de intervalo, pero además posee un cero absoluto, que sí representa la ausencia total de la característica. Esto permite interpretar tanto diferencias como proporciones.'
+    ],
+    permitidas: [
+      'Se pueden sumar, restar, multiplicar, dividir, calcular medias, varianzas, etc.',
+      'Tiene sentido decir "el doble", "la mitad", etc.'
+    ],
+    noPermitidas: [],
+    ejemplos: [
+      { label: 'Edad (en años, meses)', values: '0 años = no haber cumplido un año. 20 años es el doble de 10 años.' },
+      { label: 'Peso corporal', values: '0 kg implica ausencia de masa. 80 kg es el doble de 40 kg.' },
+      { label: 'Ingreso mensual', values: '0 unidades monetarias = no percibir ingreso. 2000 es el doble de 1000.' },
+      { label: 'Número de hijos', values: '0 hijos = no tener hijos. 4 hijos es el doble de 2.' }
+    ],
+    aplicacion: 'En contexto educativo, la cantidad de créditos aprobados o el número de asignaturas cursadas son variables en escala de razón: 0 créditos implican no haber aprobado ninguno, y 30 créditos es tres veces más que 10.'
+  }
+};
+
+function openModal(key) {
+  const d = data[key];
+  const overlay = document.getElementById('modalOverlay');
+  const header = document.getElementById('modalHeader');
+  const accent = document.getElementById('modalAccent');
+  const type = document.getElementById('modalType');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+
+  // Set color CSS variable for this modal session
+  overlay.style.setProperty('--modal-color', d.color);
+
+  accent.style.background = d.color;
+  type.textContent = d.label;
+  title.textContent = d.title;
+
+  let html = '';
+
+  // Definición
+  html += `<div class="modal-section">
+    <div class="section-label">Definición</div>
+    <ul class="modal-list">${d.definicion.map(t => `<li>${t}</li>`).join('')}</ul>
+  </div>`;
+
+  // Operaciones permitidas
+  if (d.permitidas.length) {
+    html += `<div class="modal-section">
+      <div class="section-label">Operaciones permitidas</div>
+      <ul class="modal-list">${d.permitidas.map(t => `<li>${t}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  // Operaciones no permitidas
+  if (d.noPermitidas.length) {
+    html += `<div class="modal-section">
+      <div class="section-label">Operaciones no permitidas</div>
+      <ul class="modal-list">${d.noPermitidas.map(t => `<li>${t}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  // Ejemplos
+  html += `<div class="modal-section">
+    <div class="section-label">Ejemplos</div>
+    <div class="examples-grid">
+      ${d.ejemplos.map(e => `
+        <div class="example-chip">
+          <div class="example-chip-label">${e.label}</div>
+          <div class="example-chip-values">${e.values}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+
+  // Aplicación
+  html += `<div class="modal-section">
+    <div class="section-label">Aplicación en educación</div>
+    <div class="application-box">${d.aplicacion}</div>
+  </div>`;
+
+  body.innerHTML = html;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Focus trap
+  setTimeout(() => document.getElementById('modal').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+// Keyboard: Escape to close, Enter/Space on cards
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+document.querySelectorAll('.scale-card').forEach(card => {
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      card.click();
+    }
+  });
+});
+</script>
+</body>
+</html>

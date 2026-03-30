@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDA – Estándares Robustos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --nominal:   #E84855;
+  --ordinal:   #F4A261;
+  --intervalo: #2A9D8F;
+  --razon:     #457B9D;
+  --dark:      #1A1A2E;
+  --dark2:     #16213E;
+  --surface:   #FFFFFF;
+  --bg:        #F8F5F0;
+  --text:      #2C2C3E;
+  --muted:     #6B6B80;
+  --border:    #E2DED8;
+  --correct:   #2A9D8F;
+  --wrong:     #E84855;
+  --accent:    #F4A261;
+  --gold:      #D4AF37;
+  --font-d:    'Playfair Display', serif;
+  --font-b:    'DM Sans', sans-serif;
+  --r:         18px;
+  --sh:        0 12px 48px rgba(26,26,46,.16);
+  --sh2:       0 24px 80px rgba(26,26,46,.22);
+}
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+body {
+  font-family: var(--font-b);
+  background: radial-gradient(ellipse at 30% 20%, rgba(232,72,85,.12) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, rgba(69,123,157,.14) 0%, transparent 50%),
+              #EDE9E1;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 28px 16px;
+}
+
+/* ──────────── CANVAS ──────────── */
+.canvas {
+  width: 800px;
+  min-height: 500px;
+  max-height: 800px;
+  background: var(--bg);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: var(--sh2);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ──────────── HEADER ──────────── */
+.header {
+  background: var(--dark);
+  padding: 0;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.header-deco {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 120%, rgba(232,72,85,.22) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% -20%, rgba(69,123,157,.22) 0%, transparent 55%);
+}
+.header-stripe {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--nominal), var(--ordinal), var(--intervalo), var(--razon));
+}
+.header-inner {
+  position: relative; z-index: 1;
+  padding: 22px 36px 18px;
+  display: flex; align-items: flex-start; gap: 20px;
+}
+.header-icon {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(244,162,97,.25), rgba(232,72,85,.15));
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.header-text { flex: 1; }
+.course-tag {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(255,255,255,.4); margin-bottom: 5px;
+}
+.header h1 {
+  font-family: var(--font-d);
+  font-size: 22px; color: #fff;
+  line-height: 1.22; letter-spacing: -.02em;
+}
+.header-sub {
+  font-size: 11.5px; color: rgba(255,255,255,.5);
+  margin-top: 5px;
+}
+.header-sub strong { color: rgba(255,255,255,.8); font-weight: 600; }
+
+/* ──────────── PROGRESS BAR ──────────── */
+.progress-bar-wrap {
+  background: var(--dark2);
+  padding: 10px 36px;
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 14px;
+}
+.progress-label {
+  font-size: 10px; font-weight: 700;
+  color: rgba(255,255,255,.4); letter-spacing: .12em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.progress-track {
+  flex: 1; height: 6px;
+  background: rgba(255,255,255,.08);
+  border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--nominal), var(--ordinal));
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+.progress-count {
+  font-size: 10.5px; font-weight: 600;
+  color: rgba(255,255,255,.5); white-space: nowrap;
+}
+
+/* ──────────── CONTENT AREA ──────────── */
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex; flex-direction: column;
+}
+
+/* ──────────── SLIDE (each screen) ──────────── */
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transform: translateX(32px);
+  transition: opacity .35s ease, transform .35s ease;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.slide.active {
+  opacity: 1; pointer-events: all;
+  transform: translateX(0);
+}
+.slide.exit {
+  opacity: 0;
+  transform: translateX(-32px);
+}
+
+/* ── INTRO SLIDE ── */
+.intro-slide { padding: 32px 36px; gap: 0; }
+.intro-kicker {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ordinal); margin-bottom: 10px;
+}
+.intro-title {
+  font-family: var(--font-d);
+  font-size: 28px; color: var(--dark);
+  line-height: 1.18; letter-spacing: -.02em;
+  margin-bottom: 16px;
+}
+.case-box {
+  background: var(--dark);
+  border-radius: var(--r);
+  padding: 22px 26px;
+  position: relative; overflow: hidden;
+  margin-bottom: 22px;
+}
+.case-box::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 90% 10%, rgba(244,162,97,.15) 0%, transparent 60%);
+}
+.case-box-label {
+  font-size: 9px; font-weight: 800;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ordinal); margin-bottom: 8px;
+  position: relative;
+}
+.case-box-title {
+  font-family: var(--font-d); font-size: 15px;
+  color: #fff; margin-bottom: 12px; position: relative;
+}
+.case-box-body {
+  font-size: 12.5px; color: rgba(255,255,255,.72);
+  line-height: 1.72; position: relative;
+}
+.case-data-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin: 12px 0 0;
+}
+.case-datum {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px; padding: 8px 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.datum-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.datum-label { font-size: 11.5px; color: rgba(255,255,255,.8); font-weight: 500; }
+
+.intro-instruction {
+  background: linear-gradient(135deg, rgba(244,162,97,.1), rgba(232,72,85,.07));
+  border: 1px solid rgba(244,162,97,.25);
+  border-radius: 12px; padding: 14px 18px;
+  font-size: 12.5px; color: var(--text); line-height: 1.65;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.intro-instruction .ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── QUESTION SLIDE ── */
+.q-slide { padding: 28px 36px; gap: 0; }
+.q-number-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.q-badge {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.q-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.q-icon { font-size: 20px; margin-left: auto; }
+.q-text {
+  font-size: 14.5px; color: var(--dark);
+  line-height: 1.72; margin-bottom: 22px;
+  font-weight: 400;
+}
+.options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+.option-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .18s, background .18s, transform .15s, box-shadow .18s;
+  font-family: var(--font-b);
+  min-height: 44px;
+}
+.option-btn:hover:not(:disabled) {
+  border-color: var(--dark);
+  background: #FFFDF9;
+  transform: translateX(4px);
+  box-shadow: 0 4px 18px rgba(26,26,46,.08);
+}
+.option-letter {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  flex-shrink: 0; transition: background .18s, color .18s, border-color .18s;
+}
+.option-text { font-size: 13px; color: var(--text); line-height: 1.6; padding-top: 2px; }
+
+/* Answered states */
+.option-btn.correct {
+  border-color: var(--correct); background: rgba(42,157,143,.06);
+  transform: none; cursor: default;
+}
+.option-btn.correct .option-letter {
+  background: var(--correct); color: #fff; border-color: var(--correct);
+}
+.option-btn.wrong {
+  border-color: var(--wrong); background: rgba(232,72,85,.05);
+  cursor: default;
+}
+.option-btn.wrong .option-letter {
+  background: var(--wrong); color: #fff; border-color: var(--wrong);
+}
+.option-btn.neutral { opacity: .45; cursor: default; }
+.option-btn:disabled { cursor: default; }
+
+/* ── FEEDBACK CARTA ── */
+.feedback-card {
+  background: var(--dark);
+  border-radius: var(--r);
+  padding: 20px 24px;
+  display: flex; gap: 16px; align-items: flex-start;
+  margin-bottom: 8px;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity .35s ease .05s, transform .35s ease .05s;
+  position: relative; overflow: hidden;
+}
+.feedback-card.show { opacity: 1; transform: translateY(0); }
+.feedback-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--fb-color), transparent);
+}
+.fb-icon-wrap {
+  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  background: color-mix(in srgb, var(--fb-color) 20%, rgba(255,255,255,.05));
+}
+.fb-text-wrap { flex: 1; }
+.fb-verdict {
+  font-size: 10px; font-weight: 800; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--fb-color); margin-bottom: 5px;
+}
+.fb-body { font-size: 12.5px; color: rgba(255,255,255,.78); line-height: 1.68; }
+.fb-body strong { color: rgba(255,255,255,.95); }
+
+/* ── NAV ROW ── */
+.nav-row {
+  padding: 14px 36px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.nav-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 22px;
+  border-radius: 11px;
+  border: 2px solid var(--border);
+  background: transparent;
+  font-family: var(--font-b);
+  font-size: 12.5px; font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+  min-height: 44px;
+}
+.nav-btn:hover:not(:disabled) {
+  border-color: var(--dark); color: var(--dark);
+  background: var(--bg);
+}
+.nav-btn:disabled { opacity: .3; cursor: default; }
+.nav-btn.primary {
+  background: var(--dark); color: #fff; border-color: var(--dark);
+}
+.nav-btn.primary:hover:not(:disabled) {
+  background: var(--dark2); border-color: var(--dark2);
+}
+.nav-dots { display: flex; gap: 6px; }
+.nav-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border);
+  transition: background .25s, width .25s;
+  cursor: pointer;
+}
+.nav-dot.done { background: var(--intervalo); }
+.nav-dot.active { background: var(--dark); width: 20px; border-radius: 4px; }
+
+/* ── FINAL SLIDE ── */
+.final-slide { padding: 30px 36px; gap: 0; }
+.trophy-row { text-align: center; margin-bottom: 18px; }
+.trophy-icon { font-size: 52px; display: block; margin-bottom: 10px; }
+.final-kicker {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--intervalo);
+  margin-bottom: 6px;
+}
+.final-title {
+  font-family: var(--font-d); font-size: 26px; color: var(--dark);
+  line-height: 1.2; margin-bottom: 8px;
+}
+.final-subtitle {
+  font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 22px;
+}
+.final-summary {
+  background: var(--dark); border-radius: var(--r);
+  padding: 22px 26px; margin-bottom: 18px; position: relative; overflow: hidden;
+}
+.final-summary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 100% 0%, rgba(42,157,143,.2) 0%, transparent 55%);
+}
+.summary-label {
+  font-size: 9.5px; font-weight: 800; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--intervalo); margin-bottom: 14px; position: relative;
+}
+.summary-list { list-style: none; display: flex; flex-direction: column; gap: 10px; position: relative; }
+.summary-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 12.5px; color: rgba(255,255,255,.75); line-height: 1.65;
+}
+.summary-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(42,157,143,.2); border: 1.5px solid var(--intervalo);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--intervalo); font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+.summary-item strong { color: rgba(255,255,255,.95); }
+
+.final-conclusion {
+  border: 1.5px solid rgba(42,157,143,.3);
+  border-radius: 12px; padding: 14px 18px;
+  font-size: 12.5px; color: var(--text); line-height: 1.7;
+}
+
+/* ──────────── RESPONSIVE ──────────── */
+@media (max-width: 840px) {
+  body { padding: 0; background: var(--bg); }
+  .canvas { width: 100%; max-width: 100%; max-height: none; border-radius: 0; }
+  .header-inner { padding: 18px 20px 14px; }
+  .progress-bar-wrap { padding: 10px 20px; }
+  .intro-slide, .q-slide, .final-slide { padding: 22px 20px; }
+  .case-data-grid { grid-template-columns: 1fr; }
+  .nav-row { padding: 12px 20px; }
+  .nav-btn { padding: 10px 16px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="canvas" id="canvas">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-deco"></div>
+    <div class="header-stripe"></div>
+    <div class="header-inner">
+      <div class="header-icon">🔬</div>
+      <div class="header-text">
+        <div class="course-tag">Estadística para Análisis de Datos</div>
+        <h1>Aplicación de Estándares Robustos en el EDA</h1>
+        <div class="header-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar-wrap">
+    <div class="progress-label">Progreso</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-count" id="progressCount">0 / 4</div>
+  </div>
+
+  <!-- SLIDES AREA -->
+  <div class="content-area" id="contentArea">
+
+    <!-- SLIDE 0: INTRO -->
+    <div class="slide intro-slide active" id="slide-0">
+      <div class="intro-kicker">📋 Caso de estudio</div>
+      <div class="intro-title">CASO: Diagnóstico Académico en la Universidad XYZ</div>
+
+      <div class="case-box">
+        <div class="case-box-label">Contexto</div>
+        <div class="case-box-title">500 estudiantes bajo análisis</div>
+        <div class="case-box-body">
+          La universidad ha recolectado datos de 500 estudiantes para entender su rendimiento. El conjunto de datos es estructurado, donde cada fila es un estudiante y las columnas contienen:
+        </div>
+        <div class="case-data-grid">
+          <div class="case-datum"><div class="datum-dot" style="background:var(--nominal)"></div><div class="datum-label">Edad</div></div>
+          <div class="case-datum"><div class="datum-dot" style="background:var(--ordinal)"></div><div class="datum-label">Carrera</div></div>
+          <div class="case-datum"><div class="datum-dot" style="background:var(--intervalo)"></div><div class="datum-label">Promedio de notas</div></div>
+          <div class="case-datum"><div class="datum-dot" style="background:var(--razon)"></div><div class="datum-label">Nivel socioeconómico</div></div>
+        </div>
+      </div>
+
+      <div class="intro-instruction">
+        <div class="ico">💡</div>
+        <div>Se invita a poner en práctica los conceptos estudiados mediante la resolución del caso que se presenta. Usted debe realizar un EDA robusto para asegurar que los valores atípicos (outliers) no distorsionen la realidad del grupo.</div>
+      </div>
+    </div>
+
+    <!-- SLIDES 1–4: QUESTIONS (generated by JS) -->
+
+    <!-- SLIDE 5: FINAL -->
+    <div class="slide final-slide" id="slide-5">
+      <div class="trophy-row">
+        <span class="trophy-icon">🏆</span>
+        <div class="final-kicker">Actividad completada</div>
+        <div class="final-title">¡Felicidades!</div>
+        <div class="final-subtitle">Ha concluido con éxito la práctica de Análisis Exploratorio de Datos (EDA) con estándares robustos.</div>
+      </div>
+
+      <div class="final-summary">
+        <div class="summary-label">Puntos clave aprendidos</div>
+        <ul class="summary-list">
+          <li class="summary-item">
+            <div class="summary-dot">1</div>
+            <div><strong>Escalas de medición:</strong> Identificar si un dato es nominal, ordinal, de intervalo o razón determina qué cálculos son válidos.</div>
+          </li>
+          <li class="summary-item">
+            <div class="summary-dot">2</div>
+            <div><strong>Población y Muestra:</strong> La clave está en usar estadísticos muestrales para estimar parámetros poblacionales desconocidos.</div>
+          </li>
+          <li class="summary-item">
+            <div class="summary-dot">3</div>
+            <div><strong>Robustez:</strong> La mediana y la media recortada son sus mejores aliadas para evitar que los valores atípicos distorsionen su análisis.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="final-conclusion">
+        Este análisis demuestra que un EDA riguroso garantiza conclusiones más precisas en contextos académicos y profesionales.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAV ROW -->
+  <div class="nav-row">
+    <button class="nav-btn" id="btnPrev" onclick="navigate(-1)" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Anterior
+    </button>
+    <div class="nav-dots" id="navDots"></div>
+    <button class="nav-btn primary" id="btnNext" onclick="navigate(1)">
+      Comenzar
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+</div>
+
+<script>
+/* ────────── DATA ────────── */
+const questions = [
+  {
+    icon: '🏷️',
+    label: 'Escala de medición',
+    text: 'Al revisar la columna "Carrera", usted nota que los datos clasifican a los estudiantes en grupos como "Ingeniería", "Psicología" o "Economía". ¿En qué escala de medición se encuentra esta variable?',
+    options: [
+      { id:'A', text:'Escala Nominal, ya que clasifica los datos en categorías sin un orden jerárquico.', correct: true },
+      { id:'B', text:'Escala Ordinal, porque permite establecer qué carrera es "mayor" o "menor" que otra.', correct: false }
+    ],
+    feedback: {
+      correct: { verdict:'¡Excelente!', body:'Las etiquetas solo sirven para diferenciar grupos y no tiene sentido decir que una carrera es superior a otra en términos de magnitud.', icon:'✅' },
+      wrong:   { verdict:'Incorrecto', body:'En la escala ordinal las categorías deben tener un orden lógico (como "alto" o "bajo"), lo cual no aplica a las carreras profesionales.', icon:'❌' }
+    }
+  },
+  {
+    icon: '📊',
+    label: 'Medida de tendencia central',
+    text: 'En el conjunto de datos de los 500 estudiantes, se desea conocer el "Nivel socioeconómico". Si un estudiante tiene un ingreso cien veces mayor al resto, ¿qué medida de tendencia central sería la más robusta para representar al grupo?',
+    options: [
+      { id:'A', text:'La Media aritmética, porque suma todos los valores y los divide para el total de la muestra.', correct: false },
+      { id:'B', text:'La Mediana, porque es el valor central que deja la mitad de los datos por debajo y no se afecta por valores extremos.', correct: true }
+    ],
+    feedback: {
+      correct: { verdict:'¡Muy bien!', body:'La mediana es resistente; el "daño" del valor atípico desaparece, manteniendo la representación del centro del grupo.', icon:'✅' },
+      wrong:   { verdict:'Cuidado', body:'La media es sensible a valores extremos; un solo dato muy alto puede "dispararla" y dar una imagen engañosa de la realidad.', icon:'⚠️' }
+    }
+  },
+  {
+    icon: '✂️',
+    label: 'Técnica robusta',
+    text: 'Usted desea calcular una medida que combine la precisión del promedio, pero eliminando el ruido de los errores de medición en los extremos (el 10% más alto y el 10% más bajo). ¿Qué técnica debe aplicar?',
+    options: [
+      { id:'A', text:'Media Recortada (Trimmed Mean), que promedia los datos tras eliminar un pequeño porcentaje de valores extremos.', correct: true },
+      { id:'B', text:'Desviación Estándar, para medir qué tan dispersos están los datos respecto al promedio central.', correct: false }
+    ],
+    feedback: {
+      correct: { verdict:'¡Exacto!', body:'Es una versión robusta de la media que evita que los valores inusuales dominen la comprensión de la estructura general.', icon:'✅' },
+      wrong:   { verdict:'Incorrecto', body:'La desviación estándar mide dispersión, no tendencia central, y también suele ser sensible a valores atípicos.', icon:'❌' }
+    }
+  },
+  {
+    icon: '🌍',
+    label: 'Población y muestra',
+    text: 'Si el objetivo del estudio es generalizar los resultados a "todos los estudiantes matriculados en la universidad en el año 2025", ¿cómo definiríamos a ese grupo total?',
+    options: [
+      { id:'A', text:'Muestra, ya que es el subconjunto que hemos seleccionado para observar.', correct: false },
+      { id:'B', text:'Población, pues representa el universo total sobre el que deseamos formular conclusiones.', correct: true }
+    ],
+    feedback: {
+      correct: { verdict:'¡Correcto!', body:'La población es el conjunto total definido por el objetivo del estudio.', icon:'✅' },
+      wrong:   { verdict:'No exactamente', body:'La muestra son solo los 500 estudiantes que estamos analizando directamente para aproximarnos a la realidad total.', icon:'⚠️' }
+    }
+  }
+];
+
+/* ────────── STATE ────────── */
+const TOTAL_SLIDES = 6; // 0=intro, 1-4=questions, 5=final
+let current = 0;
+let answered = new Array(4).fill(null); // null | 'correct' | 'wrong'
+const letterLabels = ['A','B','C','D'];
+
+/* ── Shuffle helper ── */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ── Build question slides ── */
+function buildQuestions() {
+  const area = document.getElementById('contentArea');
+  const finalSlide = document.getElementById('slide-5');
+
+  questions.forEach((q, qi) => {
+    const shuffled = shuffle(q.options);
+    const div = document.createElement('div');
+    div.className = 'slide q-slide';
+    div.id = `slide-${qi + 1}`;
+
+    const opts = shuffled.map((opt, idx) => {
+      const letter = letterLabels[idx];
+      return `<button class="option-btn" id="opt-${qi}-${idx}"
+        onclick="selectOption(${qi}, ${idx}, ${opt.correct})"
+        data-correct="${opt.correct}">
+        <div class="option-letter">${letter}</div>
+        <div class="option-text"><strong>Opción ${letter}:</strong> ${opt.text}</div>
+      </button>`;
+    }).join('');
+
+    const fbCorrect = q.feedback.correct;
+    const fbWrong   = q.feedback.wrong;
+
+    div.innerHTML = `
+      <div class="q-number-row">
+        <div class="q-badge">${qi + 1}</div>
+        <div class="q-label">Pregunta ${qi + 1} de 4 &nbsp;·&nbsp; ${q.label}</div>
+        <div class="q-icon">${q.icon}</div>
+      </div>
+      <div class="q-text">${q.text}</div>
+      <div class="options-list" id="opts-${qi}">${opts}</div>
+      <div class="feedback-card" id="fb-correct-${qi}" style="--fb-color: var(--correct)">
+        <div class="fb-icon-wrap">${fbCorrect.icon}</div>
+        <div class="fb-text-wrap">
+          <div class="fb-verdict">${fbCorrect.verdict}</div>
+          <div class="fb-body">${fbCorrect.body}</div>
+        </div>
+      </div>
+      <div class="feedback-card" id="fb-wrong-${qi}" style="--fb-color: var(--wrong)">
+        <div class="fb-icon-wrap">${fbWrong.icon}</div>
+        <div class="fb-text-wrap">
+          <div class="fb-verdict">${fbWrong.verdict}</div>
+          <div class="fb-body">${fbWrong.body}</div>
+        </div>
+      </div>`;
+
+    area.insertBefore(div, finalSlide);
+  });
+}
+
+/* ── Select option ── */
+function selectOption(qi, selectedIdx, isCorrect) {
+  if (answered[qi] !== null) return;
+  answered[qi] = isCorrect ? 'correct' : 'wrong';
+
+  const container = document.getElementById(`opts-${qi}`);
+  const buttons = container.querySelectorAll('.option-btn');
+
+  buttons.forEach((btn, idx) => {
+    btn.disabled = true;
+    if (idx === selectedIdx) {
+      btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    } else {
+      // Reveal correct if wrong
+      if (!isCorrect && btn.dataset.correct === 'true') {
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('neutral');
+      }
+    }
+  });
+
+  // Show feedback carta
+  const fbId = isCorrect ? `fb-correct-${qi}` : `fb-wrong-${qi}`;
+  document.getElementById(fbId).classList.add('show');
+
+  // Update progress
+  updateProgress();
+
+  // Enable next
+  updateNav();
+}
+
+/* ── Navigation ── */
+function navigate(dir) {
+  const next = current + dir;
+  if (next < 0 || next >= TOTAL_SLIDES) return;
+
+  const cur = document.getElementById(`slide-${current}`);
+  cur.classList.add('exit');
+  cur.classList.remove('active');
+  setTimeout(() => cur.classList.remove('exit'), 400);
+
+  current = next;
+  const nxt = document.getElementById(`slide-${current}`);
+  nxt.classList.add('active');
+
+  // scroll slide to top
+  nxt.scrollTop = 0;
+
+  updateNav();
+  updateProgress();
+}
+
+function updateNav() {
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const dots = document.getElementById('navDots');
+
+  // Dots (questions only = slides 1-4)
+  dots.innerHTML = '';
+  for (let i = 1; i <= 4; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot';
+    if (i === current) d.classList.add('active');
+    else if (answered[i - 1] !== null) d.classList.add('done');
+    d.onclick = () => { if (canNavigateTo(i)) navigate(i - current); };
+    dots.appendChild(d);
+  }
+
+  btnPrev.disabled = current === 0;
+
+  // Next button logic
+  if (current === 0) {
+    btnNext.textContent = '';
+    btnNext.innerHTML = 'Comenzar <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    btnNext.disabled = false;
+    btnNext.className = 'nav-btn primary';
+  } else if (current >= 1 && current <= 4) {
+    const qi = current - 1;
+    const hasAnswered = answered[qi] !== null;
+    btnNext.innerHTML = (current === 4 && hasAnswered) 
+      ? 'Ver resultados <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+      : 'Siguiente <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    btnNext.disabled = !hasAnswered;
+    btnNext.className = 'nav-btn primary';
+  } else if (current === 5) {
+    btnNext.innerHTML = 'Reintentar <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/></svg>';
+    btnNext.disabled = false;
+    btnNext.onclick = restartQuiz;
+    btnNext.className = 'nav-btn primary';
+  }
+}
+
+function canNavigateTo(slideIdx) {
+  if (slideIdx <= current) return true;
+  // Can go forward if previous answered
+  for (let i = current; i < slideIdx; i++) {
+    if (i >= 1 && i <= 4 && answered[i - 1] === null) return false;
+  }
+  return true;
+}
+
+function updateProgress() {
+  const done = answered.filter(a => a !== null).length;
+  const pct = (done / 4) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = done + ' / 4';
+}
+
+function restartQuiz() {
+  answered = new Array(4).fill(null);
+  // Remove built question slides & rebuild
+  for (let i = 1; i <= 4; i++) {
+    const s = document.getElementById(`slide-${i}`);
+    if (s) s.remove();
+  }
+  buildQuestions();
+
+  // Reset to intro
+  document.getElementById('slide-5').classList.remove('active');
+  current = 0;
+  document.getElementById('slide-0').classList.add('active');
+
+  document.getElementById('btnNext').onclick = () => navigate(1);
+  updateNav();
+  updateProgress();
+}
+
+/* ── INIT ── */
+buildQuestions();
+updateNav();
+updateProgress();
+</script>
+</body>
+</html>
