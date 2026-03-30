@@ -2,680 +2,809 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Línea de Tiempo · Hitos Gestión del Riesgo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* =========================================
+           1. CORE VARIABLES & RESET
+           ========================================= */
+        :root {
+            --c-bg-dark: #050f16;
+            --c-bg-panel: rgba(10, 25, 41, 0.75);
+            --c-primary: #0a2b3e;   /* Navy */
+            --c-teal: #00f0ff;      /* Neon Cyan/Teal para futurismo */
+            --c-teal-dim: rgba(0, 240, 255, 0.1);
+            --c-gold: #d4af37;      /* Gold mantenido */
+            --c-text-main: #e6f1f8;
+            --c-text-muted: #8b9bb4;
+            --font-tech: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
+            --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* ========== VARIABLES MODERNAS ========== */
-        :root {
-            --bg-dark: #f0f4f8;
-            --bg-card: #ffffff;
-            --line-gold: #d4af37;
-            --primary-navy: #0a2b3e;
-            --accent-teal: #1e7f8c;
-            --accent-teal-light: #2c9aab;
-            --node-bg: #ffffff;
-            --node-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15);
-            --text-dark: #1a2c38;
-            --text-soft: #2c5368;
-            --border-light: #e2e8f0;
-            --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
-            --font-main: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: linear-gradient(145deg, #e2e8f0 0%, #eef3fc 100%);
-            font-family: var(--font-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 24px;
-        }
-
-        /* ===== CONTENEDOR PRINCIPAL FIJO: 800px x 800px EN ESCRITORIO ===== */
-        .timeline-canvas {
-            width: 800px;
-            height: 800px;
-            background: var(--gradient-bg);
-            border-radius: 2rem;
-            box-shadow: 0 30px 45px -20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.6);
-            position: relative;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            transition: none;
-        }
-
-        .timeline-canvas::-webkit-scrollbar {
-            width: 5px;
-        }
-        .timeline-canvas::-webkit-scrollbar-track {
-            background: #dce5ed;
-            border-radius: 10px;
-        }
-        .timeline-canvas::-webkit-scrollbar-thumb {
-            background: var(--accent-teal);
-            border-radius: 10px;
-        }
-
-        /* contenido interno */
-        .timeline-wrapper {
-            padding: 1.5rem 1.8rem 2rem 1.8rem;
-            position: relative;
-        }
-
-        /* ========== HEADER MODERNO ========== */
-        .header-modern {
-            margin-bottom: 2rem;
-            position: relative;
-            z-index: 5;
-        }
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            margin-bottom: 0.75rem;
-        }
-        .course-badge {
-            background: var(--accent-teal);
-            color: white;
-            padding: 0.2rem 1rem;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            backdrop-filter: blur(2px);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-        .prof-badge {
-            background: rgba(10, 43, 62, 0.08);
-            padding: 0.2rem 1rem;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: var(--primary-navy);
-        }
-        .title-section {
-            margin-top: 0.5rem;
-        }
-        .title-section h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(120deg, #0a2b3e, #1e7f8c);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            letter-spacing: -0.3px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .title-icon {
-            font-size: 2rem;
-            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
-        }
-        .instruction-modern {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(212, 175, 55, 0.18);
-            backdrop-filter: blur(4px);
-            padding: 0.3rem 1rem;
-            border-radius: 60px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #8a6e2b;
-            margin-top: 0.6rem;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-
-        /* ========== LÍNEA DE TIEMPO HORIZONTAL CON NODOS ========== */
-        .timeline-axis {
-            position: relative;
-            margin: 2rem 0 1.5rem 0;
-            padding: 1rem 0;
-        }
-
-        /* línea base horizontal */
-        .timeline-line {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #cbdbe0, var(--accent-teal), var(--line-gold), #cbdbe0);
-            border-radius: 4px;
-            transform: translateY(-50%);
-            z-index: 1;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        /* contenedor de nodos flex */
-        .nodes-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        /* cada nodo (año + evento breve) */
-        .timeline-node {
+            background-color: var(--c-bg-dark);
+            color: var(--c-text-main);
+            font-family: var(--font-tech);
+            overflow: hidden; /* Controlamos el scroll en el wrapper */
+            height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            flex: 0 0 auto;
-            min-width: 70px;
-            background: transparent;
-        }
-        .timeline-node:hover {
-            transform: translateY(-6px);
-        }
-        .node-circle {
-            width: 58px;
-            height: 58px;
-            background: var(--node-bg);
-            border: 3px solid var(--accent-teal);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: var(--primary-navy);
-            box-shadow: var(--node-shadow);
-            transition: all 0.2s;
-            background: white;
-            backdrop-filter: blur(2px);
-            margin-bottom: 8px;
-        }
-        .timeline-node:hover .node-circle {
-            border-color: var(--line-gold);
-            transform: scale(1.05);
-            background: #fffef7;
-            box-shadow: 0 15px 25px -10px rgba(0,0,0,0.2);
-        }
-        .node-year {
-            font-weight: 800;
-            font-size: 0.85rem;
-            background: rgba(10, 43, 62, 0.08);
-            padding: 0.2rem 0.6rem;
-            border-radius: 40px;
-            color: var(--primary-navy);
-        }
-        .node-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-            text-align: center;
-            max-width: 90px;
-            color: var(--text-soft);
-            margin-top: 5px;
-            line-height: 1.3;
         }
 
-        /* ajuste para nodos con texto largo */
-        .timeline-node.large-label .node-label {
-            font-size: 0.6rem;
+        /* Cursor personalizado para ambiente tech */
+        body {
+            cursor: default;
         }
-
-        /* espaciado responsive dentro del contenedor flexible */
-        @media (max-width: 780px) {
-            .nodes-container {
-                justify-content: center;
-                gap: 1rem;
-            }
-            .timeline-node {
-                min-width: 60px;
-            }
-            .node-circle {
-                width: 48px;
-                height: 48px;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Información de resumen adicional opcional */
-        .timeline-footer {
-            margin-top: 2rem;
-            background: rgba(255,255,255,0.7);
-            border-radius: 1.2rem;
-            padding: 0.8rem 1rem;
-            font-size: 0.7rem;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-        .references-apa {
-            font-size: 0.65rem;
-            color: var(--text-soft);
-            border-top: 1px solid var(--border-light);
-            margin-top: 1rem;
-            padding-top: 0.8rem;
-        }
-        .references-apa a {
-            color: var(--accent-teal);
-            text-decoration: none;
-        }
-
-        /* ========== MODAL MODERNO ========== */
-        .modal-overlay {
+        
+        /* =========================================
+           2. BACKGROUND ANIMATION (CANVAS)
+           ========================================= */
+        #neural-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 43, 62, 0.8);
-            backdrop-filter: blur(8px);
+            z-index: -1;
+            background: radial-gradient(circle at center, #0f202e 0%, #050f16 100%);
+        }
+
+        /* =========================================
+           3. LAYOUT PRINCIPAL
+           ========================================= */
+        .app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        /* HEADER FLOTANTE */
+        .hud-header {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 20;
+            pointer-events: none; /* Dejar pasar clicks al canvas */
+            width: 90%;
+            max-width: 800px;
+        }
+        
+        .hud-title {
+            font-size: 2rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #fff, var(--c-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+            margin-bottom: 0.5rem;
+        }
+
+        .hud-subtitle {
+            font-size: 0.85rem;
+            color: var(--c-gold);
+            background: rgba(212, 175, 55, 0.1);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            display: inline-block;
+            backdrop-filter: blur(5px);
+        }
+
+        /* =========================================
+           4. SCROLLING TIMELINE (EL TREN)
+           ========================================= */
+        .timeline-viewport {
+            width: 100%;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            padding: 0 50vw; /* Padding para centrar el primer/último elemento */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+            scroll-snap-type: x mandatory;
+        }
+
+        .timeline-viewport::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .timeline-track {
+            display: flex;
+            align-items: center;
+            gap: 4rem; /* Espacio entre nodos */
+            padding: 2rem 0;
+        }
+
+        /* Línea central continua */
+        .track-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--c-teal-dim), transparent);
+            z-index: 0;
+            box-shadow: 0 0 15px var(--c-teal);
+        }
+
+        /* NODO TARJETA (ITEM) */
+        .timeline-item {
+            position: relative;
+            flex: 0 0 auto;
+            scroll-snap-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 300px;
+            opacity: 0.4;
+            transform: scale(0.9);
+            transition: all 0.5s var(--ease-out);
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        /* Estado activo (cuando está en centro o hover) */
+        .timeline-item:hover, .timeline-item.active {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .timeline-item:hover .node-circle, .timeline-item.active .node-circle {
+            box-shadow: 0 0 30px var(--c-teal), inset 0 0 10px var(--c-teal);
+            border-color: #fff;
+        }
+
+        .node-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(10, 25, 41, 0.9);
+            border: 2px solid var(--c-teal);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 3000;
-            visibility: hidden;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+
+        /* Efecto de rotación en el borde */
+        .node-circle::after {
+            content: '';
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 50%;
+            border: 1px dashed var(--c-gold);
+            animation: spin 10s linear infinite;
+        }
+
+        .item-year {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--c-teal);
+            margin-bottom: 0.2rem;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+
+        .item-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.1), rgba(255,255,255,0));
+            padding: 4px 0;
+            width: 100%;
+        }
+
+        .click-hint {
+            margin-top: 10px;
+            font-size: 0.7rem;
+            color: var(--c-gold);
             opacity: 0;
-            transition: visibility 0.2s, opacity 0.25s ease;
+            transform: translateY(10px);
+            transition: all 0.3s;
         }
-        .modal-overlay.active {
-            visibility: visible;
+        .timeline-item:hover .click-hint {
             opacity: 1;
+            transform: translateY(0);
         }
-        .modal-card {
-            background: #ffffff;
-            width: 90%;
-            max-width: 480px;
-            border-radius: 2rem;
-            overflow: hidden;
-            box-shadow: 0 40px 55px -20px rgba(0,0,0,0.5);
-            transform: scale(0.96);
-            transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            max-height: 85vh;
+
+        /* =========================================
+           5. HOLOGRAPHIC MODAL
+           ========================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 15, 22, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 100;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s var(--ease-out);
         }
-        .modal-overlay.active .modal-card {
-            transform: scale(1);
+
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
         }
-        .modal-header {
-            background: linear-gradient(105deg, var(--primary-navy), var(--accent-teal));
-            color: white;
-            padding: 1.2rem 1.6rem;
+
+        .holo-card {
+            width: 90%;
+            max-width: 550px;
+            background: rgba(13, 30, 50, 0.6);
+            border: 1px solid var(--c-teal);
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15), inset 0 0 20px rgba(0, 240, 255, 0.05);
+            position: relative;
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.4s var(--ease-out);
+            overflow: hidden;
+        }
+
+        .modal-overlay.open .holo-card {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Bordes decorativos estilo HUD */
+        .holo-card::before, .holo-card::after {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            border: 2px solid var(--c-gold);
+            transition: all 0.3s;
+        }
+        .holo-card::before { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .holo-card::after { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+        .holo-header {
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), transparent);
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .modal-header h3 {
-            font-size: 1.4rem;
+
+        .holo-title {
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: -0.2px;
+            color: #fff;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
-        .close-modal {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            width: 34px;
-            height: 34px;
+        .holo-title span { color: var(--c-gold); }
+
+        .btn-close {
+            background: transparent;
+            border: 1px solid var(--c-teal);
+            color: var(--c-teal);
+            width: 40px; height: 40px;
             border-radius: 50%;
-            font-size: 1.5rem;
             cursor: pointer;
-            color: white;
+            font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
             transition: 0.2s;
+        }
+        .btn-close:hover {
+            background: var(--c-teal);
+            color: #000;
+            box-shadow: 0 0 15px var(--c-teal);
+        }
+
+        .holo-body {
+            padding: 2rem;
+            color: var(--c-text-main);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .holo-visual {
+            width: 100%;
+            height: 150px;
+            background: rgba(0,0,0,0.3);
+            border: 1px dashed rgba(0, 240, 255, 0.3);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
         }
-        .close-modal:hover {
-            background: rgba(255,255,255,0.35);
-            transform: rotate(90deg);
-        }
-        .modal-body {
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-        .modal-text {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: var(--text-dark);
-            margin-bottom: 1rem;
-        }
-        .modal-image-place {
-            background: #f5f9fe;
-            border-radius: 1.2rem;
-            padding: 0.8rem;
-            text-align: center;
-            border: 1px dashed var(--accent-teal);
-            margin: 0.8rem 0;
-        }
-        .modal-image-place span {
-            font-size: 2.5rem;
-            display: block;
-        }
-        .fig-apa {
-            font-size: 0.65rem;
-            color: #4c6a7c;
-            font-style: italic;
-            margin-top: 6px;
-        }
-        .ref-modal {
-            background: #eef3fa;
-            border-left: 4px solid var(--line-gold);
-            padding: 0.6rem;
-            border-radius: 1rem;
-            font-size: 0.7rem;
-            margin-top: 0.8rem;
+        
+        .holo-visual::after {
+            content: 'VISUAL DATA STREAM // ACTIVE';
+            position: absolute;
+            bottom: 5px; right: 10px;
+            font-size: 0.5rem;
+            color: var(--c-teal);
+            font-family: monospace;
         }
 
-        /* ========== RESPONSIVE MÓVIL ========== */
-        @media (max-width: 820px) {
-            body {
-                padding: 12px;
-            }
-            .timeline-canvas {
-                width: 100%;
-                height: auto;
-                min-height: 90vh;
-                border-radius: 1.5rem;
-                overflow-y: visible;
-            }
-            .timeline-wrapper {
-                padding: 1rem;
-            }
-            .title-section h1 {
-                font-size: 1.5rem;
-            }
-            .nodes-container {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 1rem;
-                margin-top: 1rem;
-            }
-            .timeline-line {
-                display: none; /* en móvil se simplifica pero mantenemos nodos como cards */
-            }
-            .timeline-axis {
-                margin: 1rem 0;
-            }
-            .node-circle {
-                width: 52px;
-                height: 52px;
-            }
+        .holo-ref {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(212, 175, 55, 0.05);
+            border-left: 3px solid var(--c-gold);
+            font-size: 0.8rem;
+            color: var(--c-text-muted);
+            font-family: monospace;
         }
 
-        @media (max-width: 550px) {
-            .node-label {
-                font-size: 0.6rem;
-                max-width: 75px;
-            }
-        }
+        /* =========================================
+           6. ANIMATIONS & UTILS
+           ========================================= */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* accesibilidad */
-        button:focus-visible, .timeline-node:focus-visible {
-            outline: 2px solid var(--accent-teal);
-            outline-offset: 3px;
+        /* Flechas de navegación */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px; height: 50px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--c-teal);
+            color: var(--c-teal);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 50;
+            transition: 0.3s;
+            font-size: 1.5rem;
         }
-        .no-scroll {
-            overflow: hidden;
+        .nav-arrow:hover {
+            background: var(--c-teal);
+            color: #000;
+            box-shadow: 0 0 20px var(--c-teal);
+        }
+        .nav-prev { left: 20px; }
+        .nav-next { right: 20px; }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .hud-title { font-size: 1.5rem; }
+            .timeline-viewport { height: 350px; padding: 0 10px; }
+            .timeline-track { gap: 2rem; padding: 2rem 10px; }
+            .item-year { font-size: 1.8rem; }
+            .node-circle { width: 60px; height: 60px; font-size: 1rem; }
+            .holo-card { width: 95%; }
+            .nav-arrow { display: none; } /* En móvil se usa touch scroll */
         }
     </style>
 </head>
 <body>
-<div class="timeline-canvas">
-    <div class="timeline-wrapper">
-        <!-- Header moderno con emociones -->
-        <div class="header-modern">
-            <div class="header-top">
-                <span class="course-badge">🌍 PREV_1003 · Semana 6</span>
-                <span class="prof-badge">👩‍🏫 Priscila González Briceño</span>
-            </div>
-            <div class="title-section">
-                <h1>
-                    <span class="title-icon">⚡📅</span> 
-                    Hitos internacionales<br>en gestión del riesgo
-                </h1>
-                <div class="instruction-modern">
-                    ✨🖱️ <strong>Toque o haga clic en cada nodo</strong> · Se abrirá una ventana con información completa
-                </div>
-            </div>
-        </div>
 
-        <!-- LÍNEA DE TIEMPO VISUAL: línea + nodos conectados -->
-        <div class="timeline-axis">
-            <div class="timeline-line"></div>
-            <div class="nodes-container">
-                <!-- Nodo 1989 -->
-                <div class="timeline-node" data-modal="modal-1989">
-                    <div class="node-circle">1989</div>
-                    <div class="node-year">1989</div>
-                    <div class="node-label">Decenio IDNDR</div>
+    <!-- Fondo de partículas interactivo -->
+    <canvas id="neural-canvas"></canvas>
+
+    <!-- Header Flotante -->
+    <header class="hud-header">
+        <h1 class="hud-title">Gestión del Riesgo</h1>
+        <div class="hud-subtitle">🌍 EVOLUCIÓN HISTÓRICA Y MARCOS INTERNACIONALES</div>
+    </header>
+
+    <!-- Flechas de Navegación -->
+    <div class="nav-arrow nav-prev" id="btnPrev">&#8249;</div>
+    <div class="nav-arrow nav-next" id="btnNext">&#8250;</div>
+
+    <!-- Contenedor Principal -->
+    <main class="app-container">
+        <!-- Viewport de Scroll -->
+        <div class="timeline-viewport" id="viewport">
+            
+            <!-- Línea decorativa de fondo -->
+            <div class="track-line"></div>
+
+            <!-- Pista de Nodos -->
+            <div class="timeline-track" id="track">
+                
+                <!-- 1989 -->
+                <div class="timeline-item" data-id="modal-1989">
+                    <div class="node-circle">89</div>
+                    <div class="item-year">1989</div>
+                    <div class="item-label">Decenio IDNDR</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
+
                 <!-- 1992 -->
-                <div class="timeline-node" data-modal="modal-1992">
-                    <div class="node-circle">1992</div>
-                    <div class="node-year">1992</div>
-                    <div class="node-label">CMNUCC</div>
+                <div class="timeline-item" data-id="modal-1992">
+                    <div class="node-circle">92</div>
+                    <div class="item-year">1992</div>
+                    <div class="item-label">CMNUCC</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
+
                 <!-- 1994 -->
-                <div class="timeline-node" data-modal="modal-1994">
-                    <div class="node-circle">1994</div>
-                    <div class="node-year">1994</div>
-                    <div class="node-label">Yokohama</div>
+                <div class="timeline-item" data-id="modal-1994">
+                    <div class="node-circle">94</div>
+                    <div class="item-year">1994</div>
+                    <div class="item-label">Yokohama</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
+
                 <!-- 1999 -->
-                <div class="timeline-node" data-modal="modal-1999">
-                    <div class="node-circle">1999</div>
-                    <div class="node-year">1999</div>
-                    <div class="node-label">EIRD</div>
+                <div class="timeline-item" data-id="modal-1999">
+                    <div class="node-circle">99</div>
+                    <div class="item-year">1999</div>
+                    <div class="item-label">EIRD</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
+
                 <!-- 2005 -->
-                <div class="timeline-node" data-modal="modal-2005">
-                    <div class="node-circle">2005</div>
-                    <div class="node-year">2005</div>
-                    <div class="node-label">Hyogo</div>
+                <div class="timeline-item" data-id="modal-2005">
+                    <div class="node-circle">05</div>
+                    <div class="item-year">2005</div>
+                    <div class="item-label">Hyogo</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
-                <!-- 2015 (triple) -->
-                <div class="timeline-node large-label" data-modal="modal-2015">
-                    <div class="node-circle">2015</div>
-                    <div class="node-year">2015</div>
-                    <div class="node-label">Agenda 2030 · París · Sendai</div>
+
+                <!-- 2015 -->
+                <div class="timeline-item" data-id="modal-2015">
+                    <div class="node-circle" style="border-color: var(--c-gold); color: var(--c-gold);">15</div>
+                    <div class="item-year" style="color: var(--c-gold);">2015</div>
+                    <div class="item-label">Tríada Sendai/París/ODS</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
+
                 <!-- 2016 -->
-                <div class="timeline-node" data-modal="modal-2016">
-                    <div class="node-circle">2016</div>
-                    <div class="node-year">2016</div>
-                    <div class="node-label">Nueva Agenda Urbana</div>
+                <div class="timeline-item" data-id="modal-2016">
+                    <div class="node-circle">16</div>
+                    <div class="item-year">2016</div>
+                    <div class="item-label">Agenda Urbana</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
+
                 <!-- 2018 -->
-                <div class="timeline-node" data-modal="modal-2018">
-                    <div class="node-circle">2018</div>
-                    <div class="node-year">2018</div>
-                    <div class="node-label">Acuerdo Escazú</div>
+                <div class="timeline-item" data-id="modal-2018">
+                    <div class="node-circle">18</div>
+                    <div class="item-year">2018</div>
+                    <div class="item-label">Escazú</div>
+                    <div class="click-hint">ACCEDER DATOS ></div>
                 </div>
+
             </div>
         </div>
+    </main>
 
-        <!-- breve resumen visual y referencias -->
-        <div class="timeline-footer">
-            <div style="display: flex; gap: 10px; align-items: center; justify-content: center; font-weight: 500; font-size: 0.7rem;">
-                <span>🏛️ De Yokohama a Sendai</span> 
-                <span>🌎 Cambio climático + RRD</span>
-                <span>📜 Acuerdo de Escazú (2018)</span>
+    <!-- ================= HOLOGRAPHIC MODALS ================= -->
+    
+    <!-- Modal 1989 -->
+    <div class="modal-overlay" id="modal-1989">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title"><span>1989</span> IDNDR</div>
+                <button class="btn-close">&times;</button>
             </div>
-            <div class="references-apa">
-                📚 <strong>Referencias APA 7:</strong> Bárcena, A., Torres, V., & Muñoz Ávila, L. (Eds.). (2021). <em>El Acuerdo de Escazú sobre democracia ambiental y su relación con la Agenda 2030</em>. CEPAL; Editorial Universidad del Rosario. 
-                <a href="https://doi.org/10.12804/urosario9789587847567" target="_blank">https://doi.org/10.12804/urosario9789587847567</a><br>
-                ONU: Decenio Internacional (1989), CMNUCC (1992), Yokohama (1994), EIRD (1999), Hyogo (2005), Sendai & Agenda 2030 (2015), Nueva Agenda Urbana (2016).
+            <div class="holo-body">
+                <div class="holo-visual">🌊🌀</div>
+                <p><strong>Decenio Internacional para la Reducción de Desastres Naturales.</strong> Iniciativa de la ONU (1990-1999) promovida para reducir la pérdida de vida, daños económicos y destrucción social causados por desastres naturales.</p>
+                <div class="holo-ref">REF: ONU Resolución 44/236</div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ========== MODALES (cada nodo abre ventana flotante con información exacta) ========== -->
-<!-- Modal 1989 -->
-<div id="modal-1989" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>📆 1989 · Decenio Internacional</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text">Decenio internacional para la reducción de desastres naturales (1990-1999). Promovido por Naciones Unidas para reducir pérdidas por desastres mediante cooperación científica y técnica.</div>
-            <div class="modal-image-place"><span>🌊🌀🏔️</span><div class="fig-apa">Figura 1. Representación del Decenio IDNDR. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📌 Referencia: ONU Resolución 44/236, 1989.</div>
+    <!-- Modal 1992 -->
+    <div class="modal-overlay" id="modal-1992">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title"><span>1992</span> CMNUCC</div>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="holo-body">
+                <div class="holo-visual">🏔️❄️</div>
+                <p><strong>Convención Marco de las Naciones Unidas sobre el Cambio Climático.</strong> Adoptada en la Cumbre de la Tierra (Río de Janeiro). Establece el marco internacional para combatir el cambio climático.</p>
+                <div class="holo-ref">REF: UNFCCC, 1992</div>
+            </div>
         </div>
     </div>
-</div>
-<!-- Modal 1992 -->
-<div id="modal-1992" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>🌿 1992 · CMNUCC</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text">Convención Marco de las Naciones Unidas sobre Cambio Climático. Adoptada en la Cumbre de la Tierra (Río 92), base para el Acuerdo de París y la gobernanza climática.</div>
-            <div class="modal-image-place"><span>🏔️🌍❄️</span><div class="fig-apa">Figura 2. Convención Marco Cambio Climático. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📌 CMNUCC, 1992. Entrada en vigor 1994.</div>
-        </div>
-    </div>
-</div>
-<!-- Modal 1994 -->
-<div id="modal-1994" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>⚓ 1994 · Yokohama</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text">Estrategia y plan de acción de Yokohama para un mundo más seguro. Primer marco global para la reducción de desastres naturales, tecnológicos y ambientales.</div>
-            <div class="modal-image-place"><span>🌊🏛️🛡️</span><div class="fig-apa">Figura 3. Estrategia de Yokohama. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📌 Conferencia Mundial sobre Reducción de Desastres, 1994.</div>
-        </div>
-    </div>
-</div>
-<!-- Modal 1999 -->
-<div id="modal-1999" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>🌋 1999 · EIRD</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text">Estrategia internacional para la reducción de desastres (EIRD). Creada por Naciones Unidas para promover la resiliencia y vincular la gestión del riesgo con el desarrollo.</div>
-            <div class="modal-image-place"><span>🌋⛰️🏘️</span><div class="fig-apa">Figura 4. Estrategia Internacional. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📌 ONU, establecimiento de la EIRD, 1999.</div>
-        </div>
-    </div>
-</div>
-<!-- Modal 2005 -->
-<div id="modal-2005" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>🏗️ 2005 · Hyogo Framework</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text">Marco de Acción de Hyogo 2005-2015: Construir resiliencia de naciones y comunidades ante desastres. Antecesor directo del Marco de Sendai.</div>
-            <div class="modal-image-place"><span>🌉🧱🏘️</span><div class="fig-apa">Figura 5. Marco Hyogo. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📌 Conferencia Mundial sobre Reducción de Desastres, Kobe, 2005.</div>
-        </div>
-    </div>
-</div>
-<!-- Modal 2015 (Triple hito) -->
-<div id="modal-2015" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>🌱 2015 · Tríada Transformadora</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text"><strong>Agenda 2030 para el desarrollo sostenible</strong> (17 ODS)<br><strong>Acuerdo de París</strong> (cambio climático)<br><strong>Marco de Sendai para la Reducción del Riesgo de Desastres 2015-2030</strong><br>Tres acuerdos fundamentales que integran sostenibilidad, acción climática y gestión integral del riesgo.</div>
-            <div class="modal-image-place"><span>🌍🤝🌾</span><div class="fig-apa">Figura 6. Hitos 2015. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📌 Naciones Unidas, UNISDR, COP21, 2015.</div>
-        </div>
-    </div>
-</div>
-<!-- Modal 2016 -->
-<div id="modal-2016" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>🏙️ 2016 · Nueva Agenda Urbana</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text">Nueva Agenda Urbana, adoptada en Habitat III. Orienta el desarrollo urbano sostenible, resiliencia ante desastres, planificación inclusiva y ciudades seguras.</div>
-            <div class="modal-image-place"><span>🌆🏙️🌳</span><div class="fig-apa">Figura 7. Nueva Agenda Urbana. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📌 ONU-Habitat, 2016.</div>
-        </div>
-    </div>
-</div>
-<!-- Modal 2018 Acuerdo de Escazú -->
-<div id="modal-2018" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header"><h3>🌿 2018 · Acuerdo de Escazú</h3><button class="close-modal">&times;</button></div>
-        <div class="modal-body">
-            <div class="modal-text">Acuerdo de Escazú sobre democracia ambiental en América Latina y el Caribe. Derechos de acceso a la información, participación pública y justicia en asuntos ambientales. Instrumento pionero en protección de defensores ambientales.</div>
-            <div class="modal-image-place"><span>📜🌎🌿</span><div class="fig-apa">Figura 8. Acuerdo de Escazú. Nota. Adaptado de Shutterstock.</div></div>
-            <div class="ref-modal">📖 Bárcena, A., Torres, V., & Muñoz Ávila, L. (2021). El Acuerdo de Escazú… CEPAL; Universidad del Rosario.</div>
-        </div>
-    </div>
-</div>
 
-<script>
-    (function() {
-        // Manejo de modales: cada nodo (timeline-node) abre su modal correspondiente
-        const nodes = document.querySelectorAll('.timeline-node');
-        const modals = document.querySelectorAll('.modal-overlay');
-        const closeButtons = document.querySelectorAll('.close-modal');
-        
-        function closeAllModals() {
+    <!-- Modal 1994 -->
+    <div class="modal-overlay" id="modal-1994">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title"><span>1994</span> Yokohama</div>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="holo-body">
+                <div class="holo-visual">🛡️⚓</div>
+                <p><strong>Estrategia de Yokohama.</strong> Primer marco global para la reducción de desastres. Enfatizó la importancia de la prevención, preparación y mitigación como componentes esenciales del desarrollo.</p>
+                <div class="holo-ref">REF: Conferencia Mundial 1994</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 1999 -->
+    <div class="modal-overlay" id="modal-1999">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title"><span>1999</span> EIRD</div>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="holo-body">
+                <div class="holo-visual">🌋⛰️</div>
+                <p><strong>Estrategia Internacional para la Reducción de Desastres.</strong> Sucesora del IDNDR. Busca aumentar la resiliencia de las naciones y comunidades ante los desastres.</p>
+                <div class="holo-ref">REF: ONU-EIRD, 1999</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2005 -->
+    <div class="modal-overlay" id="modal-2005">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title"><span>2005</span> Hyogo</div>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="holo-body">
+                <div class="holo-visual">🌉🏗️</div>
+                <p><strong>Marco de Acción de Hyogo (2005-2015).</strong> Plan mundial para reducir las pérdidas ocasionadas por los desastres. Puso énfasis en la resiliencia de las naciones y comunidades.</p>
+                <div class="holo-ref">REF: Conferencia de Kobe, 2005</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2015 -->
+    <div class="modal-overlay" id="modal-2015">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title" style="color:var(--c-gold);"><span>2015</span> Tríada</div>
+                <button class="btn-close" style="border-color:var(--c-gold); color:var(--c-gold);">&times;</button>
+            </div>
+            <div class="holo-body">
+                <div class="holo-visual" style="border-color: var(--c-gold);">🌍🤝</div>
+                <p><strong>Año Crucial:</strong> Se adoptan tres acuerdos fundamentales: <br>1. <strong>Agenda 2030</strong> (ODS).<br>2. <strong>Acuerdo de París</strong> (Clima).<br>3. <strong>Marco de Sendai</strong> (RRD).<br>Integran sostenibilidad, clima y riesgo.</p>
+                <div class="holo-ref" style="border-color: #fff;">REF: ONU, 2015</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2016 -->
+    <div class="modal-overlay" id="modal-2016">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title"><span>2016</span> Quito</div>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="holo-body">
+                <div class="holo-visual">🏙️🌆</div>
+                <p><strong>Nueva Agenda Urbana (Habitat III).</strong> Define un visión global de ciudades sostenibles, inclusivas, seguras y resilientes ante los desastres.</p>
+                <div class="holo-ref">REF: ONU-Habitat, 2016</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2018 -->
+    <div class="modal-overlay" id="modal-2018">
+        <div class="holo-card">
+            <div class="holo-header">
+                <div class="holo-title"><span>2018</span> Escazú</div>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="holo-body">
+                <div class="holo-visual">📜🌿</div>
+                <p><strong>Acuerdo Regional de Escazú.</strong> Primer tratado ambiental de América Latina y el Caribe. Garantiza derechos de acceso a la información, participación y justicia ambiental.</p>
+                <div class="holo-ref">REF: CEPAL, 2018</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            /* =========================================
+               LOGIC 1: INTERACTIVE TIMELINE SCROLL
+               ========================================= */
+            const viewport = document.getElementById('viewport');
+            const track = document.getElementById('track');
+            const items = document.querySelectorAll('.timeline-item');
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+
+            // Scroll horizontal con la rueda del mouse (opcional para desktop)
+            viewport.addEventListener('wheel', (evt) => {
+                if(evt.deltaY !== 0) {
+                    evt.preventDefault();
+                    viewport.scrollLeft += evt.deltaY;
+                }
+            });
+
+            // Navegación con flechas
+            btnPrev.addEventListener('click', () => {
+                viewport.scrollBy({ left: -300, behavior: 'smooth' });
+            });
+            btnNext.addEventListener('click', () => {
+                viewport.scrollBy({ left: 300, behavior: 'smooth' });
+            });
+
+            // Intersection Observer para resaltar el item activo en el centro
+            const observerOptions = {
+                root: viewport,
+                threshold: 0.6 // Se activa cuando el 60% del item es visible
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Remover clase activa de todos
+                        items.forEach(item => item.classList.remove('active'));
+                        // Añadir al actual
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, observerOptions);
+
+            items.forEach(item => observer.observe(item));
+
+
+            /* =========================================
+               LOGIC 2: MODAL SYSTEM
+               ========================================= */
+            const modals = document.querySelectorAll('.modal-overlay');
+            const closeBtns = document.querySelectorAll('.btn-close');
+
+            // Abrir Modal
+            items.forEach(item => {
+                item.addEventListener('click', () => {
+                    const modalId = item.getAttribute('data-id');
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.classList.add('open');
+                        // Sonido opcional de 'click' tech
+                        playSound(600, 'triangle', 0.1);
+                    }
+                });
+            });
+
+            // Cerrar Modal (Botón)
+            closeBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Evitar burbujeo
+                    const modal = btn.closest('.modal-overlay');
+                    modal.classList.remove('open');
+                });
+            });
+
+            // Cerrar Modal (Click fuera)
             modals.forEach(modal => {
-                modal.classList.remove('active');
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('open');
+                    }
+                });
             });
-            document.body.classList.remove('no-scroll');
-        }
-        
-        function openModalById(modalId) {
-            closeAllModals();
-            const target = document.getElementById(modalId);
-            if (target) {
-                target.classList.add('active');
-                document.body.classList.add('no-scroll');
-            }
-        }
-        
-        // asignar eventos a cada nodo
-        nodes.forEach(node => {
-            const modalId = node.getAttribute('data-modal');
-            if (!modalId) return;
-            node.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openModalById(modalId);
-            });
-            // accesibilidad teclado
-            node.setAttribute('tabindex', '0');
-            node.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openModalById(modalId);
+
+            // Cerrar con ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    modals.forEach(m => m.classList.remove('open'));
                 }
             });
-        });
-        
-        // cerrar modales con botón X
-        closeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                closeAllModals();
-            });
-        });
-        
-        // cerrar al hacer clic en overlay
-        modals.forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeAllModals();
+
+
+            /* =========================================
+               LOGIC 3: BACKGROUND PARTICLE SYSTEM (CANVAS)
+               ========================================= */
+            const canvas = document.getElementById('neural-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            
+            // Ajustar tamaño
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Clase Partícula
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2 + 1;
                 }
-            });
-        });
-        
-        // cerrar con tecla ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeAllModals();
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Rebote en bordes
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+
+                draw() {
+                    ctx.fillStyle = 'rgba(0, 240, 255, 0.5)'; // Color Teal
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Crear partículas
+            for (let i = 0; i < 60; i++) {
+                particles.push(new Particle());
+            }
+
+            // Animación Loop
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Dibujar líneas de conexión
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+
+                    for (let j = i; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 150) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(0, 240, 255, ${0.15 - distance/1000})`;
+                            ctx.lineWidth = 1;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            /* =========================================
+               LOGIC 4: AUDIO FEEDBACK (Web Audio API)
+               Genera un "bip" futurista sin archivos externos
+               ========================================= */
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            function playSound(freq, type, vol) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                osc.type = type; // sine, square, triangle, sawtooth
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(freq / 2, audioCtx.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
             }
         });
-        
-        // Para mantener el lienzo fijo de 800x800 en desktop, los modales flotan sin alterar dimensiones
-        // En móvil el canvas se adapta con scroll vertical pero el layout es completamente funcional.
-    })();
-</script>
+    </script>
 </body>
 </html>
