@@ -45,16 +45,13 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-     
     }
 
     /* ── CANVAS 800×800 ── */
     .canvas {
       width: 800px;
-   
       height: 800px;
       background: var(--bg);
-     
       overflow: hidden;
       box-shadow: 0 24px 80px rgba(26, 26, 46, .22);
       display: flex;
@@ -698,15 +695,8 @@
       </div>
       <div class="feedback-panel" id="feedbackPanel">
         <div class="fp-lbl">✦ Retroalimentación</div>
-        <ul class="fb-list">
-          <li>La <strong>media muestral x̄</strong> es el estimador más común de la media poblacional.</li>
-          <li>Las propiedades de <strong>insesgadez, eficiencia y consistencia</strong> permiten identificar si un
-            estimador es adecuado.</li>
-          <li>La elección correcta entre <strong>Z, t, χ² o F</strong> depende del parámetro y de las condiciones de la
-            muestra.</li>
-          <li>El <strong>bootstrap</strong> resulta útil cuando no se cumplen supuestos de normalidad.</li>
-          <li>Los <strong>intervalos de confianza</strong> permiten expresar la incertidumbre asociada a una estimación.
-          </li>
+        <ul class="fb-list" id="fbList">
+          <!-- Se llena dinámicamente según la ronda -->
         </ul>
       </div>
     </div>
@@ -748,13 +738,32 @@
       { id: 20, concept: '20. Estimador', letter: 't', desc: 't. Fórmula utilizada para aproximar un parámetro', color: 'var(--c5)', correctLetter: 't' }
     ];
 
+    /* ── FEEDBACK CONTENT BY ROUND ── */
+    const FEEDBACK_ROUNDS = {
+      0: [
+        'La <strong>media muestral x̄</strong> es el estimador insesgado de la media poblacional μ.',
+        'Un estimador es <strong>insesgado</strong> si su valor esperado coincide con el parámetro.',
+        'La <strong>eficiencia</strong> compara varianzas: menor varianza = mejor estimador.',
+        'Un estimador <strong>consistente</strong> converge al parámetro cuando n → ∞.',
+        'El <strong>intervalo de confianza</strong> expresa la incertidumbre con un nivel de confianza (ej: 95%).'
+      ],
+      1: [
+        'La distribución <strong>Z</strong> se usa con σ conocida o n ≥ 30; la <strong>t</strong> con σ desconocida y n pequeña.',
+        'La distribución <strong>χ²</strong> estima varianzas; la <strong>F</strong> compara dos varianzas.',
+        'Para proporciones, verificar <strong>np̂ ≥ 5 y n(1−p̂) ≥ 5</strong> antes de usar aproximación normal.',
+        'El <strong>bootstrap</strong> es útil cuando no se cumplen supuestos paramétricos.',
+        'Un IC que <strong>incluye el 0</strong> en diferencia de medias/proporciones indica no significancia estadística.'
+      ]
+    };
+
     /* ── STATE ── */
-    let round = 0; // 0 = round 1 (items 0-9), 1 = round 2 (items 10-19)
-    let connections = {};  // conceptId → letterKey
+    let round = 0;
+    let connections = {};
     let selectedCon = null;
     let selectedDesc = null;
     let checked = false;
     let totalCorrect = 0;
+    let roundScores = [0, 0];
 
     function currentItems() {
       return round === 0 ? ALL_PAIRS.slice(0, 10) : ALL_PAIRS.slice(10, 20);
@@ -799,13 +808,21 @@
       });
 
       updateDots(); updateCheckBtn();
-      document.getElementById('feedbackPanel').classList.remove('show');
-      document.getElementById('resultBar').classList.remove('show');
-      document.getElementById('lineCanvas').innerHTML = '';
+      
+      // Reset UI elements
+      const feedbackPanel = document.getElementById('feedbackPanel');
+      const resultBar = document.getElementById('resultBar');
+      const lineCanvas = document.getElementById('lineCanvas');
+      
+      feedbackPanel.classList.remove('show');
+      resultBar.classList.remove('show');
+      lineCanvas.innerHTML = '';
+      
       document.getElementById('roundBadge').textContent = `Ronda ${round + 1} de 2`;
       document.getElementById('btnReset').classList.remove('show');
       document.getElementById('btnNextRound').classList.remove('show');
       document.getElementById('btnCheck').disabled = true;
+      document.getElementById('btnCheck').style.display = 'flex';
     }
 
     /* ── PICK ── */
@@ -878,44 +895,82 @@
     function checkAnswers() {
       const items = currentItems();
       if (Object.keys(connections).length < items.length) return;
-      checked = true; let correct = 0;
+      
+      checked = true; 
+      let correct = 0;
+      
+      // Mark cards and count correct
       items.forEach((p, i) => {
         const letter = connections[p.id];
         const ok = letter === p.correctLetter;
         if (ok) correct++;
+        
         const cc = document.getElementById(`con-${p.id}`);
         const dc = document.getElementById(`desc-${letter}`);
-        cc.classList.remove('selected'); cc.classList.add(ok ? 'matched-ok' : 'matched-fail'); cc.classList.add('locked');
-        if (dc) { dc.classList.remove('selected'); dc.classList.add(ok ? 'matched-ok' : 'matched-fail'); dc.classList.add('locked'); }
+        
+        cc.classList.remove('selected'); 
+        cc.classList.add(ok ? 'matched-ok' : 'matched-fail'); 
+        cc.classList.add('locked');
+        
+        if (dc) { 
+          dc.classList.remove('selected'); 
+          dc.classList.add(ok ? 'matched-ok' : 'matched-fail'); 
+          dc.classList.add('locked'); 
+        }
+        
         const dot = document.getElementById(`sd-${round}-${i}`);
-        if (dot) { dot.classList.remove('placed'); dot.classList.add(ok ? 'ok' : 'fail'); }
+        if (dot) { 
+          dot.classList.remove('placed'); 
+          dot.classList.add(ok ? 'ok' : 'fail'); 
+        }
       });
-      renderLines(); totalCorrect += correct;
+      
+      renderLines(); 
+      roundScores[round] = correct;
+      totalCorrect = roundScores[0] + roundScores[1];
+      
+      // Disable check button, show reset
       document.getElementById('btnCheck').disabled = true;
       document.getElementById('btnReset').classList.add('show');
 
-      if (round === 0) {
-        // Show next round button
+      // Show feedback panel with round-specific content
+      const fbList = document.getElementById('fbList');
+      fbList.innerHTML = FEEDBACK_ROUNDS[round].map(item => `<li>${item}</li>`).join('');
+      document.getElementById('feedbackPanel').classList.add('show');
+
+      // Show result bar with score
+      const isRound1 = round === 0;
+      const scoreText = isRound1 ? `${correct}/10` : `${totalCorrect}/20`;
+      const roundText = isRound1 ? 'Ronda 1' : 'Final';
+      const msgs = ['Sigue practicando 💪', '¡Buen intento!', '¡Casi!', '¡Muy bien!', '¡Excelente!', '¡Perfecto! 🎉'];
+      const percentage = isRound1 ? correct/10 : totalCorrect/20;
+      const idx = Math.min(Math.floor(percentage * 5), 5);
+      
+      document.getElementById('rbScore').innerHTML = `<span>${scoreText}</span> correctas`;
+      document.getElementById('rbMsg').textContent = `${roundText}: ${msgs[idx]}`;
+      document.getElementById('resultBar').classList.add('show');
+
+      // Show next round button only after round 1
+      if (isRound1) {
         const btn = document.getElementById('btnNextRound');
         btn.classList.add('show');
-        btn.textContent = '';
         btn.innerHTML = `Ronda 2 (${correct}/10) <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+        // Hide check button to avoid re-checking
+        document.getElementById('btnCheck').style.display = 'none';
       } else {
-        // Show final feedback + result
-        document.getElementById('feedbackPanel').classList.add('show');
-        const total = totalCorrect;
-        const msgs = ['Sigue practicando 💪', '¡Buen intento!', '¡Casi!', '¡Muy bien!', '¡Excelente!', '¡Perfecto! 🎉'];
-        const idx = Math.min(Math.floor(total / 4), 5);
-        document.getElementById('rbScore').innerHTML = `<span>${total}</span> / 20 correctas`;
-        document.getElementById('rbMsg').textContent = msgs[idx];
-        document.getElementById('resultBar').classList.add('show');
-        setTimeout(() => document.getElementById('feedbackPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 350);
+        // Final round: hide check and next buttons
+        document.getElementById('btnCheck').style.display = 'none';
+        document.getElementById('btnNextRound').classList.remove('show');
       }
+      
+      // Scroll to feedback smoothly
+      setTimeout(() => {
+        document.getElementById('feedbackPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
     }
 
     function goNextRound() {
       round = 1;
-      document.getElementById('btnNextRound').classList.remove('show');
       build();
     }
 
@@ -938,7 +993,6 @@
     function buildDots() {
       const dotsEl = document.getElementById('scoreDots');
       dotsEl.innerHTML = '';
-      // Always show all 20 dots
       for (let r = 0; r < 2; r++) {
         for (let i = 0; i < 10; i++) {
           const d = document.createElement('div');
@@ -955,12 +1009,21 @@
 
     /* ── RESET ── */
     function resetGame() {
-      round = 0; totalCorrect = 0;
-      buildDots(); build();
+      round = 0; 
+      totalCorrect = 0; 
+      roundScores = [0, 0];
+      buildDots(); 
+      build();
     }
 
-    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderLines, 80); });
-    buildDots(); build();
+    let rt; 
+    window.addEventListener('resize', () => { 
+      clearTimeout(rt); 
+      rt = setTimeout(renderLines, 80); 
+    });
+    
+    buildDots(); 
+    build();
   </script>
 </body>
 
