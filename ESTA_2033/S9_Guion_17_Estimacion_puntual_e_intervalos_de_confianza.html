@@ -1,471 +1,967 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Estimación Puntual e Intervalos de Confianza</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --c1:#E84855;--c2:#F4A261;--c3:#2A9D8F;--c4:#457B9D;--c5:#7B4FBF;
-  --dark:#1A1A2E;--dark2:#16213E;
-  --surface:#FFFFFF;--bg:#F8F5F0;--text:#2C2C3E;--muted:#6B6B80;--border:#E2DED8;
-  --font-d:'Playfair Display',serif;--font-b:'DM Sans',sans-serif;--r:12px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:var(--font-b);
-  background:
-    radial-gradient(ellipse at 18% 12%,rgba(232,72,85,.12) 0%,transparent 50%),
-    radial-gradient(ellipse at 82% 88%,rgba(69,123,157,.12) 0%,transparent 50%),
-    #EDE9E1;
-  min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:28px 16px;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estimación Puntual e Intervalos de Confianza</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --c1: #E84855;
+      --c2: #F4A261;
+      --c3: #2A9D8F;
+      --c4: #457B9D;
+      --c5: #7B4FBF;
+      --dark: #1A1A2E;
+      --dark2: #16213E;
+      --surface: #FFFFFF;
+      --bg: #F8F5F0;
+      --text: #2C2C3E;
+      --muted: #6B6B80;
+      --border: #E2DED8;
+      --font-d: 'Playfair Display', serif;
+      --font-b: 'DM Sans', sans-serif;
+      --r: 12px;
+    }
 
-/* ── CANVAS 800×800 ── */
-.canvas{
-  width:800px;min-height:500px;max-height:800px;
-  background:var(--bg);border-radius:28px;overflow:hidden;
-  box-shadow:0 24px 80px rgba(26,26,46,.22);
-  display:flex;flex-direction:column;
-}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ── HEADER ── */
-.header{background:var(--dark);flex-shrink:0;position:relative;overflow:hidden;}
-.h-stripe{height:4px;background:linear-gradient(90deg,var(--c1) 0%,var(--c2) 25%,var(--c3) 50%,var(--c4) 75%,var(--c5) 100%);}
-.h-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 12% 110%,rgba(232,72,85,.18) 0%,transparent 55%),radial-gradient(ellipse at 88% -10%,rgba(69,123,157,.18) 0%,transparent 55%);pointer-events:none;}
-.h-inner{position:relative;z-index:1;padding:15px 32px 13px;display:flex;align-items:center;gap:16px;}
-.h-embl{width:44px;height:44px;flex-shrink:0;border-radius:12px;background:linear-gradient(135deg,rgba(244,162,97,.22),rgba(232,72,85,.18));border:1.5px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:20px;}
-.h-meta{flex:1;}
-.h-course{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:3px;}
-.h-title{font-family:var(--font-d);font-size:18px;color:#fff;line-height:1.22;letter-spacing:-.02em;}
-.h-sub{font-size:10.5px;color:rgba(255,255,255,.45);margin-top:3px;}
-.h-sub strong{color:rgba(255,255,255,.75);font-weight:600;}
+    body {
+      font-family: var(--font-b);
+      background:
+        radial-gradient(ellipse at 18% 12%, rgba(232, 72, 85, .12) 0%, transparent 50%),
+        radial-gradient(ellipse at 82% 88%, rgba(69, 123, 157, .12) 0%, transparent 50%),
+        #EDE9E1;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+     
+    }
 
-/* ── CTRL BAR ── */
-.ctrl-bar{
-  background:var(--dark2);padding:8px 32px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-}
-.ctrl-left{display:flex;align-items:center;gap:10px;}
-.round-badge{
-  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
-  border-radius:7px;padding:3px 10px;
-  font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:rgba(255,255,255,.7);white-space:nowrap;
-}
-.score-dots{display:flex;gap:4px;flex-wrap:nowrap;}
-.sdot{width:14px;height:7px;border-radius:3px;background:rgba(255,255,255,.1);transition:background .3s;flex-shrink:0;}
-.sdot.placed{background:rgba(255,255,255,.3);}
-.sdot.ok{background:var(--c3);}
-.sdot.fail{background:var(--c1);}
-.ctrl-right{display:flex;gap:6px;align-items:center;}
-.btn-check{background:var(--c3);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-family:var(--font-b);font-size:10.5px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .15s;display:flex;align-items:center;gap:5px;min-height:32px;}
-.btn-check:hover:not(:disabled){opacity:.85;transform:translateY(-1px);}
-.btn-check:disabled{opacity:.35;cursor:default;transform:none;}
-.btn-next-round{background:var(--c4);color:#fff;border:none;padding:6px 14px;border-radius:7px;font-family:var(--font-b);font-size:10.5px;font-weight:700;cursor:pointer;transition:opacity .2s;display:none;align-items:center;gap:5px;min-height:32px;}
-.btn-next-round:hover{opacity:.85;}
-.btn-next-round.show{display:flex;}
-.btn-reset{background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);border:none;padding:6px 12px;border-radius:7px;font-family:var(--font-b);font-size:10.5px;font-weight:600;cursor:pointer;transition:background .18s;min-height:32px;display:none;align-items:center;gap:4px;}
-.btn-reset:hover{background:rgba(255,255,255,.18);}
-.btn-reset.show{display:flex;}
+    /* ── CANVAS 800×800 ── */
+    .canvas {
+      width: 800px;
+   
+      height: 800px;
+      background: var(--bg);
+     
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(26, 26, 46, .22);
+      display: flex;
+      flex-direction: column;
+    }
 
-/* ── INST BAND ── */
-.inst-band{background:linear-gradient(90deg,rgba(244,162,97,.1),rgba(232,72,85,.07));border-bottom:1px solid rgba(244,162,97,.2);padding:7px 32px;flex-shrink:0;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text);}
-.inst-band strong{color:var(--dark);}
+    /* ── HEADER ── */
+    .header {
+      background: var(--dark);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* ── MAIN AREA ── */
-.main-area{flex:1;overflow-y:auto;padding:12px 32px 14px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+    .h-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, var(--c1) 0%, var(--c2) 25%, var(--c3) 50%, var(--c4) 75%, var(--c5) 100%);
+    }
 
-/* ── MATCH LAYOUT ── */
-.col-labels{display:grid;grid-template-columns:1fr 44px 1fr;gap:0;margin-bottom:5px;}
-.col-lbl{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:5px;}
-.col-lbl::after{content:'';flex:1;height:1.5px;background:var(--border);border-radius:1px;}
-.match-layout{display:grid;grid-template-columns:1fr 44px 1fr;gap:0;align-items:center;position:relative;}
-.col-left{display:flex;flex-direction:column;gap:5px;}
-.col-right{display:flex;flex-direction:column;gap:5px;}
-.col-mid{position:relative;align-self:stretch;}
-#lineCanvas{position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+    .h-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 12% 110%, rgba(232, 72, 85, .18) 0%, transparent 55%), radial-gradient(ellipse at 88% -10%, rgba(69, 123, 157, .18) 0%, transparent 55%);
+      pointer-events: none;
+    }
 
-/* ── CONCEPT CARD (left) ── */
-.con-card{
-  background:var(--surface);border-radius:var(--r);border:2px solid var(--border);
-  overflow:hidden;cursor:pointer;
-  transition:border-color .18s,box-shadow .18s,transform .15s;
-}
-.con-card:hover:not(.locked){border-color:var(--dark);box-shadow:0 4px 14px rgba(26,26,46,.1);transform:translateX(-2px);}
-.con-card.selected{border-color:var(--c2);box-shadow:0 0 0 3px rgba(244,162,97,.2);}
-.con-card.matched-ok{border-color:var(--c3);cursor:default;}
-.con-card.matched-fail{border-color:var(--c1);cursor:default;}
-.cc-top{background:var(--dark);padding:5px 10px;display:flex;align-items:center;gap:6px;}
-.cc-num{width:18px;height:18px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;background:rgba(255,255,255,.15);}
-.cc-label{font-size:8.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);}
-.cc-body{padding:6px 10px;font-size:11px;color:var(--text);line-height:1.45;font-weight:600;}
+    .h-inner {
+      position: relative;
+      z-index: 1;
+      padding: 15px 32px 13px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
-/* ── DESC CARD (right) ── */
-.desc-card{
-  background:var(--surface);border-radius:var(--r);border:2px solid var(--border);
-  padding:7px 11px;cursor:pointer;display:flex;align-items:center;gap:8px;
-  transition:border-color .18s,box-shadow .18s,transform .15s;min-height:38px;
-}
-.desc-card:hover:not(.locked){border-color:var(--dark);box-shadow:0 4px 14px rgba(26,26,46,.1);transform:translateX(2px);}
-.desc-card.selected{border-color:var(--c2);box-shadow:0 0 0 3px rgba(244,162,97,.2);}
-.desc-card.matched-ok{border-color:var(--c3);cursor:default;}
-.desc-card.matched-fail{border-color:var(--c1);cursor:default;}
-.dc-letter{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;transition:background .18s;}
-.dc-txt{font-size:11px;color:var(--text);line-height:1.42;flex:1;}
+    .h-embl {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(244, 162, 97, .22), rgba(232, 72, 85, .18));
+      border: 1.5px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
 
-/* ── FEEDBACK PANEL ── */
-.feedback-panel{
-  background:var(--dark);border-radius:var(--r);padding:12px 16px;margin-top:10px;
-  position:relative;overflow:hidden;
-  opacity:0;transform:translateY(8px);transition:opacity .32s,transform .32s;pointer-events:none;
-}
-.feedback-panel.show{opacity:1;transform:translateY(0);pointer-events:auto;}
-.feedback-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 90% 10%,rgba(42,157,143,.18) 0%,transparent 60%);}
-.fp-lbl{font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:9px;position:relative;}
-.fb-list{list-style:none;display:flex;flex-direction:column;gap:6px;position:relative;}
-.fb-list li{font-size:11.5px;color:rgba(255,255,255,.75);line-height:1.58;padding-left:14px;position:relative;}
-.fb-list li::before{content:'›';position:absolute;left:0;color:var(--c3);font-size:14px;font-weight:700;top:-1px;}
-.fb-list li strong{color:rgba(255,255,255,.95);}
+    .h-meta {
+      flex: 1;
+    }
 
-/* ── RESULT BAR ── */
-.result-bar{background:rgba(26,26,46,.96);backdrop-filter:blur(4px);padding:8px 32px;flex-shrink:0;display:none;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06);}
-.result-bar.show{display:flex;}
-.rb-score{font-family:var(--font-d);font-size:17px;color:#fff;}
-.rb-score span{color:var(--c3);}
-.rb-msg{font-size:10.5px;color:rgba(255,255,255,.5);margin-top:1px;}
+    .h-course {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .38);
+      margin-bottom: 3px;
+    }
 
-/* ── REF ── */
-.ref-bar{background:var(--dark);padding:7px 32px;flex-shrink:0;font-size:10px;color:rgba(255,255,255,.28);font-style:italic;}
+    .h-title {
+      font-family: var(--font-d);
+      font-size: 18px;
+      color: #fff;
+      line-height: 1.22;
+      letter-spacing: -.02em;
+    }
 
-@media(max-width:840px){
-  body{padding:0;background:var(--bg);}
-  .canvas{width:100%;max-width:100%;max-height:none;border-radius:0;}
-  .h-inner,.ctrl-bar,.inst-band,.main-area,.result-bar,.ref-bar{padding-left:20px;padding-right:20px;}
-  .match-layout,.col-labels{grid-template-columns:1fr 28px 1fr;}
-}
-</style>
+    .h-sub {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, .45);
+      margin-top: 3px;
+    }
+
+    .h-sub strong {
+      color: rgba(255, 255, 255, .75);
+      font-weight: 600;
+    }
+
+    /* ── CTRL BAR ── */
+    .ctrl-bar {
+      background: var(--dark2);
+      padding: 8px 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .ctrl-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .round-badge {
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 7px;
+      padding: 3px 10px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .7);
+      white-space: nowrap;
+    }
+
+    .score-dots {
+      display: flex;
+      gap: 4px;
+      flex-wrap: nowrap;
+    }
+
+    .sdot {
+      width: 14px;
+      height: 7px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, .1);
+      transition: background .3s;
+      flex-shrink: 0;
+    }
+
+    .sdot.placed {
+      background: rgba(255, 255, 255, .3);
+    }
+
+    .sdot.ok {
+      background: var(--c3);
+    }
+
+    .sdot.fail {
+      background: var(--c1);
+    }
+
+    .ctrl-right {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn-check {
+      background: var(--c3);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-family: var(--font-b);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 32px;
+    }
+
+    .btn-check:hover:not(:disabled) {
+      opacity: .85;
+      transform: translateY(-1px);
+    }
+
+    .btn-check:disabled {
+      opacity: .35;
+      cursor: default;
+      transform: none;
+    }
+
+    .btn-next-round {
+      background: var(--c4);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-family: var(--font-b);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      min-height: 32px;
+    }
+
+    .btn-next-round:hover {
+      opacity: .85;
+    }
+
+    .btn-next-round.show {
+      display: flex;
+    }
+
+    .btn-reset {
+      background: rgba(255, 255, 255, .1);
+      color: rgba(255, 255, 255, .65);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-family: var(--font-b);
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .18s;
+      min-height: 32px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .btn-reset.show {
+      display: flex;
+    }
+
+    /* ── INST BAND ── */
+    .inst-band {
+      background: linear-gradient(90deg, rgba(244, 162, 97, .1), rgba(232, 72, 85, .07));
+      border-bottom: 1px solid rgba(244, 162, 97, .2);
+      padding: 7px 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .inst-band strong {
+      color: var(--dark);
+    }
+
+    /* ── MAIN AREA ── */
+    .main-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 32px 14px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    /* ── MATCH LAYOUT ── */
+    .col-labels {
+      display: grid;
+      grid-template-columns: 1fr 44px 1fr;
+      gap: 0;
+      margin-bottom: 5px;
+    }
+
+    .col-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .col-lbl::after {
+      content: '';
+      flex: 1;
+      height: 1.5px;
+      background: var(--border);
+      border-radius: 1px;
+    }
+
+    .match-layout {
+      display: grid;
+      grid-template-columns: 1fr 44px 1fr;
+      gap: 0;
+      align-items: center;
+      position: relative;
+    }
+
+    .col-left {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .col-mid {
+      position: relative;
+      align-self: stretch;
+    }
+
+    #lineCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    /* ── CONCEPT CARD (left) ── */
+    .con-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 2px solid var(--border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .18s, box-shadow .18s, transform .15s;
+    }
+
+    .con-card:hover:not(.locked) {
+      border-color: var(--dark);
+      box-shadow: 0 4px 14px rgba(26, 26, 46, .1);
+      transform: translateX(-2px);
+    }
+
+    .con-card.selected {
+      border-color: var(--c2);
+      box-shadow: 0 0 0 3px rgba(244, 162, 97, .2);
+    }
+
+    .con-card.matched-ok {
+      border-color: var(--c3);
+      cursor: default;
+    }
+
+    .con-card.matched-fail {
+      border-color: var(--c1);
+      cursor: default;
+    }
+
+    .cc-top {
+      background: var(--dark);
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cc-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 800;
+      color: #fff;
+      background: rgba(255, 255, 255, .15);
+    }
+
+    .cc-label {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .45);
+    }
+
+    .cc-body {
+      padding: 6px 10px;
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    /* ── DESC CARD (right) ── */
+    .desc-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 2px solid var(--border);
+      padding: 7px 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color .18s, box-shadow .18s, transform .15s;
+      min-height: 38px;
+    }
+
+    .desc-card:hover:not(.locked) {
+      border-color: var(--dark);
+      box-shadow: 0 4px 14px rgba(26, 26, 46, .1);
+      transform: translateX(2px);
+    }
+
+    .desc-card.selected {
+      border-color: var(--c2);
+      box-shadow: 0 0 0 3px rgba(244, 162, 97, .2);
+    }
+
+    .desc-card.matched-ok {
+      border-color: var(--c3);
+      cursor: default;
+    }
+
+    .desc-card.matched-fail {
+      border-color: var(--c1);
+      cursor: default;
+    }
+
+    .dc-letter {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: #fff;
+      transition: background .18s;
+    }
+
+    .dc-txt {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.42;
+      flex: 1;
+    }
+
+    /* ── FEEDBACK PANEL ── */
+    .feedback-panel {
+      background: var(--dark);
+      border-radius: var(--r);
+      padding: 12px 16px;
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .32s, transform .32s;
+      pointer-events: none;
+    }
+
+    .feedback-panel.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .feedback-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 90% 10%, rgba(42, 157, 143, .18) 0%, transparent 60%);
+    }
+
+    .fp-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c3);
+      margin-bottom: 9px;
+      position: relative;
+    }
+
+    .fb-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .fb-list li {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, .75);
+      line-height: 1.58;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .fb-list li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--c3);
+      font-size: 14px;
+      font-weight: 700;
+      top: -1px;
+    }
+
+    .fb-list li strong {
+      color: rgba(255, 255, 255, .95);
+    }
+
+    /* ── RESULT BAR ── */
+    .result-bar {
+      background: rgba(26, 26, 46, .96);
+      backdrop-filter: blur(4px);
+      padding: 8px 32px;
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .result-bar.show {
+      display: flex;
+    }
+
+    .rb-score {
+      font-family: var(--font-d);
+      font-size: 17px;
+      color: #fff;
+    }
+
+    .rb-score span {
+      color: var(--c3);
+    }
+
+    .rb-msg {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, .5);
+      margin-top: 1px;
+    }
+
+    /* ── REF ── */
+    .ref-bar {
+      background: var(--dark);
+      padding: 7px 32px;
+      flex-shrink: 0;
+      font-size: 10px;
+      color: rgba(255, 255, 255, .28);
+      font-style: italic;
+    }
+
+    @media(max-width:600px) {
+      body {
+        padding: 0;
+        background: var(--bg);
+      }
+
+      .canvas {
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        border-radius: 0;
+      }
+
+      .h-inner,
+      .ctrl-bar,
+      .inst-band,
+      .main-area,
+      .result-bar,
+      .ref-bar {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .match-layout,
+      .col-labels {
+        grid-template-columns: 1fr 28px 1fr;
+      }
+    }
+  </style>
 </head>
-<body>
-<div class="canvas">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="h-stripe"></div>
-    <div class="h-glow"></div>
-    <div class="h-inner">
-      <div class="h-embl">📊</div>
-      <div class="h-meta">
-        <div class="h-course">Estadística para análisis de datos</div>
-        <div class="h-title">Estimación puntual e intervalos de confianza</div>
-        <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+<body>
+  <div class="canvas">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="h-stripe"></div>
+      <div class="h-glow"></div>
+      <div class="h-inner">
+        <div class="h-embl">📊</div>
+        <div class="h-meta">
+          <div class="h-course">Estadística para análisis de datos</div>
+          <div class="h-title">Estimación puntual e intervalos de confianza</div>
+          <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+        </div>
       </div>
     </div>
+
+    <!-- CTRL BAR -->
+    <div class="ctrl-bar">
+      <div class="ctrl-left">
+        <div class="round-badge" id="roundBadge">Ronda 1 de 2</div>
+        <div class="score-dots" id="scoreDots"></div>
+      </div>
+      <div class="ctrl-right">
+        <button class="btn-reset" id="btnReset" onclick="resetGame()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+          </svg>
+          Reintentar
+        </button>
+        <button class="btn-next-round" id="btnNextRound" onclick="goNextRound()">
+          Ronda 2
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+        <button class="btn-check" id="btnCheck" onclick="checkAnswers()" disabled>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          Verificar
+        </button>
+      </div>
+    </div>
+
+    <!-- INST -->
+    <div class="inst-band">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4m0 4h.01" />
+      </svg>
+      <div><strong>Instrucción:</strong> Relacione correctamente cada concepto estadístico con su descripción, fórmula o
+        situación de aplicación.</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-area" id="mainArea">
+      <div class="col-labels">
+        <div class="col-lbl">Columna A — Conceptos</div>
+        <div></div>
+        <div class="col-lbl">Columna B — Descripción</div>
+      </div>
+      <div class="match-layout" id="matchLayout">
+        <div class="col-left" id="colLeft"></div>
+        <div class="col-mid" id="colMid"><svg id="lineCanvas" xmlns="http://www.w3.org/2000/svg"></svg></div>
+        <div class="col-right" id="colRight"></div>
+      </div>
+      <div class="feedback-panel" id="feedbackPanel">
+        <div class="fp-lbl">✦ Retroalimentación</div>
+        <ul class="fb-list">
+          <li>La <strong>media muestral x̄</strong> es el estimador más común de la media poblacional.</li>
+          <li>Las propiedades de <strong>insesgadez, eficiencia y consistencia</strong> permiten identificar si un
+            estimador es adecuado.</li>
+          <li>La elección correcta entre <strong>Z, t, χ² o F</strong> depende del parámetro y de las condiciones de la
+            muestra.</li>
+          <li>El <strong>bootstrap</strong> resulta útil cuando no se cumplen supuestos de normalidad.</li>
+          <li>Los <strong>intervalos de confianza</strong> permiten expresar la incertidumbre asociada a una estimación.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- RESULT BAR -->
+    <div class="result-bar" id="resultBar">
+      <div>
+        <div class="rb-score" id="rbScore"></div>
+        <div class="rb-msg" id="rbMsg"></div>
+      </div>
+    </div>
+
+    <!-- REF -->
+    <div class="ref-bar">Elaboración propia.</div>
   </div>
 
-  <!-- CTRL BAR -->
-  <div class="ctrl-bar">
-    <div class="ctrl-left">
-      <div class="round-badge" id="roundBadge">Ronda 1 de 2</div>
-      <div class="score-dots" id="scoreDots"></div>
-    </div>
-    <div class="ctrl-right">
-      <button class="btn-reset" id="btnReset" onclick="resetGame()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        Reintentar
-      </button>
-      <button class="btn-next-round" id="btnNextRound" onclick="goNextRound()">
-        Ronda 2
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </button>
-      <button class="btn-check" id="btnCheck" onclick="checkAnswers()" disabled>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-        Verificar
-      </button>
-    </div>
-  </div>
+  <script>
+    /* ── ALL 20 PAIRS ── */
+    const ALL_PAIRS = [
+      { id: 1, concept: '1. Media muestral x̄', letter: 'b', desc: 'b. Estimador de la media poblacional μ', color: 'var(--c1)', correctLetter: 'b' },
+      { id: 2, concept: '2. Insesgadez', letter: 's', desc: 's. El estimador no sobrestima ni subestima el parámetro', color: 'var(--c2)', correctLetter: 's' },
+      { id: 3, concept: '3. Eficiencia', letter: 'g', desc: 'g. El estimador presenta menor varianza', color: 'var(--c3)', correctLetter: 'g' },
+      { id: 4, concept: '4. Consistencia', letter: 'd', desc: 'd. El estimador se aproxima al parámetro al aumentar n', color: 'var(--c4)', correctLetter: 'd' },
+      { id: 5, concept: '5. Intervalo de confianza', letter: 'm', desc: 'm. Rango de valores plausibles para un parámetro', color: 'var(--c5)', correctLetter: 'm' },
+      { id: 6, concept: '6. Distribución Z', letter: 'a', desc: 'a. Se utiliza cuando σ es conocida o n es grande', color: 'var(--c1)', correctLetter: 'a' },
+      { id: 7, concept: '7. Distribución t', letter: 'p', desc: 'p. Se utiliza cuando σ es desconocida y n es pequeña', color: 'var(--c2)', correctLetter: 'p' },
+      { id: 8, concept: '8. Distribución χ²', letter: 'h', desc: 'h. Se utiliza para estimar varianzas poblacionales', color: 'var(--c3)', correctLetter: 'h' },
+      { id: 9, concept: '9. Proporción muestral p̂', letter: 'i', desc: 'i. Se calcula como x/n', color: 'var(--c4)', correctLetter: 'i' },
+      { id: 10, concept: '10. Diferencia entre medias', letter: 'j', desc: 'j. Permite comparar dos grupos independientes', color: 'var(--c5)', correctLetter: 'j' },
+      { id: 11, concept: '11. Diferencia entre proporciones', letter: 'k', desc: 'k. Compara porcentajes entre dos poblaciones', color: 'var(--c1)', correctLetter: 'k' },
+      { id: 12, concept: '12. Intervalo que incluye el 0', letter: 'l', desc: 'l. Indica ausencia de diferencia estadística significativa', color: 'var(--c2)', correctLetter: 'l' },
+      { id: 13, concept: '13. Bootstrap', letter: 'c', desc: 'c. Genera réplicas con reemplazo a partir de la muestra', color: 'var(--c3)', correctLetter: 'c' },
+      { id: 14, concept: '14. Error común en proporciones', letter: 'n', desc: 'n. No verificar que np̂ ≥ 5 y n(1−p̂) ≥ 5', color: 'var(--c4)', correctLetter: 'n' },
+      { id: 15, concept: '15. Nivel de confianza mayor', letter: 'f', desc: 'f. Produce intervalos más amplios', color: 'var(--c5)', correctLetter: 'f' },
+      { id: 16, concept: '16. Valor crítico t', letter: 'o', desc: 'o. Depende de los grados de libertad', color: 'var(--c1)', correctLetter: 'o' },
+      { id: 17, concept: '17. Desviación estándar poblacional desconocida', letter: 'q', desc: 'q. Condición para utilizar distribución t', color: 'var(--c2)', correctLetter: 'q' },
+      { id: 18, concept: '18. Comparación de varianzas', letter: 'e', desc: 'e. Requiere el uso de la distribución F', color: 'var(--c3)', correctLetter: 'e' },
+      { id: 19, concept: '19. Percentiles 2.5% y 97.5%', letter: 'r', desc: 'r. Límites típicos de un IC bootstrap del 95%', color: 'var(--c4)', correctLetter: 'r' },
+      { id: 20, concept: '20. Estimador', letter: 't', desc: 't. Fórmula utilizada para aproximar un parámetro', color: 'var(--c5)', correctLetter: 't' }
+    ];
 
-  <!-- INST -->
-  <div class="inst-band">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-    <div><strong>Instrucción:</strong> Relacione correctamente cada concepto estadístico con su descripción, fórmula o situación de aplicación.</div>
-  </div>
+    /* ── STATE ── */
+    let round = 0; // 0 = round 1 (items 0-9), 1 = round 2 (items 10-19)
+    let connections = {};  // conceptId → letterKey
+    let selectedCon = null;
+    let selectedDesc = null;
+    let checked = false;
+    let totalCorrect = 0;
 
-  <!-- MAIN -->
-  <div class="main-area" id="mainArea">
-    <div class="col-labels">
-      <div class="col-lbl">Columna A — Conceptos</div>
-      <div></div>
-      <div class="col-lbl">Columna B — Descripción</div>
-    </div>
-    <div class="match-layout" id="matchLayout">
-      <div class="col-left" id="colLeft"></div>
-      <div class="col-mid" id="colMid"><svg id="lineCanvas" xmlns="http://www.w3.org/2000/svg"></svg></div>
-      <div class="col-right" id="colRight"></div>
-    </div>
-    <div class="feedback-panel" id="feedbackPanel">
-      <div class="fp-lbl">✦ Retroalimentación</div>
-      <ul class="fb-list">
-        <li>La <strong>media muestral x̄</strong> es el estimador más común de la media poblacional.</li>
-        <li>Las propiedades de <strong>insesgadez, eficiencia y consistencia</strong> permiten identificar si un estimador es adecuado.</li>
-        <li>La elección correcta entre <strong>Z, t, χ² o F</strong> depende del parámetro y de las condiciones de la muestra.</li>
-        <li>El <strong>bootstrap</strong> resulta útil cuando no se cumplen supuestos de normalidad.</li>
-        <li>Los <strong>intervalos de confianza</strong> permiten expresar la incertidumbre asociada a una estimación.</li>
-      </ul>
-    </div>
-  </div>
+    function currentItems() {
+      return round === 0 ? ALL_PAIRS.slice(0, 10) : ALL_PAIRS.slice(10, 20);
+    }
 
-  <!-- RESULT BAR -->
-  <div class="result-bar" id="resultBar">
-    <div>
-      <div class="rb-score" id="rbScore"></div>
-      <div class="rb-msg" id="rbMsg"></div>
-    </div>
-  </div>
+    function shuffle(a) { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[r[i], r[j]] = [r[j], r[i]]; } return r; }
 
-  <!-- REF -->
-  <div class="ref-bar">Elaboración propia.</div>
-</div>
+    /* ── BUILD ── */
+    function build() {
+      connections = {}; selectedCon = null; selectedDesc = null; checked = false;
+      const items = currentItems();
+      const shuffledDescs = shuffle(items.map(p => ({ letter: p.letter, desc: p.desc, color: p.color })));
 
-<script>
-/* ── ALL 20 PAIRS ── */
-const ALL_PAIRS = [
-  {id:1,  concept:'1. Media muestral x̄',                   letter:'b', desc:'b. Estimador de la media poblacional μ',                           color:'var(--c1)', correctLetter:'b'},
-  {id:2,  concept:'2. Insesgadez',                          letter:'s', desc:'s. El estimador no sobrestima ni subestima el parámetro',         color:'var(--c2)', correctLetter:'s'},
-  {id:3,  concept:'3. Eficiencia',                          letter:'g', desc:'g. El estimador presenta menor varianza',                         color:'var(--c3)', correctLetter:'g'},
-  {id:4,  concept:'4. Consistencia',                        letter:'d', desc:'d. El estimador se aproxima al parámetro al aumentar n',          color:'var(--c4)', correctLetter:'d'},
-  {id:5,  concept:'5. Intervalo de confianza',              letter:'m', desc:'m. Rango de valores plausibles para un parámetro',                color:'var(--c5)', correctLetter:'m'},
-  {id:6,  concept:'6. Distribución Z',                      letter:'a', desc:'a. Se utiliza cuando σ es conocida o n es grande',               color:'var(--c1)', correctLetter:'a'},
-  {id:7,  concept:'7. Distribución t',                      letter:'p', desc:'p. Se utiliza cuando σ es desconocida y n es pequeña',           color:'var(--c2)', correctLetter:'p'},
-  {id:8,  concept:'8. Distribución χ²',                     letter:'h', desc:'h. Se utiliza para estimar varianzas poblacionales',             color:'var(--c3)', correctLetter:'h'},
-  {id:9,  concept:'9. Proporción muestral p̂',               letter:'i', desc:'i. Se calcula como x/n',                                         color:'var(--c4)', correctLetter:'i'},
-  {id:10, concept:'10. Diferencia entre medias',            letter:'j', desc:'j. Permite comparar dos grupos independientes',                  color:'var(--c5)', correctLetter:'j'},
-  {id:11, concept:'11. Diferencia entre proporciones',      letter:'k', desc:'k. Compara porcentajes entre dos poblaciones',                   color:'var(--c1)', correctLetter:'k'},
-  {id:12, concept:'12. Intervalo que incluye el 0',         letter:'l', desc:'l. Indica ausencia de diferencia estadística significativa',     color:'var(--c2)', correctLetter:'l'},
-  {id:13, concept:'13. Bootstrap',                          letter:'c', desc:'c. Genera réplicas con reemplazo a partir de la muestra',        color:'var(--c3)', correctLetter:'c'},
-  {id:14, concept:'14. Error común en proporciones',        letter:'n', desc:'n. No verificar que np̂ ≥ 5 y n(1−p̂) ≥ 5',                       color:'var(--c4)', correctLetter:'n'},
-  {id:15, concept:'15. Nivel de confianza mayor',           letter:'f', desc:'f. Produce intervalos más amplios',                              color:'var(--c5)', correctLetter:'f'},
-  {id:16, concept:'16. Valor crítico t',                    letter:'o', desc:'o. Depende de los grados de libertad',                           color:'var(--c1)', correctLetter:'o'},
-  {id:17, concept:'17. Desviación estándar poblacional desconocida', letter:'q', desc:'q. Condición para utilizar distribución t',             color:'var(--c2)', correctLetter:'q'},
-  {id:18, concept:'18. Comparación de varianzas',           letter:'e', desc:'e. Requiere el uso de la distribución F',                       color:'var(--c3)', correctLetter:'e'},
-  {id:19, concept:'19. Percentiles 2.5% y 97.5%',          letter:'r', desc:'r. Límites típicos de un IC bootstrap del 95%',                  color:'var(--c4)', correctLetter:'r'},
-  {id:20, concept:'20. Estimador',                          letter:'t', desc:'t. Fórmula utilizada para aproximar un parámetro',              color:'var(--c5)', correctLetter:'t'}
-];
-
-/* ── STATE ── */
-let round = 0; // 0 = round 1 (items 0-9), 1 = round 2 (items 10-19)
-let connections = {};  // conceptId → letterKey
-let selectedCon = null;
-let selectedDesc = null;
-let checked = false;
-let totalCorrect = 0;
-
-function currentItems() {
-  return round === 0 ? ALL_PAIRS.slice(0, 10) : ALL_PAIRS.slice(10, 20);
-}
-
-function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
-
-/* ── BUILD ── */
-function build(){
-  connections={};selectedCon=null;selectedDesc=null;checked=false;
-  const items = currentItems();
-  const shuffledDescs = shuffle(items.map(p=>({letter:p.letter,desc:p.desc,color:p.color})));
-
-  // Concept cards (left)
-  const left=document.getElementById('colLeft');
-  left.innerHTML='';
-  items.forEach(p=>{
-    const div=document.createElement('div');
-    div.className='con-card';div.id=`con-${p.id}`;div.dataset.conId=p.id;
-    div.innerHTML=`
+      // Concept cards (left)
+      const left = document.getElementById('colLeft');
+      left.innerHTML = '';
+      items.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'con-card'; div.id = `con-${p.id}`; div.dataset.conId = p.id;
+        div.innerHTML = `
       <div class="cc-top">
         <div class="cc-num">${p.id}</div>
         <div class="cc-label">Concepto</div>
       </div>
       <div class="cc-body">${p.concept}</div>`;
-    div.addEventListener('click',()=>pickCon(p.id));
-    left.appendChild(div);
-  });
+        div.addEventListener('click', () => pickCon(p.id));
+        left.appendChild(div);
+      });
 
-  // Desc cards (right) — shuffled
-  const right=document.getElementById('colRight');
-  right.innerHTML='';
-  shuffledDescs.forEach(d=>{
-    const div=document.createElement('div');
-    div.className='desc-card';div.id=`desc-${d.letter}`;div.dataset.letterKey=d.letter;
-    div.style.setProperty('--dc-color',d.color);
-    div.innerHTML=`
+      // Desc cards (right) — shuffled
+      const right = document.getElementById('colRight');
+      right.innerHTML = '';
+      shuffledDescs.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'desc-card'; div.id = `desc-${d.letter}`; div.dataset.letterKey = d.letter;
+        div.style.setProperty('--dc-color', d.color);
+        div.innerHTML = `
       <div class="dc-letter" style="background:${d.color}">${d.letter.toUpperCase()}</div>
       <div class="dc-txt">${d.desc}</div>`;
-    div.addEventListener('click',()=>pickDesc(d.letter));
-    right.appendChild(div);
-  });
+        div.addEventListener('click', () => pickDesc(d.letter));
+        right.appendChild(div);
+      });
 
-  updateDots();updateCheckBtn();
-  document.getElementById('feedbackPanel').classList.remove('show');
-  document.getElementById('resultBar').classList.remove('show');
-  document.getElementById('lineCanvas').innerHTML='';
-  document.getElementById('roundBadge').textContent=`Ronda ${round+1} de 2`;
-  document.getElementById('btnReset').classList.remove('show');
-  document.getElementById('btnNextRound').classList.remove('show');
-  document.getElementById('btnCheck').disabled=true;
-}
-
-/* ── PICK ── */
-function pickCon(id){
-  if(checked)return;
-  const already=Object.keys(connections).find(k=>parseInt(k)===id);
-  if(already!==undefined){delete connections[id];renderLines();updateDots();updateCheckBtn();clearSel();return;}
-  clearSel();
-  selectedCon=id;
-  document.getElementById(`con-${id}`).classList.add('selected');
-  tryConnect();
-}
-function pickDesc(letter){
-  if(checked)return;
-  const existingCon=Object.keys(connections).find(k=>connections[k]===letter);
-  if(existingCon!==undefined){delete connections[existingCon];renderLines();updateDots();updateCheckBtn();clearSel();return;}
-  clearSel();
-  selectedDesc=letter;
-  document.getElementById(`desc-${letter}`).classList.add('selected');
-  tryConnect();
-}
-function tryConnect(){
-  if(selectedCon!==null&&selectedDesc!==null){
-    connections[selectedCon]=selectedDesc;
-    clearSel();renderLines();updateDots();updateCheckBtn();
-  }
-}
-function clearSel(){
-  selectedCon=null;selectedDesc=null;
-  document.querySelectorAll('.con-card.selected,.desc-card.selected').forEach(el=>el.classList.remove('selected'));
-}
-
-/* ── LINES ── */
-function renderLines(){
-  const svg=document.getElementById('lineCanvas');
-  svg.innerHTML='';
-  const mid=document.getElementById('colMid');
-  const midR=mid.getBoundingClientRect();
-  const items=currentItems();
-  Object.entries(connections).forEach(([cid,letter])=>{
-    const cc=document.getElementById(`con-${cid}`);
-    const dc=document.getElementById(`desc-${letter}`);
-    if(!cc||!dc)return;
-    const ccR=cc.getBoundingClientRect();
-    const dcR=dc.getBoundingClientRect();
-    const x1=ccR.right-midR.left;
-    const y1=ccR.top+ccR.height/2-midR.top;
-    const x2=dcR.left-midR.left;
-    const y2=dcR.top+dcR.height/2-midR.top;
-    let color='rgba(244,162,97,.75)';
-    if(checked){
-      const pair=items.find(p=>p.id==cid);
-      color=pair&&pair.correctLetter===letter?'rgba(42,157,143,.85)':'rgba(232,72,85,.85)';
+      updateDots(); updateCheckBtn();
+      document.getElementById('feedbackPanel').classList.remove('show');
+      document.getElementById('resultBar').classList.remove('show');
+      document.getElementById('lineCanvas').innerHTML = '';
+      document.getElementById('roundBadge').textContent = `Ronda ${round + 1} de 2`;
+      document.getElementById('btnReset').classList.remove('show');
+      document.getElementById('btnNextRound').classList.remove('show');
+      document.getElementById('btnCheck').disabled = true;
     }
-    const cx1=x1+14,cx2=x2-14;
-    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',`M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
-    path.setAttribute('fill','none');path.setAttribute('stroke',color);
-    path.setAttribute('stroke-width','2.2');path.setAttribute('stroke-linecap','round');
-    [[x1,y1],[x2,y2]].forEach(([cx,cy])=>{
-      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r','4.5');c.setAttribute('fill',color);
-      svg.appendChild(c);
-    });
-    svg.appendChild(path);
-  });
-}
 
-/* ── CHECK ── */
-function checkAnswers(){
-  const items=currentItems();
-  if(Object.keys(connections).length<items.length)return;
-  checked=true;let correct=0;
-  items.forEach((p,i)=>{
-    const letter=connections[p.id];
-    const ok=letter===p.correctLetter;
-    if(ok)correct++;
-    const cc=document.getElementById(`con-${p.id}`);
-    const dc=document.getElementById(`desc-${letter}`);
-    cc.classList.remove('selected');cc.classList.add(ok?'matched-ok':'matched-fail');cc.classList.add('locked');
-    if(dc){dc.classList.remove('selected');dc.classList.add(ok?'matched-ok':'matched-fail');dc.classList.add('locked');}
-    const dot=document.getElementById(`sd-${round}-${i}`);
-    if(dot){dot.classList.remove('placed');dot.classList.add(ok?'ok':'fail');}
-  });
-  renderLines();totalCorrect+=correct;
-  document.getElementById('btnCheck').disabled=true;
-  document.getElementById('btnReset').classList.add('show');
-
-  if(round===0){
-    // Show next round button
-    const btn=document.getElementById('btnNextRound');
-    btn.classList.add('show');
-    btn.textContent='';
-    btn.innerHTML=`Ronda 2 (${correct}/10) <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
-  } else {
-    // Show final feedback + result
-    document.getElementById('feedbackPanel').classList.add('show');
-    const total=totalCorrect;
-    const msgs=['Sigue practicando 💪','¡Buen intento!','¡Casi!','¡Muy bien!','¡Excelente!','¡Perfecto! 🎉'];
-    const idx=Math.min(Math.floor(total/4),5);
-    document.getElementById('rbScore').innerHTML=`<span>${total}</span> / 20 correctas`;
-    document.getElementById('rbMsg').textContent=msgs[idx];
-    document.getElementById('resultBar').classList.add('show');
-    setTimeout(()=>document.getElementById('feedbackPanel').scrollIntoView({behavior:'smooth',block:'nearest'}),350);
-  }
-}
-
-function goNextRound(){
-  round=1;
-  document.getElementById('btnNextRound').classList.remove('show');
-  build();
-}
-
-function updateDots(){
-  const items=currentItems();
-  items.forEach((p,i)=>{
-    const dot=document.getElementById(`sd-${round}-${i}`);
-    if(!dot)return;
-    dot.classList.remove('placed','ok','fail');
-    if(connections[p.id])dot.classList.add('placed');
-  });
-}
-
-function updateCheckBtn(){
-  const items=currentItems();
-  document.getElementById('btnCheck').disabled=Object.keys(connections).length<items.length;
-}
-
-/* ── BUILD DOTS ── */
-function buildDots(){
-  const dotsEl=document.getElementById('scoreDots');
-  dotsEl.innerHTML='';
-  // Always show all 20 dots
-  for(let r=0;r<2;r++){
-    for(let i=0;i<10;i++){
-      const d=document.createElement('div');
-      d.className='sdot';d.id=`sd-${r}-${i}`;
-      dotsEl.appendChild(d);
+    /* ── PICK ── */
+    function pickCon(id) {
+      if (checked) return;
+      const already = Object.keys(connections).find(k => parseInt(k) === id);
+      if (already !== undefined) { delete connections[id]; renderLines(); updateDots(); updateCheckBtn(); clearSel(); return; }
+      clearSel();
+      selectedCon = id;
+      document.getElementById(`con-${id}`).classList.add('selected');
+      tryConnect();
     }
-    if(r===0){
-      const sep=document.createElement('div');
-      sep.style.cssText='width:6px;height:7px;background:rgba(255,255,255,.15);border-radius:2px;flex-shrink:0;';
-      dotsEl.appendChild(sep);
+    function pickDesc(letter) {
+      if (checked) return;
+      const existingCon = Object.keys(connections).find(k => connections[k] === letter);
+      if (existingCon !== undefined) { delete connections[existingCon]; renderLines(); updateDots(); updateCheckBtn(); clearSel(); return; }
+      clearSel();
+      selectedDesc = letter;
+      document.getElementById(`desc-${letter}`).classList.add('selected');
+      tryConnect();
     }
-  }
-}
+    function tryConnect() {
+      if (selectedCon !== null && selectedDesc !== null) {
+        connections[selectedCon] = selectedDesc;
+        clearSel(); renderLines(); updateDots(); updateCheckBtn();
+      }
+    }
+    function clearSel() {
+      selectedCon = null; selectedDesc = null;
+      document.querySelectorAll('.con-card.selected,.desc-card.selected').forEach(el => el.classList.remove('selected'));
+    }
 
-/* ── RESET ── */
-function resetGame(){
-  round=0;totalCorrect=0;
-  buildDots();build();
-}
+    /* ── LINES ── */
+    function renderLines() {
+      const svg = document.getElementById('lineCanvas');
+      svg.innerHTML = '';
+      const mid = document.getElementById('colMid');
+      const midR = mid.getBoundingClientRect();
+      const items = currentItems();
+      Object.entries(connections).forEach(([cid, letter]) => {
+        const cc = document.getElementById(`con-${cid}`);
+        const dc = document.getElementById(`desc-${letter}`);
+        if (!cc || !dc) return;
+        const ccR = cc.getBoundingClientRect();
+        const dcR = dc.getBoundingClientRect();
+        const x1 = ccR.right - midR.left;
+        const y1 = ccR.top + ccR.height / 2 - midR.top;
+        const x2 = dcR.left - midR.left;
+        const y2 = dcR.top + dcR.height / 2 - midR.top;
+        let color = 'rgba(244,162,97,.75)';
+        if (checked) {
+          const pair = items.find(p => p.id == cid);
+          color = pair && pair.correctLetter === letter ? 'rgba(42,157,143,.85)' : 'rgba(232,72,85,.85)';
+        }
+        const cx1 = x1 + 14, cx2 = x2 - 14;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
+        path.setAttribute('fill', 'none'); path.setAttribute('stroke', color);
+        path.setAttribute('stroke-width', '2.2'); path.setAttribute('stroke-linecap', 'round');
+        [[x1, y1], [x2, y2]].forEach(([cx, cy]) => {
+          const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', '4.5'); c.setAttribute('fill', color);
+          svg.appendChild(c);
+        });
+        svg.appendChild(path);
+      });
+    }
 
-let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(renderLines,80);});
-buildDots();build();
-</script>
+    /* ── CHECK ── */
+    function checkAnswers() {
+      const items = currentItems();
+      if (Object.keys(connections).length < items.length) return;
+      checked = true; let correct = 0;
+      items.forEach((p, i) => {
+        const letter = connections[p.id];
+        const ok = letter === p.correctLetter;
+        if (ok) correct++;
+        const cc = document.getElementById(`con-${p.id}`);
+        const dc = document.getElementById(`desc-${letter}`);
+        cc.classList.remove('selected'); cc.classList.add(ok ? 'matched-ok' : 'matched-fail'); cc.classList.add('locked');
+        if (dc) { dc.classList.remove('selected'); dc.classList.add(ok ? 'matched-ok' : 'matched-fail'); dc.classList.add('locked'); }
+        const dot = document.getElementById(`sd-${round}-${i}`);
+        if (dot) { dot.classList.remove('placed'); dot.classList.add(ok ? 'ok' : 'fail'); }
+      });
+      renderLines(); totalCorrect += correct;
+      document.getElementById('btnCheck').disabled = true;
+      document.getElementById('btnReset').classList.add('show');
+
+      if (round === 0) {
+        // Show next round button
+        const btn = document.getElementById('btnNextRound');
+        btn.classList.add('show');
+        btn.textContent = '';
+        btn.innerHTML = `Ronda 2 (${correct}/10) <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+      } else {
+        // Show final feedback + result
+        document.getElementById('feedbackPanel').classList.add('show');
+        const total = totalCorrect;
+        const msgs = ['Sigue practicando 💪', '¡Buen intento!', '¡Casi!', '¡Muy bien!', '¡Excelente!', '¡Perfecto! 🎉'];
+        const idx = Math.min(Math.floor(total / 4), 5);
+        document.getElementById('rbScore').innerHTML = `<span>${total}</span> / 20 correctas`;
+        document.getElementById('rbMsg').textContent = msgs[idx];
+        document.getElementById('resultBar').classList.add('show');
+        setTimeout(() => document.getElementById('feedbackPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 350);
+      }
+    }
+
+    function goNextRound() {
+      round = 1;
+      document.getElementById('btnNextRound').classList.remove('show');
+      build();
+    }
+
+    function updateDots() {
+      const items = currentItems();
+      items.forEach((p, i) => {
+        const dot = document.getElementById(`sd-${round}-${i}`);
+        if (!dot) return;
+        dot.classList.remove('placed', 'ok', 'fail');
+        if (connections[p.id]) dot.classList.add('placed');
+      });
+    }
+
+    function updateCheckBtn() {
+      const items = currentItems();
+      document.getElementById('btnCheck').disabled = Object.keys(connections).length < items.length;
+    }
+
+    /* ── BUILD DOTS ── */
+    function buildDots() {
+      const dotsEl = document.getElementById('scoreDots');
+      dotsEl.innerHTML = '';
+      // Always show all 20 dots
+      for (let r = 0; r < 2; r++) {
+        for (let i = 0; i < 10; i++) {
+          const d = document.createElement('div');
+          d.className = 'sdot'; d.id = `sd-${r}-${i}`;
+          dotsEl.appendChild(d);
+        }
+        if (r === 0) {
+          const sep = document.createElement('div');
+          sep.style.cssText = 'width:6px;height:7px;background:rgba(255,255,255,.15);border-radius:2px;flex-shrink:0;';
+          dotsEl.appendChild(sep);
+        }
+      }
+    }
+
+    /* ── RESET ── */
+    function resetGame() {
+      round = 0; totalCorrect = 0;
+      buildDots(); build();
+    }
+
+    let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderLines, 80); });
+    buildDots(); build();
+  </script>
 </body>
+
 </html>

@@ -1,322 +1,963 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Muestreo y Toma de Decisiones en Análisis de Datos</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --c1:#E84855;--c2:#F4A261;--c3:#2A9D8F;--c4:#457B9D;--c5:#7B4FBF;
-  --dark:#1A1A2E;--dark2:#16213E;
-  --surface:#FFFFFF;--bg:#F8F5F0;--text:#2C2C3E;
-  --muted:#6B6B80;--border:#E2DED8;
-  --font-d:'Playfair Display',serif;--font-b:'DM Sans',sans-serif;
-  --r:14px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:var(--font-b);
-  background:
-    radial-gradient(ellipse at 18% 12%,rgba(69,123,157,.14) 0%,transparent 50%),
-    radial-gradient(ellipse at 82% 88%,rgba(42,157,143,.14) 0%,transparent 50%),
-    #EDE9E1;
-  min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:28px 16px;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muestreo y Toma de Decisiones en Análisis de Datos</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --c1: #E84855;
+      --c2: #F4A261;
+      --c3: #2A9D8F;
+      --c4: #457B9D;
+      --c5: #7B4FBF;
+      --dark: #1A1A2E;
+      --dark2: #16213E;
+      --surface: #FFFFFF;
+      --bg: #F8F5F0;
+      --text: #2C2C3E;
+      --muted: #6B6B80;
+      --border: #E2DED8;
+      --font-d: 'Playfair Display', serif;
+      --font-b: 'DM Sans', sans-serif;
+      --r: 14px;
+    }
 
-/* ── CANVAS 800 × 800 máx ── */
-.canvas{
-  width:800px;min-height:500px;max-height:800px;
-  background:var(--bg);border-radius:28px;overflow:hidden;
-  box-shadow:0 24px 80px rgba(26,26,46,.22);
-  display:flex;flex-direction:column;
-}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ── HEADER ── */
-.header{background:var(--dark);flex-shrink:0;position:relative;overflow:hidden;}
-.h-stripe{height:4px;background:linear-gradient(90deg,var(--c4) 0%,var(--c3) 33%,var(--c2) 66%,var(--c5) 100%);}
-.h-glow{position:absolute;inset:0;
-  background:radial-gradient(ellipse at 12% 110%,rgba(69,123,157,.22) 0%,transparent 55%),
-             radial-gradient(ellipse at 88% -10%,rgba(42,157,143,.2) 0%,transparent 55%);
-  pointer-events:none;}
-.h-inner{position:relative;z-index:1;padding:16px 32px 14px;display:flex;align-items:center;gap:16px;}
-.h-embl{
-  width:46px;height:46px;flex-shrink:0;border-radius:13px;
-  background:linear-gradient(135deg,rgba(69,123,157,.3),rgba(42,157,143,.22));
-  border:1.5px solid rgba(255,255,255,.12);
-  display:flex;align-items:center;justify-content:center;font-size:20px;
-}
-.h-meta{flex:1;}
-.h-course{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:3px;}
-.h-title{font-family:var(--font-d);font-size:18px;color:#fff;line-height:1.22;letter-spacing:-.02em;}
-.h-sub{font-size:10.5px;color:rgba(255,255,255,.45);margin-top:3px;}
-.h-sub strong{color:rgba(255,255,255,.75);font-weight:600;}
+    body {
+      font-family: var(--font-b);
+      background:
+        radial-gradient(ellipse at 18% 12%, rgba(69, 123, 157, .14) 0%, transparent 50%),
+        radial-gradient(ellipse at 82% 88%, rgba(42, 157, 143, .14) 0%, transparent 50%),
+        #EDE9E1;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      
+    }
 
-/* ── PROGRESS ── */
-.prog-bar{background:var(--dark2);padding:8px 32px;flex-shrink:0;display:flex;align-items:center;gap:12px;}
-.prog-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38);white-space:nowrap;}
-.prog-track{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--c4),var(--c3));border-radius:99px;transition:width .45s ease;}
-.prog-count{font-size:10px;font-weight:600;color:rgba(255,255,255,.45);white-space:nowrap;}
+    /* ── CANVAS 800 × 800 máx ── */
+    .canvas {
+      width: 800px;
+   
+      height: 800px;
+      background: var(--bg);
+     
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(26, 26, 46, .22);
+      display: flex;
+      flex-direction: column;
+    }
 
-/* ── CONTENT ── */
-.content{flex:1;overflow:hidden;position:relative;}
-.slide{
-  position:absolute;inset:0;overflow-y:auto;
-  opacity:0;pointer-events:none;transform:translateX(28px);
-  transition:opacity .3s ease,transform .3s ease;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-}
-.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
-.slide.exit{opacity:0;transform:translateX(-28px);}
+    /* ── HEADER ── */
+    .header {
+      background: var(--dark);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* ── INTRO SLIDE ── */
-.s-intro{padding:18px 32px;display:flex;flex-direction:column;gap:11px;}
-.intro-kicker{font-size:9.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--c3);}
-.intro-hed{font-family:var(--font-d);font-size:21px;color:var(--dark);line-height:1.2;letter-spacing:-.02em;}
+    .h-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, var(--c4) 0%, var(--c3) 33%, var(--c2) 66%, var(--c5) 100%);
+    }
 
-.case-dark{background:var(--dark);border-radius:var(--r);padding:16px 20px;position:relative;overflow:hidden;}
-.case-dark::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 90% 10%,rgba(69,123,157,.2) 0%,transparent 60%),
-             radial-gradient(ellipse at 10% 90%,rgba(42,157,143,.15) 0%,transparent 60%);}
-.cd-tag{font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--c3);margin-bottom:6px;position:relative;}
-.cd-title{font-family:var(--font-d);font-size:13.5px;color:#fff;margin-bottom:8px;position:relative;}
-.cd-body{font-size:12px;color:rgba(255,255,255,.7);line-height:1.7;position:relative;}
+    .h-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 12% 110%, rgba(69, 123, 157, .22) 0%, transparent 55%),
+        radial-gradient(ellipse at 88% -10%, rgba(42, 157, 143, .2) 0%, transparent 55%);
+      pointer-events: none;
+    }
 
-/* stat chips */
-.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.stat-chip{background:var(--surface);border-radius:10px;padding:10px 12px;border:1.5px solid var(--border);text-align:center;}
-.sc-val{font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--sc-color,var(--dark));line-height:1;}
-.sc-lbl{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
+    .h-inner {
+      position: relative;
+      z-index: 1;
+      padding: 16px 32px 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
-/* key concepts row */
-.concepts-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
-.concept-pill{
-  background:var(--surface);border-radius:9px;padding:8px 6px;text-align:center;
-  border:1.5px solid var(--border);
-  transition:border-color .2s,transform .18s;
-}
-.concept-pill:hover{border-color:var(--cp-color);transform:translateY(-2px);}
-.cp-ico{font-size:18px;margin-bottom:3px;}
-.cp-name{font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cp-color);}
+    .h-embl {
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+      border-radius: 13px;
+      background: linear-gradient(135deg, rgba(69, 123, 157, .3), rgba(42, 157, 143, .22));
+      border: 1.5px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
 
-.intro-inst{
-  background:linear-gradient(135deg,rgba(42,157,143,.1),rgba(69,123,157,.07));
-  border:1px solid rgba(42,157,143,.25);border-radius:10px;
-  padding:10px 14px;font-size:12px;color:var(--text);line-height:1.6;
-  display:flex;gap:10px;align-items:flex-start;
-}
+    .h-meta {
+      flex: 1;
+    }
 
-/* ── QUESTION SLIDE ── */
-.s-q{padding:18px 32px;display:flex;flex-direction:column;gap:11px;}
-.q-toprow{display:flex;align-items:center;gap:10px;}
-.q-badge{
-  width:34px;height:34px;border-radius:9px;background:var(--dark);
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
-}
-.q-meta{flex:1;}
-.q-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
-.q-topic{font-size:10.5px;font-weight:600;color:var(--dark);margin-top:1px;}
-.q-ico{font-size:20px;margin-left:auto;}
+    .h-course {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .38);
+      margin-bottom: 3px;
+    }
 
-/* visual hint */
-.q-visual{border-radius:11px;overflow:hidden;border:1.5px solid var(--border);background:var(--surface);}
-.qv-top{background:var(--dark);padding:6px 13px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);}
-.qv-body{padding:8px 13px;}
+    .h-title {
+      font-family: var(--font-d);
+      font-size: 18px;
+      color: #fff;
+      line-height: 1.22;
+      letter-spacing: -.02em;
+    }
 
-.q-text{font-size:13.5px;color:var(--dark);line-height:1.7;}
-.opts{display:flex;flex-direction:column;gap:8px;}
-.opt{
-  background:var(--surface);border:2px solid var(--border);border-radius:12px;
-  padding:11px 15px;display:flex;align-items:flex-start;gap:12px;
-  cursor:pointer;text-align:left;font-family:var(--font-b);
-  transition:border-color .18s,background .18s,transform .15s,box-shadow .18s;
-  min-height:44px;
-}
-.opt:hover:not(:disabled){border-color:var(--dark);background:#FFFDF9;transform:translateX(3px);box-shadow:0 4px 14px rgba(26,26,46,.08);}
-.opt-lt{
-  width:26px;height:26px;border-radius:7px;
-  background:var(--bg);border:1.5px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:10.5px;font-weight:700;color:var(--muted);flex-shrink:0;
-  transition:background .18s,color .18s,border-color .18s;
-}
-.opt-txt{font-size:12.5px;color:var(--text);line-height:1.58;padding-top:1px;}
-.opt.correct{border-color:var(--c3);background:rgba(42,157,143,.06);cursor:default;transform:none;}
-.opt.correct .opt-lt{background:var(--c3);color:#fff;border-color:var(--c3);}
-.opt.wrong{border-color:var(--c1);background:rgba(232,72,85,.05);cursor:default;}
-.opt.wrong .opt-lt{background:var(--c1);color:#fff;border-color:var(--c1);}
-.opt.neutral{opacity:.42;cursor:default;}
-.opt:disabled{cursor:default;}
+    .h-sub {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, .45);
+      margin-top: 3px;
+    }
 
-/* feedback carta */
-.fb-carta{border-radius:12px;overflow:hidden;opacity:0;transform:translateY(10px);transition:opacity .32s ease .05s,transform .32s ease .05s;pointer-events:none;}
-.fb-carta.show{opacity:1;transform:translateY(0);pointer-events:auto;}
-.fb-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--dark);position:relative;overflow:hidden;}
-.fb-head::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--fb-col);}
-.fb-head-ico{width:36px;height:36px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;background:color-mix(in srgb,var(--fb-col) 22%,rgba(255,255,255,.05));}
-.fb-verdict{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--fb-col);margin-bottom:3px;}
-.fb-body{font-size:12px;color:rgba(255,255,255,.78);line-height:1.65;}
+    .h-sub strong {
+      color: rgba(255, 255, 255, .75);
+      font-weight: 600;
+    }
 
-/* ── FINAL SLIDE ── */
-.s-final{padding:18px 32px;display:flex;flex-direction:column;gap:11px;}
-.trophy{text-align:center;}
-.trophy-ico{font-size:44px;display:block;margin-bottom:5px;}
-.f-kicker{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:4px;}
-.f-title{font-family:var(--font-d);font-size:22px;color:var(--dark);line-height:1.2;margin-bottom:4px;}
-.f-intro{font-size:12px;color:var(--muted);line-height:1.65;}
+    /* ── PROGRESS ── */
+    .prog-bar {
+      background: var(--dark2);
+      padding: 8px 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-.summary-dark{background:var(--dark);border-radius:var(--r);padding:15px 19px;position:relative;overflow:hidden;}
-.summary-dark::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 100% 0%,rgba(42,157,143,.2) 0%,transparent 55%);}
-.sd-label{font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:10px;position:relative;}
-.sd-list{list-style:none;display:flex;flex-direction:column;gap:8px;position:relative;}
-.sd-item{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:rgba(255,255,255,.72);line-height:1.6;}
-.sd-dot{
-  width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:1px;
-  background:rgba(42,157,143,.2);border:1.5px solid var(--c3);
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;color:var(--c3);font-weight:700;
-}
-.sd-item strong{color:rgba(255,255,255,.93);}
-.f-conclusion{border:1.5px solid rgba(42,157,143,.28);border-radius:11px;padding:12px 16px;font-size:12px;color:var(--text);line-height:1.68;}
+    .prog-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .38);
+      white-space: nowrap;
+    }
 
-/* ── NAV ── */
-.nav-row{padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
-.nav-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;border:2px solid var(--border);background:transparent;font-family:var(--font-b);font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;min-height:44px;}
-.nav-btn:hover:not(:disabled){border-color:var(--dark);color:var(--dark);background:var(--bg);}
-.nav-btn:disabled{opacity:.3;cursor:default;}
-.nav-btn.primary{background:var(--dark);color:#fff;border-color:var(--dark);}
-.nav-btn.primary:hover:not(:disabled){background:var(--dark2);border-color:var(--dark2);}
-.nav-dots{display:flex;gap:5px;}
-.ndot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .22s,width .22s;}
-.ndot.done{background:var(--c3);}
-.ndot.active{background:var(--dark);width:18px;border-radius:3px;}
+    .prog-track {
+      flex: 1;
+      height: 5px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
 
-@media(max-width:840px){
-  body{padding:0;background:var(--bg);}
-  .canvas{width:100%;max-width:100%;max-height:none;border-radius:0;}
-  .h-inner,.prog-bar,.s-intro,.s-q,.s-final,.nav-row{padding-left:20px;padding-right:20px;}
-  .stat-row{grid-template-columns:1fr 1fr;}
-  .concepts-row{grid-template-columns:repeat(3,1fr);}
-}
-</style>
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--c4), var(--c3));
+      border-radius: 99px;
+      transition: width .45s ease;
+    }
+
+    .prog-count {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .45);
+      white-space: nowrap;
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(28px);
+      transition: opacity .3s ease, transform .3s ease;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(0);
+    }
+
+    .slide.exit {
+      opacity: 0;
+      transform: translateX(-28px);
+    }
+
+    /* ── INTRO SLIDE ── */
+    .s-intro {
+      padding: 18px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .intro-kicker {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--c3);
+    }
+
+    .intro-hed {
+      font-family: var(--font-d);
+      font-size: 21px;
+      color: var(--dark);
+      line-height: 1.2;
+      letter-spacing: -.02em;
+    }
+
+    .case-dark {
+      background: var(--dark);
+      border-radius: var(--r);
+      padding: 16px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .case-dark::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 90% 10%, rgba(69, 123, 157, .2) 0%, transparent 60%),
+        radial-gradient(ellipse at 10% 90%, rgba(42, 157, 143, .15) 0%, transparent 60%);
+    }
+
+    .cd-tag {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--c3);
+      margin-bottom: 6px;
+      position: relative;
+    }
+
+    .cd-title {
+      font-family: var(--font-d);
+      font-size: 13.5px;
+      color: #fff;
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .cd-body {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .7);
+      line-height: 1.7;
+      position: relative;
+    }
+
+    /* stat chips */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .stat-chip {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      text-align: center;
+    }
+
+    .sc-val {
+      font-family: var(--font-d);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--sc-color, var(--dark));
+      line-height: 1;
+    }
+
+    .sc-lbl {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    /* key concepts row */
+    .concepts-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .concept-pill {
+      background: var(--surface);
+      border-radius: 9px;
+      padding: 8px 6px;
+      text-align: center;
+      border: 1.5px solid var(--border);
+      transition: border-color .2s, transform .18s;
+    }
+
+    .concept-pill:hover {
+      border-color: var(--cp-color);
+      transform: translateY(-2px);
+    }
+
+    .cp-ico {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .cp-name {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--cp-color);
+    }
+
+    .intro-inst {
+      background: linear-gradient(135deg, rgba(42, 157, 143, .1), rgba(69, 123, 157, .07));
+      border: 1px solid rgba(42, 157, 143, .25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    /* ── QUESTION SLIDE ── */
+    .s-q {
+      padding: 18px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .q-toprow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .q-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .q-meta {
+      flex: 1;
+    }
+
+    .q-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .q-topic {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-top: 1px;
+    }
+
+    .q-ico {
+      font-size: 20px;
+      margin-left: auto;
+    }
+
+    /* visual hint */
+    .q-visual {
+      border-radius: 11px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+    }
+
+    .qv-top {
+      background: var(--dark);
+      padding: 6px 13px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .5);
+    }
+
+    .qv-body {
+      padding: 8px 13px;
+    }
+
+    .q-text {
+      font-size: 13.5px;
+      color: var(--dark);
+      line-height: 1.7;
+    }
+
+    .opts {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .opt {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--font-b);
+      transition: border-color .18s, background .18s, transform .15s, box-shadow .18s;
+      min-height: 44px;
+    }
+
+    .opt:hover:not(:disabled) {
+      border-color: var(--dark);
+      background: #FFFDF9;
+      transform: translateX(3px);
+      box-shadow: 0 4px 14px rgba(26, 26, 46, .08);
+    }
+
+    .opt-lt {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      flex-shrink: 0;
+      transition: background .18s, color .18s, border-color .18s;
+    }
+
+    .opt-txt {
+      font-size: 12.5px;
+      color: var(--text);
+      line-height: 1.58;
+      padding-top: 1px;
+    }
+
+    .opt.correct {
+      border-color: var(--c3);
+      background: rgba(42, 157, 143, .06);
+      cursor: default;
+      transform: none;
+    }
+
+    .opt.correct .opt-lt {
+      background: var(--c3);
+      color: #fff;
+      border-color: var(--c3);
+    }
+
+    .opt.wrong {
+      border-color: var(--c1);
+      background: rgba(232, 72, 85, .05);
+      cursor: default;
+    }
+
+    .opt.wrong .opt-lt {
+      background: var(--c1);
+      color: #fff;
+      border-color: var(--c1);
+    }
+
+    .opt.neutral {
+      opacity: .42;
+      cursor: default;
+    }
+
+    .opt:disabled {
+      cursor: default;
+    }
+
+    /* feedback carta */
+    .fb-carta {
+      border-radius: 12px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .32s ease .05s, transform .32s ease .05s;
+      pointer-events: none;
+    }
+
+    .fb-carta.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .fb-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .fb-head::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--fb-col);
+    }
+
+    .fb-head-ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      background: color-mix(in srgb, var(--fb-col) 22%, rgba(255, 255, 255, .05));
+    }
+
+    .fb-verdict {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--fb-col);
+      margin-bottom: 3px;
+    }
+
+    .fb-body {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .78);
+      line-height: 1.65;
+    }
+
+    /* ── FINAL SLIDE ── */
+    .s-final {
+      padding: 18px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .trophy {
+      text-align: center;
+    }
+
+    .trophy-ico {
+      font-size: 44px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .f-kicker {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c3);
+      margin-bottom: 4px;
+    }
+
+    .f-title {
+      font-family: var(--font-d);
+      font-size: 22px;
+      color: var(--dark);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .f-intro {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .summary-dark {
+      background: var(--dark);
+      border-radius: var(--r);
+      padding: 15px 19px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-dark::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 100% 0%, rgba(42, 157, 143, .2) 0%, transparent 55%);
+    }
+
+    .sd-label {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c3);
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .sd-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    .sd-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .72);
+      line-height: 1.6;
+    }
+
+    .sd-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 1px;
+      background: rgba(42, 157, 143, .2);
+      border: 1.5px solid var(--c3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--c3);
+      font-weight: 700;
+    }
+
+    .sd-item strong {
+      color: rgba(255, 255, 255, .93);
+    }
+
+    .f-conclusion {
+      border: 1.5px solid rgba(42, 157, 143, .28);
+      border-radius: 11px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.68;
+    }
+
+    /* ── NAV ── */
+    .nav-row {
+      padding: 10px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: transparent;
+      font-family: var(--font-b);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .18s;
+      min-height: 44px;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      border-color: var(--dark);
+      color: var(--dark);
+      background: var(--bg);
+    }
+
+    .nav-btn:disabled {
+      opacity: .3;
+      cursor: default;
+    }
+
+    .nav-btn.primary {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .nav-btn.primary:hover:not(:disabled) {
+      background: var(--dark2);
+      border-color: var(--dark2);
+    }
+
+    .nav-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .ndot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .22s, width .22s;
+    }
+
+    .ndot.done {
+      background: var(--c3);
+    }
+
+    .ndot.active {
+      background: var(--dark);
+      width: 18px;
+      border-radius: 3px;
+    }
+
+    @media(max-width:600px) {
+      body {
+        padding: 0;
+        background: var(--bg);
+      }
+
+      .canvas {
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        border-radius: 0;
+      }
+
+      .h-inner,
+      .prog-bar,
+      .s-intro,
+      .s-q,
+      .s-final,
+      .nav-row {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .stat-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .concepts-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="canvas">
+  <div class="canvas">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="h-stripe"></div>
-    <div class="h-glow"></div>
-    <div class="h-inner">
-      <div class="h-embl">📡</div>
-      <div class="h-meta">
-        <div class="h-course">Estadística para análisis de datos</div>
-        <div class="h-title">Muestreo y toma de decisiones en análisis de datos</div>
-        <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROGRESS -->
-  <div class="prog-bar">
-    <div class="prog-lbl">Progreso</div>
-    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-    <div class="prog-count" id="progCount">0 / 5</div>
-  </div>
-
-  <!-- SLIDES -->
-  <div class="content" id="contentArea">
-
-    <!-- SLIDE 0: INTRO -->
-    <div class="slide s-intro active" id="slide-0">
-      <div class="intro-kicker">📡 Caso de estudio — Empresa de telecomunicaciones</div>
-      <div class="intro-hed">Análisis de Satisfacción en una Plataforma Digital</div>
-
-      <div class="case-dark">
-        <div class="cd-tag">CASO: ANÁLISIS DE SATISFACCIÓN EN UNA PLATAFORMA DIGITAL</div>
-        <div class="cd-title">Empresa de telecomunicaciones — 10.000 usuarios activos</div>
-        <div class="cd-body">Una empresa de telecomunicaciones desea evaluar el nivel de satisfacción de sus usuarios respecto a la calidad del servicio de internet. La plataforma cuenta con 10.000 usuarios activos, pero debido a limitaciones de tiempo y recursos, decide trabajar con una muestra.<br><br>El equipo de análisis selecciona a 150 usuarios para realizar una encuesta. Sin embargo, inicialmente consideran enviar el cuestionario solo a usuarios que han reportado problemas técnicos recientemente.<br><br>Posteriormente, el equipo también analiza los resultados de múltiples muestras para estimar el promedio de satisfacción y comprender la variabilidad de los datos.</div>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat-chip">
-          <div class="sc-val" style="--sc-color:var(--c4)">10K</div>
-          <div class="sc-lbl">Usuarios activos (Población)</div>
+    <!-- HEADER -->
+    <div class="header">
+      <div class="h-stripe"></div>
+      <div class="h-glow"></div>
+      <div class="h-inner">
+        <div class="h-embl">📡</div>
+        <div class="h-meta">
+          <div class="h-course">Estadística para análisis de datos</div>
+          <div class="h-title">Muestreo y toma de decisiones en análisis de datos</div>
+          <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
         </div>
-        <div class="stat-chip">
-          <div class="sc-val" style="--sc-color:var(--c3)">150</div>
-          <div class="sc-lbl">Usuarios encuestados (Muestra)</div>
-        </div>
-        <div class="stat-chip">
-          <div class="sc-val" style="--sc-color:var(--c2)">1.5%</div>
-          <div class="sc-lbl">Fracción de muestreo</div>
-        </div>
-      </div>
-
-      <div class="concepts-row">
-        <div class="concept-pill" style="--cp-color:var(--c4)"><div class="cp-ico">🎲</div><div class="cp-name">Muestreo aleatorio</div></div>
-        <div class="concept-pill" style="--cp-color:var(--c1)"><div class="cp-ico">⚠️</div><div class="cp-name">Sesgo de selección</div></div>
-        <div class="concept-pill" style="--cp-color:var(--c3)"><div class="cp-ico">📊</div><div class="cp-name">Dist. muestral</div></div>
-        <div class="concept-pill" style="--cp-color:var(--c2)"><div class="cp-ico">🔔</div><div class="cp-name">Teorema Central</div></div>
-        <div class="concept-pill" style="--cp-color:var(--c5)"><div class="cp-ico">📐</div><div class="cp-name">Dist. t de Student</div></div>
-      </div>
-
-      <div class="intro-inst">
-        <div style="font-size:17px;flex-shrink:0;">💡</div>
-        <div>Se invita a poner en práctica los conceptos estudiados mediante la resolución del caso que se presenta.</div>
       </div>
     </div>
 
-    <!-- SLIDES 1–5 built by JS -->
+    <!-- PROGRESS -->
+    <div class="prog-bar">
+      <div class="prog-lbl">Progreso</div>
+      <div class="prog-track">
+        <div class="prog-fill" id="progFill" style="width:0%"></div>
+      </div>
+      <div class="prog-count" id="progCount">0 / 5</div>
+    </div>
 
-    <!-- SLIDE 6: FINAL -->
-    <div class="slide s-final" id="slide-6">
-      <div class="trophy">
-        <span class="trophy-ico">🏆</span>
-        <div class="f-kicker">Actividad completada</div>
-        <div class="f-title">¡Felicidades!</div>
-        <div class="f-intro">Ha concluido con éxito el análisis del caso.</div>
+    <!-- SLIDES -->
+    <div class="content" id="contentArea">
+
+      <!-- SLIDE 0: INTRO -->
+      <div class="slide s-intro active" id="slide-0">
+        <div class="intro-kicker">📡 Caso de estudio — Empresa de telecomunicaciones</div>
+        <div class="intro-hed">Análisis de Satisfacción en una Plataforma Digital</div>
+
+        <div class="case-dark">
+          <div class="cd-tag">CASO: ANÁLISIS DE SATISFACCIÓN EN UNA PLATAFORMA DIGITAL</div>
+          <div class="cd-title">Empresa de telecomunicaciones — 10.000 usuarios activos</div>
+          <div class="cd-body">Una empresa de telecomunicaciones desea evaluar el nivel de satisfacción de sus usuarios
+            respecto a la calidad del servicio de internet. La plataforma cuenta con 10.000 usuarios activos, pero
+            debido a limitaciones de tiempo y recursos, decide trabajar con una muestra.<br><br>El equipo de análisis
+            selecciona a 150 usuarios para realizar una encuesta. Sin embargo, inicialmente consideran enviar el
+            cuestionario solo a usuarios que han reportado problemas técnicos recientemente.<br><br>Posteriormente, el
+            equipo también analiza los resultados de múltiples muestras para estimar el promedio de satisfacción y
+            comprender la variabilidad de los datos.</div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-chip">
+            <div class="sc-val" style="--sc-color:var(--c4)">10K</div>
+            <div class="sc-lbl">Usuarios activos (Población)</div>
+          </div>
+          <div class="stat-chip">
+            <div class="sc-val" style="--sc-color:var(--c3)">150</div>
+            <div class="sc-lbl">Usuarios encuestados (Muestra)</div>
+          </div>
+          <div class="stat-chip">
+            <div class="sc-val" style="--sc-color:var(--c2)">1.5%</div>
+            <div class="sc-lbl">Fracción de muestreo</div>
+          </div>
+        </div>
+
+        <div class="concepts-row">
+          <div class="concept-pill" style="--cp-color:var(--c4)">
+            <div class="cp-ico">🎲</div>
+            <div class="cp-name">Muestreo aleatorio</div>
+          </div>
+          <div class="concept-pill" style="--cp-color:var(--c1)">
+            <div class="cp-ico">⚠️</div>
+            <div class="cp-name">Sesgo de selección</div>
+          </div>
+          <div class="concept-pill" style="--cp-color:var(--c3)">
+            <div class="cp-ico">📊</div>
+            <div class="cp-name">Dist. muestral</div>
+          </div>
+          <div class="concept-pill" style="--cp-color:var(--c2)">
+            <div class="cp-ico">🔔</div>
+            <div class="cp-name">Teorema Central</div>
+          </div>
+          <div class="concept-pill" style="--cp-color:var(--c5)">
+            <div class="cp-ico">📐</div>
+            <div class="cp-name">Dist. t de Student</div>
+          </div>
+        </div>
+
+        <div class="intro-inst">
+          <div style="font-size:17px;flex-shrink:0;">💡</div>
+          <div>Se invita a poner en práctica los conceptos estudiados mediante la resolución del caso que se presenta.
+          </div>
+        </div>
       </div>
 
-      <div class="summary-dark">
-        <div class="sd-label">Conclusiones clave</div>
-        <ul class="sd-list">
-          <li class="sd-item"><div class="sd-dot">🎲</div><div><strong>El muestreo adecuado</strong> garantiza resultados representativos.</div></li>
-          <li class="sd-item"><div class="sd-dot">⚠️</div><div><strong>El sesgo</strong> puede distorsionar las conclusiones si no se controla.</div></li>
-          <li class="sd-item"><div class="sd-dot">📊</div><div><strong>La distribución muestral</strong> permite comprender la variabilidad de los estadísticos.</div></li>
-          <li class="sd-item"><div class="sd-dot">🔔</div><div><strong>El Teorema Central del Límite</strong> facilita el uso de la distribución normal en el análisis.</div></li>
-          <li class="sd-item"><div class="sd-dot">📐</div><div><strong>Las distribuciones como t</strong> complementan el análisis cuando se trabaja con muestras pequeñas.</div></li>
-        </ul>
+      <!-- SLIDES 1–5 built by JS -->
+
+      <!-- SLIDE 6: FINAL -->
+      <div class="slide s-final" id="slide-6">
+        <div class="trophy">
+          <span class="trophy-ico">🏆</span>
+          <div class="f-kicker">Actividad completada</div>
+          <div class="f-title">¡Felicidades!</div>
+          <div class="f-intro">Ha concluido con éxito el análisis del caso.</div>
+        </div>
+
+        <div class="summary-dark">
+          <div class="sd-label">Conclusiones clave</div>
+          <ul class="sd-list">
+            <li class="sd-item">
+              <div class="sd-dot">🎲</div>
+              <div><strong>El muestreo adecuado</strong> garantiza resultados representativos.</div>
+            </li>
+            <li class="sd-item">
+              <div class="sd-dot">⚠️</div>
+              <div><strong>El sesgo</strong> puede distorsionar las conclusiones si no se controla.</div>
+            </li>
+            <li class="sd-item">
+              <div class="sd-dot">📊</div>
+              <div><strong>La distribución muestral</strong> permite comprender la variabilidad de los estadísticos.
+              </div>
+            </li>
+            <li class="sd-item">
+              <div class="sd-dot">🔔</div>
+              <div><strong>El Teorema Central del Límite</strong> facilita el uso de la distribución normal en el
+                análisis.</div>
+            </li>
+            <li class="sd-item">
+              <div class="sd-dot">📐</div>
+              <div><strong>Las distribuciones como t</strong> complementan el análisis cuando se trabaja con muestras
+                pequeñas.</div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="f-conclusion">Este caso demuestra la importancia de aplicar correctamente los principios
+          estadísticos para tomar decisiones informadas y confiables en contextos reales.</div>
       </div>
 
-      <div class="f-conclusion">Este caso demuestra la importancia de aplicar correctamente los principios estadísticos para tomar decisiones informadas y confiables en contextos reales.</div>
+    </div>
+
+    <!-- NAV ROW -->
+    <div class="nav-row">
+      <button class="nav-btn" id="btnPrev" onclick="navigate(-1)" disabled>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 5l-7 7 7 7" />
+        </svg>
+        Anterior
+      </button>
+      <div class="nav-dots" id="navDots"></div>
+      <button class="nav-btn primary" id="btnNext" onclick="navigate(1)">
+        Comenzar
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </button>
     </div>
 
   </div>
 
-  <!-- NAV ROW -->
-  <div class="nav-row">
-    <button class="nav-btn" id="btnPrev" onclick="navigate(-1)" disabled>
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-      Anterior
-    </button>
-    <div class="nav-dots" id="navDots"></div>
-    <button class="nav-btn primary" id="btnNext" onclick="navigate(1)">
-      Comenzar
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </button>
-  </div>
-
-</div>
-
-<script>
-const QS = [
-  {
-    icon:'🎲', topic:'Muestreo aleatorio — Representatividad',
-    text:'Para garantizar que los resultados sean representativos de toda la población de usuarios, ¿qué tipo de muestreo debería aplicar la empresa?',
-    visual:`<svg viewBox="0 0 560 56" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:56px;">
+  <script>
+    const QS = [
+      {
+        icon: '🎲', topic: 'Muestreo aleatorio — Representatividad',
+        text: 'Para garantizar que los resultados sean representativos de toda la población de usuarios, ¿qué tipo de muestreo debería aplicar la empresa?',
+        visual: `<svg viewBox="0 0 560 56" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:56px;">
       <rect x="8" y="8" width="260" height="40" rx="6" fill="rgba(69,123,157,.08)" stroke="rgba(69,123,157,.3)" stroke-width="1.2"/>
       <text x="138" y="22" text-anchor="middle" font-size="8.5" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="800">Población: 10.000 usuarios</text>
       <circle cx="40"  cy="35" r="4" fill="rgba(69,123,157,.5)"/><circle cx="60"  cy="30" r="4" fill="rgba(69,123,157,.5)"/>
@@ -334,19 +975,19 @@ const QS = [
       <circle cx="415" cy="36" r="5" fill="var(--c3)" opacity=".7"/><circle cx="435" cy="25" r="5" fill="var(--c3)" opacity=".7"/>
       <text x="429" y="50" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif">Todos con igual probabilidad ✓</text>
     </svg>`,
-    options:[
-      {text:'Seleccionar usuarios aleatoriamente de toda la base de datos.',correct:true},
-      {text:'Elegir únicamente usuarios que han presentado quejas recientes.',correct:false}
-    ],
-    fb:{
-      correct:{verdict:'Correcto.',body:'El muestreo aleatorio permite que todos los usuarios tengan la misma probabilidad de ser seleccionados, asegurando representatividad.',icon:'✅'},
-      wrong:  {verdict:'Incorrecto',body:'También válido, permite analizar casos específicos, aunque introduce sesgo y no representa a toda la población.',icon:'⚠️'}
-    }
-  },
-  {
-    icon:'⚠️', topic:'Sesgo de selección',
-    text:'Si la empresa decide encuestar únicamente a usuarios activos en redes sociales, ¿qué problema podría presentarse?',
-    visual:`<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
+        options: [
+          { text: 'Seleccionar usuarios aleatoriamente de toda la base de datos.', correct: true },
+          { text: 'Elegir únicamente usuarios que han presentado quejas recientes.', correct: false }
+        ],
+        fb: {
+          correct: { verdict: 'Correcto.', body: 'El muestreo aleatorio permite que todos los usuarios tengan la misma probabilidad de ser seleccionados, asegurando representatividad.', icon: '✅' },
+          wrong: { verdict: 'Incorrecto', body: 'También válido, permite analizar casos específicos, aunque introduce sesgo y no representa a toda la población.', icon: '⚠️' }
+        }
+      },
+      {
+        icon: '⚠️', topic: 'Sesgo de selección',
+        text: 'Si la empresa decide encuestar únicamente a usuarios activos en redes sociales, ¿qué problema podría presentarse?',
+        visual: `<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
       <rect x="8" y="8" width="260" height="42" rx="6" fill="rgba(232,72,85,.07)" stroke="rgba(232,72,85,.3)" stroke-width="1.2"/>
       <text x="138" y="22" text-anchor="middle" font-size="8.5" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="800">Muestra sesgada — RRSS</text>
       <circle cx="40"  cy="36" r="5" fill="rgba(232,72,85,.7)"/>
@@ -372,19 +1013,19 @@ const QS = [
       <circle cx="454" cy="30" r="5" fill="rgba(69,123,157,.5)"/>
       <text x="415" y="54" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif">Todos los perfiles incluidos ✓</text>
     </svg>`,
-    options:[
-      {text:'Aumento del tamaño de la muestra, lo que mejora la precisión automáticamente.',correct:false},
-      {text:'Sesgo de selección, ya que no todos los usuarios tienen la misma probabilidad de participar.',correct:true}
-    ],
-    fb:{
-      correct:{verdict:'Correcto.',body:'El sesgo de selección ocurre cuando el método de elección no es aleatorio y ciertos grupos tienen mayor probabilidad de participar.',icon:'✅'},
-      wrong:  {verdict:'Incorrecto',body:'También válido en otros contextos, pero aquí no aplica, ya que el problema principal es la falta de representatividad.',icon:'⚠️'}
-    }
-  },
-  {
-    icon:'📊', topic:'Distribución muestral de la media',
-    text:'Al tomar varias muestras de usuarios y calcular el promedio de satisfacción en cada una, ¿qué concepto se está analizando?',
-    visual:`<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
+        options: [
+          { text: 'Aumento del tamaño de la muestra, lo que mejora la precisión automáticamente.', correct: false },
+          { text: 'Sesgo de selección, ya que no todos los usuarios tienen la misma probabilidad de participar.', correct: true }
+        ],
+        fb: {
+          correct: { verdict: 'Correcto.', body: 'El sesgo de selección ocurre cuando el método de elección no es aleatorio y ciertos grupos tienen mayor probabilidad de participar.', icon: '✅' },
+          wrong: { verdict: 'Incorrecto', body: 'También válido en otros contextos, pero aquí no aplica, ya que el problema principal es la falta de representatividad.', icon: '⚠️' }
+        }
+      },
+      {
+        icon: '📊', topic: 'Distribución muestral de la media',
+        text: 'Al tomar varias muestras de usuarios y calcular el promedio de satisfacción en cada una, ¿qué concepto se está analizando?',
+        visual: `<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
       <text x="10" y="14" font-size="8.5" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="800">Múltiples muestras → distribución de medias</text>
       <rect x="10" y="20" width="76" height="18" rx="4" fill="rgba(42,157,143,.15)" stroke="var(--c3)" stroke-width="1"/>
       <text x="48" y="32" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Mono,monospace">x̄₁ = 7.2</text>
@@ -399,19 +1040,19 @@ const QS = [
       <text x="470" y="16" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">Distribución</text>
       <text x="470" y="26" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">muestral</text>
     </svg>`,
-    options:[
-      {text:'Distribución muestral de la media.',correct:true},
-      {text:'Población total de usuarios.',correct:false}
-    ],
-    fb:{
-      correct:{verdict:'Correcto.',body:'La distribución muestral describe cómo varía un estadístico (como la media) entre diferentes muestras.',icon:'✅'},
-      wrong:  {verdict:'Incorrecto',body:'También válido como concepto general, pero no describe el análisis realizado con múltiples muestras.',icon:'⚠️'}
-    }
-  },
-  {
-    icon:'🔔', topic:'Teorema Central del Límite',
-    text:'Si el tamaño de la muestra es suficientemente grande, ¿qué comportamiento tendrá la distribución de las medias muestrales?',
-    visual:`<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
+        options: [
+          { text: 'Distribución muestral de la media.', correct: true },
+          { text: 'Población total de usuarios.', correct: false }
+        ],
+        fb: {
+          correct: { verdict: 'Correcto.', body: 'La distribución muestral describe cómo varía un estadístico (como la media) entre diferentes muestras.', icon: '✅' },
+          wrong: { verdict: 'Incorrecto', body: 'También válido como concepto general, pero no describe el análisis realizado con múltiples muestras.', icon: '⚠️' }
+        }
+      },
+      {
+        icon: '🔔', topic: 'Teorema Central del Límite',
+        text: 'Si el tamaño de la muestra es suficientemente grande, ¿qué comportamiento tendrá la distribución de las medias muestrales?',
+        visual: `<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
       <text x="10" y="13" font-size="8.5" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="800">n pequeña → irregular</text>
       <rect x="10" y="18" width="12" height="30" rx="2" fill="rgba(244,162,97,.35)" stroke="var(--c2)" stroke-width="1"/>
       <rect x="26" y="28" width="12" height="20" rx="2" fill="rgba(244,162,97,.35)" stroke="var(--c2)" stroke-width="1"/>
@@ -426,19 +1067,19 @@ const QS = [
       <line x1="390" y1="12" x2="390" y2="48" stroke="var(--c3)" stroke-width="1.2" stroke-dasharray="3,2"/>
       <text x="390" y="56" text-anchor="middle" font-size="8" fill="var(--c3)" font-family="DM Sans,sans-serif">μ</text>
     </svg>`,
-    options:[
-      {text:'Será completamente aleatoria sin patrón definido.',correct:false},
-      {text:'Tendrá una forma aproximadamente normal.',correct:true}
-    ],
-    fb:{
-      correct:{verdict:'Correcto.',body:'El Teorema Central del Límite establece que la distribución de las medias muestrales tiende a ser normal cuando el tamaño de muestra es grande.',icon:'✅'},
-      wrong:  {verdict:'Incorrecto',body:'También válido como intuición inicial, pero en realidad sí existe un patrón: la normalidad.',icon:'⚠️'}
-    }
-  },
-  {
-    icon:'📐', topic:'Distribución t de Student — Muestras pequeñas',
-    text:'Cuando la empresa trabaja con muestras pequeñas y desconoce la varianza poblacional, ¿qué distribución es más adecuada para el análisis?',
-    visual:`<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
+        options: [
+          { text: 'Será completamente aleatoria sin patrón definido.', correct: false },
+          { text: 'Tendrá una forma aproximadamente normal.', correct: true }
+        ],
+        fb: {
+          correct: { verdict: 'Correcto.', body: 'El Teorema Central del Límite establece que la distribución de las medias muestrales tiende a ser normal cuando el tamaño de muestra es grande.', icon: '✅' },
+          wrong: { verdict: 'Incorrecto', body: 'También válido como intuición inicial, pero en realidad sí existe un patrón: la normalidad.', icon: '⚠️' }
+        }
+      },
+      {
+        icon: '📐', topic: 'Distribución t de Student — Muestras pequeñas',
+        text: 'Cuando la empresa trabaja con muestras pequeñas y desconoce la varianza poblacional, ¿qué distribución es más adecuada para el análisis?',
+        visual: `<svg viewBox="0 0 560 58" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:58px;">
       <text x="10" y="13" font-size="8.5" fill="var(--c5)" font-family="DM Sans,sans-serif" font-weight="800">t de Student vs Normal estándar</text>
       <!-- Normal curve (thinner tails) -->
       <path d="M20,52 C90,52 160,40 240,10 C265,2 275,1 280,1 C285,1 295,2 320,10 C400,40 470,52 540,52" fill="none" stroke="rgba(42,157,143,.5)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5,3"/>
@@ -448,44 +1089,44 @@ const QS = [
       <text x="440" y="40" text-anchor="middle" font-size="8" fill="var(--c5)" font-family="DM Sans,sans-serif" font-weight="700">t (σ desconocida)</text>
       <text x="20" y="58" font-size="8" fill="var(--muted)" font-family="DM Sans,sans-serif">Colas más pesadas → mayor incertidumbre con n pequeña</text>
     </svg>`,
-    options:[
-      {text:'Distribución t de Student.',correct:true},
-      {text:'Distribución uniforme.',correct:false}
-    ],
-    fb:{
-      correct:{verdict:'Correcto.',body:'La distribución t se utiliza cuando el tamaño de muestra es pequeño y la varianza poblacional es desconocida.',icon:'✅'},
-      wrong:  {verdict:'Incorrecto',body:'También válido en otros contextos, pero no es adecuada para este tipo de análisis inferencial.',icon:'⚠️'}
-    }
-  }
-];
+        options: [
+          { text: 'Distribución t de Student.', correct: true },
+          { text: 'Distribución uniforme.', correct: false }
+        ],
+        fb: {
+          correct: { verdict: 'Correcto.', body: 'La distribución t se utiliza cuando el tamaño de muestra es pequeño y la varianza poblacional es desconocida.', icon: '✅' },
+          wrong: { verdict: 'Incorrecto', body: 'También válido en otros contextos, pero no es adecuada para este tipo de análisis inferencial.', icon: '⚠️' }
+        }
+      }
+    ];
 
-/* ── STATE ── */
-const TOTAL = 7;
-let cur = 0;
-const answered = new Array(5).fill(null);
-const LETS = ['A','B','C','D'];
+    /* ── STATE ── */
+    const TOTAL = 7;
+    let cur = 0;
+    const answered = new Array(5).fill(null);
+    const LETS = ['A', 'B', 'C', 'D'];
 
-function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+    function shuffle(a) { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[r[i], r[j]] = [r[j], r[i]]; } return r; }
 
-function buildSlides(){
-  const area=document.getElementById('contentArea');
-  const fin=document.getElementById('slide-6');
-  QS.forEach((q,qi)=>{
-    const shuffled=shuffle(q.options);
-    const div=document.createElement('div');
-    div.className='slide s-q';div.id=`slide-${qi+1}`;
-    const opts=shuffled.map((o,idx)=>{
-      const L=LETS[idx];
-      return `<button class="opt" id="opt-${qi}-${idx}" onclick="pick(${qi},${idx},${o.correct})" data-correct="${o.correct}">
+    function buildSlides() {
+      const area = document.getElementById('contentArea');
+      const fin = document.getElementById('slide-6');
+      QS.forEach((q, qi) => {
+        const shuffled = shuffle(q.options);
+        const div = document.createElement('div');
+        div.className = 'slide s-q'; div.id = `slide-${qi + 1}`;
+        const opts = shuffled.map((o, idx) => {
+          const L = LETS[idx];
+          return `<button class="opt" id="opt-${qi}-${idx}" onclick="pick(${qi},${idx},${o.correct})" data-correct="${o.correct}">
         <div class="opt-lt">${L}</div>
         <div class="opt-txt"><strong>Opción ${L}:</strong> ${o.text}</div>
       </button>`;
-    }).join('');
-    div.innerHTML=`
+        }).join('');
+        div.innerHTML = `
       <div class="q-toprow">
-        <div class="q-badge">${qi+1}</div>
+        <div class="q-badge">${qi + 1}</div>
         <div class="q-meta">
-          <div class="q-label">Pregunta ${qi+1} de 5</div>
+          <div class="q-label">Pregunta ${qi + 1} de 5</div>
           <div class="q-topic">${q.topic}</div>
         </div>
         <div class="q-ico">${q.icon}</div>
@@ -502,75 +1143,76 @@ function buildSlides(){
       <div class="fb-carta" id="fb-w-${qi}" style="--fb-col:var(--c1)">
         <div class="fb-head"><div class="fb-head-ico">${q.fb.wrong.icon}</div><div><div class="fb-verdict">${q.fb.wrong.verdict}</div><div class="fb-body">${q.fb.wrong.body}</div></div></div>
       </div>`;
-    area.insertBefore(div,fin);
-  });
-}
+        area.insertBefore(div, fin);
+      });
+    }
 
-function pick(qi,idx,isCorrect){
-  if(answered[qi]!==null)return;
-  answered[qi]=isCorrect?'correct':'wrong';
-  document.getElementById(`opts-${qi}`).querySelectorAll('.opt').forEach((b,i)=>{
-    b.disabled=true;
-    if(i===idx){b.classList.add(isCorrect?'correct':'wrong');}
-    else if(!isCorrect&&b.dataset.correct==='true'){b.classList.add('correct');}
-    else{b.classList.add('neutral');}
-  });
-  document.getElementById(isCorrect?`fb-c-${qi}`:`fb-w-${qi}`).classList.add('show');
-  updateProg();updateNav();
-}
+    function pick(qi, idx, isCorrect) {
+      if (answered[qi] !== null) return;
+      answered[qi] = isCorrect ? 'correct' : 'wrong';
+      document.getElementById(`opts-${qi}`).querySelectorAll('.opt').forEach((b, i) => {
+        b.disabled = true;
+        if (i === idx) { b.classList.add(isCorrect ? 'correct' : 'wrong'); }
+        else if (!isCorrect && b.dataset.correct === 'true') { b.classList.add('correct'); }
+        else { b.classList.add('neutral'); }
+      });
+      document.getElementById(isCorrect ? `fb-c-${qi}` : `fb-w-${qi}`).classList.add('show');
+      updateProg(); updateNav();
+    }
 
-function navigate(dir){
-  const next=cur+dir;if(next<0||next>=TOTAL)return;
-  const c=document.getElementById(`slide-${cur}`);
-  c.classList.add('exit');c.classList.remove('active');
-  setTimeout(()=>c.classList.remove('exit'),360);
-  cur=next;
-  const n=document.getElementById(`slide-${cur}`);
-  n.classList.add('active');n.scrollTop=0;
-  updateNav();updateProg();
-}
+    function navigate(dir) {
+      const next = cur + dir; if (next < 0 || next >= TOTAL) return;
+      const c = document.getElementById(`slide-${cur}`);
+      c.classList.add('exit'); c.classList.remove('active');
+      setTimeout(() => c.classList.remove('exit'), 360);
+      cur = next;
+      const n = document.getElementById(`slide-${cur}`);
+      n.classList.add('active'); n.scrollTop = 0;
+      updateNav(); updateProg();
+    }
 
-function updateProg(){
-  const done=answered.filter(a=>a!==null).length;
-  document.getElementById('progFill').style.width=(done/5*100)+'%';
-  document.getElementById('progCount').textContent=done+' / 5';
-}
+    function updateProg() {
+      const done = answered.filter(a => a !== null).length;
+      document.getElementById('progFill').style.width = (done / 5 * 100) + '%';
+      document.getElementById('progCount').textContent = done + ' / 5';
+    }
 
-function updateNav(){
-  document.getElementById('btnPrev').disabled=cur===0;
-  const dots=document.getElementById('navDots');
-  dots.innerHTML='';
-  for(let i=1;i<=5;i++){
-    const d=document.createElement('div');
-    d.className='ndot'+(i===cur?' active':answered[i-1]!==null?' done':'');
-    dots.appendChild(d);
-  }
-  const btn=document.getElementById('btnNext');
-  if(cur===0){
-    btn.innerHTML='Comenzar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-    btn.disabled=false;btn.onclick=()=>navigate(1);
-  } else if(cur>=1&&cur<=5){
-    const done=answered[cur-1]!==null;
-    const isLast=cur===5;
-    btn.innerHTML=(isLast&&done?'Ver resultados':'Siguiente')+' <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-    btn.disabled=!done;btn.onclick=()=>navigate(1);
-  } else if(cur===6){
-    btn.innerHTML='Reintentar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/></svg>';
-    btn.disabled=false;btn.onclick=restart;
-  }
-}
+    function updateNav() {
+      document.getElementById('btnPrev').disabled = cur === 0;
+      const dots = document.getElementById('navDots');
+      dots.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const d = document.createElement('div');
+        d.className = 'ndot' + (i === cur ? ' active' : answered[i - 1] !== null ? ' done' : '');
+        dots.appendChild(d);
+      }
+      const btn = document.getElementById('btnNext');
+      if (cur === 0) {
+        btn.innerHTML = 'Comenzar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        btn.disabled = false; btn.onclick = () => navigate(1);
+      } else if (cur >= 1 && cur <= 5) {
+        const done = answered[cur - 1] !== null;
+        const isLast = cur === 5;
+        btn.innerHTML = (isLast && done ? 'Ver resultados' : 'Siguiente') + ' <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+        btn.disabled = !done; btn.onclick = () => navigate(1);
+      } else if (cur === 6) {
+        btn.innerHTML = 'Reintentar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/></svg>';
+        btn.disabled = false; btn.onclick = restart;
+      }
+    }
 
-function restart(){
-  for(let i=0;i<5;i++)answered[i]=null;
-  for(let i=1;i<=5;i++){const s=document.getElementById(`slide-${i}`);if(s)s.remove();}
-  buildSlides();
-  document.getElementById('slide-6').classList.remove('active');
-  cur=0;document.getElementById('slide-0').classList.add('active');
-  document.getElementById('btnNext').onclick=()=>navigate(1);
-  updateNav();updateProg();
-}
+    function restart() {
+      for (let i = 0; i < 5; i++)answered[i] = null;
+      for (let i = 1; i <= 5; i++) { const s = document.getElementById(`slide-${i}`); if (s) s.remove(); }
+      buildSlides();
+      document.getElementById('slide-6').classList.remove('active');
+      cur = 0; document.getElementById('slide-0').classList.add('active');
+      document.getElementById('btnNext').onclick = () => navigate(1);
+      updateNav(); updateProg();
+    }
 
-buildSlides();updateNav();updateProg();
-</script>
+    buildSlides(); updateNav(); updateProg();
+  </script>
 </body>
+
 </html>
