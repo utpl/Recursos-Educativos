@@ -1,486 +1,905 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Exploración Multivariada Básica</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --c1:#E84855;--c2:#F4A261;--c3:#2A9D8F;--c4:#457B9D;--c5:#7B4FBF;
-  --dark:#1A1A2E;--dark2:#16213E;
-  --surface:#FFFFFF;--bg:#F8F5F0;--text:#2C2C3E;
-  --muted:#6B6B80;--border:#E2DED8;
-  --font-d:'Playfair Display',serif;--font-b:'DM Sans',sans-serif;
-  --r:14px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:var(--font-b);
-  background:
-    radial-gradient(ellipse at 18% 12%,rgba(232,72,85,.13) 0%,transparent 50%),
-    radial-gradient(ellipse at 82% 88%,rgba(69,123,157,.13) 0%,transparent 50%),
-    #EDE9E1;
-  min-height:100vh;display:flex;justify-content:center;
-  align-items:flex-start;padding:28px 16px;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exploración Multivariada Básica</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --c1: #E84855;
+      --c2: #F4A261;
+      --c3: #2A9D8F;
+      --c4: #457B9D;
+      --c5: #7B4FBF;
+      --dark: #1A1A2E;
+      --dark2: #16213E;
+      --surface: #FFFFFF;
+      --bg: #F8F5F0;
+      --text: #2C2C3E;
+      --muted: #6B6B80;
+      --border: #E2DED8;
+      --font-d: 'Playfair Display', serif;
+      --font-b: 'DM Sans', sans-serif;
+      --r: 14px;
+    }
 
-/* ── CANVAS ── */
-.canvas{
-  width:800px;min-height:500px;max-height:800px;
-  background:var(--bg);border-radius:28px;overflow:hidden;
-  box-shadow:0 24px 80px rgba(26,26,46,.22);
-  display:flex;flex-direction:column;
-}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ── HEADER ── */
-.header{background:var(--dark);flex-shrink:0;position:relative;overflow:hidden;}
-.h-stripe{height:4px;background:linear-gradient(90deg,var(--c1) 0%,var(--c2) 33%,var(--c3) 66%,var(--c4) 100%);}
-.h-glow{position:absolute;inset:0;
-  background:radial-gradient(ellipse at 10% 120%,rgba(232,72,85,.2) 0%,transparent 55%),
-             radial-gradient(ellipse at 90% -20%,rgba(69,123,157,.2) 0%,transparent 55%);
-  pointer-events:none;}
-.h-inner{position:relative;z-index:1;padding:18px 32px 16px;display:flex;align-items:center;gap:18px;}
-.h-embl{
-  width:50px;height:50px;flex-shrink:0;border-radius:14px;
-  background:linear-gradient(135deg,rgba(244,162,97,.22),rgba(232,72,85,.18));
-  border:1.5px solid rgba(255,255,255,.12);
-  display:flex;align-items:center;justify-content:center;font-size:22px;
-}
-.h-meta{flex:1;}
-.h-course{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:4px;}
-.h-title{font-family:var(--font-d);font-size:20px;color:#fff;line-height:1.2;letter-spacing:-.02em;}
-.h-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;}
-.h-sub strong{color:rgba(255,255,255,.75);font-weight:600;}
+    body {
+      font-family: var(--font-b);
+      background:
+        radial-gradient(ellipse at 18% 12%, rgba(232, 72, 85, .13) 0%, transparent 50%),
+        radial-gradient(ellipse at 82% 88%, rgba(69, 123, 157, .13) 0%, transparent 50%),
+        #EDE9E1;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    
+    }
 
-/* ── CONTROLS BAR ── */
-.ctrl-bar{
-  background:var(--dark2);padding:9px 32px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-}
-.ctrl-left{display:flex;align-items:center;gap:8px;}
-.score-dots{display:flex;gap:5px;}
-.sdot{
-  width:28px;height:8px;border-radius:4px;
-  background:rgba(255,255,255,.1);transition:background .3s;
-}
-.sdot.placed{background:rgba(255,255,255,.35);}
-.sdot.ok{background:var(--c3);}
-.sdot.fail{background:var(--c1);}
-.ctrl-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-right:4px;}
+    /* ── CANVAS ── */
+    .canvas {
+      width: 800px;
+   
+      height: 800px;
+      background: var(--bg);
+      
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(26, 26, 46, .22);
+      display: flex;
+      flex-direction: column;
+    }
 
-.ctrl-right{display:flex;gap:8px;align-items:center;}
-.btn-check{
-  background:var(--c3);color:#fff;border:none;
-  padding:7px 18px;border-radius:8px;font-family:var(--font-b);
-  font-size:11px;font-weight:700;cursor:pointer;
-  transition:opacity .2s,transform .15s;
-  display:flex;align-items:center;gap:6px;min-height:34px;
-}
-.btn-check:hover:not(:disabled){opacity:.85;transform:translateY(-1px);}
-.btn-check:disabled{opacity:.35;cursor:default;transform:none;}
-.btn-reset{
-  background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);border:none;
-  padding:7px 14px;border-radius:8px;font-family:var(--font-b);
-  font-size:11px;font-weight:600;cursor:pointer;
-  transition:background .18s;min-height:34px;
-  display:none;align-items:center;gap:5px;
-}
-.btn-reset:hover{background:rgba(255,255,255,.18);}
-.btn-reset.show{display:flex;}
+    /* ── HEADER ── */
+    .header {
+      background: var(--dark);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* ── INSTRUCTION BAND ── */
-.inst-band{
-  background:linear-gradient(90deg,rgba(244,162,97,.1),rgba(232,72,85,.07));
-  border-bottom:1px solid rgba(244,162,97,.2);
-  padding:9px 32px;flex-shrink:0;
-  display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text);
-}
-.inst-band strong{color:var(--dark);}
+    .h-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, var(--c1) 0%, var(--c2) 33%, var(--c3) 66%, var(--c4) 100%);
+    }
 
-/* ── MAIN AREA ── */
-.main-area{
-  flex:1;overflow-y:auto;padding:18px 32px 20px;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-}
+    .h-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 10% 120%, rgba(232, 72, 85, .2) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% -20%, rgba(69, 123, 157, .2) 0%, transparent 55%);
+      pointer-events: none;
+    }
 
-/* ── LAYOUT: two columns ── */
-.activity-layout{
-  display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;
-}
+    .h-inner {
+      position: relative;
+      z-index: 1;
+      padding: 18px 32px 16px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
 
-/* ── BANK (left) ── */
-.bank-col{display:flex;flex-direction:column;gap:0;}
-.bank-label{
-  font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:10px;
-  display:flex;align-items:center;gap:6px;
-}
-.bank-label::after{content:'';flex:1;height:1.5px;background:var(--border);border-radius:1px;}
-.bank-pool{display:flex;flex-direction:column;gap:8px;}
+    .h-embl {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(244, 162, 97, .22), rgba(232, 72, 85, .18));
+      border: 1.5px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
 
-/* draggable chip */
-.chip{
-  background:var(--surface);border:2px solid var(--border);
-  border-radius:12px;padding:11px 14px;
-  cursor:grab;user-select:none;
-  display:flex;align-items:flex-start;gap:10px;
-  transition:border-color .18s,box-shadow .18s,transform .15s,opacity .2s;
-  position:relative;
-}
-.chip:hover:not(.used):not(.locked){
-  border-color:var(--dark);
-  box-shadow:0 4px 16px rgba(26,26,46,.1);
-  transform:translateX(2px);
-}
-.chip.dragging{
-  opacity:.45;border-color:var(--c2);cursor:grabbing;
-}
-.chip.ghost{
-  opacity:0;pointer-events:none;
-}
-.chip.used{opacity:.3;pointer-events:none;}
-.chip.locked{cursor:default;}
-.chip.locked.ok{border-color:var(--c3);background:rgba(42,157,143,.05);}
-.chip.locked.fail{border-color:var(--c1);background:rgba(232,72,85,.05);}
+    .h-meta {
+      flex: 1;
+    }
 
-.chip-letter{
-  width:26px;height:26px;border-radius:7px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;color:#fff;
-  background:var(--chip-color,var(--dark));
-  transition:background .2s;
-}
-.chip-txt{font-size:12px;color:var(--text);line-height:1.55;}
+    .h-course {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .38);
+      margin-bottom: 4px;
+    }
 
-/* ── STATEMENTS (right) ── */
-.stmts-col{display:flex;flex-direction:column;gap:0;}
-.stmts-label{
-  font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:10px;
-  display:flex;align-items:center;gap:6px;
-}
-.stmts-label::after{content:'';flex:1;height:1.5px;background:var(--border);border-radius:1px;}
-.stmts-list{display:flex;flex-direction:column;gap:8px;}
+    .h-title {
+      font-family: var(--font-d);
+      font-size: 20px;
+      color: #fff;
+      line-height: 1.2;
+      letter-spacing: -.02em;
+    }
 
-/* drop zone row */
-.stmt-row{
-  background:var(--surface);border-radius:var(--r);
-  border:2px solid var(--border);
-  overflow:hidden;
-  transition:border-color .2s,box-shadow .2s;
-}
-.stmt-row.drag-over{
-  border-color:var(--c2);
-  box-shadow:0 0 0 3px rgba(244,162,97,.2);
-}
-.stmt-row.filled-ok{border-color:var(--c3);}
-.stmt-row.filled-fail{border-color:var(--c1);}
+    .h-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .45);
+      margin-top: 4px;
+    }
 
-.stmt-enunciate{
-  padding:11px 14px 10px;
-  font-size:12.5px;color:var(--text);line-height:1.6;
-  border-bottom:1px dashed var(--border);
-}
-.stmt-row.filled-ok .stmt-enunciate,.stmt-row.filled-fail .stmt-enunciate{
-  border-bottom-style:solid;
-}
+    .h-sub strong {
+      color: rgba(255, 255, 255, .75);
+      font-weight: 600;
+    }
 
-.drop-zone{
-  min-height:44px;padding:8px 12px;
-  display:flex;align-items:center;gap:8px;
-  background:rgba(248,245,240,.5);
-  transition:background .18s;
-  cursor:default;
-}
-.drop-zone.drag-over{background:rgba(244,162,97,.1);}
-.drop-empty{
-  font-size:11px;color:var(--muted);font-style:italic;
-  display:flex;align-items:center;gap:6px;
-}
-.drop-empty svg{flex-shrink:0;opacity:.4;}
+    /* ── CONTROLS BAR ── */
+    .ctrl-bar {
+      background: var(--dark2);
+      padding: 9px 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
 
-/* placed chip inside drop zone */
-.placed-chip{
-  background:var(--dark);border-radius:9px;
-  padding:7px 12px;display:flex;align-items:center;gap:8px;
-  cursor:pointer;transition:background .18s;
-}
-.placed-chip:hover:not(.locked){background:var(--dark2);}
-.placed-chip .chip-letter{width:22px;height:22px;border-radius:5px;font-size:10px;}
-.placed-chip-txt{font-size:11.5px;color:rgba(255,255,255,.85);}
-.placed-chip .remove-ico{
-  color:rgba(255,255,255,.4);font-size:12px;margin-left:auto;
-  transition:color .15s;
-}
-.placed-chip:hover:not(.locked) .remove-ico{color:rgba(255,255,255,.75);}
-.placed-chip.ok-chip .chip-letter{background:var(--c3);}
-.placed-chip.fail-chip .chip-letter{background:var(--c1);}
+    .ctrl-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-/* ── FEEDBACK PANEL ── */
-.feedback-panel{
-  background:var(--dark);border-radius:var(--r);
-  padding:18px 22px;margin-top:16px;
-  position:relative;overflow:hidden;
-  opacity:0;transform:translateY(10px);
-  transition:opacity .38s ease,transform .38s ease;
-  pointer-events:none;
-}
-.feedback-panel.show{opacity:1;transform:translateY(0);pointer-events:auto;}
-.feedback-panel::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 90% 10%,rgba(42,157,143,.2) 0%,transparent 60%);
-}
-.fp-label{
-  font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--c3);margin-bottom:14px;position:relative;
-}
-.fb-grid{display:flex;flex-direction:column;gap:10px;position:relative;}
-.fb-item{
-  display:flex;align-items:flex-start;gap:12px;
-  padding:10px 14px;border-radius:10px;
-  background:rgba(255,255,255,.05);
-}
-.fb-item-dot{
-  width:26px;height:26px;border-radius:7px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;color:#fff;
-  background:var(--fb-dot-color,rgba(42,157,143,.6));
-}
-.fb-item-body{}
-.fb-item-verdict{
-  font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-  margin-bottom:3px;color:var(--fb-dot-color,var(--c3));
-}
-.fb-item-text{font-size:12px;color:rgba(255,255,255,.75);line-height:1.62;}
+    .score-dots {
+      display: flex;
+      gap: 5px;
+    }
 
-/* ── RESULT BAR ── */
-.result-bar{
-  background:rgba(26,26,46,.96);backdrop-filter:blur(4px);
-  padding:9px 32px;flex-shrink:0;
-  display:none;align-items:center;justify-content:space-between;
-  border-top:1px solid rgba(255,255,255,.06);
-}
-.result-bar.show{display:flex;}
-.rb-score{font-family:var(--font-d);font-size:20px;color:#fff;}
-.rb-score span{color:var(--c3);}
-.rb-msg{font-size:11.5px;color:rgba(255,255,255,.55);margin-top:2px;}
+    .sdot {
+      width: 28px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .1);
+      transition: background .3s;
+    }
 
-/* ── REF BAR ── */
-.ref-bar{
-  background:var(--dark);padding:8px 32px;flex-shrink:0;
-  font-size:10px;color:rgba(255,255,255,.28);font-style:italic;
-}
+    .sdot.placed {
+      background: rgba(255, 255, 255, .35);
+    }
 
-/* ── DRAG GHOST (cloned element) ── */
-#dragGhost{
-  position:fixed;pointer-events:none;z-index:9999;
-  opacity:.85;transform:rotate(2deg) scale(1.04);
-  transition:transform .1s;
-  min-width:180px;
-}
+    .sdot.ok {
+      background: var(--c3);
+    }
 
-@media(max-width:840px){
-  body{padding:0;background:var(--bg);}
-  .canvas{width:100%;max-width:100%;max-height:none;border-radius:0;}
-  .h-inner,.ctrl-bar,.inst-band,.main-area,.ref-bar,.result-bar{padding-left:20px;padding-right:20px;}
-  .activity-layout{grid-template-columns:1fr;}
-  .bank-col{margin-bottom:8px;}
-}
-</style>
+    .sdot.fail {
+      background: var(--c1);
+    }
+
+    .ctrl-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .35);
+      margin-right: 4px;
+    }
+
+    .ctrl-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-check {
+      background: var(--c3);
+      color: #fff;
+      border: none;
+      padding: 7px 18px;
+      border-radius: 8px;
+      font-family: var(--font-b);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+    }
+
+    .btn-check:hover:not(:disabled) {
+      opacity: .85;
+      transform: translateY(-1px);
+    }
+
+    .btn-check:disabled {
+      opacity: .35;
+      cursor: default;
+      transform: none;
+    }
+
+    .btn-reset {
+      background: rgba(255, 255, 255, .1);
+      color: rgba(255, 255, 255, .65);
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-family: var(--font-b);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .18s;
+      min-height: 34px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .btn-reset.show {
+      display: flex;
+    }
+
+    /* ── INSTRUCTION BAND ── */
+    .inst-band {
+      background: linear-gradient(90deg, rgba(244, 162, 97, .1), rgba(232, 72, 85, .07));
+      border-bottom: 1px solid rgba(244, 162, 97, .2);
+      padding: 9px 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .inst-band strong {
+      color: var(--dark);
+    }
+
+    /* ── MAIN AREA ── */
+    .main-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 32px 20px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    /* ── LAYOUT: two columns ── */
+    .activity-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ── BANK (left) ── */
+    .bank-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .bank-label {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bank-label::after {
+      content: '';
+      flex: 1;
+      height: 1.5px;
+      background: var(--border);
+      border-radius: 1px;
+    }
+
+    .bank-pool {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* draggable chip */
+    .chip {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: grab;
+      user-select: none;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: border-color .18s, box-shadow .18s, transform .15s, opacity .2s;
+      position: relative;
+    }
+
+    .chip:hover:not(.used):not(.locked) {
+      border-color: var(--dark);
+      box-shadow: 0 4px 16px rgba(26, 26, 46, .1);
+      transform: translateX(2px);
+    }
+
+    .chip.dragging {
+      opacity: .45;
+      border-color: var(--c2);
+      cursor: grabbing;
+    }
+
+    .chip.ghost {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .chip.used {
+      opacity: .3;
+      pointer-events: none;
+    }
+
+    .chip.locked {
+      cursor: default;
+    }
+
+    .chip.locked.ok {
+      border-color: var(--c3);
+      background: rgba(42, 157, 143, .05);
+    }
+
+    .chip.locked.fail {
+      border-color: var(--c1);
+      background: rgba(232, 72, 85, .05);
+    }
+
+    .chip-letter {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      background: var(--chip-color, var(--dark));
+      transition: background .2s;
+    }
+
+    .chip-txt {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    /* ── STATEMENTS (right) ── */
+    .stmts-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .stmts-label {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stmts-label::after {
+      content: '';
+      flex: 1;
+      height: 1.5px;
+      background: var(--border);
+      border-radius: 1px;
+    }
+
+    .stmts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* drop zone row */
+    .stmt-row {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 2px solid var(--border);
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .stmt-row.drag-over {
+      border-color: var(--c2);
+      box-shadow: 0 0 0 3px rgba(244, 162, 97, .2);
+    }
+
+    .stmt-row.filled-ok {
+      border-color: var(--c3);
+    }
+
+    .stmt-row.filled-fail {
+      border-color: var(--c1);
+    }
+
+    .stmt-enunciate {
+      padding: 11px 14px 10px;
+      font-size: 12.5px;
+      color: var(--text);
+      line-height: 1.6;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .stmt-row.filled-ok .stmt-enunciate,
+    .stmt-row.filled-fail .stmt-enunciate {
+      border-bottom-style: solid;
+    }
+
+    .drop-zone {
+      min-height: 44px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(248, 245, 240, .5);
+      transition: background .18s;
+      cursor: default;
+    }
+
+    .drop-zone.drag-over {
+      background: rgba(244, 162, 97, .1);
+    }
+
+    .drop-empty {
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .drop-empty svg {
+      flex-shrink: 0;
+      opacity: .4;
+    }
+
+    /* placed chip inside drop zone */
+    .placed-chip {
+      background: var(--dark);
+      border-radius: 9px;
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background .18s;
+    }
+
+    .placed-chip:hover:not(.locked) {
+      background: var(--dark2);
+    }
+
+    .placed-chip .chip-letter {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      font-size: 10px;
+    }
+
+    .placed-chip-txt {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, .85);
+    }
+
+    .placed-chip .remove-ico {
+      color: rgba(255, 255, 255, .4);
+      font-size: 12px;
+      margin-left: auto;
+      transition: color .15s;
+    }
+
+    .placed-chip:hover:not(.locked) .remove-ico {
+      color: rgba(255, 255, 255, .75);
+    }
+
+    .placed-chip.ok-chip .chip-letter {
+      background: var(--c3);
+    }
+
+    .placed-chip.fail-chip .chip-letter {
+      background: var(--c1);
+    }
+
+    /* ── FEEDBACK PANEL ── */
+    .feedback-panel {
+      background: var(--dark);
+      border-radius: var(--r);
+      padding: 18px 22px;
+      margin-top: 16px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .38s ease, transform .38s ease;
+      pointer-events: none;
+    }
+
+    .feedback-panel.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .feedback-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 90% 10%, rgba(42, 157, 143, .2) 0%, transparent 60%);
+    }
+
+    .fp-label {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c3);
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .fb-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    .fb-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .05);
+    }
+
+    .fb-item-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      background: var(--fb-dot-color, rgba(42, 157, 143, .6));
+    }
+
+    .fb-item-body {}
+
+    .fb-item-verdict {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      color: var(--fb-dot-color, var(--c3));
+    }
+
+    .fb-item-text {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .75);
+      line-height: 1.62;
+    }
+
+    /* ── RESULT BAR ── */
+    .result-bar {
+      background: rgba(26, 26, 46, .96);
+      backdrop-filter: blur(4px);
+      padding: 9px 32px;
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .result-bar.show {
+      display: flex;
+    }
+
+    .rb-score {
+      font-family: var(--font-d);
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .rb-score span {
+      color: var(--c3);
+    }
+
+    .rb-msg {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, .55);
+      margin-top: 2px;
+    }
+
+    /* ── REF BAR ── */
+    .ref-bar {
+      background: var(--dark);
+      padding: 8px 32px;
+      flex-shrink: 0;
+      font-size: 10px;
+      color: rgba(255, 255, 255, .28);
+      font-style: italic;
+    }
+
+    /* ── DRAG GHOST (cloned element) ── */
+    #dragGhost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .85;
+      transform: rotate(2deg) scale(1.04);
+      transition: transform .1s;
+      min-width: 180px;
+    }
+
+    @media(max-width:600px) {
+      body {
+        padding: 0;
+        background: var(--bg);
+      }
+
+      .canvas {
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        border-radius: 0;
+      }
+
+      .h-inner,
+      .ctrl-bar,
+      .inst-band,
+      .main-area,
+      .ref-bar,
+      .result-bar {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .activity-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .bank-col {
+        margin-bottom: 8px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="canvas">
+  <div class="canvas">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="h-stripe"></div>
-    <div class="h-glow"></div>
-    <div class="h-inner">
-      <div class="h-embl">🔗</div>
-      <div class="h-meta">
-        <div class="h-course">Estadística para Análisis de Datos</div>
-        <div class="h-title">Exploración Multivariada Básica</div>
-        <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+    <!-- HEADER -->
+    <div class="header">
+      <div class="h-stripe"></div>
+      <div class="h-glow"></div>
+      <div class="h-inner">
+        <div class="h-embl">🔗</div>
+        <div class="h-meta">
+          <div class="h-course">Estadística para Análisis de Datos</div>
+          <div class="h-title">Exploración Multivariada Básica</div>
+          <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- CONTROLS -->
-  <div class="ctrl-bar">
-    <div class="ctrl-left">
-      <div class="ctrl-lbl">Colocadas</div>
-      <div class="score-dots" id="scoreDots">
-        <div class="sdot" id="sd0"></div>
-        <div class="sdot" id="sd1"></div>
-        <div class="sdot" id="sd2"></div>
-        <div class="sdot" id="sd3"></div>
-        <div class="sdot" id="sd4"></div>
+    <!-- CONTROLS -->
+    <div class="ctrl-bar">
+      <div class="ctrl-left">
+        <div class="ctrl-lbl">Colocadas</div>
+        <div class="score-dots" id="scoreDots">
+          <div class="sdot" id="sd0"></div>
+          <div class="sdot" id="sd1"></div>
+          <div class="sdot" id="sd2"></div>
+          <div class="sdot" id="sd3"></div>
+          <div class="sdot" id="sd4"></div>
+        </div>
+      </div>
+      <div class="ctrl-right">
+        <button class="btn-reset" id="btnReset" onclick="resetGame()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+          </svg>
+          Reintentar
+        </button>
+        <button class="btn-check" id="btnCheck" onclick="checkAll()" disabled>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          Verificar
+        </button>
       </div>
     </div>
-    <div class="ctrl-right">
-      <button class="btn-reset" id="btnReset" onclick="resetGame()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        Reintentar
-      </button>
-      <button class="btn-check" id="btnCheck" onclick="checkAll()" disabled>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-        Verificar
-      </button>
+
+    <!-- INSTRUCTION -->
+    <div class="inst-band">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4m0 4h.01" />
+      </svg>
+      <div><strong>Instrucción:</strong> Arrastre cada opción y colóquela en el enunciado con el que guarde relación.
+        Cada respuesta solo corresponde a un fragmento.</div>
     </div>
-  </div>
 
-  <!-- INSTRUCTION -->
-  <div class="inst-band">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-    <div><strong>Instrucción:</strong> Arrastre cada opción y colóquela en el enunciado con el que guarde relación. Cada respuesta solo corresponde a un fragmento.</div>
-  </div>
-
-  <!-- MAIN -->
-  <div class="main-area" id="mainArea">
-    <div class="activity-layout">
-      <div class="bank-col">
-        <div class="bank-label">Opciones</div>
-        <div class="bank-pool" id="bankPool"></div>
+    <!-- MAIN -->
+    <div class="main-area" id="mainArea">
+      <div class="activity-layout">
+        <div class="bank-col">
+          <div class="bank-label">Opciones</div>
+          <div class="bank-pool" id="bankPool"></div>
+        </div>
+        <div class="stmts-col">
+          <div class="stmts-label">Enunciados</div>
+          <div class="stmts-list" id="stmtsList"></div>
+        </div>
       </div>
-      <div class="stmts-col">
-        <div class="stmts-label">Enunciados</div>
-        <div class="stmts-list" id="stmtsList"></div>
+      <div class="feedback-panel" id="feedbackPanel">
+        <div class="fp-label">✦ Retroalimentación</div>
+        <div class="fb-grid" id="fbGrid"></div>
       </div>
     </div>
-    <div class="feedback-panel" id="feedbackPanel">
-      <div class="fp-label">✦ Retroalimentación</div>
-      <div class="fb-grid" id="fbGrid"></div>
+
+    <!-- RESULT -->
+    <div class="result-bar" id="resultBar">
+      <div>
+        <div class="rb-score" id="rbScore"></div>
+        <div class="rb-msg" id="rbMsg"></div>
+      </div>
     </div>
+
+    <!-- REF -->
+    <div class="ref-bar">Elaboración propia.</div>
   </div>
 
-  <!-- RESULT -->
-  <div class="result-bar" id="resultBar">
-    <div>
-      <div class="rb-score" id="rbScore"></div>
-      <div class="rb-msg" id="rbMsg"></div>
-    </div>
-  </div>
+  <!-- DRAG GHOST -->
+  <div id="dragGhost" style="display:none;"></div>
 
-  <!-- REF -->
-  <div class="ref-bar">Elaboración propia.</div>
-</div>
+  <script>
+    /* ── DATA ── */
+    const CHIPS_DATA = [
+      {
+        id: 'A', label: 'A', color: 'var(--c1)',
+        text: '¿Qué es la exploración multivariada?',
+        correctStmt: 0,
+        feedback: 'La exploración multivariada permite entender cómo se combinan varias dimensiones al mismo tiempo, más allá de pares aislados.'
+      },
+      {
+        id: 'B2', label: 'B₂', color: 'var(--c4)',
+        text: 'La matriz de correlaciones es:',
+        correctStmt: 1,
+        feedback: 'Herramientas como la matriz de correlaciones ayudan a escudriñar rápidamente qué pares de variables tienen asociaciones más fuertes.'
+      },
+      {
+        id: 'B', label: 'B', color: 'var(--c2)',
+        text: 'Los diagramas de dispersión (eje X e Y):',
+        correctStmt: 2,
+        feedback: 'El enriquecimiento visual mediante colores y tamaños facilita la identificación de tendencias en subgrupos específicos dentro de la población.'
+      },
+      {
+        id: 'C', label: 'C', color: 'var(--c3)',
+        text: 'El uso de colores en los puntos permite:',
+        correctStmt: 3,
+        feedback: 'El enriquecimiento visual mediante colores y tamaños facilita la identificación de tendencias en subgrupos específicos dentro de la población.'
+      },
+      {
+        id: 'D', label: 'D', color: 'var(--c5)',
+        text: 'El tamaño de los puntos se usa para:',
+        correctStmt: 4,
+        feedback: 'El análisis multivariado es fundamental para no construir modelos complejos a ciegas, sino basados en preguntas sobre relaciones reales.'
+      }
+    ];
 
-<!-- DRAG GHOST -->
-<div id="dragGhost" style="display:none;"></div>
+    const STMTS_DATA = [
+      { id: 0, text: 'Mirar más de dos variables simultáneamente para hallar patrones o subgrupos.', correctChip: 'A' },
+      { id: 1, text: 'Una tabla que muestra la relación entre cada par de variables cuantitativas.', correctChip: 'B2' },
+      { id: 2, text: 'Revelan patrones lineales, curvaturas o nubes de datos dispersas.', correctChip: 'B' },
+      { id: 3, text: 'Diferenciar categorías, como el número de cilindros o una carrera universitaria.', correctChip: 'C' },
+      { id: 4, text: 'Representar una variable cuantitativa adicional, como los caballos de fuerza.', correctChip: 'D' }
+    ];
 
-<script>
-/* ── DATA ── */
-const CHIPS_DATA = [
-  {
-    id:'A', label:'A', color:'var(--c1)',
-    text:'¿Qué es la exploración multivariada?',
-    correctStmt: 0,
-    feedback:'La exploración multivariada permite entender cómo se combinan varias dimensiones al mismo tiempo, más allá de pares aislados.'
-  },
-  {
-    id:'B2', label:'B₂', color:'var(--c4)',
-    text:'La matriz de correlaciones es:',
-    correctStmt: 1,
-    feedback:'Herramientas como la matriz de correlaciones ayudan a escudriñar rápidamente qué pares de variables tienen asociaciones más fuertes.'
-  },
-  {
-    id:'B', label:'B', color:'var(--c2)',
-    text:'Los diagramas de dispersión (eje X e Y):',
-    correctStmt: 2,
-    feedback:'El enriquecimiento visual mediante colores y tamaños facilita la identificación de tendencias en subgrupos específicos dentro de la población.'
-  },
-  {
-    id:'C', label:'C', color:'var(--c3)',
-    text:'El uso de colores en los puntos permite:',
-    correctStmt: 3,
-    feedback:'El enriquecimiento visual mediante colores y tamaños facilita la identificación de tendencias en subgrupos específicos dentro de la población.'
-  },
-  {
-    id:'D', label:'D', color:'var(--c5)',
-    text:'El tamaño de los puntos se usa para:',
-    correctStmt: 4,
-    feedback:'El análisis multivariado es fundamental para no construir modelos complejos a ciegas, sino basados en preguntas sobre relaciones reales.'
-  }
-];
+    /* ── STATE ── */
+    let placements = {}; // stmtId → chipId
+    let checked = false;
+    let dragChipId = null;
+    let shuffledChips = [];
 
-const STMTS_DATA = [
-  {id:0, text:'Mirar más de dos variables simultáneamente para hallar patrones o subgrupos.', correctChip:'A'},
-  {id:1, text:'Una tabla que muestra la relación entre cada par de variables cuantitativas.', correctChip:'B2'},
-  {id:2, text:'Revelan patrones lineales, curvaturas o nubes de datos dispersas.', correctChip:'B'},
-  {id:3, text:'Diferenciar categorías, como el número de cilindros o una carrera universitaria.', correctChip:'C'},
-  {id:4, text:'Representar una variable cuantitativa adicional, como los caballos de fuerza.', correctChip:'D'}
-];
+    function shuffle(a) {
+      const r = [...a];
+      for (let i = r.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [r[i], r[j]] = [r[j], r[i]];
+      }
+      return r;
+    }
 
-/* ── STATE ── */
-let placements = {}; // stmtId → chipId
-let checked = false;
-let dragChipId = null;
-let shuffledChips = [];
+    /* ── BUILD ── */
+    function build() {
+      placements = {};
+      checked = false;
+      shuffledChips = shuffle([...CHIPS_DATA]);
 
-function shuffle(a){
-  const r=[...a];
-  for(let i=r.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [r[i],r[j]]=[r[j],r[i]];
-  }
-  return r;
-}
+      // Bank
+      const bank = document.getElementById('bankPool');
+      bank.innerHTML = '';
+      shuffledChips.forEach(chip => {
+        bank.appendChild(makeChip(chip, false));
+      });
 
-/* ── BUILD ── */
-function build(){
-  placements = {};
-  checked = false;
-  shuffledChips = shuffle([...CHIPS_DATA]);
+      // Statements
+      const list = document.getElementById('stmtsList');
+      list.innerHTML = '';
+      STMTS_DATA.forEach(stmt => {
+        list.appendChild(makeStmtRow(stmt));
+      });
 
-  // Bank
-  const bank = document.getElementById('bankPool');
-  bank.innerHTML = '';
-  shuffledChips.forEach(chip => {
-    bank.appendChild(makeChip(chip, false));
-  });
+      updateDots();
+      document.getElementById('btnCheck').disabled = true;
+      document.getElementById('btnReset').classList.remove('show');
+      document.getElementById('feedbackPanel').classList.remove('show');
+      document.getElementById('resultBar').classList.remove('show');
+    }
 
-  // Statements
-  const list = document.getElementById('stmtsList');
-  list.innerHTML = '';
-  STMTS_DATA.forEach(stmt => {
-    list.appendChild(makeStmtRow(stmt));
-  });
-
-  updateDots();
-  document.getElementById('btnCheck').disabled = true;
-  document.getElementById('btnReset').classList.remove('show');
-  document.getElementById('feedbackPanel').classList.remove('show');
-  document.getElementById('resultBar').classList.remove('show');
-}
-
-function makeChip(chip, inDrop){
-  const div = document.createElement('div');
-  div.className = 'chip';
-  div.id = `chip-${chip.id}`;
-  div.dataset.chipId = chip.id;
-  div.style.setProperty('--chip-color', chip.color);
-  div.draggable = true;
-  div.innerHTML = `
+    function makeChip(chip, inDrop) {
+      const div = document.createElement('div');
+      div.className = 'chip';
+      div.id = `chip-${chip.id}`;
+      div.dataset.chipId = chip.id;
+      div.style.setProperty('--chip-color', chip.color);
+      div.draggable = true;
+      div.innerHTML = `
     <div class="chip-letter">${chip.label}</div>
     <div class="chip-txt">${chip.text}</div>`;
 
-  // Desktop drag
-  div.addEventListener('dragstart', onDragStart);
-  div.addEventListener('dragend',   onDragEnd);
+      // Desktop drag
+      div.addEventListener('dragstart', onDragStart);
+      div.addEventListener('dragend', onDragEnd);
 
-  // Touch
-  div.addEventListener('touchstart', onTouchStart, {passive:false});
+      // Touch
+      div.addEventListener('touchstart', onTouchStart, { passive: false });
 
-  return div;
-}
+      return div;
+    }
 
-function makeStmtRow(stmt){
-  const row = document.createElement('div');
-  row.className = 'stmt-row';
-  row.id = `stmt-${stmt.id}`;
-  row.dataset.stmtId = stmt.id;
-  row.innerHTML = `
+    function makeStmtRow(stmt) {
+      const row = document.createElement('div');
+      row.className = 'stmt-row';
+      row.id = `stmt-${stmt.id}`;
+      row.dataset.stmtId = stmt.id;
+      row.innerHTML = `
     <div class="stmt-enunciate">${stmt.text}</div>
     <div class="drop-zone" id="dz-${stmt.id}" data-stmt-id="${stmt.id}">
       <div class="drop-empty">
@@ -489,223 +908,224 @@ function makeStmtRow(stmt){
       </div>
     </div>`;
 
-  const dz = row.querySelector('.drop-zone');
-  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-  dz.addEventListener('drop',      e => { e.preventDefault(); dz.classList.remove('drag-over'); dropOnZone(stmt.id); });
-  return row;
-}
+      const dz = row.querySelector('.drop-zone');
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+      dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+      dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); dropOnZone(stmt.id); });
+      return row;
+    }
 
-/* ── DRAG (Desktop) ── */
-function onDragStart(e){
-  if(checked) return;
-  dragChipId = e.currentTarget.dataset.chipId;
-  e.currentTarget.classList.add('dragging');
-  e.dataTransfer.effectAllowed = 'move';
-}
-function onDragEnd(e){
-  e.currentTarget.classList.remove('dragging');
-}
+    /* ── DRAG (Desktop) ── */
+    function onDragStart(e) {
+      if (checked) return;
+      dragChipId = e.currentTarget.dataset.chipId;
+      e.currentTarget.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+    function onDragEnd(e) {
+      e.currentTarget.classList.remove('dragging');
+    }
 
-function dropOnZone(stmtId){
-  if(!dragChipId || checked) return;
-  placeChip(stmtId, dragChipId);
-  dragChipId = null;
-}
+    function dropOnZone(stmtId) {
+      if (!dragChipId || checked) return;
+      placeChip(stmtId, dragChipId);
+      dragChipId = null;
+    }
 
-/* ── TOUCH ── */
-let touchChipId = null, touchClone = null, touchOffX = 0, touchOffY = 0;
+    /* ── TOUCH ── */
+    let touchChipId = null, touchClone = null, touchOffX = 0, touchOffY = 0;
 
-function onTouchStart(e){
-  if(checked) return;
-  e.preventDefault();
-  const chip = e.currentTarget;
-  touchChipId = chip.dataset.chipId;
-  const t = e.touches[0];
-  const r = chip.getBoundingClientRect();
-  touchOffX = t.clientX - r.left;
-  touchOffY = t.clientY - r.top;
+    function onTouchStart(e) {
+      if (checked) return;
+      e.preventDefault();
+      const chip = e.currentTarget;
+      touchChipId = chip.dataset.chipId;
+      const t = e.touches[0];
+      const r = chip.getBoundingClientRect();
+      touchOffX = t.clientX - r.left;
+      touchOffY = t.clientY - r.top;
 
-  touchClone = chip.cloneNode(true);
-  touchClone.style.cssText = `position:fixed;pointer-events:none;z-index:9999;width:${r.width}px;opacity:.85;border-radius:12px;border:2px solid var(--c2);transform:rotate(2deg) scale(1.04);transition:none;left:${r.left}px;top:${r.top}px;`;
-  document.body.appendChild(touchClone);
-  chip.classList.add('dragging');
+      touchClone = chip.cloneNode(true);
+      touchClone.style.cssText = `position:fixed;pointer-events:none;z-index:9999;width:${r.width}px;opacity:.85;border-radius:12px;border:2px solid var(--c2);transform:rotate(2deg) scale(1.04);transition:none;left:${r.left}px;top:${r.top}px;`;
+      document.body.appendChild(touchClone);
+      chip.classList.add('dragging');
 
-  document.addEventListener('touchmove', onTouchMove, {passive:false});
-  document.addEventListener('touchend',  onTouchEnd);
-}
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onTouchEnd);
+    }
 
-function onTouchMove(e){
-  e.preventDefault();
-  const t = e.touches[0];
-  touchClone.style.left = (t.clientX - touchOffX) + 'px';
-  touchClone.style.top  = (t.clientY - touchOffY) + 'px';
-  // highlight zone under finger
-  touchClone.style.display = 'none';
-  const el = document.elementFromPoint(t.clientX, t.clientY);
-  touchClone.style.display = '';
-  document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-  const dz = el ? el.closest('.drop-zone') : null;
-  if(dz) dz.classList.add('drag-over');
-}
+    function onTouchMove(e) {
+      e.preventDefault();
+      const t = e.touches[0];
+      touchClone.style.left = (t.clientX - touchOffX) + 'px';
+      touchClone.style.top = (t.clientY - touchOffY) + 'px';
+      // highlight zone under finger
+      touchClone.style.display = 'none';
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      touchClone.style.display = '';
+      document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
+      const dz = el ? el.closest('.drop-zone') : null;
+      if (dz) dz.classList.add('drag-over');
+    }
 
-function onTouchEnd(e){
-  document.removeEventListener('touchmove', onTouchMove);
-  document.removeEventListener('touchend',  onTouchEnd);
-  if(touchClone){ touchClone.remove(); touchClone = null; }
-  document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-  const t = e.changedTouches[0];
-  const el = document.elementFromPoint(t.clientX, t.clientY);
-  const dz = el ? el.closest('.drop-zone') : null;
-  if(dz && touchChipId){
-    placeChip(parseInt(dz.dataset.stmtId), touchChipId);
-  }
-  // remove dragging class from original
-  const orig = document.querySelector(`[data-chip-id="${touchChipId}"]`);
-  if(orig) orig.classList.remove('dragging');
-  touchChipId = null;
-}
+    function onTouchEnd(e) {
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      if (touchClone) { touchClone.remove(); touchClone = null; }
+      document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
+      const t = e.changedTouches[0];
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const dz = el ? el.closest('.drop-zone') : null;
+      if (dz && touchChipId) {
+        placeChip(parseInt(dz.dataset.stmtId), touchChipId);
+      }
+      // remove dragging class from original
+      const orig = document.querySelector(`[data-chip-id="${touchChipId}"]`);
+      if (orig) orig.classList.remove('dragging');
+      touchChipId = null;
+    }
 
-/* ── PLACE CHIP ── */
-function placeChip(stmtId, chipId){
-  // If stmt already has a chip, return it to bank first
-  if(placements[stmtId]){
-    returnToBank(placements[stmtId]);
-  }
-  // If chip is already placed somewhere else
-  const existingStmt = Object.keys(placements).find(k => placements[k] === chipId);
-  if(existingStmt !== undefined){
-    delete placements[existingStmt];
-    renderDropZone(parseInt(existingStmt), null);
-  }
+    /* ── PLACE CHIP ── */
+    function placeChip(stmtId, chipId) {
+      // If stmt already has a chip, return it to bank first
+      if (placements[stmtId]) {
+        returnToBank(placements[stmtId]);
+      }
+      // If chip is already placed somewhere else
+      const existingStmt = Object.keys(placements).find(k => placements[k] === chipId);
+      if (existingStmt !== undefined) {
+        delete placements[existingStmt];
+        renderDropZone(parseInt(existingStmt), null);
+      }
 
-  placements[stmtId] = chipId;
+      placements[stmtId] = chipId;
 
-  // Hide chip in bank
-  const bankChip = document.getElementById(`chip-${chipId}`);
-  if(bankChip) bankChip.classList.add('used');
+      // Hide chip in bank
+      const bankChip = document.getElementById(`chip-${chipId}`);
+      if (bankChip) bankChip.classList.add('used');
 
-  // Render in drop zone
-  renderDropZone(stmtId, chipId);
-  updateDots();
-  document.getElementById('btnCheck').disabled = Object.keys(placements).length < 5;
-}
+      // Render in drop zone
+      renderDropZone(stmtId, chipId);
+      updateDots();
+      document.getElementById('btnCheck').disabled = Object.keys(placements).length < 5;
+    }
 
-function returnToBank(chipId){
-  const bankChip = document.getElementById(`chip-${chipId}`);
-  if(bankChip) bankChip.classList.remove('used');
-}
+    function returnToBank(chipId) {
+      const bankChip = document.getElementById(`chip-${chipId}`);
+      if (bankChip) bankChip.classList.remove('used');
+    }
 
-function renderDropZone(stmtId, chipId){
-  const dz = document.getElementById(`dz-${stmtId}`);
-  if(!chipId){
-    dz.innerHTML = `<div class="drop-empty">
+    function renderDropZone(stmtId, chipId) {
+      const dz = document.getElementById(`dz-${stmtId}`);
+      if (!chipId) {
+        dz.innerHTML = `<div class="drop-empty">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
       Suelte aquí</div>`;
-    return;
-  }
-  const chip = CHIPS_DATA.find(c => c.id === chipId);
-  if(!chip) return;
-  dz.innerHTML = `<div class="placed-chip" data-chip-id="${chipId}" data-stmt-id="${stmtId}" onclick="removeFromZone(${stmtId})">
+        return;
+      }
+      const chip = CHIPS_DATA.find(c => c.id === chipId);
+      if (!chip) return;
+      dz.innerHTML = `<div class="placed-chip" data-chip-id="${chipId}" data-stmt-id="${stmtId}" onclick="removeFromZone(${stmtId})">
     <div class="chip-letter" style="background:${chip.color}">${chip.label}</div>
     <div class="placed-chip-txt">${chip.text}</div>
     <span class="remove-ico">✕</span>
   </div>`;
-}
-
-function removeFromZone(stmtId){
-  if(checked) return;
-  const chipId = placements[stmtId];
-  if(!chipId) return;
-  delete placements[stmtId];
-  returnToBank(chipId);
-  renderDropZone(stmtId, null);
-  updateDots();
-  document.getElementById('btnCheck').disabled = Object.keys(placements).length < 5;
-}
-
-/* ── CHECK ── */
-function checkAll(){
-  if(Object.keys(placements).length < 5) return;
-  checked = true;
-  let correct = 0;
-
-  STMTS_DATA.forEach(stmt => {
-    const chipId = placements[stmt.id];
-    const ok = chipId === stmt.correctChip;
-    if(ok) correct++;
-
-    const row = document.getElementById(`stmt-${stmt.id}`);
-    row.classList.add(ok ? 'filled-ok' : 'filled-fail');
-
-    const dz = document.getElementById(`dz-${stmt.id}`);
-    const placed = dz.querySelector('.placed-chip');
-    if(placed){
-      placed.classList.add(ok ? 'ok-chip' : 'fail-chip');
-      placed.querySelector('.remove-ico').style.display = 'none';
     }
 
-    // Update score dot
-    const dotIdx = STMTS_DATA.indexOf(stmt);
-    const dot = document.getElementById(`sd${dotIdx}`);
-    dot.classList.remove('placed');
-    dot.classList.add(ok ? 'ok' : 'fail');
-  });
+    function removeFromZone(stmtId) {
+      if (checked) return;
+      const chipId = placements[stmtId];
+      if (!chipId) return;
+      delete placements[stmtId];
+      returnToBank(chipId);
+      renderDropZone(stmtId, null);
+      updateDots();
+      document.getElementById('btnCheck').disabled = Object.keys(placements).length < 5;
+    }
 
-  // Lock bank chips
-  document.querySelectorAll('.chip').forEach(c => { c.draggable = false; c.classList.add('locked'); });
+    /* ── CHECK ── */
+    function checkAll() {
+      if (Object.keys(placements).length < 5) return;
+      checked = true;
+      let correct = 0;
 
-  // Feedback
-  buildFeedback(correct);
-  document.getElementById('feedbackPanel').classList.add('show');
+      STMTS_DATA.forEach(stmt => {
+        const chipId = placements[stmt.id];
+        const ok = chipId === stmt.correctChip;
+        if (ok) correct++;
 
-  // Result bar
-  const msgs = ['Sigue practicando 💪','¡Buen intento!','¡Casi lo logras!','¡Muy bien!','¡Perfecto! Todo correcto 🎉'];
-  document.getElementById('rbScore').innerHTML = `<span>${correct}</span> / 5 correctas`;
-  document.getElementById('rbMsg').textContent = msgs[correct] || msgs[4];
-  document.getElementById('resultBar').classList.add('show');
-  document.getElementById('btnCheck').disabled = true;
-  document.getElementById('btnReset').classList.add('show');
+        const row = document.getElementById(`stmt-${stmt.id}`);
+        row.classList.add(ok ? 'filled-ok' : 'filled-fail');
 
-  // Scroll to feedback
-  setTimeout(() => {
-    document.getElementById('feedbackPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
-  }, 350);
-}
+        const dz = document.getElementById(`dz-${stmt.id}`);
+        const placed = dz.querySelector('.placed-chip');
+        if (placed) {
+          placed.classList.add(ok ? 'ok-chip' : 'fail-chip');
+          placed.querySelector('.remove-ico').style.display = 'none';
+        }
 
-function buildFeedback(correct){
-  const grid = document.getElementById('fbGrid');
-  grid.innerHTML = '';
-  CHIPS_DATA.forEach(chip => {
-    const stmtId = Object.keys(placements).find(k => placements[k] === chip.id);
-    const ok = stmtId !== undefined && STMTS_DATA.find(s=>s.id==stmtId)?.correctChip === chip.id;
-    const item = document.createElement('div');
-    item.className = 'fb-item';
-    item.style.setProperty('--fb-dot-color', ok ? 'var(--c3)' : 'var(--c1)');
-    item.innerHTML = `
+        // Update score dot
+        const dotIdx = STMTS_DATA.indexOf(stmt);
+        const dot = document.getElementById(`sd${dotIdx}`);
+        dot.classList.remove('placed');
+        dot.classList.add(ok ? 'ok' : 'fail');
+      });
+
+      // Lock bank chips
+      document.querySelectorAll('.chip').forEach(c => { c.draggable = false; c.classList.add('locked'); });
+
+      // Feedback
+      buildFeedback(correct);
+      document.getElementById('feedbackPanel').classList.add('show');
+
+      // Result bar
+      const msgs = ['Sigue practicando 💪', '¡Buen intento!', '¡Casi lo logras!', '¡Muy bien!', '¡Perfecto! Todo correcto 🎉'];
+      document.getElementById('rbScore').innerHTML = `<span>${correct}</span> / 5 correctas`;
+      document.getElementById('rbMsg').textContent = msgs[correct] || msgs[4];
+      document.getElementById('resultBar').classList.add('show');
+      document.getElementById('btnCheck').disabled = true;
+      document.getElementById('btnReset').classList.add('show');
+
+      // Scroll to feedback
+      setTimeout(() => {
+        document.getElementById('feedbackPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 350);
+    }
+
+    function buildFeedback(correct) {
+      const grid = document.getElementById('fbGrid');
+      grid.innerHTML = '';
+      CHIPS_DATA.forEach(chip => {
+        const stmtId = Object.keys(placements).find(k => placements[k] === chip.id);
+        const ok = stmtId !== undefined && STMTS_DATA.find(s => s.id == stmtId)?.correctChip === chip.id;
+        const item = document.createElement('div');
+        item.className = 'fb-item';
+        item.style.setProperty('--fb-dot-color', ok ? 'var(--c3)' : 'var(--c1)');
+        item.innerHTML = `
       <div class="fb-item-dot" style="background:${chip.color}">${chip.label}</div>
       <div class="fb-item-body">
         <div class="fb-item-verdict">${ok ? '✓ Correcto' : '✗ Incorrecto'}</div>
         <div class="fb-item-text">${chip.feedback}</div>
       </div>`;
-    grid.appendChild(item);
-  });
-}
+        grid.appendChild(item);
+      });
+    }
 
-/* ── DOTS ── */
-function updateDots(){
-  STMTS_DATA.forEach((_, i) => {
-    const dot = document.getElementById(`sd${i}`);
-    dot.classList.remove('placed','ok','fail');
-    if(placements[i] !== undefined) dot.classList.add('placed');
-  });
-}
+    /* ── DOTS ── */
+    function updateDots() {
+      STMTS_DATA.forEach((_, i) => {
+        const dot = document.getElementById(`sd${i}`);
+        dot.classList.remove('placed', 'ok', 'fail');
+        if (placements[i] !== undefined) dot.classList.add('placed');
+      });
+    }
 
-/* ── RESET ── */
-function resetGame(){ build(); }
+    /* ── RESET ── */
+    function resetGame() { build(); }
 
-/* ── INIT ── */
-build();
-</script>
+    /* ── INIT ── */
+    build();
+  </script>
 </body>
+
 </html>
