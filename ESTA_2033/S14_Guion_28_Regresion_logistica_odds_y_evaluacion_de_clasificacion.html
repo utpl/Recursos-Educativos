@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regresión logística, odds y evaluación de clasificación</title>
+    <style>
+        :root {
+            --primary:   #0E2D52;
+            --primary-d: #1B4F8A;
+            --accent:    #2E6DAD;
+            --accent-d:  #0E2D52;
+            --gold:      #F5A800;
+            --gold-dark: #C98700;
+            --green:     #006747;
+            --green-l:   #B9D3B0;
+            --sand:      #E8F0FA;
+            --salmon:    #F5A800;
+            --blue-l:    #B8CCE4;
+            --bg:        #FFFFFF;
+            --surface:   #F4F7FB;
+            --text:      #0E2D52;
+            --muted:     #4A5568;
+            --border:    #B8CCE4;
+            --correct:   #006747;
+            --correct-bg:#e8f5ee;
+            --wrong:     #A51C30;
+            --wrong-bg:  #fdecea;
+            --shadow:    rgba(14, 45, 82, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .main-container {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            padding: 20px 28px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--salmon) 100%);
+        }
+
+        .header h1 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .header-meta {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            position: relative;
+        }
+
+        .instruction-box {
+            background: linear-gradient(135deg, var(--green-l) 0%, var(--sand) 100%);
+            border: 2px solid var(--green);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .instruction-icon {
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .instruction-text {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100% - 100px);
+        }
+
+        .options-panel {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            border: 2px solid var(--border);
+        }
+
+        .panel-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            box-shadow: 0 2px 4px var(--shadow);
+            user-select: none;
+        }
+
+        .draggable-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .draggable-item.placed {
+            background: var(--sand);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .draggable-item.placed.incorrect {
+            background: var(--wrong-bg);
+            border-color: var(--wrong);
+            color: var(--wrong);
+        }
+
+        .targets-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .target-item {
+            background: white;
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 70px;
+            transition: all 0.2s ease;
+        }
+
+        .target-item.drag-over {
+            background: var(--sand);
+            border-color: var(--accent);
+            border-style: solid;
+        }
+
+        .target-item.correct {
+            border-color: var(--correct);
+            border-style: solid;
+            background: var(--correct-bg);
+        }
+
+        .target-item.incorrect {
+            border-color: var(--wrong);
+            border-style: solid;
+            background: var(--wrong-bg);
+        }
+
+        .target-statement {
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.3;
+            margin-bottom: 6px;
+        }
+
+        .target-drop-zone {
+            min-height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--muted);
+            background: var(--surface);
+            border: 1px dashed var(--border);
+        }
+
+        .target-drop-zone.filled {
+            background: transparent;
+            border: none;
+            justify-content: flex-start;
+        }
+
+        .placed-option {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.85rem;
+        }
+
+        .feedback-mini {
+            font-size: 0.72rem;
+            margin-top: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: none;
+            line-height: 1.3;
+        }
+
+        .feedback-mini.show {
+            display: block;
+        }
+
+        .feedback-mini.correct {
+            background: var(--correct-bg);
+            color: var(--correct);
+        }
+
+        .feedback-mini.incorrect {
+            background: var(--wrong-bg);
+            color: var(--wrong);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            background: var(--surface);
+            border-top: 2px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--surface);
+            border-color: var(--accent);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-indicator {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .final-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .final-screen.show {
+            display: flex;
+        }
+
+        .trophy {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .final-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .final-message {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 600px;
+            margin-bottom: 24px;
+        }
+
+        .score-display {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px 40px;
+            margin-bottom: 24px;
+        }
+
+        .score-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .score-label {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        @media (max-width: 840px) {
+            .main-container {
+                width: 100%;
+                height: auto;
+                min-height: 600px;
+                max-height: none;
+            }
+            
+            .game-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <h1>Regresión logística, odds y evaluación de clasificación</h1>
+            <div class="header-meta">ESTA_2033 • Juan Torres</div>
+        </header>
+
+        <div class="content-area" id="contentArea">
+            <div class="instruction-box">
+                <span class="instruction-icon">🎯</span>
+                <span class="instruction-text">Arrastre cada opción y colóquela en el enunciado con el que guarde relación. Cada respuesta solo corresponde a un fragmento.</span>
+            </div>
+
+            <div class="game-container" id="gameContainer">
+                <div class="options-panel">
+                    <div class="panel-title">📦 Conceptos</div>
+                    <div class="options-list" id="optionsList">
+                        <!-- Opciones generadas por JS -->
+                    </div>
+                </div>
+
+                <div class="targets-panel" id="targetsPanel">
+                    <!-- Definiciones generadas por JS -->
+                </div>
+            </div>
+
+            <div class="final-screen" id="finalScreen">
+                <div class="trophy">🏆</div>
+                <div class="final-title">¡Actividad completada!</div>
+                <div class="score-display">
+                    <div class="score-number" id="scoreNumber">0/13</div>
+                    <div class="score-label">respuestas correctas</div>
+                </div>
+                <div class="final-message">
+                    Ha practicado la identificación de conceptos clave en regresión logística, odds y métricas de evaluación de clasificación.
+                </div>
+                <button class="btn btn-primary" onclick="restartGame()">
+                    🔄 Intentar de nuevo
+                </button>
+            </div>
+        </div>
+
+        <div class="nav-buttons" id="navButtons">
+            <button class="btn btn-secondary" onclick="resetCurrent()">
+                ↺ Reiniciar
+            </button>
+            <div class="progress-indicator" id="progressIndicator">0 de 13 emparejamientos</div>
+            <button class="btn btn-primary" id="finishBtn" onclick="finishGame()" disabled>
+                Finalizar ✓
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const pairs = [
+            {
+                option: "Regresión logística",
+                statement: "Permite estimar la probabilidad de que ocurra un evento con valores entre 0 y 1.",
+                feedback: "La regresión logística es útil cuando la variable respuesta tiene dos categorías posibles."
+            },
+            {
+                option: "Probabilidad predicha",
+                statement: "Representa la posibilidad estimada de que Y sea igual a 1.",
+                feedback: "Una probabilidad alta indica mayor posibilidad de que ocurra el evento de interés."
+            },
+            {
+                option: "Odds",
+                statement: "Comparan la probabilidad de que ocurra un evento frente a la probabilidad de que no ocurra.",
+                feedback: "Los odds no son iguales a la probabilidad, sino una razón entre ocurrencia y no ocurrencia."
+            },
+            {
+                option: "Log-odds",
+                statement: "Corresponden al logaritmo natural de los odds.",
+                feedback: "Los log-odds permiten construir un modelo lineal para variables binarias."
+            },
+            {
+                option: "Odds ratio",
+                statement: "Compara los odds de un evento entre dos grupos.",
+                feedback: "Un OR mayor que 1 indica aumento del evento, mientras que un OR menor que 1 sugiere efecto protector."
+            },
+            {
+                option: "Umbral de clasificación",
+                statement: "Permite convertir una probabilidad predicha en una clase final.",
+                feedback: "Cambiar el umbral puede modificar la cantidad de falsos positivos y falsos negativos."
+            },
+            {
+                option: "Verdadero positivo (VP)",
+                statement: "Caso en que el modelo predice correctamente la presencia del evento.",
+                feedback: "Los verdaderos positivos representan eventos correctamente identificados."
+            },
+            {
+                option: "Verdadero negativo (VN)",
+                statement: "Caso en que el modelo predice correctamente la ausencia del evento.",
+                feedback: "Los verdaderos negativos indican que el modelo acertó al predecir ausencia del evento."
+            },
+            {
+                option: "Falso positivo (FP)",
+                statement: "Caso en que el modelo predice un evento que realmente no ocurrió.",
+                feedback: "Los falsos positivos pueden generar alarmas innecesarias o decisiones equivocadas."
+            },
+            {
+                option: "Falso negativo (FN)",
+                statement: "Caso en que el modelo no detecta un evento que sí ocurrió.",
+                feedback: "Los falsos negativos suelen ser especialmente graves en contextos de salud o riesgo."
+            },
+            {
+                option: "Matriz de confusión",
+                statement: "Resume los aciertos y errores de clasificación del modelo.",
+                feedback: "La matriz de confusión permite comprender mejor los tipos de errores del modelo."
+            },
+            {
+                option: "Intervalo de confianza del OR",
+                statement: "Permite evaluar la precisión y significancia de un odds ratio.",
+                feedback: "Si el intervalo de confianza incluye el valor 1, no puede afirmarse asociación estadísticamente significativa."
+            }
+        ];
+
+        let currentMatches = {};
+        let placedOptions = new Set();
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function initGame() {
+            currentMatches = {};
+            placedOptions = new Set();
+            
+            const optionsList = document.getElementById('optionsList');
+            const targetsPanel = document.getElementById('targetsPanel');
+            
+            optionsList.innerHTML = '';
+            targetsPanel.innerHTML = '';
+            
+            const shuffledOptions = shuffleArray([...pairs]);
+            const shuffledTargets = shuffleArray([...pairs]);
+            
+            shuffledOptions.forEach(pair => {
+                const item = document.createElement('div');
+                item.className = 'draggable-item';
+                item.draggable = true;
+                item.textContent = pair.option;
+                item.dataset.option = pair.option;
+                
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                
+                optionsList.appendChild(item);
+            });
+            
+            shuffledTargets.forEach((pair, index) => {
+                const target = document.createElement('div');
+                target.className = 'target-item';
+                target.dataset.correctOption = pair.option;
+                target.dataset.index = index;
+                
+                target.innerHTML = `
+                    <div class="target-statement">${pair.statement}</div>
+                    <div class="target-drop-zone">Suelte aquí</div>
+                    <div class="feedback-mini"></div>
+                `;
+                
+                target.addEventListener('dragover', handleDragOver);
+                target.addEventListener('dragleave', handleDragLeave);
+                target.addEventListener('drop', handleDrop);
+                
+                targetsPanel.appendChild(target);
+            });
+            
+            updateProgress();
+        }
+
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.option);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const target = e.currentTarget;
+            target.classList.remove('drag-over');
+            
+            const option = e.dataTransfer.getData('text/plain');
+            const correctOption = target.dataset.correctOption;
+            const isCorrect = option === correctOption;
+            
+            const dropZone = target.querySelector('.target-drop-zone');
+            const feedback = target.querySelector('.feedback-mini');
+            
+            dropZone.innerHTML = `<span class="placed-option">${option}</span>`;
+            dropZone.classList.add('filled');
+            
+            target.classList.remove('correct', 'incorrect');
+            target.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            feedback.textContent = pairs.find(p => p.option === correctOption).feedback;
+            feedback.classList.remove('correct', 'incorrect', 'show');
+            feedback.classList.add(isCorrect ? 'correct' : 'incorrect', 'show');
+            
+            const optionElement = document.querySelector(`.draggable-item[data-option="${option}"]`);
+            if (optionElement) {
+                optionElement.classList.add('placed');
+                if (!isCorrect) optionElement.classList.add('incorrect');
+                optionElement.draggable = false;
+            }
+            
+            currentMatches[target.dataset.index] = { option, correct: isCorrect };
+            placedOptions.add(option);
+            
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const total = pairs.length;
+            const placed = Object.keys(currentMatches).length;
+            
+            document.getElementById('progressIndicator').textContent = `${placed} de ${total} emparejamientos`;
+            document.getElementById('finishBtn').disabled = placed < total;
+        }
+
+        function finishGame() {
+            const correct = Object.values(currentMatches).filter(m => m.correct).length;
+            document.getElementById('scoreNumber').textContent = `${correct}/${pairs.length}`;
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('navButtons').style.display = 'none';
+            document.getElementById('finalScreen').classList.add('show');
+        }
+
+        function restartGame() {
+            document.getElementById('gameContainer').style.display = 'grid';
+            document.getElementById('navButtons').style.display = 'flex';
+            document.getElementById('finalScreen').classList.remove('show');
+            initGame();
+        }
+
+        function resetCurrent() {
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

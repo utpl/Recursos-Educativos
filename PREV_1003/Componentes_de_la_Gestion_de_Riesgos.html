@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Componentes de la Gestión de Riesgos</title>
+  <style>
+    :root {
+      --c1: #1a5c8a;
+      --c1l: #2381bf;
+      --c1pale: #e4f0f9;
+      --c2: #1a6b3c;
+      --c2l: #2d9b5a;
+      --c2pale: #e6f4ec;
+      --c3: #7b1a1a;
+      --c3l: #b83232;
+      --c3pale: #faeaea;
+      --c4: #6b4a0d;
+      --c4l: #b87c25;
+      --c4pale: #fdf3e0;
+      --c5: #3b1a6b;
+      --c5l: #7040b8;
+      --c5pale: #f0eafd;
+      --text: #1a1f2e;
+      --text-med: #3d4560;
+      --text-light: #6b7280;
+      --bg: #f2f5f8;
+      --white: #fff;
+      --border: #d0dde8;
+      --shadow: 0 8px 32px rgba(0, 0, 0, .11);
+      --radius: 18px;
+      --radius-sm: 10px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+
+    }
+
+    /* CANVAS */
+    .canvas {
+      width: 800px;
+      max-width: 800px;
+      background: var(--white);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #1a3a5c 0%, #1a5c8a 55%, #1a6b3c 100%);
+      color: #fff;
+      padding: 26px 32px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .05);
+    }
+
+    .header::after {
+      content: '🛡️';
+      position: absolute;
+      right: 32px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 52px;
+      opacity: .2;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, .18);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .header-sub {
+      font-size: 12.5px;
+      opacity: .8;
+      margin-top: 5px;
+    }
+
+    /* HINT */
+    .hint-bar {
+      background: var(--c1pale);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 28px;
+      font-size: 12.5px;
+      color: var(--c1);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* LIST */
+    .list-area {
+      padding: 24px 28px 8px;
+    }
+
+    .comp-item {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      margin-bottom: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow .2s, transform .15s, border-color .2s;
+      background: var(--white);
+    }
+
+    .comp-item:hover {
+      box-shadow: 0 6px 24px rgba(0, 0, 0, .12);
+      transform: translateY(-2px);
+    }
+
+    /* color stripe */
+    .comp-stripe {
+      width: 7px;
+      flex-shrink: 0;
+    }
+
+    /* icon block */
+    .comp-icon-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 16px;
+      flex-shrink: 0;
+      min-width: 76px;
+      gap: 6px;
+    }
+
+    .comp-icon {
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .comp-num {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      opacity: .7;
+    }
+
+    /* text block */
+    .comp-text {
+      flex: 1;
+      padding: 18px 14px 18px 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .comp-name {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .comp-tagline {
+      font-size: 12px;
+      color: var(--text-light);
+      line-height: 1.4;
+    }
+
+    /* plus button */
+    .comp-plus {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+
+    .plus-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      transition: transform .22s, background .22s, color .22s;
+    }
+
+    /* ── MODAL ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .48);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius);
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, .22);
+      overflow: hidden;
+      animation: mIn .22s ease;
+    }
+
+    @keyframes mIn {
+      from {
+        opacity: 0;
+        transform: scale(.93) translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .modal-top {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .modal-stripe {
+      width: 8px;
+      flex-shrink: 0;
+      border-radius: var(--radius) 0 0 0;
+    }
+
+    .modal-head {
+      flex: 1;
+      padding: 20px 18px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .modal-emoji {
+      font-size: 36px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .modal-titles {
+      flex: 1;
+    }
+
+    .modal-name {
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+
+    .modal-close {
+      margin-left: auto;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      flex-shrink: 0;
+    }
+
+    .modal-body {
+      padding: 0 20px 22px;
+    }
+
+    .modal-tag {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 3px 10px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .modal-desc {
+      font-size: 13.5px;
+      color: var(--text-med);
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .example-box {
+      border-radius: var(--radius-sm);
+      padding: 13px 15px;
+      margin-top: 2px;
+    }
+
+    .example-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 5px;
+    }
+
+    .example-text {
+      font-size: 13px;
+      color: var(--text-med);
+      line-height: 1.6;
+    }
+
+    .modal-note {
+      font-size: 10.5px;
+      color: var(--text-light);
+      margin-top: 12px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* REFERENCE */
+    .reference {
+      margin: 8px 28px 22px;
+      padding: 12px 15px;
+      background: #f8faf9;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    .reference strong {
+      color: var(--text-med);
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:820px) {
+      body {
+        padding: 0;
+      }
+
+      .canvas {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+      }
+
+      .header {
+        padding: 18px 16px 14px;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
+
+      .list-area {
+        padding: 16px 14px 6px;
+      }
+
+      .comp-icon-wrap {
+        min-width: 62px;
+        padding: 14px 10px;
+      }
+
+      .comp-icon {
+        font-size: 28px;
+      }
+
+      .comp-plus {
+        padding: 0 14px;
+      }
+
+      .hint-bar {
+        padding: 9px 14px;
+      }
+
+      .reference {
+        margin: 6px 14px 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="canvas">
+
+    <!-- HEADER -->
+    <div class="header">
+
+      <h1>Componentes de la Gestión de Riesgos</h1>
+      <div class="header-sub">Infografía interactiva · 5 componentes esenciales</div>
+    </div>
+
+    <!-- HINT -->
+    <div class="hint-bar">➕ Haga clic en el "+" para visualizar el contenido de cada componente.</div>
+
+    <!-- LIST -->
+    <div class="list-area" id="listArea"></div>
+
+    <!-- REFERENCE -->
+    <div class="reference">
+      <strong>Referencia:</strong> Bárcena, A., Torres, V., &amp; Muñoz Ávila, L. (Eds.). (2021). <em>El Acuerdo de
+        Escazú sobre democracia ambiental y su relación con la Agenda 2030 para el Desarrollo Sostenible.</em> Comisión
+      Económica para América Latina y el Caribe (CEPAL); Editorial Universidad del Rosario. <a
+        href="https://doi.org/10.12804/urosario9789587847567" target="_blank"
+        style="color:var(--c1l)">https://doi.org/10.12804/urosario9789587847567</a>
+    </div>
+
+  </div>
+
+  <!-- MODAL -->
+  <div class="overlay" id="overlay" onclick="closeModal(event)">
+    <div class="modal" id="modal">
+      <div class="modal-top">
+        <div class="modal-stripe" id="mStripe"></div>
+        <div class="modal-head">
+          <div class="modal-emoji" id="mEmoji"></div>
+          <div class="modal-titles">
+            <div class="modal-name" id="mName"></div>
+          </div>
+          <button class="modal-close" onclick="closeModalBtn()">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-tag" id="mTag"></div>
+        <div class="modal-desc" id="mDesc"></div>
+        <div class="example-box" id="mExBox">
+          <div class="example-label" id="mExLabel">💡 Ejemplo</div>
+          <div class="example-text" id="mEx"></div>
+        </div>
+        <div class="modal-note">Nota. Figuras generadas con ChatGPT (OpenAI) a partir de prompts elaborados por el autor
+          (21 de febrero, 2026).</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      {
+        id: 'prev',
+        num: '01',
+        name: 'PREVENCIÓN',
+        icon: '🚧',
+        tagline: 'Evitar la generación de riesgos nuevos y eliminar o reducir los existentes.',
+        tag: 'Reducción proactiva del riesgo',
+        color: 'var(--c1)', colorL: 'var(--c1l)', colorPale: 'var(--c1pale)',
+        desc: 'Actividades y medidas orientadas a evitar la generación de riesgos nuevos y a eliminar o reducir riesgos ya existentes. En general, estas acciones suelen ser más costo-efectivas que el socorro y la respuesta una vez ocurrido el desastre.',
+        ex: 'Reubicación planificada de personas y bienes expuestos hacia zonas seguras, fuera de áreas identificadas como peligrosas.'
+      },
+      {
+        id: 'miti',
+        num: '02',
+        name: 'MITIGACIÓN',
+        icon: '🌊',
+        tagline: 'Disminuir o amortiguar los efectos negativos de amenazas y desastres.',
+        tag: 'Reducción del daño esperado',
+        color: 'var(--c2)', colorL: 'var(--c2l)', colorPale: 'var(--c2pale)',
+        desc: 'Consiste en disminuir o amortiguar los efectos negativos que pueden generar las amenazas y los desastres asociados. En la práctica, implica aplicar medidas que reduzcan la magnitud del daño esperado.',
+        ex: 'Construir obras de protección frente a inundaciones, reforestar o plantar árboles para estabilizar laderas, e implementar y hacer cumplir normas estrictas de uso del suelo y de construcción segura.'
+      },
+      {
+        id: 'trans',
+        num: '03',
+        name: 'TRANSFERENCIA',
+        icon: '🤝',
+        tagline: 'Trasladar las consecuencias financieras del riesgo a otro actor.',
+        tag: 'Distribución del riesgo financiero',
+        color: 'var(--c3)', colorL: 'var(--c3l)', colorPale: 'var(--c3pale)',
+        desc: 'Proceso mediante el cual las consecuencias financieras asociadas a un riesgo específico se trasladan, de manera formal o informal, desde un actor a otro. De este modo, un hogar, una comunidad, una empresa o una institución pública puede recibir apoyo económico después de un desastre, a cambio de aportes previos o acuerdos compensatorios.',
+        ex: 'Un caso representativo de transferencia del riesgo son los seguros, que permiten distribuir las pérdidas y facilitar la recuperación.'
+      },
+      {
+        id: 'prep',
+        num: '04',
+        name: 'PREPARACIÓN',
+        icon: '📋',
+        tagline: 'Desarrollar capacidades para anticipar, enfrentar y recuperarse de eventos peligrosos.',
+        tag: 'Capacidad de respuesta',
+        color: 'var(--c4)', colorL: 'var(--c4l)', colorPale: 'var(--c4pale)',
+        desc: 'Se refiere al conjunto de conocimientos, competencias y capacidades que desarrollan los gobiernos, las organizaciones de respuesta y recuperación, las comunidades y las personas para anticipar, enfrentar y recuperarse de manera efectiva ante los impactos de eventos peligrosos probables, inminentes o ya presentes.',
+        ex: 'Instalar sistemas de alerta temprana, identificar rutas de evacuación y preparar suministros de emergencia.'
+      },
+      {
+        id: 'recon',
+        num: '05',
+        name: 'RECONSTRUCCIÓN RESILIENTE',
+        icon: '🏗️',
+        tagline: 'Reconstruir con información de riesgo para diseños seguros y sostenibles.',
+        tag: 'Recuperación con menor vulnerabilidad',
+        color: 'var(--c5)', colorL: 'var(--c5l)', colorPale: 'var(--c5pale)',
+        desc: 'Para que la reconstrucción sea realmente resiliente, la información de riesgo debe estar disponible con anticipación, ya que tras el evento suele existir poco tiempo para recopilar datos suficientes que sustenten diseños seguros y decisiones adecuadas de uso del suelo durante la fase de reconstrucción.',
+        ex: 'Cumplir las normativas que impiden construir infraestructura en las zonas más vulnerables puede no parecer algo llamativo ni innovador, pero, sin duda, es una forma directa y eficaz de salvar vidas.'
+      }
+    ];
+
+    // Build list
+    const listArea = document.getElementById('listArea');
+    data.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'comp-item';
+      div.onclick = () => openModal(item.id);
+      div.innerHTML = `
+    <div class="comp-stripe" style="background:${item.color}"></div>
+    <div class="comp-icon-wrap" style="background:${item.colorPale}">
+      <div class="comp-icon">${item.icon}</div>
+      <div class="comp-num" style="color:${item.color}">${item.num}</div>
+    </div>
+    <div class="comp-text">
+      <div class="comp-name" style="color:${item.color}">${item.name}</div>
+      <div class="comp-tagline">${item.tagline}</div>
+    </div>
+    <div class="comp-plus">
+      <div class="plus-circle" style="background:${item.colorPale};color:${item.color}">+</div>
+    </div>
+  `;
+      listArea.appendChild(div);
+    });
+
+    function openModal(id) {
+      const item = data.find(d => d.id === id);
+      if (!item) return;
+      document.getElementById('mStripe').style.background = item.color;
+      document.getElementById('mEmoji').textContent = item.icon;
+      document.getElementById('mName').textContent = item.name;
+      document.getElementById('mName').style.color = item.color;
+      const tag = document.getElementById('mTag');
+      tag.textContent = item.tag;
+      tag.style.background = item.colorPale;
+      tag.style.color = item.colorL;
+      document.getElementById('mDesc').textContent = item.desc;
+      const exBox = document.getElementById('mExBox');
+      exBox.style.background = item.colorPale;
+      document.getElementById('mExLabel').style.color = item.colorL;
+      document.getElementById('mEx').textContent = item.ex;
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('overlay'))
+        document.getElementById('overlay').classList.remove('open');
+    }
+    function closeModalBtn() {
+      document.getElementById('overlay').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open'); });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correlación y diagrama de dispersión</title>
+    <style>
+        :root {
+            --width: 800px;
+            --primary: #1e40af;
+            --accent: #0ea5e9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #1f2937;
+            --light: #f8fafc;
+            --gray: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #e2e8f0;
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: var(--width);
+            max-width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgb(30 64 175 / 0.15);
+            overflow: hidden;
+            min-height: 560px;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 820px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+                min-height: 100vh;
+                box-shadow: none;
+            }
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon {
+            font-size: 42px;
+            background: rgba(255,255,255,0.25);
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 23px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            overflow-y: auto;
+        }
+
+        .instructions {
+            background: #ecfdf5;
+            border-left: 6px solid var(--accent);
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #0f766e;
+            font-weight: 500;
+        }
+
+        .drag-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+        }
+
+        @media (max-width: 820px) {
+            .drag-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Zona de enunciados (destino) */
+        .targets-column {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .target-slot {
+            background: #f8fafc;
+            border: 3px dashed #94a3b8;
+            border-radius: 16px;
+            padding: 20px 24px;
+            min-height: 118px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .target-slot.filled {
+            border-style: solid;
+            border-color: var(--accent);
+            background: #e0f2fe;
+        }
+
+        .target-slot .slot-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .target-slot .slot-content {
+            min-height: 52px;
+            font-size: 16.5px;
+            line-height: 1.45;
+            color: var(--text);
+        }
+
+        .target-slot .remove-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ef4444;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .target-slot.filled .remove-btn {
+            display: flex;
+        }
+
+        /* Opciones arrastrables */
+        .options-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .draggable-option {
+            background: white;
+            border: 2px solid var(--accent);
+            border-radius: 14px;
+            padding: 18px 22px;
+            font-size: 16.5px;
+            cursor: grab;
+            box-shadow: 0 8px 15px -3px rgb(14 165 233 / 0.15);
+            transition: all 0.25s ease;
+            user-select: none;
+            line-height: 1.45;
+        }
+
+        .draggable-option:active {
+            cursor: grabbing;
+            transform: scale(0.96);
+        }
+
+        .draggable-option.dragging {
+            opacity: 0.4;
+            transform: rotate(4deg);
+        }
+
+        /* Feedback */
+        .feedback-bar {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            margin-top: 12px;
+        }
+
+        .feedback-bar.success {
+            background: #ecfdf5;
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .feedback-bar.error {
+            background: #fef2f2;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-top: auto;
+            padding-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--gray);
+        }
+
+        .math {
+            font-family: 'Cambria Math', serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-icon">📈</div>
+            <h1>Correlación y diagrama de dispersión</h1>
+        </header>
+
+        <div class="main-content">
+            <!-- Instrucciones -->
+            <div class="instructions">
+                Arrastre cada opción y colóquela en el enunciado con el que guarde relación. 
+                Cada respuesta solo corresponde a un fragmento.
+            </div>
+
+            <div class="drag-area">
+                <!-- Columna de enunciados (destinos) -->
+                <div class="targets-column" id="targets-container">
+                    <!-- Se generan dinámicamente -->
+                </div>
+
+                <!-- Columna de opciones arrastrables -->
+                <div class="options-column" id="options-container">
+                    <!-- Se generan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Barra de feedback -->
+            <div id="feedback-bar" class="feedback-bar"></div>
+
+            <!-- Controles -->
+            <div class="controls">
+                <button onclick="checkAnswers()" class="btn btn-primary">Verificar respuestas</button>
+                <button onclick="resetActivity()" class="btn btn-secondary">Reiniciar actividad</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos exactos del documento (reorganizados aleatoriamente cada vez)
+        let statements = [
+            { id: 1, stem: "Correlación positiva", correct: "Cuando una variable aumenta, la otra también aumenta." },
+            { id: 2, stem: "Correlación negativa", correct: "Cuando una variable aumenta, la otra disminuye." },
+            { id: 3, stem: "Correlación nula", correct: "No se observa una relación clara entre las variables." },
+            { id: 4, stem: "Dirección de la correlación", correct: "Indica si la relación es positiva o negativa." },
+            { id: 5, stem: "Fuerza de la correlación", correct: "Indica si la relación es débil, moderada o fuerte." },
+            { id: 6, stem: "Diagrama de dispersión", correct: "Gráfico que permite visualizar la relación entre dos variables numéricas." },
+            { id: 7, stem: "Eje horizontal (X)", correct: "Representa la variable independiente o explicativa." },
+            { id: 8, stem: "Eje vertical (Y)", correct: "Representa la variable dependiente o de respuesta." },
+            { id: 9, stem: "Tendencia ascendente en el gráfico", correct: "Sugiere una correlación positiva." },
+            { id: 10, stem: "Tendencia descendente en el gráfico", correct: "Sugiere una correlación negativa." },
+            { id: 11, stem: "Coeficiente de Pearson (r)", correct: "Mide la fuerza y dirección de la relación lineal entre dos variables." },
+            { id: 12, stem: "r = 0,7179361", correct: "Indica una correlación positiva y fuerte." },
+            { id: 13, stem: "Correlación no implica causalidad", correct: "Que dos variables se relacionen no significa que una cause a la otra." },
+            { id: 14, stem: "Variable X en el ejemplo", correct: "Número de llamadas telefónicas realizadas." },
+            { id: 15, stem: "Variable Y en el ejemplo", correct: "Cantidad de copiadoras vendidas." }
+        ]
+
+        let draggedItem = null
+        let currentMatches = {} // id del statement → texto de la opción colocada
+
+        // Función para barajar array (evita siempre el mismo orden)
+        function shuffle(array) {
+            const newArray = [...array]
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1))
+                ;[newArray[i], newArray[j]] = [newArray[j], newArray[i]]
+            }
+            return newArray
+        }
+
+        // Renderizar enunciados (targets)
+        function renderTargets() {
+            const container = document.getElementById('targets-container')
+            container.innerHTML = ''
+
+            statements.forEach(statement => {
+                const slot = document.createElement('div')
+                slot.className = 'target-slot'
+                slot.dataset.id = statement.id
+                slot.ondragover = allowDrop
+                slot.ondrop = drop
+
+                slot.innerHTML = `
+                    <span class="slot-label">${statement.stem}:</span>
+                    <div class="slot-content" id="content-${statement.id}">Arrastre la respuesta aquí...</div>
+                    <div class="remove-btn" onclick="removeFromSlot(${statement.id})">×</div>
+                `
+                container.appendChild(slot)
+            })
+        }
+
+        // Renderizar opciones arrastrables
+        function renderOptions() {
+            const container = document.getElementById('options-container')
+            container.innerHTML = ''
+
+            // Barajamos las respuestas correctas para que el orden sea diferente cada vez
+            const shuffledOptions = shuffle(statements.map(s => ({
+                text: s.correct,
+                id: s.id
+            })))
+
+            shuffledOptions.forEach(option => {
+                const div = document.createElement('div')
+                div.className = 'draggable-option'
+                div.draggable = true
+                div.dataset.text = option.text
+                div.dataset.originalId = option.id
+                div.textContent = option.text
+                
+                div.addEventListener('dragstart', dragStart)
+                div.addEventListener('dragend', dragEnd)
+                
+                container.appendChild(div)
+            })
+        }
+
+        function dragStart(e) {
+            draggedItem = e.target
+            setTimeout(() => {
+                e.target.classList.add('dragging')
+            }, 0)
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging')
+            draggedItem = null
+        }
+
+        function allowDrop(e) {
+            e.preventDefault()
+            e.currentTarget.style.borderColor = '#0ea5e9'
+        }
+
+        function drop(e) {
+            e.preventDefault()
+            const slot = e.currentTarget
+            
+            if (!draggedItem) return
+
+            const optionText = draggedItem.dataset.text
+
+            // Si el slot ya tiene algo, no permitimos soltar
+            if (slot.classList.contains('filled')) {
+                slot.style.borderColor = '#94a3b8'
+                return
+            }
+
+            // Colocar en el slot
+            const contentDiv = slot.querySelector('.slot-content')
+            contentDiv.innerHTML = `<strong>${optionText}</strong>`
+            slot.classList.add('filled')
+            
+            // Guardar match
+            currentMatches[slot.dataset.id] = optionText
+
+            // Remover la opción del panel izquierdo
+            draggedItem.style.display = 'none'
+            
+            // Restaurar borde
+            slot.style.borderColor = '#0ea5e9'
+        }
+
+        // Eliminar opción de un slot
+        window.removeFromSlot = function(slotId) {
+            const slot = document.querySelector(`.target-slot[data-id="${slotId}"]`)
+            if (!slot) return
+
+            const contentDiv = slot.querySelector('.slot-content')
+            contentDiv.innerHTML = 'Arrastre la respuesta aquí...'
+            slot.classList.remove('filled')
+
+            // Liberar la opción en el panel izquierdo
+            const options = document.querySelectorAll('.draggable-option')
+            options.forEach(opt => {
+                if (opt.dataset.text === currentMatches[slotId] && opt.style.display === 'none') {
+                    opt.style.display = 'block'
+                }
+            })
+
+            delete currentMatches[slotId]
+        }
+
+        // Verificar respuestas
+        function checkAnswers() {
+            const feedbackBar = document.getElementById('feedback-bar')
+            let correctCount = 0
+            const total = statements.length
+
+            statements.forEach(statement => {
+                const placed = currentMatches[statement.id]
+                if (placed === statement.correct) {
+                    correctCount++
+                }
+            })
+
+            if (correctCount === total) {
+                feedbackBar.innerHTML = `¡Excelente! Has emparejado correctamente las ${total} afirmaciones.<br><span style="font-size:15px;opacity:0.8;">Todas las relaciones entre correlación, diagrama de dispersión y el ejemplo están correctas.</span>`
+                feedbackBar.className = 'feedback-bar success'
+            } else {
+                feedbackBar.innerHTML = `Has acertado ${correctCount} de ${total}.<br>Revisa las colocaciones y vuelve a intentarlo.`
+                feedbackBar.className = 'feedback-bar error'
+            }
+            
+            feedbackBar.style.display = 'block'
+        }
+
+        // Reiniciar toda la actividad
+        function resetActivity() {
+            currentMatches = {}
+            document.getElementById('feedback-bar').style.display = 'none'
+            
+            // Re-renderizar todo
+            renderTargets()
+            renderOptions()
+        }
+
+        // Inicialización
+        window.onload = function() {
+            renderTargets()
+            renderOptions()
+            console.log('%c✅ Actividad Arrastrar y Soltar cargada - Correlación y diagrama de dispersión', 'color:#0ea5e9; font-weight:700')
+        }
+    </script>
+</body>
+</html>

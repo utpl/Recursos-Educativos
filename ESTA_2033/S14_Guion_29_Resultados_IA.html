@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados IA - Regresión Logística</title>
+    <style>
+        :root {
+            --primary:   #0E2D52;
+            --primary-d: #1B4F8A;
+            --accent:    #2E6DAD;
+            --accent-d:  #0E2D52;
+            --gold:      #F5A800;
+            --gold-dark: #C98700;
+            --green:     #006747;
+            --green-l:   #B9D3B0;
+            --sand:      #E8F0FA;
+            --salmon:    #F5A800;
+            --blue-l:    #B8CCE4;
+            --bg:        #FFFFFF;
+            --surface:   #F4F7FB;
+            --text:      #0E2D52;
+            --muted:     #4A5568;
+            --border:    #B8CCE4;
+            --shadow:    rgba(14, 45, 82, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .main-container {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 80px var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            padding: 24px 32px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--salmon) 50%, var(--gold) 100%);
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-meta {
+            font-size: 0.85rem;
+            opacity: 0.95;
+            margin-top: 6px;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--sand) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border);
+        }
+
+        .intro-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .nav-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .nav-chip {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 25px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-chip:hover {
+            border-color: var(--accent);
+            background: var(--sand);
+            transform: translateY(-2px);
+        }
+
+        .nav-chip.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .section-panel {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section-panel.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--shadow);
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:nth-child(even) {
+            background: var(--surface);
+        }
+
+        .highlight-good {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .highlight-bad {
+            color: var(--wrong);
+            font-weight: 700;
+        }
+
+        .metric-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .metric-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .metric-desc {
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: 120px 1fr 1fr;
+            gap: 8px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            border: 2px solid var(--border);
+        }
+
+        .matrix-header {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--primary);
+            text-align: center;
+            padding: 8px;
+        }
+
+        .matrix-label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+        }
+
+        .matrix-cell {
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .cell-vn {
+            background: var(--correct-bg);
+            color: var(--correct);
+            border: 2px solid var(--correct);
+        }
+
+        .cell-fp {
+            background: var(--wrong-bg);
+            color: var(--wrong);
+            border: 2px solid var(--wrong);
+        }
+
+        .cell-fn {
+            background: var(--wrong-bg);
+            color: var(--wrong);
+            border: 2px solid var(--wrong);
+        }
+
+        .cell-vp {
+            background: var(--correct-bg);
+            color: var(--correct);
+            border: 2px solid var(--correct);
+        }
+
+        .note-box {
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            border-left: 4px solid var(--gold);
+            padding: 12px 16px;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-top: 12px;
+        }
+
+        .conclusion-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px;
+        }
+
+        .conclusion-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .conclusion-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--gold-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .conclusion-text {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .reference-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+        }
+
+        .reference-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .reference-content {
+            font-size: 0.85rem;
+            color: var(--text);
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 840px) {
+            .main-container {
+                width: 100%;
+                height: auto;
+                min-height: 600px;
+                max-height: none;
+            }
+            
+            .conclusion-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <h1>Resultados IA: Regresión Logística</h1>
+            <div class="header-meta">ESTA_2033 • Juan Torres</div>
+        </header>
+
+        <div class="content-area">
+            <div class="intro-card">
+                <div class="intro-text">
+                    Modelo predictivo para aprobación de estudiantes utilizando <strong>horas de estudio</strong> y <strong>asistencia</strong> como variables predictoras. Dataset: 500 estudiantes (70% entrenamiento, 30% prueba).
+                </div>
+            </div>
+
+            <div class="nav-chips">
+                <div class="nav-chip active" onclick="showSection(0)">📊 Datos</div>
+                <div class="nav-chip" onclick="showSection(1)">🤖 Modelo</div>
+                <div class="nav-chip" onclick="showSection(2)">📈 Coeficientes</div>
+                <div class="nav-chip" onclick="showSection(3)">🎯 OR</div>
+                <div class="nav-chip" onclick="showSection(4)">✓ Matriz</div>
+                <div class="nav-chip" onclick="showSection(5)">📉 Métricas</div>
+                <div class="nav-chip" onclick="showSection(6)">💡 Conclusión</div>
+            </div>
+
+            <!-- Sección 1: Carga de datos -->
+            <div class="section-panel active" id="section-0">
+                <div class="section-title">📊 Resumen de carga y partición de datos</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Elemento</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Archivo cargado</td>
+                            <td>datos_estudiantes_regresionL.csv</td>
+                        </tr>
+                        <tr>
+                            <td>Registros totales</td>
+                            <td>500 estudiantes analizados</td>
+                        </tr>
+                        <tr>
+                            <td>Variable objetivo (y)</td>
+                            <td>aprobado (1 = Sí, 0 = No)</td>
+                        </tr>
+                        <tr>
+                            <td>Variables predictoras (X)</td>
+                            <td>horas_estudio, asistencia</td>
+                        </tr>
+                        <tr>
+                            <td>Partición de datos</td>
+                            <td>70% entrenamiento / 30% prueba</td>
+                        </tr>
+                        <tr>
+                            <td>Observaciones en entrenamiento</td>
+                            <td>350</td>
+                        </tr>
+                        <tr>
+                            <td>Observaciones en prueba</td>
+                            <td>150</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sección 2: Resumen del modelo -->
+            <div class="section-panel" id="section-1">
+                <div class="section-title">🤖 Resumen del modelo (Regresión Logística - Logit)</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Campo</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Variable dependiente</td>
+                            <td>aprobado</td>
+                        </tr>
+                        <tr>
+                            <td>Modelo</td>
+                            <td>Logit (Regresión logística)</td>
+                        </tr>
+                        <tr>
+                            <td>Método</td>
+                            <td>MLE (Máxima verosimilitud)</td>
+                        </tr>
+                        <tr>
+                            <td>No. observaciones (train)</td>
+                            <td>350</td>
+                        </tr>
+                        <tr>
+                            <td>Df Model</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>Df Residuals</td>
+                            <td>347</td>
+                        </tr>
+                        <tr>
+                            <td>Log-Likelihood</td>
+                            <td>-131.49</td>
+                        </tr>
+                        <tr>
+                            <td>LL-Null</td>
+                            <td>-197.36</td>
+                        </tr>
+                        <tr>
+                            <td>Pseudo R²</td>
+                            <td class="highlight-good">0.3338</td>
+                        </tr>
+                        <tr>
+                            <td>Convergencia</td>
+                            <td class="highlight-good">TRUE</td>
+                        </tr>
+                        <tr>
+                            <td>LLR p-value</td>
+                            <td class="highlight-good">2.46E-29</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sección 3: Coeficientes -->
+            <div class="section-panel" id="section-2">
+                <div class="section-title">📈 Coeficientes del modelo (escala log-odds)</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Coef. (b)</th>
+                            <th>Error std</th>
+                            <th>z</th>
+                            <th>p-valor</th>
+                            <th>IC 95% (LI)</th>
+                            <th>IC 95% (LS)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Constante (b0)</td>
+                            <td>-11.4763</td>
+                            <td>1.483</td>
+                            <td>-7.741</td>
+                            <td class="highlight-good">0</td>
+                            <td>-14.382</td>
+                            <td>-8.571</td>
+                        </tr>
+                        <tr>
+                            <td>horas_estudio</td>
+                            <td class="highlight-good">0.1459</td>
+                            <td>0.018</td>
+                            <td>8.032</td>
+                            <td class="highlight-good">0</td>
+                            <td>0.11</td>
+                            <td>0.182</td>
+                        </tr>
+                        <tr>
+                            <td>asistencia</td>
+                            <td class="highlight-good">0.0749</td>
+                            <td>0.014</td>
+                            <td>5.174</td>
+                            <td class="highlight-good">0</td>
+                            <td>0.047</td>
+                            <td>0.103</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="note-box">
+                    <strong>Nota:</strong> p-valor < 0.05 indica que la variable tiene un efecto estadísticamente significativo sobre la aprobación.
+                </div>
+            </div>
+
+            <!-- Sección 4: Odds Ratio -->
+            <div class="section-panel" id="section-3">
+                <div class="section-title">🎯 Interpretación con Odds Ratio (OR)</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>OR = e^(b)</th>
+                            <th>Cambio en odds por +1 unidad</th>
+                            <th>Interpretación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>horas_estudio</td>
+                            <td class="highlight-good">1.1571</td>
+                            <td>+15.71%</td>
+                            <td>Cada unidad extra de horas_estudio incrementa los odds de aprobar en 15.71%</td>
+                        </tr>
+                        <tr>
+                            <td>asistencia</td>
+                            <td class="highlight-good">1.0778</td>
+                            <td>+7.78%</td>
+                            <td>Cada unidad extra de asistencia incrementa los odds de aprobar en 7.78%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sección 5: Matriz de confusión -->
+            <div class="section-panel" id="section-4">
+                <div class="section-title">✓ Matriz de confusión (datos de prueba)</div>
+                <div style="background: white; border-radius: 12px; padding: 20px; border: 2px solid var(--border);">
+                    <div style="text-align: center; margin-bottom: 16px; font-weight: 700; color: var(--primary);">Formato: [[VN, FP], [FN, VP]]</div>
+                    <div class="confusion-matrix">
+                        <div></div>
+                        <div class="matrix-header">Predice: No aprueba (0)</div>
+                        <div class="matrix-header">Predice: Aprueba (1)</div>
+                        
+                        <div class="matrix-label">Real: No aprueba (0)</div>
+                        <div class="matrix-cell cell-vn">VN = 100</div>
+                        <div class="matrix-cell cell-fp">FP = 8</div>
+                        
+                        <div class="matrix-label">Real: Aprueba (1)</div>
+                        <div class="matrix-cell cell-fn">FN = 24</div>
+                        <div class="matrix-cell cell-vp">VP = 18</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 6: Métricas -->
+            <div class="section-panel" id="section-5">
+                <div class="section-title">📉 Métricas de desempeño (datos de prueba)</div>
+                
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-name">Accuracy (Exactitud)</span>
+                        <span class="metric-value">0.7867</span>
+                    </div>
+                    <div class="metric-desc">Proporción total de aciertos: (100 + 18) / 150 = 78.67%</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-name">Precision</span>
+                        <span class="metric-value">0.6923</span>
+                    </div>
+                    <div class="metric-desc">De los que predijo "aprueba", 69.23% realmente aprueban: 18 / (18 + 8)</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-name">Recall (Sensibilidad)</span>
+                        <span class="metric-value highlight-bad">0.4286</span>
+                    </div>
+                    <div class="metric-desc">De los que realmente aprueban, solo detectó 42.86%: 18 / (18 + 24)</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-name">F1-Score</span>
+                        <span class="metric-value">0.5294</span>
+                    </div>
+                    <div class="metric-desc">Balance entre precision (0.69) y recall (0.43)</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-name">AUC (ROC)</span>
+                        <span class="metric-value highlight-good">0.8168</span>
+                    </div>
+                    <div class="metric-desc">Capacidad general de separar aprobados vs no aprobados. >0.8 = muy buena</div>
+                </div>
+            </div>
+
+            <!-- Sección 7: Conclusión -->
+            <div class="section-panel" id="section-6">
+                <div class="section-title">💡 Conclusión final</div>
+                
+                <div class="conclusion-grid">
+                    <div class="conclusion-item">
+                        <div class="conclusion-label">Hallazgo principal</div>
+                        <div class="conclusion-text">horas_estudio y asistencia son <strong>significativas</strong> (p < 0.05). Ambas incrementan los odds de aprobación.</div>
+                    </div>
+                    
+                    <div class="conclusion-item">
+                        <div class="conclusion-label">Calidad global</div>
+                        <div class="conclusion-text">AUC = <span class="highlight-good">0.8168</span> sugiere <strong>muy buena</strong> capacidad de discriminación. Pseudo R² = 0.33 indica modelo explicativo razonable.</div>
+                    </div>
+                    
+                    <div class="conclusion-item" style="grid-column: 1 / -1;">
+                        <div class="conclusion-label">⚠️ Punto a mejorar</div>
+                        <div class="conclusion-text">Recall = <span class="highlight-bad">0.4286</span>: el modelo detecta <strong>menos de la mitad</strong> de los aprobados reales (24 falsos negativos de 42). Posible ajuste de umbral o inclusión de más variables.</div>
+                    </div>
+                </div>
+
+                <div class="reference-section">
+                    <div class="reference-label">Referencia bibliográfica</div>
+                    <div class="reference-content">Elaboración propia.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(index) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Desactivar todos los chips
+            document.querySelectorAll('.nav-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            
+            // Mostrar sección seleccionada
+            document.getElementById(`section-${index}`).classList.add('active');
+            
+            // Activar chip correspondiente
+            document.querySelectorAll('.nav-chip')[index].classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pruebas de hipótesis en la evaluación de un programa de capacitación</title>
+    <style>
+        :root {
+            --width: 800px;
+            --primary: #1e40af;
+            --success: #10b981;
+            --accent: #f59e0b;
+            --text: #1f2937;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --shadow: 0 20px 25px -5px rgb(30 64 175 / 0.1), 0 8px 10px -6px rgb(30 64 175 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #e2e8f0;
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            width: var(--width);
+            max-width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            min-height: 500px;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        @media (max-width: 820px) {
+            body {
+                padding: 0;
+            }
+            .container {
+                width: 100%;
+                max-height: none;
+                border-radius: 0;
+                min-height: 100vh;
+                box-shadow: none;
+            }
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--primary), #3b82f6);
+            color: white;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        .screens {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            padding: 32px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #34d399);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .option {
+            padding: 20px 24px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 17px;
+            line-height: 1.4;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(30 64 175 / 0.1);
+        }
+
+        .option:active {
+            transform: scale(0.98);
+        }
+
+        .option-label {
+            font-weight: 700;
+            color: var(--primary);
+            background: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .intro-content h2 {
+            font-size: 26px;
+            color: var(--primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .case-visual {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 28px 0;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        @media (max-width: 820px) {
+            .case-visual {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .visual-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .visual-card .icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .visual-card .label {
+            font-size: 15px;
+            color: var(--gray);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .visual-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .case-text {
+            font-size: 17px;
+            color: var(--text);
+            margin-bottom: 28px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            margin-top: auto;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--gray);
+            border: 2px solid var(--gray);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeInModal 0.3s ease forwards;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fefce8;
+            border: 10px solid #854d0e;
+            border-radius: 20px;
+            max-width: 560px;
+            width: 90%;
+            box-shadow: 25px 25px 0 -10px #854d0e;
+            padding: 32px 40px;
+            position: relative;
+            animation: cartaPop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 3px dashed #854d0e;
+        }
+
+        .modal-icon {
+            font-size: 42px;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #854d0e;
+        }
+
+        .modal-chosen {
+            background: rgba(255,255,255,0.7);
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 16px;
+            border-left: 5px solid var(--accent);
+        }
+
+        .modal-feedback-text {
+            font-size: 17px;
+            line-height: 1.6;
+            color: #1f2937;
+            margin-bottom: 32px;
+        }
+
+        .modal .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+        }
+
+        .final-content {
+            text-align: center;
+        }
+
+        .final-content h2 {
+            font-size: 28px;
+            color: var(--success);
+            margin-bottom: 16px;
+        }
+
+        .final-list {
+            text-align: left;
+            max-width: 620px;
+            margin: 32px auto;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 28px;
+        }
+
+        .final-list ul {
+            list-style: none;
+        }
+
+        .final-list li {
+            padding: 12px 0;
+            font-size: 17px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .final-list li:before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .footer-nav {
+            display: flex;
+            gap: 12px;
+            padding: 20px 32px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        .nav-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes cartaPop {
+            0% { transform: scale(0.8) rotate(-8deg); }
+            50% { transform: scale(1.05) rotate(4deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        .math {
+            font-family: 'Cambria Math', serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="main-container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="header-icon">📊</div>
+            <h1>Pruebas de hipótesis en la evaluación de un programa de capacitación</h1>
+            <div style="font-size: 28px; opacity: 0.9;">⏱️</div>
+        </header>
+
+        <div class="screens">
+
+            <!-- SCREEN: INTRO -->
+            <div id="intro-screen" class="screen active">
+                <div class="intro-content">
+                    <p style="font-size: 18px; font-weight: 500; color: var(--primary); margin-bottom: 12px;">
+                        Se invita a poner en práctica los conceptos estudiados mediante la resolución del caso que se presenta.
+                    </p>
+                    
+                    <h2 style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 32px;">🏭</span>
+                        CASO: EVALUACIÓN DE UN PROGRAMA DE CAPACITACIÓN LABORAL
+                    </h2>
+
+                    <!-- Visual dashboard for case -->
+                    <div class="case-visual">
+                        <div class="visual-card">
+                            <span class="icon">⏰</span>
+                            <div class="label">Antes de la capacitación</div>
+                            <div class="value">12 minutos</div>
+                            <p style="margin-top: 8px; font-size: 15px; color: #64748b;">Tiempo promedio de atención por cliente</p>
+                        </div>
+                        <div class="visual-card">
+                            <span class="icon">👷‍♂️</span>
+                            <div class="label">Después de capacitar a 36 trabajadores</div>
+                            <div class="value">10.8 minutos</div>
+                            <p style="margin-top: 8px; font-size: 15px; color: #64748b;">Tiempo promedio de la muestra</p>
+                            <p style="margin-top: 4px; font-size: 15px; color: #64748b;">Desviación estándar: 3 minutos</p>
+                        </div>
+                    </div>
+
+                    <div class="case-text">
+                        Una empresa de atención al cliente implementa un nuevo programa de capacitación para mejorar la rapidez de respuesta de sus operadores.<br><br>
+                        Antes de aplicar la capacitación, el tiempo promedio de atención era de 12 minutos por cliente. Después de capacitar a 36 trabajadores, se obtiene una muestra con un tiempo promedio de 10.8 minutos y una desviación estándar de 3 minutos.<br><br>
+                        La gerencia desea saber si realmente la capacitación redujo el tiempo promedio de atención o si la diferencia observada podría deberse al azar.
+                    </div>
+
+                    <div style="text-align: center; margin-top: auto;">
+                        <button onclick="startQuiz()" class="btn btn-primary" style="font-size: 19px; padding: 18px 48px;">
+                            <span>🚀</span>
+                            COMENZAR EVALUACIÓN INTERACTIVA
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCREEN: QUESTION -->
+            <div id="question-screen" class="screen">
+                <div class="progress">
+                    <span>Pregunta <strong id="current-number">1</strong> de 5</span>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-bar-fill" style="width: 20%"></div>
+                    </div>
+                </div>
+
+                <h2 id="question-text-display" class="question-text"></h2>
+
+                <div id="options-container" class="options"></div>
+
+                <div class="footer-nav">
+                    <button onclick="goToIntro()" class="nav-btn btn-secondary" style="border-color: #64748b; color: #64748b;">
+                        ← Volver al caso
+                    </button>
+                    <button onclick="restartQuiz()" class="nav-btn" style="background: #e2e8f0; color: #64748b;">
+                        🔄 Reiniciar
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN: FINAL -->
+            <div id="final-screen" class="screen">
+                <div class="final-content">
+                    <span style="font-size: 64px; display: block; margin-bottom: 16px;">🎉</span>
+                    <h2>¡Felicidades! Ha concluido con éxito el análisis del caso.</h2>
+                    
+                    <div class="final-list">
+                        <ul>
+                            <li>Las hipótesis permiten comparar una situación inicial con una posible mejora.</li>
+                            <li>El p-valor ayuda a determinar si la evidencia observada es suficiente para rechazar H₀.</li>
+                            <li>Los errores tipo I y II representan riesgos asociados a toda decisión estadística.</li>
+                            <li>La selección adecuada del nivel de significación y del tamaño de muestra mejora la calidad de las conclusiones.</li>
+                        </ul>
+                    </div>
+
+                    <p style="font-size: 17px; color: var(--text); max-width: 620px; margin: 0 auto 40px;">
+                        Este caso demuestra que las pruebas de hipótesis son herramientas fundamentales para tomar decisiones basadas en evidencia y reducir la incertidumbre en contextos reales.
+                    </p>
+
+                    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="restartQuiz()" class="btn btn-primary" style="min-width: 220px;">
+                            🔄 Reiniciar actividad
+                        </button>
+                        <button onclick="goToIntro()" class="btn btn-secondary" style="min-width: 220px;">
+                            ← Volver al inicio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK MODAL (tipo carta) -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div id="modal-icon-display" class="modal-icon"></div>
+                <div class="modal-title">Retroalimentación</div>
+            </div>
+            
+            <div id="modal-chosen-display" class="modal-chosen">
+                <strong>Has seleccionado:</strong> <span id="chosen-option-text"></span>
+            </div>
+            
+            <p id="modal-feedback-display" class="modal-feedback-text"></p>
+            
+            <button onclick="closeModalAndContinue()" class="btn btn-primary">
+                <span id="continue-btn-text">Continuar a la siguiente pregunta →</span>
+            </button>
+            
+            <div style="text-align: center; margin-top: 20px; font-size: 13px; color: #854d0e; opacity: 0.7;">
+                📬 Formato tipo carta
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === DATA EXACTA DEL DOCUMENTO ===
+        const questionsData = [
+            {
+                number: 1,
+                question: "¿Cuál debería ser la hipótesis nula para evaluar si la capacitación redujo el tiempo promedio de atención?",
+                choices: [
+                    {
+                        text: "H₀: μ = 12 minutos.",
+                        feedback: "Correcto. La hipótesis nula representa la situación inicial o de referencia, es decir, que el tiempo promedio sigue siendo de 12 minutos."
+                    },
+                    {
+                        text: "H₀: μ < 12 minutos.",
+                        feedback: "También válido como intuición inicial, pero corresponde más a una hipótesis alternativa porque plantea una reducción en el tiempo promedio."
+                    }
+                ]
+            },
+            {
+                number: 2,
+                question: "Si la empresa quiere demostrar que el tiempo promedio disminuyó con la capacitación, ¿cuál sería la hipótesis alternativa adecuada?",
+                choices: [
+                    {
+                        text: "H₁: μ < 12 minutos.",
+                        feedback: "Correcto. La hipótesis alternativa plantea que sí existe una mejora y que el tiempo promedio de atención es menor al valor inicial."
+                    },
+                    {
+                        text: "H₁: μ = 12 minutos.",
+                        feedback: "También válido como punto de referencia, pero no representa una hipótesis de cambio."
+                    }
+                ]
+            },
+            {
+                number: 3,
+                question: "Al realizar la prueba estadística, la empresa obtiene un p-valor de 0.03 con un nivel de significación de α = 0.05. ¿Qué decisión debe tomar?",
+                choices: [
+                    {
+                        text: "No rechazar H₀, porque el resultado podría deberse al azar.",
+                        feedback: "También válido como precaución general, pero en este caso el p-valor sí indica suficiente evidencia para rechazar H₀."
+                    },
+                    {
+                        text: "Rechazar H₀, porque existe evidencia suficiente de que la capacitación redujo el tiempo promedio.",
+                        feedback: "Correcto. Como el p-valor es menor que α, existe evidencia estadísticamente significativa para rechazar la hipótesis nula."
+                    }
+                ]
+            },
+            {
+                number: 4,
+                question: "Si la empresa rechaza H₀ cuando en realidad la capacitación no tuvo ningún efecto, ¿qué tipo de error estaría cometiendo?",
+                choices: [
+                    {
+                        text: "Error tipo II.",
+                        feedback: "También válido como otro tipo de error estadístico, pero no corresponde a este caso."
+                    },
+                    {
+                        text: "Error tipo I.",
+                        feedback: "Correcto. El error tipo I ocurre cuando se rechaza una hipótesis nula verdadera."
+                    }
+                ]
+            },
+            {
+                number: 5,
+                question: "Si la capacitación realmente mejora el desempeño, pero la empresa concluye que no hubo cambios, ¿qué tipo de error estaría ocurriendo?",
+                choices: [
+                    {
+                        text: "Error tipo II.",
+                        feedback: "Correcto. El error tipo II ocurre cuando no se rechaza H₀ siendo falsa, es decir, cuando no se detecta un efecto real."
+                    },
+                    {
+                        text: "Error tipo I.",
+                        feedback: "También válido como concepto estadístico, pero no corresponde a la situación planteada."
+                    }
+                ]
+            }
+        ]
+
+        // Variables globales
+        let currentQuestionIndex = 0
+        let currentShuffledChoices = []
+        let hasAnsweredCurrent = false
+
+        // Mostrar pantalla
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active')
+            })
+            const screen = document.getElementById(screenId)
+            if (screen) screen.classList.add('active')
+        }
+
+        // Barajar respuestas (para evitar siempre el mismo patrón)
+        function shuffleArray(array) {
+            const newArray = [...array]
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1))
+                ;[newArray[i], newArray[j]] = [newArray[j], newArray[i]]
+            }
+            return newArray
+        }
+
+        // Renderizar pregunta actual
+        function renderCurrentQuestion() {
+            const q = questionsData[currentQuestionIndex]
+            
+            // Actualizar número y progreso
+            document.getElementById('current-number').textContent = q.number
+            const progressPercent = Math.round(((currentQuestionIndex) / 5) * 100)
+            document.getElementById('progress-fill').style.width = `${progressPercent}%`
+            
+            // Texto de la pregunta
+            document.getElementById('question-text-display').innerHTML = `
+                <span style="color: var(--accent); font-size: 22px;">Pregunta ${q.number}:</span><br>
+                ${q.question}
+            `
+            
+            // Barajar opciones
+            currentShuffledChoices = shuffleArray(q.choices)
+            
+            // Limpiar contenedor
+            const optionsContainer = document.getElementById('options-container')
+            optionsContainer.innerHTML = ''
+            
+            // Crear opciones con etiquetas dinámicas A/B
+            currentShuffledChoices.forEach((choice, index) => {
+                const label = String.fromCharCode(65 + index) // A, B
+                
+                const optionHTML = `
+                <div class="option" data-index="${index}">
+                    <div class="option-label">${label}</div>
+                    <div style="flex: 1;">
+                        <span class="math">${choice.text}</span>
+                    </div>
+                </div>`
+                
+                optionsContainer.innerHTML += optionHTML
+            })
+            
+            // Agregar eventos a las opciones
+            setTimeout(() => {
+                document.querySelectorAll('.option').forEach(option => {
+                    option.addEventListener('click', handleOptionClick)
+                })
+            }, 10)
+            
+            hasAnsweredCurrent = false
+        }
+
+        // Manejar clic en opción
+        function handleOptionClick(e) {
+            if (hasAnsweredCurrent) return
+            
+            const index = parseInt(e.currentTarget.getAttribute('data-index'))
+            const chosenChoice = currentShuffledChoices[index]
+            
+            hasAnsweredCurrent = true
+            
+            // Desactivar todas las opciones
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.style.pointerEvents = 'none'
+                opt.style.opacity = '0.7'
+                
+                // Resaltar la seleccionada
+                if (parseInt(opt.getAttribute('data-index')) === index) {
+                    opt.style.borderColor = '#10b981'
+                    opt.style.background = '#ecfdf5'
+                }
+            })
+            
+            // Mostrar modal tipo carta
+            showFeedbackModal(chosenChoice.text, chosenChoice.feedback)
+        }
+
+        // Mostrar modal de retroalimentación
+        function showFeedbackModal(chosenText, feedbackText) {
+            const modal = document.getElementById('feedback-modal')
+            const isCorrect = feedbackText.startsWith('Correcto')
+            
+            // Icono según tipo
+            const iconEl = document.getElementById('modal-icon-display')
+            iconEl.textContent = isCorrect ? '✅' : '📌'
+            
+            // Texto elegido
+            document.getElementById('chosen-option-text').innerHTML = `<span class="math">${chosenText}</span>`
+            
+            // Texto de retroalimentación (exacto del documento)
+            document.getElementById('modal-feedback-display').innerHTML = feedbackText
+            
+            // Texto del botón (última pregunta diferente)
+            const continueBtn = document.getElementById('continue-btn-text')
+            if (currentQuestionIndex === 4) {
+                continueBtn.innerHTML = 'Ver conclusión final →'
+            } else {
+                continueBtn.innerHTML = 'Continuar a la siguiente pregunta →'
+            }
+            
+            modal.classList.add('active')
+        }
+
+        // Cerrar modal y continuar
+        function closeModalAndContinue() {
+            const modal = document.getElementById('feedback-modal')
+            modal.classList.remove('active')
+            
+            // Avanzar
+            if (currentQuestionIndex < 4) {
+                currentQuestionIndex++
+                renderCurrentQuestion()
+            } else {
+                // Mostrar pantalla final
+                showScreen('final-screen')
+            }
+        }
+
+        // Iniciar quiz
+        function startQuiz() {
+            currentQuestionIndex = 0
+            showScreen('question-screen')
+            renderCurrentQuestion()
+        }
+
+        // Reiniciar todo
+        function restartQuiz() {
+            currentQuestionIndex = 0
+            showScreen('intro-screen')
+        }
+
+        // Volver al caso intro
+        function goToIntro() {
+            showScreen('intro-screen')
+        }
+
+        // Inicialización
+        window.onload = function () {
+            console.log('%c✅ Recurso interactivo cargado correctamente - Estadística ESTA_2033', 'color:#10b981; font-weight:700')
+            // El recurso ya está listo para LMS
+        }
+    </script>
+</body>
+</html>

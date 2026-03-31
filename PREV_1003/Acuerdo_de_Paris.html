@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acuerdo de París</title>
+<style>
+  :root {
+    --primary: #1a6b3c;
+    --primary-light: #2d9b5a;
+    --primary-pale: #e8f5ee;
+    --secondary: #0d4f6c;
+    --secondary-light: #1a7ca8;
+    --accent: #f0a500;
+    --accent-light: #fff3cd;
+    --danger: #c0392b;
+    --danger-light: #fdecea;
+    --success: #1a6b3c;
+    --success-light: #e8f5ee;
+    --text-dark: #1a1a2e;
+    --text-med: #3a3a5c;
+    --text-light: #6b7280;
+    --bg: #f4f7f4;
+    --white: #ffffff;
+    --border: #d1e0d7;
+    --shadow: 0 4px 20px rgba(0,0,0,0.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: white;
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+  }
+
+  .canvas {
+    width: 800px;
+    min-height: 800px;
+    max-width: 800px;
+    background: var(--white);
+
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: var(--white);
+    padding: 12px 28px 8px;
+    position: relative;
+  }
+  .header-meta {
+    font-size: 11px;
+    opacity: .75;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 4px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .header-sub {
+    font-size: 12px;
+    opacity: .85;
+    margin-top: 4px;
+  }
+  .header-icon {
+    position: absolute;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 44px;
+    opacity: .25;
+  }
+
+  .tabs {
+    display: flex;
+    background: #f0f4f0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: 0 0 auto;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-light);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color .2s, border-color .2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--white);
+  }
+  .tab-btn:hover:not(.active) {
+    color: var(--primary-light);
+  }
+
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 28px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .intro-card {
+    background: var(--primary-pale);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius-sm);
+    padding: 8px 18px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    color: var(--text-med);
+    line-height: 1.6;
+  }
+
+  .topics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .topic-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: box-shadow .2s, border-color .2s, transform .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .topic-card:hover {
+    box-shadow: 0 6px 24px rgba(26,107,60,.15);
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+  }
+  .topic-card.open {
+    border-color: var(--primary);
+    box-shadow: 0 6px 24px rgba(26,107,60,.18);
+  }
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topic-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .topic-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.25;
+  }
+  .topic-article {
+    font-size: 11px;
+    color: var(--text-light);
+    font-weight: 400;
+  }
+  .topic-plus {
+    margin-left: auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary-pale);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: transform .2s, background .2s;
+  }
+  .topic-card.open .topic-plus {
+    transform: rotate(45deg);
+    background: var(--primary);
+    color: var(--white);
+  }
+  .topic-body {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .topic-card.open .topic-body { display: block; }
+  .topic-body ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .topic-body li {
+    font-size: 12.5px;
+    color: var(--text-med);
+    line-height: 1.55;
+    padding-left: 16px;
+    position: relative;
+  }
+  .topic-body li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--primary-light);
+    font-size: 11px;
+    top: 1px;
+  }
+  .topic-body b { color: var(--primary); }
+
+  .hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 14px;
+    padding: 8px;
+    background: #fafcfa;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border);
+  }
+  .hint span { font-weight: 600; color: var(--primary); }
+
+  .obj-banner {
+    background: linear-gradient(135deg, #e8f5ee, #d4edda);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    border: 1.5px solid #b2dfcc;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .obj-icon-big { font-size: 36px; }
+  .obj-text h3 { font-size: 15px; color: var(--primary); margin-bottom: 6px; }
+  .obj-text p { font-size: 13px; color: var(--text-med); line-height: 1.6; }
+  .temp-badges {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .temp-badge {
+    flex: 1;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+    border: 2px solid var(--primary);
+    box-shadow: 0 2px 8px rgba(26,107,60,.08);
+  }
+  .temp-badge .deg {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+  }
+  .temp-badge .label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+  .temp-badge.secondary { border-color: var(--accent); }
+  .temp-badge.secondary .deg { color: var(--accent); }
+
+  .section-img {
+    margin: 16px 0;
+    text-align: center;
+  }
+  .section-img img {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .img-caption {
+    font-size: 10px;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+
+  .reference-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  .reference-box strong { color: var(--text-med); }
+
+  /* Quiz Modal Styles */
+  .quiz-intro {
+    background: var(--secondary);
+    color: var(--white);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .quiz-intro h3 { font-size: 15px; margin-bottom: 6px; }
+  .quiz-intro p { font-size: 13px; opacity: .9; line-height: 1.6; }
+  .quiz-instruction {
+    font-size: 12.5px;
+    color: var(--text-light);
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  .quiz-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: width .3s;
+  }
+  .progress-label { font-size: 12px; color: var(--text-light); white-space: nowrap; }
+
+  /* Card-style current question */
+  .current-question-card {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary-pale);
+  }
+  .q-number-badge {
+    background: var(--primary);
+    color: var(--white);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .q-status {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .q-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .q-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .q-option-btn {
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    background: var(--white);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: left;
+    color: var(--text-dark);
+  }
+  .q-option-btn:hover:not(:disabled) {
+    border-color: var(--primary-light);
+    background: var(--primary-pale);
+    transform: translateX(4px);
+  }
+  .q-option-btn.correct {
+    border-color: var(--success);
+    background: var(--success-light);
+    color: var(--success);
+  }
+  .q-option-btn.wrong {
+    border-color: var(--danger);
+    background: var(--danger-light);
+    color: var(--danger);
+  }
+  .q-option-btn:disabled { cursor: default; opacity: 0.8; }
+
+  .feedback-modal {
+    background: var(--primary-pale);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-top: 16px;
+    margin-bottom: 20px;
+  }
+  .feedback-modal.success {
+    background: var(--success-light);
+    border-left-color: var(--success);
+  }
+  .feedback-modal.error {
+    background: var(--danger-light);
+    border-left-color: var(--danger);
+  }
+  .feedback-modal strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .feedback-modal p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-med);
+  }
+
+  .quiz-nav {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  .quiz-nav-btn {
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .quiz-nav-btn.prev {
+    background: var(--text-light);
+    color: var(--white);
+  }
+  .quiz-nav-btn.prev:hover {
+    background: var(--text-med);
+  }
+  .quiz-nav-btn.next {
+    background: var(--primary);
+    color: var(--white);
+  }
+  .quiz-nav-btn.next:hover {
+    background: var(--primary-light);
+  }
+  .quiz-nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .quiz-score {
+    display: none;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--white);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    margin-top: 24px;
+  }
+  .quiz-score .score-big { font-size: 48px; font-weight: 800; }
+  .quiz-score p { font-size: 14px; opacity: .9; margin-top: 6px; }
+  .quiz-reset {
+    margin-top: 20px;
+    padding: 12px 28px;
+    background: var(--white);
+    color: var(--primary);
+    border: none;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .2s;
+  }
+  .quiz-reset:hover {
+    transform: scale(1.02);
+  }
+
+  @media (max-width: 820px) {
+    body { padding: 0; }
+    .canvas {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0;
+      min-height: 100vh;
+    }
+    .header { padding: 18px 16px 14px; }
+    .header h1 { font-size: 19px; }
+    .header-icon { display: none; }
+    .content-area { padding: 16px; }
+    .topics-grid { grid-template-columns: 1fr; }
+    .tab-btn { padding: 10px 12px; font-size: 12px; }
+    .temp-badges { flex-direction: column; }
+    .current-question-card { padding: 16px; }
+    .q-text { font-size: 14px; }
+    .q-option-btn { padding: 12px 14px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas">
+  <div class="header">
+    <h1>🌍 Acuerdo de París</h1>
+    <div class="header-sub">Instrumento internacional jurídicamente vinculante sobre cambio climático</div>
+    <div class="header-icon">🌿</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showPanel('objetivo')">🎯 Objetivo</button>
+    <button class="tab-btn" onclick="showPanel('pilares')">📋 Pilares</button>
+    <button class="tab-btn" onclick="showPanel('quiz')">🧩 Quiz</button>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ══════ OBJETIVO ══════ -->
+    <div id="panel-objetivo" class="panel active">
+      <div class="intro-card">
+        A continuación, se explican los fundamentos del Acuerdo de París, un instrumento internacional jurídicamente vinculante orientado a enfrentar el cambio climático a escala global.
+      </div>
+
+      <div class="obj-banner">
+        <div class="obj-icon-big">🌡️</div>
+        <div class="obj-text">
+          <h3>Objetivo Principal (Artículo 2)</h3>
+          <p>Mantener el incremento de la temperatura promedio del planeta <strong>muy por debajo de 2 °C</strong> respecto a los niveles preindustriales, y sostener esfuerzos adicionales para limitarlo a <strong>1,5 °C</strong> sobre esos mismos niveles.</p>
+        </div>
+      </div>
+
+      <div class="temp-badges">
+        <div class="temp-badge">
+          <div class="deg">&lt; 2°C</div>
+          <div class="label">Límite máximo de incremento de temperatura global</div>
+        </div>
+        <div class="temp-badge secondary">
+          <div class="deg">1,5°C</div>
+          <div class="label">Meta aspiracional para limitar el calentamiento</div>
+        </div>
+      </div>
+
+      <div class="section-img">
+        <img src="media/Imagen 20.png" alt="Atardecer dorado sobre la ciudad" onerror="this.style.display='none'">
+        <div class="img-caption">Impacto del cambio climático en paisajes urbanos</div>
+      </div>
+
+      <div style="margin-top: 20px;" class="reference-box">
+        <strong>Referencia:</strong> Servicio Nacional de Gestión de Riesgos y Emergencias. (2019). <em>Lineamientos para incluir la gestión del riesgo de desastres en el Plan de Desarrollo y Ordenamiento Territorial (PDOT).</em> https://www.gestionderiesgos.gob.ec/
+      </div>
+    </div>
+
+    <!-- ══════ PILARES ══════ -->
+    <div id="panel-pilares" class="panel">
+      <div class="hint">Haga clic en el <span>"+"</span> para visualizar el contenido de cada pilar.</div>
+
+      <div class="topics-grid">
+        <!-- Mitigación -->
+        <div class="topic-card" onclick="toggleCard(this)">
+          <div class="topic-header">
+            <div class="topic-icon" style="background:#e8f5ee">🏭</div>
+            <div>
+              <div class="topic-title">Mitigación</div>
+              <div class="topic-article">NDC · Ambición creciente</div>
+            </div>
+            <div class="topic-plus">+</div>
+          </div>
+          <div class="topic-body">
+            <ul>
+              <li><b>NDC actualizadas cada 5 años:</b> Los países presentan y renuevan periódicamente sus Contribuciones Determinadas a Nivel Nacional, reportando avances de manera transparente.</li>
+              <li><b>Ambición creciente:</b> Cada nueva NDC debe superar a la anterior, mostrando mejoras progresivas y compromisos más exigentes.</li>
+              <li><b>Responsabilidades diferenciadas:</b> Los países desarrollados lideran con metas absolutas de reducción; los países en desarrollo incrementan sus esfuerzos gradualmente.</li>
+              <li><b>Registro público:</b> Las NDC se incorporan en un registro oficial administrado por la Secretaría del Acuerdo.</li>
+              <li><b>Sumideros de GEI:</b> El Acuerdo promueve conservar y fortalecer los bosques y reservorios de gases de efecto invernadero.</li>
+            </ul>
+            <div class="section-img" style="margin-top: 12px;">
+              <img src="media/Imagen 21.png"  alt="Bosque con gráficos de CO2" onerror="this.style.display='none'" style="max-width: 100%; border-radius: 8px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Cooperación Voluntaria -->
+        <div class="topic-card" onclick="toggleCard(this)">
+          <div class="topic-header">
+            <div class="topic-icon" style="background:#e8f0fb">🤝</div>
+            <div>
+              <div class="topic-title">Cooperación Voluntaria</div>
+              <div class="topic-article">Artículo 6</div>
+            </div>
+            <div class="topic-plus">+</div>
+          </div>
+          <div class="topic-body">
+            <ul>
+              <li>Los países pueden colaborar voluntariamente para elevar su nivel de ambición climática, bajo principios de <b>integridad ambiental, transparencia</b> y contabilidad rigurosa.</li>
+              <li>El Artículo 6 define un mecanismo que contribuye a reducir emisiones de GEI, apoyar el desarrollo sostenible y orientar enfoques no basados en mercados.</li>
+            </ul>
+            <div class="section-img" style="margin-top: 12px;">
+              <img src="media/Imagen 22.png"  alt="Cooperación climática global" onerror="this.style.display='none'" style="max-width: 100%; border-radius: 8px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Adaptación -->
+        <div class="topic-card" onclick="toggleCard(this)">
+          <div class="topic-header">
+            <div class="topic-icon" style="background:#fff3cd">🌊</div>
+            <div>
+              <div class="topic-title">Adaptación</div>
+              <div class="topic-article">Meta global de adaptación</div>
+            </div>
+            <div class="topic-plus">+</div>
+          </div>
+          <div class="topic-body">
+            <ul>
+              <li>Define una <b>meta global de adaptación</b> para elevar la capacidad de adaptación, fortalecer la resiliencia y disminuir la vulnerabilidad frente al cambio climático.</li>
+              <li>Reconoce que la adaptación es un reto compartido: las Partes deben diseñar e implementar <b>planes nacionales de adaptación</b> y comunicar sus prioridades, necesidades y avances periódicamente.</li>
+              <li>Subraya la importancia de valorar y respaldar los avances en países en desarrollo.</li>
+            </ul>
+            <div class="section-img" style="margin-top: 12px;">
+              <img src="media/Imagen 23.png"  alt="Templo Gunung Kawi" onerror="this.style.display='none'" style="max-width: 100%; border-radius: 8px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Pérdidas y Daños -->
+        <div class="topic-card" onclick="toggleCard(this)">
+          <div class="topic-header">
+            <div class="topic-icon" style="background:#fdecea">⚠️</div>
+            <div>
+              <div class="topic-title">Pérdidas y Daños</div>
+              <div class="topic-article">Artículo 8</div>
+            </div>
+            <div class="topic-plus">+</div>
+          </div>
+          <div class="topic-body">
+            <ul>
+              <li>Reconoce la necesidad de <b>prevenir, disminuir y atender</b> las pérdidas y daños asociados al cambio climático: eventos extremos (tormentas, inundaciones) y procesos graduales (aumento del nivel del mar, degradación de ecosistemas).</li>
+              <li>Las Partes se comprometen a mejorar el conocimiento, fortalecer medidas de respuesta y ampliar la cooperación internacional a través del <b>Mecanismo Internacional de Varsovia</b>.</li>
+            </ul>
+            <div class="section-img" style="margin-top: 12px;">
+              <img src="media/Imagen 24.png"  alt="Iglesia en isla seca" onerror="this.style.display='none'" style="max-width: 100%; border-radius: 8px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Formación y Participación -->
+        <div class="topic-card" onclick="toggleCard(this)">
+          <div class="topic-header">
+            <div class="topic-icon" style="background:#e8f0fb">📚</div>
+            <div>
+              <div class="topic-title">Formación y Participación</div>
+              <div class="topic-article">Artículo 12</div>
+            </div>
+            <div class="topic-plus">+</div>
+          </div>
+          <div class="topic-body">
+            <ul>
+              <li>Plantea fortalecer la <b>educación y capacitación</b> sobre cambio climático, junto con acciones de sensibilización.</li>
+              <li>Promueve la <b>participación ciudadana</b> y el acceso público a información climática como parte de los compromisos de las Partes.</li>
+            </ul>
+            <div class="section-img" style="margin-top: 12px;">
+              <img src="media/Imagen 25.png"  alt="Comunidad global por el clima" onerror="this.style.display='none'" style="max-width: 100%; border-radius: 8px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Transparencia y Cumplimiento -->
+        <div class="topic-card" onclick="toggleCard(this)">
+          <div class="topic-header">
+            <div class="topic-icon" style="background:#e8f5ee">🔍</div>
+            <div>
+              <div class="topic-title">Transparencia y Cumplimiento</div>
+              <div class="topic-article">Artículos 14 y 15</div>
+            </div>
+            <div class="topic-plus">+</div>
+          </div>
+          <div class="topic-body">
+            <ul>
+              <li>Incorpora un <b>marco robusto de transparencia y rendición de cuentas</b> para que las acciones climáticas sean comparables y comprensibles, considerando la diversidad de capacidades entre países.</li>
+              <li>La información presentada se somete a <b>revisión técnica internacional</b>.</li>
+              <li>Contempla mecanismos para facilitar la aplicación y promover el cumplimiento de manera <b>no punitiva y no confrontacional</b>, con reportes periódicos a la Conferencia de las Partes.</li>
+            </ul>
+            <div class="section-img" style="margin-top: 12px;">
+              <img src="media/Imagen 26.png"  alt="Manos unidas por la transparencia" onerror="this.style.display='none'" style="max-width: 100%; border-radius: 8px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px;" class="reference-box">
+        <strong>Referencia:</strong> Servicio Nacional de Gestión de Riesgos y Emergencias. (2019). <em>Lineamientos para incluir la gestión del riesgo de desastres en el Plan de Desarrollo y Ordenamiento Territorial (PDOT).</em> https://www.gestionderiesgos.gob.ec/
+      </div>
+    </div>
+
+    <!-- ══════ QUIZ (UNA PREGUNTA POR VEZ) ══════ -->
+    <div id="panel-quiz" class="panel">
+      <div class="quiz-intro">
+        <h3>🧩 Mitos y verdades</h3>
+        <p>Antes de continuar, complete este pequeño quiz y verifique qué afirmaciones se sostienen en los acuerdos y cuáles son interpretaciones equivocadas. Esto le permitirá comprender con mayor claridad el propósito y el alcance de estos marcos internacionales.</p>
+      </div>
+      <p class="quiz-instruction">Seleccione la respuesta que considere correcta para cada pregunta.</p>
+
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="qProgress" style="width:0%"></div></div>
+        <div class="progress-label" id="qLabel">0 / 10</div>
+      </div>
+
+      <div id="quiz-current-container"></div>
+      <div class="quiz-score" id="quizScore">
+        <div class="score-big" id="scoreBig"></div>
+        <p id="scoreMsg"></p>
+        <button class="quiz-reset" onclick="resetQuiz()">🔄 Intentar de nuevo</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ── TABS ── */
+  function showPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  /* ── TOPIC CARDS ── */
+  function toggleCard(card) {
+    card.classList.toggle('open');
+  }
+
+  /* ── QUIZ DATA (basado en el documento Word) ── */
+  const questions = [
+    {
+      text: 'El Marco de Sendai se enfoca únicamente en atender emergencias cuando el desastre ya ocurrió.',
+      options: ['Mito', 'Verdad'],
+      correct: 0,
+      feedbackOk: 'Sendai prioriza la gestión del riesgo: comprenderlo, prevenir la creación de nuevos riesgos, reducir los existentes y fortalecer la preparación para responder y recuperarse mejor.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'Sendai aplica solo a amenazas naturales (terremotos, inundaciones, etc.).',
+      options: ['Mito', 'Verdad'],
+      correct: 0,
+      feedbackOk: 'Su enfoque es multiamenaza y reconoce que los riesgos pueden incluir dimensiones naturales, tecnológicas, biológicas y asociadas a la acción humana, según el contexto.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'En Sendai, el Estado es importante, pero la sociedad también tiene un rol.',
+      options: ['Mito', 'Verdad'],
+      correct: 1,
+      feedbackOk: 'El marco impulsa la participación de múltiples actores (comunidades, academia, sector privado, gobiernos locales) y promueve decisiones informadas y coordinación.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'Sendai es un tratado jurídicamente obligatorio como una ley internacional.',
+      options: ['Mito', 'Verdad'],
+      correct: 0,
+      feedbackOk: 'Es un marco de acción acordado internacionalmente (orienta políticas y prioridades), pero su implementación depende de los países y sus sistemas nacionales.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: "Una idea clave de Sendai es 'reconstruir mejor' después de un desastre.",
+      options: ['Mito', 'Verdad'],
+      correct: 1,
+      feedbackOk: 'Promueve recuperar y reconstruir reduciendo vulnerabilidades para evitar repetir daños y pérdidas.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'El Acuerdo de París solo trata de mitigación (reducir emisiones).',
+      options: ['Mito', 'Verdad'],
+      correct: 0,
+      feedbackOk: 'Incluye mitigación, adaptación, y reconoce la importancia de abordar pérdidas y daños, además de mecanismos de cooperación y transparencia.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'El objetivo de temperatura (muy por debajo de 2°C y esforzarse por 1,5°C) orienta la acción global.',
+      options: ['Mito', 'Verdad'],
+      correct: 1,
+      feedbackOk: 'La meta de temperatura funciona como horizonte común para alinear políticas y esfuerzos de los países.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'Las NDC (contribuciones determinadas a nivel nacional) se actualizan periódicamente y deben aumentar su ambición.',
+      options: ['Mito', 'Verdad'],
+      correct: 1,
+      feedbackOk: 'El acuerdo impulsa ciclos de actualización para mejorar progresivamente la respuesta climática.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'El Acuerdo de París no tiene seguimiento: cada país hace lo que quiere sin rendir cuentas.',
+      options: ['Mito', 'Verdad'],
+      correct: 0,
+      feedbackOk: 'Contempla un marco de transparencia: reporte, revisión técnica y seguimiento del progreso, con flexibilidad según capacidades.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    },
+    {
+      text: 'La adaptación es opcional; lo central es reducir emisiones.',
+      options: ['Mito', 'Verdad'],
+      correct: 0,
+      feedbackOk: 'El acuerdo establece un objetivo global de adaptación y llama a fortalecer capacidades y resiliencia, especialmente en países con mayores necesidades.',
+      feedbackFail: '¡Oh, no! Vamos a intentarlo de nuevo.'
+    }
+  ];
+
+  let currentQuestionIndex = 0;
+  let answered = 0;
+  let correct = 0;
+  const answeredArr = new Array(questions.length).fill(false);
+  let userAnswers = new Array(questions.length).fill(null);
+
+  function renderCurrentQuestion() {
+    const container = document.getElementById('quiz-current-container');
+    const q = questions[currentQuestionIndex];
+    const isAnswered = answeredArr[currentQuestionIndex];
+    const selectedOpt = userAnswers[currentQuestionIndex];
+    
+    let optionsHtml = '';
+    q.options.forEach((opt, idx) => {
+      let btnClass = 'q-option-btn';
+      if (isAnswered) {
+        if (idx === q.correct) btnClass += ' correct';
+        if (idx === selectedOpt && idx !== q.correct) btnClass += ' wrong';
+      }
+      const disabledAttr = isAnswered ? 'disabled' : '';
+      optionsHtml += `<button class="${btnClass}" onclick="selectAnswer(${currentQuestionIndex}, ${idx})" ${disabledAttr}>${opt}</button>`;
+    });
+
+    let feedbackHtml = '';
+    if (isAnswered && selectedOpt !== null) {
+      const isCorrect = selectedOpt === q.correct;
+      feedbackHtml = `
+        <div class="feedback-modal ${isCorrect ? 'success' : 'error'}">
+          <strong>${isCorrect ? '✅ Respuesta positiva:' : '❌ Respuesta negativa:'}</strong>
+          <p>${isCorrect ? q.feedbackOk : q.feedbackFail}</p>
+        </div>
+      `;
+    }
+
+    const html = `
+      <div class="current-question-card">
+        <div class="q-header">
+          <span class="q-number-badge">Pregunta ${currentQuestionIndex + 1} de ${questions.length}</span>
+          <span class="q-status">${isAnswered ? '✓ Respondida' : 'Pendiente'}</span>
+        </div>
+        <div class="q-text">${q.text}</div>
+        <div class="q-options">
+          ${optionsHtml}
+        </div>
+        ${feedbackHtml}
+        <div class="quiz-nav">
+          <button class="quiz-nav-btn prev" onclick="prevQuestion()" ${currentQuestionIndex === 0 ? 'disabled' : ''}>← Anterior</button>
+          <button class="quiz-nav-btn next" onclick="nextQuestion()" ${currentQuestionIndex === questions.length - 1 ? 'disabled' : ''}>Siguiente →</button>
+        </div>
+      </div>
+    `;
+    container.innerHTML = html;
+  }
+
+  function selectAnswer(qIdx, optIdx) {
+    if (answeredArr[qIdx]) return;
+    
+    const q = questions[qIdx];
+    const isCorrect = optIdx === q.correct;
+    
+    answeredArr[qIdx] = true;
+    userAnswers[qIdx] = optIdx;
+    
+    if (isCorrect) correct++;
+    answered++;
+    
+    updateProgress();
+    renderCurrentQuestion();
+    
+    if (answered === questions.length) {
+      showScore();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQuestionIndex > 0) {
+      currentQuestionIndex--;
+      renderCurrentQuestion();
+    }
+  }
+
+  function nextQuestion() {
+    if (currentQuestionIndex < questions.length - 1) {
+      currentQuestionIndex++;
+      renderCurrentQuestion();
+    }
+  }
+
+  function updateProgress() {
+    const pct = (answered / questions.length) * 100;
+    document.getElementById('qProgress').style.width = pct + '%';
+    document.getElementById('qLabel').textContent = answered + ' / ' + questions.length;
+  }
+
+  function showScore() {
+    const box = document.getElementById('quizScore');
+    box.style.display = 'block';
+    document.getElementById('scoreBig').textContent = correct + ' / ' + questions.length;
+    const pct = Math.round((correct / questions.length) * 100);
+    let msg = pct === 100
+      ? '🎉 ¡Perfecto! Dominas el Acuerdo de París y el Marco de Sendai.'
+      : pct >= 70
+        ? '👍 ¡Muy bien! Sigue reforzando tu conocimiento.'
+        : '📖 Revisa el contenido y vuelve a intentarlo.';
+    document.getElementById('scoreMsg').textContent = msg;
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetQuiz() {
+    currentQuestionIndex = 0;
+    answered = 0;
+    correct = 0;
+    for (let i = 0; i < questions.length; i++) {
+      answeredArr[i] = false;
+      userAnswers[i] = null;
+    }
+    document.getElementById('quizScore').style.display = 'none';
+    updateProgress();
+    renderCurrentQuestion();
+  }
+
+  // Inicializar quiz
+  renderCurrentQuestion();
+</script>
+</body>
+</html>

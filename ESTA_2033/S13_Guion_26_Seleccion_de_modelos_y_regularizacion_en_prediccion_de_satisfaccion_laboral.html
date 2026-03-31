@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección de modelos y regularización en predicción de satisfacción laboral</title>
+    <style>
+        :root {
+            --primary:   #0E2D52;
+            --primary-d: #1B4F8A;
+            --accent:    #2E6DAD;
+            --accent-d:  #0E2D52;
+            --gold:      #F5A800;
+            --gold-dark: #C98700;
+            --green:     #006747;
+            --green-l:   #B9D3B0;
+            --sand:      #E8F0FA;
+            --salmon:    #F5A800;
+            --blue-l:    #B8CCE4;
+            --bg:        #FFFFFF;
+            --surface:   #F4F7FB;
+            --text:      #0E2D52;
+            --muted:     #4A5568;
+            --border:    #B8CCE4;
+            --correct:   #006747;
+            --correct-bg:#e8f5ee;
+            --wrong:     #A51C30;
+            --wrong-bg:  #fdecea;
+            --shadow:    rgba(14, 45, 82, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .main-container {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            padding: 20px 28px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--salmon) 100%);
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .header-meta {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            position: relative;
+        }
+
+        .instruction-banner {
+            background: linear-gradient(135deg, var(--green-l) 0%, var(--sand) 100%);
+            border: 2px solid var(--green);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instruction-icon {
+            font-size: 1.4rem;
+        }
+
+        .instruction-text {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .case-card {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--sand) 100%);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 2px solid var(--border);
+        }
+
+        .case-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .case-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .variables-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .var-tag {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .problem-box {
+            background: white;
+            border-left: 3px solid var(--gold);
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .problem-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--gold-dark);
+            margin-bottom: 6px;
+        }
+
+        .problem-list {
+            font-size: 0.8rem;
+            color: var(--text);
+            line-height: 1.4;
+            padding-left: 16px;
+        }
+
+        .problem-list li {
+            margin-bottom: 4px;
+        }
+
+        .quiz-section {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .question-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--salmon) 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-btn {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: var(--sand);
+            transform: translateX(4px);
+        }
+
+        .option-btn.correct {
+            background: var(--correct-bg);
+            border-color: var(--correct);
+            color: var(--correct);
+        }
+
+        .option-btn.incorrect {
+            background: var(--wrong-bg);
+            border-color: var(--wrong);
+            color: var(--wrong);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .feedback-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            border: 2px solid var(--border);
+            display: none;
+        }
+
+        .feedback-card.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .feedback-header.correct {
+            color: var(--correct);
+        }
+
+        .feedback-header.incorrect {
+            color: var(--wrong);
+        }
+
+        .feedback-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            background: var(--surface);
+            border-top: 2px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--surface);
+            border-color: var(--accent);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: var(--gold);
+            transform: scale(1.2);
+        }
+
+        .dot.completed {
+            background: var(--correct);
+        }
+
+        .final-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .final-screen.show {
+            display: flex;
+        }
+
+        .trophy {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .final-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .final-message {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 600px;
+            margin-bottom: 24px;
+        }
+
+        .key-points {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 24px;
+        }
+
+        .key-point {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .key-point:last-child {
+            margin-bottom: 0;
+        }
+
+        .key-icon {
+            color: var(--correct);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .method-comparison {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .method-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .method-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .method-desc {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        @media (max-width: 840px) {
+            .main-container {
+                width: 100%;
+                height: auto;
+                min-height: 600px;
+                max-height: none;
+            }
+            
+            .variables-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .method-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <h1>Selección de modelos y regularización en predicción de satisfacción laboral</h1>
+            <div class="header-meta">ESTA_2033 • Juan Torres</div>
+        </header>
+
+        <div class="content-area" id="contentArea">
+            <div class="instruction-banner">
+                <span class="instruction-icon">🎯</span>
+                <span class="instruction-text">Se invita a poner en práctica los conceptos estudiados mediante la resolución del caso que se presenta.</span>
+            </div>
+
+            <div id="caseSection">
+                <div class="case-card">
+                    <div class="case-title">💼 CASO: PREDICCIÓN DE SATISFACCIÓN LABORAL MEDIANTE MODELOS REGULARIZADOS</div>
+                    <div class="case-text">
+                        Una empresa desea predecir el nivel de satisfacción laboral de sus empleados utilizando 15 variables, entre ellas:
+                    </div>
+                    
+                    <div class="variables-grid">
+                        <div class="var-tag">💰 Salario</div>
+                        <div class="var-tag">🏢 Ambiente laboral</div>
+                        <div class="var-tag">👔 Relación con jefatura</div>
+                        <div class="var-tag">🛡️ Estabilidad</div>
+                        <div class="var-tag">⏰ Horarios</div>
+                        <div class="var-tag">📈 Oportunidades</div>
+                        <div class="var-tag">⚡ Carga de trabajo</div>
+                        <div class="var-tag">+8 variables más</div>
+                    </div>
+
+                    <div class="problem-box">
+                        <div class="problem-title">⚠️ Problemas identificados:</div>
+                        <ul class="problem-list">
+                            <li>Muchas variables están <strong>correlacionadas</strong> entre sí</li>
+                            <li>Modelo lineal tradicional produce <strong>coeficientes inestables</strong></li>
+                            <li>Riesgo de <strong>sobreajuste</strong></li>
+                            <li>Necesidad de <strong>seleccionar variables</strong> más relevantes</li>
+                        </ul>
+                    </div>
+
+                    <div class="method-comparison" style="margin-top: 16px;">
+                        <div class="method-card">
+                            <div class="method-name">Ridge</div>
+                            <div class="method-desc">Reduce coeficientes pero no elimina variables</div>
+                        </div>
+                        <div class="method-card">
+                            <div class="method-name">Lasso</div>
+                            <div class="method-desc">Puede llevar coeficientes a cero (selección)</div>
+                        </div>
+                        <div class="method-card">
+                            <div class="method-name">Elastic Net</div>
+                            <div class="method-desc">Combina Ridge + Lasso</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quizContainer"></div>
+
+            <div class="final-screen" id="finalScreen">
+                <div class="trophy">🏆</div>
+                <div class="final-title">¡Felicidades!</div>
+                <div class="final-message">Ha concluido con éxito el análisis del caso.</div>
+                
+                <div class="key-points">
+                    <div class="key-point">
+                        <span class="key-icon">✓</span>
+                        <span>La regularización permite controlar la complejidad de los modelos predictivos y mejorar su desempeño en nuevos datos.</span>
+                    </div>
+                    <div class="key-point">
+                        <span class="key-icon">✓</span>
+                        <span>Ridge, Lasso y Elastic Net ofrecen diferentes ventajas según el objetivo del análisis.</span>
+                    </div>
+                    <div class="key-point">
+                        <span class="key-icon">✓</span>
+                        <span>La validación cruzada y las métricas de evaluación ayudan a seleccionar modelos más precisos, estables e interpretables.</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="restartQuiz()">
+                    🔄 Reiniciar caso
+                </button>
+            </div>
+        </div>
+
+        <div class="nav-buttons" id="navButtons">
+            <button class="btn btn-secondary" id="prevBtn" onclick="navigateQuestion(-1)" disabled>
+                ← Anterior
+            </button>
+            
+            <div class="progress-dots" id="progressDots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+
+            <button class="btn btn-primary" id="nextBtn" onclick="navigateQuestion(1)" disabled>
+                Siguiente →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                question: "¿Qué problema puede aparecer cuando se usan muchas variables predictoras en un modelo?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "Sobreajuste y coeficientes inestables.",
+                        correct: true,
+                        feedback: "Correcto. Cuando hay muchas variables, el modelo puede ajustarse demasiado a los datos de entrenamiento y perder capacidad de generalización."
+                    },
+                    {
+                        id: 'B',
+                        text: "Reducción automática del error en datos nuevos.",
+                        correct: false,
+                        feedback: "También válido como expectativa deseable, aunque normalmente ocurre lo contrario si no se controla la complejidad."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                question: "¿Qué método de regularización permite eliminar variables llevando algunos coeficientes exactamente a cero?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "Ridge.",
+                        correct: false,
+                        feedback: "También válido como método de regularización, aunque Ridge no elimina variables."
+                    },
+                    {
+                        id: 'B',
+                        text: "Lasso.",
+                        correct: true,
+                        feedback: "Correcto. Lasso puede reducir algunos coeficientes exactamente a cero, realizando selección automática de variables."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                question: "¿Cuál es la principal ventaja de Ridge?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "Reduce la inestabilidad causada por variables muy correlacionadas.",
+                        correct: true,
+                        feedback: "Correcto. Ridge funciona especialmente bien cuando existe multicolinealidad entre predictores."
+                    },
+                    {
+                        id: 'B',
+                        text: "Elimina automáticamente todas las variables irrelevantes.",
+                        correct: false,
+                        feedback: "También válido como objetivo de simplificación, aunque Ridge no elimina variables."
+                    }
+                ]
+            },
+            {
+                id: 4,
+                question: "¿Qué técnica combina características de Ridge y Lasso?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "Elastic Net.",
+                        correct: true,
+                        feedback: "Correcto. Elastic Net combina penalizaciones tipo Ridge y Lasso para obtener modelos más estables."
+                    },
+                    {
+                        id: 'B',
+                        text: "Regresión polinomial.",
+                        correct: false,
+                        feedback: "También válido como técnica no lineal, aunque no combina regularización."
+                    }
+                ]
+            },
+            {
+                id: 5,
+                question: "¿Cuál es el objetivo principal de la validación cruzada k-fold?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "Evaluar el rendimiento del modelo en datos no vistos.",
+                        correct: true,
+                        feedback: "Correcto. La validación cruzada permite estimar qué tan bien funcionará el modelo en nuevos datos."
+                    },
+                    {
+                        id: 'B',
+                        text: "Aumentar automáticamente el valor de R².",
+                        correct: false,
+                        feedback: "También válido como expectativa, aunque el objetivo real no es aumentar R² sino medir generalización."
+                    }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+        let shuffledQuestions = [];
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function initQuiz() {
+            shuffledQuestions = shuffleArray(questions);
+            renderQuestion();
+            updateProgress();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quizContainer');
+            const q = shuffledQuestions[currentQuestion];
+            
+            const shuffledOptions = shuffleArray(q.options);
+            
+            let optionsHtml = '';
+            const answered = answers[q.id];
+            
+            shuffledOptions.forEach(opt => {
+                let className = 'option-btn';
+                let disabled = '';
+                
+                if (answered) {
+                    disabled = 'disabled';
+                    if (opt.correct) {
+                        className += ' correct';
+                    } else if (answered.selected === opt.id && !opt.correct) {
+                        className += ' incorrect';
+                    }
+                }
+                
+                optionsHtml += `
+                    <button class="${className}" ${disabled} onclick="selectOption('${q.id}', '${opt.id}', ${opt.correct})">
+                        <strong>Opción ${opt.id}:</strong> ${opt.text}
+                    </button>
+                `;
+            });
+
+            const feedback = answered ? `
+                <div class="feedback-card show">
+                    <div class="feedback-header ${answered.correct ? 'correct' : 'incorrect'}">
+                        ${answered.correct ? '✓' : '✗'} ${answered.correct ? 'Respuesta correcta' : 'Respuesta incorrecta'}
+                    </div>
+                    <div class="feedback-text">${answered.feedback}</div>
+                </div>
+            ` : '';
+
+            container.innerHTML = `
+                <div class="quiz-section">
+                    <div class="question-number">${currentQuestion + 1}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${optionsHtml}
+                    </div>
+                    ${feedback}
+                </div>
+            `;
+
+            document.getElementById('nextBtn').disabled = !answered;
+        }
+
+        function selectOption(questionId, optionId, isCorrect) {
+            if (answers[questionId]) return;
+            
+            const q = shuffledQuestions[currentQuestion];
+            const selectedOption = q.options.find(o => o.id === optionId);
+            
+            answers[questionId] = {
+                selected: optionId,
+                correct: isCorrect,
+                feedback: selectedOption.feedback
+            };
+            
+            renderQuestion();
+            updateProgress();
+        }
+
+        function navigateQuestion(direction) {
+            const newIndex = currentQuestion + direction;
+            
+            if (newIndex >= 0 && newIndex < shuffledQuestions.length) {
+                currentQuestion = newIndex;
+                renderQuestion();
+                updateProgress();
+            } else if (newIndex >= shuffledQuestions.length) {
+                showFinalScreen();
+            }
+        }
+
+        function updateProgress() {
+            const dots = document.getElementById('progressDots');
+            dots.innerHTML = '';
+            
+            for (let i = 0; i < shuffledQuestions.length; i++) {
+                let className = 'dot';
+                if (i === currentQuestion) className += ' active';
+                else if (answers[shuffledQuestions[i].id]) className += ' completed';
+                dots.innerHTML += `<div class="${className}"></div>`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentQuestion === 0;
+            
+            const currentQ = shuffledQuestions[currentQuestion];
+            const answered = answers[currentQ.id];
+            document.getElementById('nextBtn').disabled = !answered;
+            
+            if (currentQuestion === shuffledQuestions.length - 1 && answered) {
+                document.getElementById('nextBtn').textContent = 'Finalizar →';
+            } else {
+                document.getElementById('nextBtn').textContent = 'Siguiente →';
+            }
+        }
+
+        function showFinalScreen() {
+            document.getElementById('caseSection').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('navButtons').style.display = 'none';
+            document.getElementById('finalScreen').classList.add('show');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = {};
+            shuffledQuestions = [];
+            
+            document.getElementById('caseSection').style.display = 'block';
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('navButtons').style.display = 'flex';
+            document.getElementById('finalScreen').classList.remove('show');
+            
+            initQuiz();
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>

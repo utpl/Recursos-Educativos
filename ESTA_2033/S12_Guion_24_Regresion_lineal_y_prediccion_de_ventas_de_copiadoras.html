@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regresión lineal y predicción de ventas de copiadoras</title>
+    <style>
+        :root {
+            --primary:   #0E2D52;
+            --primary-d: #1B4F8A;
+            --accent:    #2E6DAD;
+            --accent-d:  #0E2D52;
+            --gold:      #F5A800;
+            --gold-dark: #C98700;
+            --green:     #006747;
+            --green-l:   #B9D3B0;
+            --sand:      #E8F0FA;
+            --salmon:    #F5A800;
+            --blue-l:    #B8CCE4;
+            --bg:        #FFFFFF;
+            --surface:   #F4F7FB;
+            --text:      #0E2D52;
+            --muted:     #4A5568;
+            --border:    #B8CCE4;
+            --correct:   #006747;
+            --correct-bg:#e8f5ee;
+            --wrong:     #A51C30;
+            --wrong-bg:  #fdecea;
+            --shadow:    rgba(14, 45, 82, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .main-container {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            padding: 20px 28px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--salmon) 100%);
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .header-meta {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            position: relative;
+        }
+
+        .instruction-banner {
+            background: linear-gradient(135deg, var(--green-l) 0%, var(--sand) 100%);
+            border: 2px solid var(--green);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instruction-icon {
+            font-size: 1.4rem;
+        }
+
+        .instruction-text {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .case-card {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--sand) 100%);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 2px solid var(--border);
+        }
+
+        .case-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .case-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .equation-box {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .equation {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            margin-bottom: 8px;
+        }
+
+        .equation-vars {
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            text-align: left;
+            margin-top: 12px;
+        }
+
+        .var-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .var-symbol {
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 20px;
+        }
+
+        .quiz-section {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .question-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--salmon) 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-btn {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: var(--sand);
+            transform: translateX(4px);
+        }
+
+        .option-btn.correct {
+            background: var(--correct-bg);
+            border-color: var(--correct);
+            color: var(--correct);
+        }
+
+        .option-btn.incorrect {
+            background: var(--wrong-bg);
+            border-color: var(--wrong);
+            color: var(--wrong);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .feedback-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            border: 2px solid var(--border);
+            display: none;
+        }
+
+        .feedback-card.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .feedback-header.correct {
+            color: var(--correct);
+        }
+
+        .feedback-header.incorrect {
+            color: var(--wrong);
+        }
+
+        .feedback-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            background: var(--surface);
+            border-top: 2px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--surface);
+            border-color: var(--accent);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: var(--gold);
+            transform: scale(1.2);
+        }
+
+        .dot.completed {
+            background: var(--correct);
+        }
+
+        .final-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .final-screen.show {
+            display: flex;
+        }
+
+        .trophy {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .final-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .final-message {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 600px;
+            margin-bottom: 24px;
+        }
+
+        .key-points {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 24px;
+        }
+
+        .key-point {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .key-point:last-child {
+            margin-bottom: 0;
+        }
+
+        .key-icon {
+            color: var(--correct);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .calc-demo {
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+        }
+
+        .calc-step {
+            font-family: 'Courier New', monospace;
+            color: var(--primary);
+            margin: 4px 0;
+        }
+
+        @media (max-width: 840px) {
+            .main-container {
+                width: 100%;
+                height: auto;
+                min-height: 600px;
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <h1>Regresión lineal y predicción de ventas de copiadoras</h1>
+            <div class="header-meta">ESTA_2033 • Juan Torres</div>
+        </header>
+
+        <div class="content-area" id="contentArea">
+            <div class="instruction-banner">
+                <span class="instruction-icon">🎯</span>
+                <span class="instruction-text">Se invita a poner en práctica los conceptos estudiados mediante la resolución del caso que se presenta.</span>
+            </div>
+
+            <div id="caseSection">
+                <div class="case-card">
+                    <div class="case-title">📠 CASO: PREDICCIÓN DE VENTAS DE COPIADORAS MEDIANTE REGRESIÓN LINEAL</div>
+                    <div class="case-text">
+                        Una empresa dedicada a la venta de copiadoras desea analizar si el número de llamadas telefónicas realizadas por sus vendedores permite predecir la cantidad de copiadoras vendidas. Después de recopilar la información, se construyó un modelo de regresión lineal simple con la siguiente ecuación:
+                    </div>
+                    
+                    <div class="equation-box">
+                        <div class="equation">Y = 19.2821 + 1.0079X</div>
+                        <div class="equation-vars">
+                            <div class="var-item">
+                                <span class="var-symbol">Y</span>
+                                <span>Cantidad de copiadoras vendidas</span>
+                            </div>
+                            <div class="var-item">
+                                <span class="var-symbol">X</span>
+                                <span>Número de llamadas telefónicas realizadas</span>
+                            </div>
+                            <div class="var-item">
+                                <span class="var-symbol">19.28</span>
+                                <span>Intercepto (valor cuando X = 0)</span>
+                            </div>
+                            <div class="var-item">
+                                <span class="var-symbol">1.01</span>
+                                <span>Pendiente (incremento por cada llamada)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="case-text">
+                        Con este modelo, la empresa desea estimar cuántas copiadoras podría vender según el número de llamadas realizadas por sus vendedores.
+                    </div>
+                </div>
+            </div>
+
+            <div id="quizContainer"></div>
+
+            <div class="final-screen" id="finalScreen">
+                <div class="trophy">🏆</div>
+                <div class="final-title">¡Felicidades!</div>
+                <div class="final-message">Ha concluido con éxito el análisis del caso.</div>
+                
+                <div class="key-points">
+                    <div class="key-point">
+                        <span class="key-icon">✓</span>
+                        <span>La regresión lineal permite construir ecuaciones para describir relaciones entre variables y realizar predicciones.</span>
+                    </div>
+                    <div class="key-point">
+                        <span class="key-icon">✓</span>
+                        <span>El intercepto indica el valor esperado de Y cuando X es igual a cero, mientras que la pendiente muestra cuánto cambia Y por cada unidad adicional de X.</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.85rem; line-height: 1.6; color: var(--muted); max-width: 600px; margin-bottom: 24px;">
+                    Este tipo de análisis resulta útil para apoyar la toma de decisiones y estimar resultados futuros a partir de datos observados.
+                </div>
+
+                <button class="btn btn-primary" onclick="restartQuiz()">
+                    🔄 Reiniciar caso
+                </button>
+            </div>
+        </div>
+
+        <div class="nav-buttons" id="navButtons">
+            <button class="btn btn-secondary" id="prevBtn" onclick="navigateQuestion(-1)" disabled>
+                ← Anterior
+            </button>
+            
+            <div class="progress-dots" id="progressDots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+
+            <button class="btn btn-primary" id="nextBtn" onclick="navigateQuestion(1)" disabled>
+                Siguiente →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                question: "¿Qué representa la variable X en el modelo de regresión?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "La cantidad de copiadoras vendidas.",
+                        correct: false,
+                        feedback: "También válido como parte del análisis, aunque la cantidad de copiadoras vendidas corresponde a la variable Y."
+                    },
+                    {
+                        id: 'B',
+                        text: "El número de llamadas telefónicas realizadas.",
+                        correct: true,
+                        feedback: "Correcto. La variable X representa el número de llamadas realizadas, ya que es la variable independiente utilizada para explicar las ventas."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                question: "¿Qué representa el valor 19.2821 en la ecuación?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "La cantidad estimada de ventas cuando no se realizan llamadas.",
+                        correct: true,
+                        feedback: "Correcto. El intercepto representa la cantidad estimada de copiadoras vendidas cuando X = 0."
+                    },
+                    {
+                        id: 'B',
+                        text: "El incremento promedio de ventas por cada llamada adicional.",
+                        correct: false,
+                        feedback: "También válido como parte del modelo, aunque ese valor corresponde a la pendiente."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                question: "¿Qué representa la pendiente 1.0079 en la ecuación?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "El número mínimo de llamadas necesarias para vender una copiadora.",
+                        correct: false,
+                        feedback: "También válido como interpretación intuitiva, aunque el modelo no establece un mínimo de llamadas para vender."
+                    },
+                    {
+                        id: 'B',
+                        text: "El incremento promedio en ventas por cada llamada adicional.",
+                        correct: true,
+                        feedback: "Correcto. La pendiente indica cuánto aumentan las ventas, en promedio, por cada llamada adicional realizada."
+                    }
+                ]
+            },
+            {
+                id: 4,
+                question: "Si un vendedor realiza 23 llamadas, ¿cuántas copiadoras se espera vender aproximadamente?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "42 copiadoras.",
+                        correct: true,
+                        feedback: "Correcto. Al reemplazar X = 23 en la ecuación, el valor estimado es aproximadamente 42 copiadoras vendidas.",
+                        calc: "Y = 19.28 + 1.01(23) = 19.28 + 23.18 = 42.46 ≈ 42"
+                    },
+                    {
+                        id: 'B',
+                        text: "23 copiadoras.",
+                        correct: false,
+                        feedback: "También válido como referencia al número de llamadas, aunque no corresponde a la predicción del modelo."
+                    }
+                ]
+            },
+            {
+                id: 5,
+                question: "Si un vendedor realiza 41 llamadas, ¿cuántas copiadoras se espera vender aproximadamente?",
+                options: [
+                    {
+                        id: 'A',
+                        text: "60 copiadoras.",
+                        correct: true,
+                        feedback: "Correcto. Al reemplazar X = 41 en la ecuación, se obtiene una predicción cercana a 60 copiadoras vendidas.",
+                        calc: "Y = 19.28 + 1.01(41) = 19.28 + 41.32 = 60.60 ≈ 61"
+                    },
+                    {
+                        id: 'B',
+                        text: "41 copiadoras.",
+                        correct: false,
+                        feedback: "También válido como referencia al número de llamadas, aunque no corresponde a la cantidad estimada de ventas."
+                    }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+        let shuffledQuestions = [];
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function initQuiz() {
+            shuffledQuestions = shuffleArray(questions);
+            renderQuestion();
+            updateProgress();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quizContainer');
+            const q = shuffledQuestions[currentQuestion];
+            
+            const shuffledOptions = shuffleArray(q.options);
+            
+            let optionsHtml = '';
+            const answered = answers[q.id];
+            
+            shuffledOptions.forEach(opt => {
+                let className = 'option-btn';
+                let disabled = '';
+                
+                if (answered) {
+                    disabled = 'disabled';
+                    if (opt.correct) {
+                        className += ' correct';
+                    } else if (answered.selected === opt.id && !opt.correct) {
+                        className += ' incorrect';
+                    }
+                }
+                
+                optionsHtml += `
+                    <button class="${className}" ${disabled} onclick="selectOption('${q.id}', '${opt.id}', ${opt.correct})">
+                        <strong>Opción ${opt.id}:</strong> ${opt.text}
+                    </button>
+                `;
+            });
+
+            let calcHtml = '';
+            if (answered && answered.calc) {
+                calcHtml = `
+                    <div class="calc-demo">
+                        <div style="font-weight: 600; color: var(--primary); margin-bottom: 6px;">📐 Cálculo:</div>
+                        <div class="calc-step">${answered.calc}</div>
+                    </div>
+                `;
+            }
+
+            const feedback = answered ? `
+                <div class="feedback-card show">
+                    <div class="feedback-header ${answered.correct ? 'correct' : 'incorrect'}">
+                        ${answered.correct ? '✓' : '✗'} ${answered.correct ? 'Respuesta correcta' : 'Respuesta incorrecta'}
+                    </div>
+                    <div class="feedback-text">${answered.feedback}</div>
+                    ${calcHtml}
+                </div>
+            ` : '';
+
+            container.innerHTML = `
+                <div class="quiz-section">
+                    <div class="question-number">${currentQuestion + 1}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${optionsHtml}
+                    </div>
+                    ${feedback}
+                </div>
+            `;
+
+            document.getElementById('nextBtn').disabled = !answered;
+        }
+
+        function selectOption(questionId, optionId, isCorrect) {
+            if (answers[questionId]) return;
+            
+            const q = shuffledQuestions[currentQuestion];
+            const selectedOption = q.options.find(o => o.id === optionId);
+            
+            answers[questionId] = {
+                selected: optionId,
+                correct: isCorrect,
+                feedback: selectedOption.feedback,
+                calc: selectedOption.calc
+            };
+            
+            renderQuestion();
+            updateProgress();
+        }
+
+        function navigateQuestion(direction) {
+            const newIndex = currentQuestion + direction;
+            
+            if (newIndex >= 0 && newIndex < shuffledQuestions.length) {
+                currentQuestion = newIndex;
+                renderQuestion();
+                updateProgress();
+            } else if (newIndex >= shuffledQuestions.length) {
+                showFinalScreen();
+            }
+        }
+
+        function updateProgress() {
+            const dots = document.getElementById('progressDots');
+            dots.innerHTML = '';
+            
+            for (let i = 0; i < shuffledQuestions.length; i++) {
+                let className = 'dot';
+                if (i === currentQuestion) className += ' active';
+                else if (answers[shuffledQuestions[i].id]) className += ' completed';
+                dots.innerHTML += `<div class="${className}"></div>`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentQuestion === 0;
+            
+            const currentQ = shuffledQuestions[currentQuestion];
+            const answered = answers[currentQ.id];
+            document.getElementById('nextBtn').disabled = !answered;
+            
+            if (currentQuestion === shuffledQuestions.length - 1 && answered) {
+                document.getElementById('nextBtn').textContent = 'Finalizar →';
+            } else {
+                document.getElementById('nextBtn').textContent = 'Siguiente →';
+            }
+        }
+
+        function showFinalScreen() {
+            document.getElementById('caseSection').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('navButtons').style.display = 'none';
+            document.getElementById('finalScreen').classList.add('show');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = {};
+            shuffledQuestions = [];
+            
+            document.getElementById('caseSection').style.display = 'block';
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('navButtons').style.display = 'flex';
+            document.getElementById('finalScreen').classList.remove('show');
+            
+            initQuiz();
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>

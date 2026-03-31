@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Matriz de Riesgo Cualitativo | Sistema de Análisis</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        /* LITE THEME - Light & Professional */
+        :root {
+            --bg-light: #f5f7fc;
+            --bg-panel: #ffffff;
+            --primary-accent: #2c5f8a;
+            --secondary-accent: #4a8bb7;
+            --highlight-cyan: #2c7da0;
+            --highlight-orange: #d97941;
+            --glass-light: rgba(255, 255, 255, 0.9);
+            --glass-border-light: #e2e8f0;
+            --text-primary: #1e2a3e;
+            --text-secondary: #2d3e50;
+            --text-muted: #5a6e7c;
+            --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+            --card-hover-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --border-light: #e9edf2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* subtle background pattern - clean */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 30%, rgba(44, 95, 138, 0.02) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .resource-container {
+            width: 800px;
+            height: 800px;
+            max-width: 100%;
+            background: var(--bg-panel);
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-light);
+        }
+
+        /* remove scanlines for light theme */
+        .scanlines {
+            display: none;
+        }
+
+        header {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+            padding: 28px 32px;
+            position: relative;
+        }
+
+        /* remove animated scan effect */
+        header::before {
+            display: none;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--secondary-accent);
+            background: #eef2f7;
+            padding: 6px 12px;
+            border-radius: 40px;
+            border: 1px solid #dee4ec;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #2c7da0;
+            border-radius: 50%;
+            animation: pulseSoft 2s infinite;
+            box-shadow: none;
+        }
+
+        @keyframes pulseSoft {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            position: relative;
+        }
+
+        /* Intro Card - Light style */
+        .intro-panel {
+            background: #f8fafd;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .intro-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-accent), var(--secondary-accent));
+            border-radius: 4px 0 0 4px;
+        }
+
+        .intro-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            padding-left: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+        }
+
+        /* Holographic Cards -> Light clean cards */
+        .holo-card {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--card-shadow);
+        }
+
+        .holo-card::before {
+            display: none;
+        }
+
+        .holo-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--secondary-accent);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .holo-card.probabilidad:hover {
+            border-color: var(--highlight-cyan);
+            background: #fefefe;
+        }
+
+        .holo-card.impacto:hover {
+            border-color: var(--highlight-orange);
+            background: #fefefe;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-primary);
+        }
+
+        .holo-card.probabilidad .card-title {
+            color: var(--highlight-cyan);
+        }
+
+        .holo-card.impacto .card-title {
+            color: var(--highlight-orange);
+        }
+
+        .expand-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .holo-card:hover .expand-icon {
+            background: #eef2ff;
+            border-color: var(--secondary-accent);
+            color: var(--primary-accent);
+            transform: rotate(90deg);
+        }
+
+        .card-visual {
+            flex: 1;
+            background: #fbfdff;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            border: 1px solid #edf2f7;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+        }
+
+        /* remove animated scanline for light */
+        .card-visual::before {
+            display: none;
+        }
+
+        .visual-text {
+            font-family: 'JetBrains Mono', monospace;
+            color: #cbd5e1;
+            font-size: 0.8rem;
+        }
+        
+        .visual-text img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            opacity: 0.8;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Reference Bar - Light */
+        .ref-bar {
+            background: #f1f5f9;
+            border-top: 1px solid var(--border-light);
+            padding: 16px 24px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ref-label {
+            color: var(--primary-accent);
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .ref-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #4a5b6e;
+        }
+
+        /* Modal - Light Professional */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(245, 247, 252, 0.96);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 40px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 90%;
+            overflow: hidden;
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.15);
+            transform: scale(0.96);
+            transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            background: #ffffff;
+            padding: 24px 28px;
+            border-bottom: 1px solid #eef2f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .modal-icon {
+            font-size: 1.8rem;
+            filter: none;
+        }
+
+        .modal-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #5a6e7c;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #fee2e2;
+            border-color: #d97941;
+            color: #d97941;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 28px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-section {
+            margin-bottom: 28px;
+        }
+
+        .modal-section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--highlight-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-section-title::before {
+            content: '▹';
+            color: var(--highlight-orange);
+            font-size: 1rem;
+        }
+
+        .modal-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            padding-left: 16px;
+            border-left: 2px solid #dee4ec;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .level-item {
+            background: #f9fbfe;
+            border: 1px solid #e9edf2;
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .level-item:hover {
+            border-color: var(--secondary-accent);
+            background: #ffffff;
+            transform: translateX(3px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .level-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .level-badge.baja {
+            background: #e0f2e9;
+            color: #2b6e4f;
+            border: none;
+        }
+
+        .level-badge.media {
+            background: #fff3e0;
+            color: #b45f1b;
+            border: none;
+        }
+
+        .level-badge.alta {
+            background: #ffe6e0;
+            color: #c55a2c;
+            border: none;
+        }
+
+        .level-badge.critica {
+            background: #ffe5ec;
+            color: #bc2c4a;
+            border: none;
+        }
+
+        .level-text {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .impact-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .impact-item {
+            background: #f9fbfe;
+            border: 1px solid #e9edf2;
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s;
+        }
+
+        .impact-item:hover {
+            border-color: var(--highlight-orange);
+            background: #fffaf5;
+            transform: translateX(3px);
+        }
+
+        .impact-icon {
+            font-size: 1.4rem;
+        }
+
+        .note-box {
+            background: #f8fafc;
+            border: 1px solid #e2edf2;
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-top: 24px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .note-label {
+            color: var(--primary-accent);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .resource-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1rem;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .ref-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .ref-text {
+                white-space: normal;
+                font-size: 0.7rem;
+            }
+
+            .modal-overlay {
+                padding: 16px;
+            }
+
+            .level-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-header {
+                padding: 18px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="resource-container">
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>⚡ Matriz de Riesgo Cualitativo</h1>
+                <div class="subtitle">Sistema de Análisis y Priorización</div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>SISTEMA ACTIVO</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="content-area">
+        <div class="intro-panel">
+            <div class="intro-text">
+                Explore y conozca la matriz de riesgo con enfoque cualitativo, una herramienta que permite identificar, analizar y priorizar riesgos mediante criterios como la <strong style="color: var(--highlight-cyan);">probabilidad de ocurrencia</strong> y el <strong style="color: var(--highlight-orange);">impacto de sus consecuencias</strong>. Su clasificación en niveles facilita la comprensión del riesgo y orienta la toma de decisiones.
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="holo-card probabilidad" onclick="openModal('prob')">
+                <div class="card-header">
+                    <div class="card-title">📊 Frecuencia/Probabilidad</div>
+                    <div class="expand-icon">+</div>
+                </div>
+                <div class="card-visual">
+                    <div class="visual-text"><img src="media/Imagen 5.png"   alt="probabilidad gráfico"></div>
+                </div>
+                <div class="card-desc">
+                    ¿Con qué recurrencia podría presentarse el evento? Análisis de periodos de retorno y categorización de frecuencias.
+                </div>
+            </div>
+
+            <div class="holo-card impacto" onclick="openModal('impact')">
+                <div class="card-header">
+                    <div class="card-title">🎯 Consecuencias/Severidad</div>
+                    <div class="expand-icon">+</div>
+                </div>
+                <div class="card-visual">
+                    <div class="visual-text"><img  src="media/Imagen 6.png" alt="impacto gráfico"></div>
+                </div>
+                <div class="card-desc">
+                    Si ocurre, ¿qué tan grave sería para la población, infraestructura, economía local o el ambiente?
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ref-bar">
+        <span class="ref-label">[Referencias]</span>
+        <span class="ref-text">Barandiarán, M., Esquivel, M., Lacambra, S., Suárez, G., & Zuloaga, D. (2019). Metodología de evaluación del riesgo de desastres y cambio climático para proyectos del BID (Nota técnica IDB-TN-01771). BID.</span>
+    </div>
+</div>
+
+<!-- Modals: keep exact same information, no changes -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <div class="modal-icon" id="modalIcon">📊</div>
+                <div class="modal-title" id="modalTitle">ANÁLISIS DE FRECUENCIA</div>
+            </div>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- dynamic content -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Información exacta sin cambios (solo el tema visual adaptado)
+    const modalContent = {
+        prob: {
+            icon: '📊',
+            title: 'ANÁLISIS DE FRECUENCIA',
+            html: `
+                <div class="modal-section">
+                    <div class="modal-section-title">Definición</div>
+                    <div class="modal-text">
+                        La frecuencia o probabilidad responde a la pregunta: <strong style="color: var(--highlight-cyan);">¿Con qué recurrencia podría presentarse el evento?</strong>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Categorías y Umbrales</div>
+                    <div class="level-grid">
+                        <div class="level-item">
+                            <span class="level-badge baja">Muy Baja</span>
+                            <span class="level-text">Menos de una vez cada 1,000 años</span>
+                        </div>
+                        <div class="level-item">
+                            <span class="level-badge media">Baja</span>
+                            <span class="level-text">Entre 100 y 1,000 años</span>
+                        </div>
+                        <div class="level-item">
+                            <span class="level-badge alta">Moderada</span>
+                            <span class="level-text">Entre 10 y 100 años</span>
+                        </div>
+                        <div class="level-item">
+                            <span class="level-badge critica">Alta</span>
+                            <span class="level-text">Más de una vez en 10 años</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <span class="note-label">⚠️ Nota Técnica</span>
+                    Los rangos de frecuencia (periodos de retorno) son referenciales y se aplican únicamente cuando existe evidencia suficiente (registros históricos, estudios técnicos o modelación) para estimarlos.
+                </div>
+            `
+        },
+        impact: {
+            icon: '🎯',
+            title: 'ANÁLISIS DE IMPACTO',
+            html: `
+                <div class="modal-section">
+                    <div class="modal-section-title">Definición</div>
+                    <div class="modal-text">
+                        Las consecuencias o severidad responden a: <strong style="color: var(--highlight-orange);">Si ocurre, ¿qué tan grave sería?</strong> considerando efectos en población, infraestructura, economía y ambiente.
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Tipos de Impacto</div>
+                    <div class="impact-list">
+                        <div class="impact-item">
+                            <span class="impact-icon">🏗️</span>
+                            <span><strong>Daños materiales:</strong> Estructuras, viviendas, infraestructura crítica</span>
+                        </div>
+                        <div class="impact-item">
+                            <span class="impact-icon">💰</span>
+                            <span><strong>Interrupciones económicas:</strong> Pérdidas productivas, costos de reconstrucción</span>
+                        </div>
+                        <div class="impact-item">
+                            <span class="impact-icon">🌱</span>
+                            <span><strong>Impactos ambientales:</strong> Degradación de ecosistemas, contaminación</span>
+                        </div>
+                        <div class="impact-item">
+                            <span class="impact-icon">👥</span>
+                            <span><strong>Fatalidades y/o heridos:</strong> Pérdida de vidas humanas, afectación a la salud</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <span class="note-label">ℹ️ Información</span>
+                    Los tipos de impactos se adaptan según el área o proyecto de estudio, permitiendo una evaluación contextualizada del riesgo.
+                </div>
+            `
+        }
+    };
+
+    function openModal(type) {
+        const data = modalContent[type];
+        document.getElementById('modalIcon').textContent = data.icon;
+        document.getElementById('modalTitle').textContent = data.title;
+        document.getElementById('modalBody').innerHTML = data.html;
+        document.getElementById('modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(event) {
+        if (!event || event.target.id === 'modal' || (event.target.className && event.target.className.includes('modal-close'))) {
+            document.getElementById('modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
+</body>
+</html>

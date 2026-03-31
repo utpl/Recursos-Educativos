@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corrección de Bonferroni, FDR y tamaños del efecto</title>
+    <style>
+        :root {
+            --width: 800px;
+            --primary: #1e40af;
+            --accent: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #1f2937;
+            --light: #f8fafc;
+            --gray: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #e2e8f0;
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: var(--width);
+            max-width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgb(30 64 175 / 0.15);
+            overflow: hidden;
+            min-height: 560px;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 820px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+                min-height: 100vh;
+                box-shadow: none;
+            }
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon {
+            font-size: 42px;
+            background: rgba(255,255,255,0.25);
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 23px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            overflow-y: auto;
+        }
+
+        .instructions {
+            background: #fefce8;
+            border-left: 6px solid #eab308;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #854d0e;
+            font-weight: 500;
+        }
+
+        .drag-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+        }
+
+        @media (max-width: 820px) {
+            .drag-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Zona de enunciados (destino) */
+        .targets-column {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .target-slot {
+            background: #f8fafc;
+            border: 3px dashed #94a3b8;
+            border-radius: 16px;
+            padding: 20px 24px;
+            min-height: 118px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .target-slot.filled {
+            border-style: solid;
+            border-color: var(--accent);
+            background: #f3e8ff;
+        }
+
+        .target-slot .slot-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .target-slot .slot-content {
+            min-height: 52px;
+            font-size: 16.5px;
+            line-height: 1.45;
+            color: var(--text);
+        }
+
+        .target-slot .remove-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ef4444;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .target-slot.filled .remove-btn {
+            display: flex;
+        }
+
+        /* Opciones arrastrables */
+        .options-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .draggable-option {
+            background: white;
+            border: 2px solid var(--accent);
+            border-radius: 14px;
+            padding: 18px 22px;
+            font-size: 16.5px;
+            cursor: grab;
+            box-shadow: 0 8px 15px -3px rgb(124 58 237 / 0.12);
+            transition: all 0.25s ease;
+            user-select: none;
+            line-height: 1.45;
+        }
+
+        .draggable-option:active {
+            cursor: grabbing;
+            transform: scale(0.96);
+        }
+
+        .draggable-option.dragging {
+            opacity: 0.4;
+            transform: rotate(4deg);
+        }
+
+        /* Feedback */
+        .feedback-bar {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            margin-top: 12px;
+        }
+
+        .feedback-bar.success {
+            background: #ecfdf5;
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .feedback-bar.error {
+            background: #fef2f2;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-top: auto;
+            padding-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--gray);
+        }
+
+        .match-indicator {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-icon">🔬</div>
+            <h1>Corrección de Bonferroni, FDR y tamaños del efecto</h1>
+        </header>
+
+        <div class="main-content">
+            <!-- Instrucciones -->
+            <div class="instructions">
+                Arrastre cada opción y colóquela en el enunciado con el que guarde relación. 
+                Cada respuesta solo corresponde a un fragmento.
+            </div>
+
+            <div class="drag-area">
+                <!-- Columna de enunciados (destinos) -->
+                <div class="targets-column" id="targets-container">
+                    <!-- Se generan dinámicamente -->
+                </div>
+
+                <!-- Columna de opciones arrastrables -->
+                <div class="options-column" id="options-container">
+                    <!-- Se generan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Barra de feedback -->
+            <div id="feedback-bar" class="feedback-bar"></div>
+
+            <!-- Controles -->
+            <div class="controls">
+                <button onclick="checkAnswers()" class="btn btn-primary">Verificar respuestas</button>
+                <button onclick="resetActivity()" class="btn btn-secondary">Reiniciar actividad</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos exactos del documento (reorganizados aleatoriamente cada vez)
+        let statements = [
+            { id: 1, stem: "La corrección de Bonferroni se utiliza para:", correct: "Controlar el error tipo I cuando se realizan múltiples pruebas." },
+            { id: 2, stem: "La fórmula de Bonferroni es:", correct: "α* = α / m" },
+            { id: 3, stem: "La FDR busca controlar:", correct: "La proporción esperada de falsos positivos entre los resultados significativos." },
+            { id: 4, stem: "Bonferroni suele ser recomendable cuando:", correct: "El número de pruebas es pequeño o un falso positivo tendría consecuencias graves." },
+            { id: 5, stem: "El tamaño del efecto d de Cohen mide:", correct: "Cuántas desviaciones estándar separan dos medias." },
+            { id: 6, stem: "Un valor de d = 0,5 suele interpretarse como:", correct: "Un efecto de magnitud media." },
+            { id: 7, stem: "El Odds Ratio (OR) se interpreta como:", correct: "La comparación de las odds de un evento entre dos grupos." },
+            { id: 8, stem: "Si OR = 1, significa que:", correct: "No existe asociación entre los grupos y el evento." },
+            { id: 9, stem: "Una diferencia estadísticamente significativa puede ser:", correct: "Muy pequeña en la práctica si el tamaño del efecto es bajo." },
+            { id: 10, stem: "La FDR suele preferirse cuando:", correct: "Se realizan muchas pruebas y se busca equilibrio entre descubrimientos y falsos positivos." }
+        ]
+
+        // Retroalimentaciones exactas del documento
+        const feedbacks = {
+            1: "La corrección de Bonferroni permite reducir el riesgo de obtener falsos positivos cuando se analizan varias hipótesis al mismo tiempo.",
+            2: "La fórmula α* = α / m ajusta el nivel de significancia para cada prueba individual.",
+            3: "La FDR no elimina completamente los falsos positivos, pero controla qué proporción de los hallazgos significativos podría ser incorrecta.",
+            4: "Bonferroni es más estricto y conservador, por lo que resulta útil cuando un falso positivo sería costoso.",
+            5: "El tamaño del efecto complementa al p-valor porque permite interpretar si una diferencia es pequeña, moderada o grande.",
+            6: "Un valor de d = 0,5 representa un efecto medio, mientras que 0,2 suele considerarse pequeño y 0,8 grande.",
+            7: "El Odds Ratio permite comparar la posibilidad relativa de que ocurra un evento en un grupo respecto a otro.",
+            8: "Cuando OR = 1, las odds son equivalentes en ambos grupos, por lo que no existe asociación.",
+            9: "Una diferencia puede resultar significativa estadísticamente pero carecer de importancia práctica si el efecto es muy pequeño.",
+            10: "La FDR resulta especialmente útil en estudios con muchas variables, donde Bonferroni podría ser demasiado conservador."
+        }
+
+        let draggedItem = null
+        let currentMatches = {} // id del statement → texto de la opción colocada
+
+        // Función para barajar array (evita siempre el mismo orden)
+        function shuffle(array) {
+            const newArray = [...array]
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1))
+                ;[newArray[i], newArray[j]] = [newArray[j], newArray[i]]
+            }
+            return newArray
+        }
+
+        // Renderizar enunciados (targets)
+        function renderTargets() {
+            const container = document.getElementById('targets-container')
+            container.innerHTML = ''
+
+            statements.forEach(statement => {
+                const slot = document.createElement('div')
+                slot.className = 'target-slot'
+                slot.dataset.id = statement.id
+                slot.ondragover = allowDrop
+                slot.ondrop = drop
+
+                slot.innerHTML = `
+                    <span class="slot-label">Enunciado ${statement.id}</span>
+                    <div class="slot-content" id="content-${statement.id}">${statement.stem}</div>
+                    <div class="remove-btn" onclick="removeFromSlot(${statement.id})">×</div>
+                `
+                container.appendChild(slot)
+            })
+        }
+
+        // Renderizar opciones arrastrables
+        function renderOptions() {
+            const container = document.getElementById('options-container')
+            container.innerHTML = ''
+
+            // Barajamos las respuestas correctas para que el orden sea diferente cada vez
+            const shuffledOptions = shuffle(statements.map(s => ({
+                text: s.correct,
+                id: s.id
+            })))
+
+            shuffledOptions.forEach(option => {
+                const div = document.createElement('div')
+                div.className = 'draggable-option'
+                div.draggable = true
+                div.dataset.text = option.text
+                div.dataset.originalId = option.id
+                div.textContent = option.text
+                
+                div.addEventListener('dragstart', dragStart)
+                div.addEventListener('dragend', dragEnd)
+                
+                container.appendChild(div)
+            })
+        }
+
+        function dragStart(e) {
+            draggedItem = e.target
+            setTimeout(() => {
+                e.target.classList.add('dragging')
+            }, 0)
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging')
+            draggedItem = null
+        }
+
+        function allowDrop(e) {
+            e.preventDefault()
+            e.currentTarget.style.borderColor = '#7c3aed'
+        }
+
+        function drop(e) {
+            e.preventDefault()
+            const slot = e.currentTarget
+            
+            if (!draggedItem) return
+
+            const optionText = draggedItem.dataset.text
+
+            // Si el slot ya tiene algo, no permitimos soltar (regla del documento: cada respuesta solo corresponde a un fragmento)
+            if (slot.classList.contains('filled')) {
+                slot.style.borderColor = '#94a3b8'
+                return
+            }
+
+            // Colocar en el slot
+            const contentDiv = slot.querySelector('.slot-content')
+            contentDiv.innerHTML = `<strong>${optionText}</strong>`
+            slot.classList.add('filled')
+            
+            // Guardar match
+            currentMatches[slot.dataset.id] = optionText
+
+            // Remover la opción del panel izquierdo (para que no se pueda usar dos veces)
+            draggedItem.style.display = 'none'
+            
+            // Restaurar borde
+            slot.style.borderColor = '#7c3aed'
+        }
+
+        // Eliminar opción de un slot
+        window.removeFromSlot = function(slotId) {
+            const slot = document.querySelector(`.target-slot[data-id="${slotId}"]`)
+            if (!slot) return
+
+            const contentDiv = slot.querySelector('.slot-content')
+            contentDiv.innerHTML = statements.find(s => s.id == slotId).stem
+            slot.classList.remove('filled')
+
+            // Liberar la opción en el panel izquierdo
+            const options = document.querySelectorAll('.draggable-option')
+            options.forEach(opt => {
+                if (opt.dataset.text === currentMatches[slotId] && opt.style.display === 'none') {
+                    opt.style.display = 'block'
+                }
+            })
+
+            delete currentMatches[slotId]
+        }
+
+        // Verificar respuestas
+        function checkAnswers() {
+            const feedbackBar = document.getElementById('feedback-bar')
+            let correctCount = 0
+            let total = statements.length
+
+            statements.forEach(statement => {
+                const placed = currentMatches[statement.id]
+                if (placed === statement.correct) {
+                    correctCount++
+                }
+            })
+
+            if (correctCount === total) {
+                feedbackBar.textContent = `¡Excelente! Has emparejado correctamente las ${total} afirmaciones.`
+                feedbackBar.className = 'feedback-bar success'
+            } else {
+                feedbackBar.textContent = `Has acertado ${correctCount} de ${total}. Revisa las colocaciones y vuelve a intentarlo.`
+                feedbackBar.className = 'feedback-bar error'
+            }
+            
+            feedbackBar.style.display = 'block'
+        }
+
+        // Reiniciar toda la actividad
+        function resetActivity() {
+            currentMatches = {}
+            document.getElementById('feedback-bar').style.display = 'none'
+            
+            // Re-renderizar todo
+            renderTargets()
+            renderOptions()
+        }
+
+        // Inicialización
+        window.onload = function() {
+            renderTargets()
+            renderOptions()
+            console.log('%c✅ Actividad Arrastrar y Soltar cargada - Bonferroni, FDR y Tamaños del efecto', 'color:#7c3aed; font-weight:700')
+        }
+    </script>
+</body>
+</html>

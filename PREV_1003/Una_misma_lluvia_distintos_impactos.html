@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Una misma lluvia, distintos impactos</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --panel-bg: #f5f0e8;
+  --panel-border: #2c2c2a;
+  --sky-blue: #a8d8ea;
+  --rain-blue: #4a90d9;
+  --danger-red: #c0392b;
+  --safe-green: #27ae60;
+  --earth: #8b6914;
+  --speech-bg: #ffffff;
+  --narrator-bg: #2c2c2a;
+  --narrator-text: #f5f0e8;
+  --accent: #e67e22;
+  --text-dark: #1a1a1a;
+  --primary: #185FA5;
+  --radius: 8px;
+  --font: 'Segoe UI', -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  width: 100%;
+  max-width: 800px;
+  background: #12122a;
+  padding: 14px 24px 12px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.topbar-meta { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #888; }
+.topbar-title { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+.topbar-sub { font-size: 12px; color: #aaa; }
+
+/* ── MAIN CANVAS ── */
+.comic-wrap {
+  width: 100%;
+  max-width: 800px;
+  background: var(--panel-bg);
+  position: relative;
+}
+
+/* ── PAGES ── */
+.page {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+.page.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ── PANEL ILLUSTRATION ── */
+.panel-illus {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 3px solid var(--panel-border);
+}
+.panel-illus img { width: 100%; height: 100%; display: block; }
+
+/* ── PANEL TEXT AREA ── */
+.panel-text {
+  padding: 16px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.narrator-box {
+  background: var(--narrator-bg);
+  color: var(--narrator-text);
+  font-size: 12.5px;
+  font-style: italic;
+  padding: 8px 14px;
+  border-radius: 0 var(--radius) var(--radius) var(--radius);
+  border-left: 3px solid var(--accent);
+  line-height: 1.5;
+}
+
+.speech-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.speech-row.right { flex-direction: row-reverse; }
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--panel-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  overflow: hidden;
+}
+
+.bubble {
+  background: var(--speech-bg);
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  max-width: calc(100% - 56px);
+  position: relative;
+}
+.bubble .char-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 3px;
+}
+.bubble em { font-style: normal; font-weight: 700; color: var(--danger-red); }
+
+.page-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #888;
+  text-align: center;
+  padding: 6px 0 2px;
+}
+.panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-align: center;
+  padding: 0 16px 8px;
+  border-bottom: 2px solid var(--panel-border);
+}
+
+/* ── FORMULA HIGHLIGHT ── */
+.formula-box {
+  background: #fff8ec;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a4000;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.formula-box span { color: var(--danger-red); }
+
+/* ── NAV ── */
+.nav-bar {
+  background: #12122a;
+  width: 100%;
+  max-width: 800px;
+  padding: 14px 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-nav {
+  background: none;
+  border: 1.5px solid #444;
+  border-radius: 20px;
+  color: #ccc;
+  font-size: 13px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  min-width: 90px;
+}
+.btn-nav:hover:not(:disabled) { background: #2a2a4a; border-color: #888; color: #fff; }
+.btn-nav:disabled { opacity: 0.3; cursor: default; }
+.btn-nav.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-nav.primary:hover { background: #1a6fc0; }
+
+.page-dots {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #444;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.dot.active { background: #fff; transform: scale(1.3); }
+.dot.visited { background: #888; }
+
+.progress-strip {
+  height: 3px;
+  background: #333;
+  width: 100%;
+  max-width: 800px;
+}
+.progress-strip-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s;
+}
+
+/* ── REFERENCE ── */
+.ref-box {
+  padding: 14px 20px 18px;
+  font-size: 11.5px;
+  color: #888;
+  font-style: italic;
+  line-height: 1.6;
+  border-top: 1px solid #ddd;
+  margin-top: 6px;
+}
+
+/* ── CONCEPT BADGES (page 7-9) ── */
+.concept-badge {
+  display: inline-block;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  margin-right: 4px;
+}
+.badge-amenaza { background: #fde8e8; color: #a32d2d; border: 1px solid #f09595; }
+.badge-exposicion { background: #e8f4fd; color: #185fa5; border: 1px solid #85b7eb; }
+.badge-vulnerabilidad { background: #fff8ec; color: #854f0b; border: 1px solid #fac775; }
+
+/* ── MOBILE ── */
+@media (max-width: 600px) {
+  .topbar { padding: 12px 16px; }
+  .topbar-title { font-size: 15px; }
+  .panel-illus { height: 220px; }
+  .panel-text { padding: 12px 14px 0; gap: 8px; }
+  .bubble { font-size: 12.5px; }
+  .narrator-box { font-size: 12px; }
+  .btn-nav { padding: 8px 14px; font-size: 12px; min-height: 44px; }
+  .dot { width: 9px; height: 9px; }
+  .formula-box { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+
+  <div class="topbar-title">Una misma lluvia, distintos impactos</div>
+  <div class="topbar-sub">Introducción a los Riesgos de Desastres</div>
+</div>
+
+<div class="progress-strip"><div class="progress-strip-fill" id="pstrip" style="width:10%"></div></div>
+
+<div class="comic-wrap">
+
+<!-- PAGE 1 -->
+<div class="page active" id="p1">
+  <div class="panel-illus">
+  <img src="media/Figura 7.png" alt="">
+  </div>
+  <div class="panel-text">
+
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Dicen que 'los desastres son naturales'... ¿será verdad?"
+      </div>
+    </div>
+    <div class="narrator-box">
+      Semana 1: entender qué hace que un evento se convierta en desastre.
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="p2">
+  <div class="panel-illus">
+    <img src="media/Figura 8.png" alt="">
+  </div>
+  <div class="panel-text">
+
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Otra vez lluvia fuerte... ¿y qué? Si siempre llueve."
+      </div>
+    </div>
+    <div class="narrator-box">
+      La lluvia es un fenómeno. Pero... ¿siempre genera desastre?
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="p3">
+  <div class="panel-illus">
+    <img src="media/Figura 9.png" alt="">
+  </div>
+  <div class="panel-text">
+    
+    <div class="panel-title">Dos lugares, la misma lluvia</div>
+    <div class="narrator-box">
+      La misma lluvia caerá en ambos lugares. <strong>Zona A:</strong> barrio con buen drenaje y viviendas en zona segura. <strong>Zona B:</strong> barrio junto a la quebrada con viviendas bajas.
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 4 -->
+<div class="page" id="p4">
+  <div class="panel-illus">
+    <img src="media/Figura 10.png" alt="">
+  </div>
+  <div class="panel-text">
+    
+    <div class="panel-title">En la Zona A</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d4edda;">🏘️</div>
+      <div class="bubble">
+        <div class="char-name">Vecino A</div>
+        "Llovió duro, pero todo siguió normal."
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 5 -->
+<div class="page" id="p5">
+  <div class="panel-illus">
+    <img src="media/Figura 11.png" alt="">
+  </div>
+  <div class="panel-text">
+
+    <div class="panel-title">En la Zona B</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🏪</div>
+      <div class="bubble">
+        <div class="char-name">Don Luis</div>
+        "¡Se está metiendo el agua al local!"
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Pero... es la misma lluvia, ¿por qué aquí es peor?"
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 6 -->
+<div class="page" id="p6">
+  <div class="panel-illus">
+    <img src="media/Figura 12.png" alt="">
+  </div>
+  <div class="panel-text">
+  
+    <div class="panel-title">Aparece la técnica</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "No es solo la lluvia. Aquí el problema es el <em>riesgo</em>."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "¿Riesgo? ¿No es lo mismo que amenaza?"
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 7 -->
+<div class="page" id="p7">
+  <div class="panel-illus">
+    <img src="media/Figura 13.png" alt="">
+  </div>
+  <div class="panel-text">
+   
+    <div class="panel-title">La amenaza <span class="concept-badge badge-amenaza">(lo que puede pasar)</span></div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "La <em>amenaza</em> es el fenómeno: la lluvia intensa."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Entonces, la lluvia es la amenaza... ¿y lo demás?"
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 8 -->
+<div class="page" id="p8">
+  <div class="panel-illus">
+    <img src="media/Figura 14.png" alt="">
+  </div>
+  <div class="panel-text">
+
+    <div class="panel-title">La exposición <span class="concept-badge badge-exposicion">(qué está ahí)</span></div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "La <em>exposición</em> es lo que está en el lugar: casas, escuela, negocios."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🏪</div>
+      <div class="bubble">
+        <div class="char-name">Don Luis</div>
+        "Mi local está justo aquí, al borde..."
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 9 -->
+<div class="page" id="p9">
+  <div class="panel-illus">
+    <img src="media/Figura 15.png" alt="">
+  </div>
+  <div class="panel-text">
+
+    <div class="panel-title">La vulnerabilidad <span class="concept-badge badge-vulnerabilidad">(qué tan fácil se daña)</span></div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#d6eaf8;">👷</div>
+      <div class="bubble">
+        <div class="char-name">Ing. Rivera</div>
+        "La <em>vulnerabilidad</em> es qué tan susceptible es todo esto a dañarse: drenaje deficiente, construcción frágil, falta de organización."
+      </div>
+    </div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#f8e8f8;">👩</div>
+      <div class="bubble">
+        <div class="char-name">Señora Marta</div>
+        "No tenemos señalización ni plan barrial... y nadie sabe a dónde ir."
+      </div>
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+<!-- PAGE 10 -->
+<div class="page" id="p10">
+  <div class="panel-illus">
+    <img src="media/Figura 16.png" alt="">
+  </div>
+  <div class="panel-text">
+   
+    <div class="panel-title">La frase que lo conecta todo</div>
+    <div class="speech-row">
+      <div class="avatar" style="background:#fde8cc;">🧑‍💻</div>
+      <div class="bubble">
+        <div class="char-name">Sofía</div>
+        "Entonces el riesgo aparece cuando se juntan..."
+      </div>
+    </div>
+    <div class="formula-box">
+      Riesgo de desastres = f(<span>amenaza</span>, exposición, vulnerabilidad)
+    </div>
+    <div class="narrator-box">
+      No basta con la amenaza. Si reducimos exposición o vulnerabilidad, el riesgo baja. Eso es gestionar el riesgo.
+    </div>
+  </div>
+  <div class="ref-box">Elaboración propia.</div>
+</div>
+
+</div><!-- /comic-wrap -->
+
+<!-- NAV -->
+<div class="nav-bar">
+  <button class="btn-nav" id="btn-prev" disabled>← Anterior</button>
+  <div class="page-dots" id="dots"></div>
+  <button class="btn-nav primary" id="btn-next">Siguiente →</button>
+</div>
+
+<script>
+  const TOTAL = 10;
+  let current = 1;
+  const visited = new Set([1]);
+
+  const dotsEl = document.getElementById('dots');
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 1 ? ' active visited' : '');
+    d.dataset.page = i;
+    d.title = 'Hoja ' + i;
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    document.getElementById('p' + current).classList.remove('active');
+    current = n;
+    document.getElementById('p' + current).classList.add('active');
+    visited.add(n);
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i + 1 === n);
+      d.classList.toggle('visited', visited.has(i + 1));
+    });
+    document.getElementById('btn-prev').disabled = n === 1;
+    document.getElementById('btn-next').disabled = n === TOTAL;
+    document.getElementById('pstrip').style.width = (n / TOTAL * 100) + '%';
+    document.querySelector('.comic-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.getElementById('btn-next').addEventListener('click', () => { if (current < TOTAL) goTo(current + 1); });
+  document.getElementById('btn-prev').addEventListener('click', () => { if (current > 1) goTo(current - 1); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' && current < TOTAL) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 1) goTo(current - 1);
+  });
+</script>
+</body>
+</html>

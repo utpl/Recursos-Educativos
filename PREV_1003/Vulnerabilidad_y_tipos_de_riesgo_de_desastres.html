@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vulnerabilidad y tipos de riesgo de desastres</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --error: #ef4444;
+            --bg-light: #f0f9ff;
+            --bg-card: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-colored: 0 10px 15px -3px rgba(245, 158, 11, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+           
+        }
+
+        .resource-container {
+            width: 800px;
+            height: 800px;
+            max-width: 100%;
+            background: var(--bg-light);
+           
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 50%, #3b82f6 100%);
+            color: white;
+            padding: 20px 32px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Emojis decorativos grandes en header */
+        .header-emojis {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .emoji-bg {
+            position: absolute;
+            opacity: 0.12;
+            font-size: 4.5rem;
+            filter: grayscale(20%);
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .emoji-target {
+            top: 10px;
+            right: 50px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .emoji-chart {
+            top: 60px;
+            right: 100px;
+            animation: float 8s ease-in-out infinite reverse;
+            font-size: 4rem;
+        }
+
+        .emoji-warning {
+            top: 100px;
+            right: 20px;
+            animation: float 7s ease-in-out infinite;
+            font-size: 3.8rem;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(8deg); }
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        .quiz-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Pantalla de introducción */
+        .intro-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .intro-emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin-bottom: 32px;
+            max-width: 600px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 18px 48px;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 60px;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(245, 158, 11, 0.5);
+        }
+
+        /* Área de preguntas */
+        .question-screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .question-screen.active {
+            display: flex;
+        }
+
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-shrink: 0;
+        }
+
+        .progress-text {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+            min-width: 50px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent), #d97706);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .question-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border-left: 6px solid var(--accent);
+            flex-shrink: 0;
+        }
+
+        .question-number {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .option-btn {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            min-height: 80px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .option-emoji {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        /* Estados de respuesta */
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: #166534;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+
+        .option-btn.incorrect {
+            background: #fee2e2;
+            border-color: var(--error);
+            color: #991b1b;
+            opacity: 0.7;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .feedback-area {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 16px;
+            display: none;
+            animation: slideUp 0.4s ease;
+            flex-shrink: 0;
+        }
+
+        .feedback-area.show {
+            display: block;
+        }
+
+        .feedback-area.positive {
+            background: #dcfce7;
+            border: 2px solid var(--success);
+        }
+
+        .feedback-area.negative {
+            background: #fee2e2;
+            border: 2px solid var(--error);
+        }
+
+        .feedback-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-area.positive .feedback-title {
+            color: #166534;
+        }
+
+        .feedback-area.negative .feedback-title {
+            color: #991b1b;
+        }
+
+        .feedback-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 48px;
+        }
+
+        .btn-next:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Pantalla final */
+        .results-screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-screen.active {
+            display: flex;
+        }
+
+        .results-emoji {
+            font-size: 5rem;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .results-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+        }
+
+        .results-score {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .results-label {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 56px;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Scrollbar */
+        .options-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .options-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .options-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                background: var(--bg-light);
+            }
+
+            .resource-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            header {
+                padding: 24px 20px;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+            .header-emojis {
+                width: 150px;
+                height: 150px;
+            }
+
+            .emoji-bg {
+                font-size: 3.5rem;
+                opacity: 0.08;
+            }
+
+            .emoji-chart {
+                font-size: 3rem;
+            }
+
+            .emoji-warning {
+                font-size: 2.8rem;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+            }
+
+            .quiz-container {
+                padding: 20px;
+                height: auto;
+                min-height: calc(100vh - 80px);
+            }
+
+            .intro-emoji {
+                font-size: 3rem;
+            }
+
+            .intro-text {
+                font-size: 1rem;
+                padding: 0 10px;
+            }
+
+            .btn-start {
+                width: 90%;
+                justify-content: center;
+                font-size: 1.1rem;
+                padding: 16px 32px;
+            }
+
+            .progress-bar-container {
+                margin-bottom: 16px;
+            }
+
+            .question-card {
+                padding: 20px;
+                margin-bottom: 16px;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                overflow-y: visible;
+            }
+
+            .option-btn {
+                padding: 16px;
+                min-height: 72px;
+                font-size: 0.95rem;
+            }
+
+            .option-emoji {
+                font-size: 1.3rem;
+            }
+
+            .feedback-area {
+                margin-top: 16px;
+                padding: 16px;
+            }
+
+            .results-emoji {
+                font-size: 4rem;
+            }
+
+            .results-title {
+                font-size: 1.5rem;
+            }
+
+            .results-score {
+                font-size: 3rem;
+            }
+        }
+
+        /* Accessibility */
+        button:focus {
+            outline: 3px solid #60a5fa;
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="resource-container" role="main" aria-label="Quiz sobre vulnerabilidad y tipos de riesgo de desastres">
+    <header>
+        <div class="header-emojis" aria-hidden="true">
+            <div class="emoji-bg emoji-target">🎯</div>
+            <div class="emoji-bg emoji-chart">📊</div>
+            <div class="emoji-bg emoji-warning">⚠️</div>
+        </div>
+        <h1>Vulnerabilidad y tipos de riesgo de desastres</h1>
+        <p class="subtitle">Quiz </p>
+    </header>
+
+    <div class="quiz-container">
+        <!-- Pantalla de Introducción -->
+        <div class="intro-screen" id="introScreen">
+            <div class="intro-emoji">🎓</div>
+            <p class="intro-text">
+                <strong>¡Bienvenidos al quiz sobre la "Vulnerabilidad y tipos de riesgo de desastres"!</strong><br><br>
+                Demuestre sus conocimientos sobre los temas abordados de la semana 2. 
+                Asegúrese de haber revisado el material antes de comenzar.<br>
+                <span style="font-size: 1.2rem; margin-top: 8px; display: inline-block;">¡Buena suerte! 🍀</span>
+            </p>
+            <button class="btn-start" onclick="startQuiz()">
+                Comenzar Quiz ▶️
+            </button>
+        </div>
+
+        <!-- Pantallas de Preguntas -->
+        <div class="question-screen" id="questionScreen">
+            <div class="progress-bar-container">
+                <span class="progress-text">❓ <span id="currentQ">1</span>/4</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 25%"></div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <div class="question-number" id="questionNumber">Pregunta 1</div>
+                <h2 class="question-text" id="questionText"></h2>
+            </div>
+
+            <div class="options-grid" id="optionsGrid">
+                <!-- Opciones generadas por JS -->
+            </div>
+
+            <div class="feedback-area" id="feedbackArea">
+                <div class="feedback-title" id="feedbackTitle"></div>
+                <div class="feedback-text" id="feedbackText"></div>
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()">
+                    Siguiente pregunta ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla de Resultados -->
+        <div class="results-screen" id="resultsScreen">
+            <div class="results-emoji" id="resultsEmoji">🏆</div>
+            <h2 class="results-title" id="resultsTitle">¡Quiz completado!</h2>
+            <div class="results-score" id="resultsScore">0/4</div>
+            <div class="results-label">respuestas correctas</div>
+            <button class="btn-restart" onclick="restartQuiz()">
+                🔄 Reintentar Quiz
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            id: 1,
+            text: "¿Qué define principalmente la vulnerabilidad en la gestión del riesgo?",
+            options: [
+                { id: 1, text: "La frecuencia de una amenaza", emoji: "📈" },
+                { id: 2, text: "Las condiciones que hacen a un sistema propenso a sufrir daños", emoji: "⚠️" },
+                { id: 3, text: "La ubicación geográfica de un territorio", emoji: "🗺️" },
+                { id: 4, text: "La intensidad de un fenómeno natural", emoji: "💥" }
+            ],
+            correct: 2,
+            feedbackPositive: "¡Excelente! La vulnerabilidad se centra en las condiciones que incrementan la susceptibilidad al daño, no en la amenaza en sí, sino en cómo las características del sistema influyen en sus efectos.",
+            feedbackNegative: "¡Oh, no! Vamos a intentarlo de nuevo."
+        },
+        {
+            id: 2,
+            text: "¿Cuál de las siguientes opciones corresponde a vulnerabilidad social?",
+            options: [
+                { id: 1, text: "Viviendas con materiales precarios", emoji: "🏚️" },
+                { id: 2, text: "Falta de ingresos económicos", emoji: "💸" },
+                { id: 3, text: "Presencia de adultos mayores o personas con discapacidad", emoji: "♿" },
+                { id: 4, text: "Deforestación del entorno", emoji: "🌲" }
+            ],
+            correct: 3,
+            feedbackPositive: "¡Excelente! La vulnerabilidad social está vinculada a las características de la población que pueden limitar su capacidad de respuesta, como la edad, salud o dependencia.",
+            feedbackNegative: "¡Oh, no! Vamos a intentarlo de nuevo."
+        },
+        {
+            id: 3,
+            text: "¿Qué caracteriza al riesgo extensivo?",
+            options: [
+                { id: 1, text: "Eventos de gran magnitud y baja frecuencia", emoji: "🏔️" },
+                { id: 2, text: "Eventos pequeños pero frecuentes que acumulan pérdidas", emoji: "📉" },
+                { id: 3, text: "Eventos que solo afectan zonas urbanas", emoji: "🏙️" },
+                { id: 4, text: "Eventos sin impacto económico", emoji: "💱" }
+            ],
+            correct: 2,
+            feedbackPositive: "¡Excelente! El riesgo extensivo se manifiesta en eventos recurrentes que, aunque individuales parecen menores, generan impactos significativos cuando se acumulan en el tiempo.",
+            feedbackNegative: "¡Oh, no! Vamos a intentarlo de nuevo."
+        },
+        {
+            id: 4,
+            text: "¿Qué representa el riesgo total?",
+            options: [
+                { id: 1, text: "Solo las pérdidas más graves", emoji: "💔" },
+                { id: 2, text: "La suma de pérdidas posibles en todos los escenarios de una amenaza", emoji: "➕" },
+                { id: 3, text: "Únicamente eventos frecuentes", emoji: "🔁" },
+                { id: 4, text: "El impacto de un solo evento extremo", emoji: "⚡" }
+            ],
+            correct: 2,
+            feedbackPositive: "¡Excelente! El riesgo total integra distintos escenarios posibles, considerando tanto eventos frecuentes como aquellos menos probables, pero de mayor impacto.",
+            feedbackNegative: "¡Oh, no! Vamos a intentarlo de nuevo."
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    function startQuiz() {
+        document.getElementById('introScreen').style.display = 'none';
+        document.getElementById('questionScreen').classList.add('active');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        answered = false;
+        const q = questions[currentQuestion];
+        
+        document.getElementById('currentQ').textContent = currentQuestion + 1;
+        document.getElementById('progressFill').style.width = ((currentQuestion + 1) / 4 * 100) + '%';
+        document.getElementById('questionNumber').textContent = `Pregunta ${currentQuestion + 1}`;
+        document.getElementById('questionText').textContent = q.text;
+        
+        const grid = document.getElementById('optionsGrid');
+        grid.innerHTML = '';
+        
+        const labels = ['A', 'B', 'C', 'D'];
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.onclick = () => selectAnswer(opt.id, btn);
+            btn.innerHTML = `
+                <span class="option-emoji">${opt.emoji}</span>
+                <span class="option-text"><strong>${labels[idx]}.</strong> ${opt.text}</span>
+            `;
+            grid.appendChild(btn);
+        });
+
+        const feedback = document.getElementById('feedbackArea');
+        feedback.classList.remove('show', 'positive', 'negative');
+    }
+
+    function selectAnswer(optionId, btnElement) {
+        if (answered) return;
+        answered = true;
+        
+        const q = questions[currentQuestion];
+        const buttons = document.querySelectorAll('.option-btn');
+        const isCorrect = optionId === q.correct;
+        
+        buttons.forEach((btn, idx) => {
+            btn.disabled = true;
+            const optId = q.options[idx].id;
+            
+            if (optId === q.correct) {
+                btn.classList.add('correct');
+                btn.innerHTML += ' <span style="margin-left: auto; font-size: 1.5rem;">✅</span>';
+            } else if (optId === optionId && !isCorrect) {
+                btn.classList.add('incorrect');
+                btn.innerHTML += ' <span style="margin-left: auto; font-size: 1.5rem;">❌</span>';
+            } else {
+                btn.style.opacity = '0.6';
+            }
+        });
+
+        const feedback = document.getElementById('feedbackArea');
+        const feedbackTitle = document.getElementById('feedbackTitle');
+        const feedbackText = document.getElementById('feedbackText');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        feedback.classList.add('show');
+        
+        if (isCorrect) {
+            score++;
+            feedback.classList.add('positive');
+            feedbackTitle.innerHTML = '✨ ¡Correcto!';
+            feedbackText.textContent = q.feedbackPositive;
+            nextBtn.innerHTML = currentQuestion < 3 ? 'Siguiente pregunta ➡️' : 'Ver resultados 🏆';
+        } else {
+            feedback.classList.add('negative');
+            feedbackTitle.innerHTML = '😕 ¡Oh, no!';
+            feedbackText.textContent = q.feedbackNegative;
+            nextBtn.innerHTML = 'Intentar de nuevo 🔄';
+            // Cambiar comportamiento del botón para esta opción
+            nextBtn.onclick = () => {
+                // Resetear solo esta pregunta para reintentar
+                answered = false;
+                loadQuestion();
+            };
+            return; // No avanzar automáticamente en caso de error
+        }
+        
+        // Restaurar comportamiento normal del botón si es correcto
+        nextBtn.onclick = () => nextQuestion();
+        
+        // Anunciar para screen readers
+        announceToScreenReader(isCorrect ? "Respuesta correcta. " + q.feedbackPositive : "Respuesta incorrecta. " + q.feedbackNegative);
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        
+        if (currentQuestion < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('questionScreen').classList.remove('active');
+        document.getElementById('resultsScreen').classList.add('active');
+        
+        const percentage = (score / 4) * 100;
+        document.getElementById('resultsScore').textContent = `${score}/4`;
+        
+        const emoji = document.getElementById('resultsEmoji');
+        const title = document.getElementById('resultsTitle');
+        
+        if (score === 4) {
+            emoji.textContent = '🏆';
+            title.textContent = '¡Perfecto! Dominas el tema';
+        } else if (score >= 2) {
+            emoji.textContent = '👍';
+            title.textContent = '¡Buen trabajo! Sigue aprendiendo';
+        } else {
+            emoji.textContent = '📚';
+            title.textContent = 'Necesitas repasar el material';
+        }
+        
+        announceToScreenListener(`Quiz terminado. Obtuviste ${score} de 4 respuestas correctas.`);
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        answered = false;
+        
+        document.getElementById('resultsScreen').classList.remove('active');
+        document.getElementById('introScreen').style.display = 'flex';
+    }
+
+    function announceToScreenReader(message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('role', 'status');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.className = 'sr-only';
+        announcement.style.position = 'absolute';
+        announcement.style.left = '-10000px';
+        announcement.textContent = message;
+        document.body.appendChild(announcement);
+        setTimeout(() => document.body.removeChild(announcement), 1000);
+    }
+
+    // Agregar estilos para screen readers
+    const style = document.createElement('style');
+    style.textContent = `
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
+</body>
+</html>

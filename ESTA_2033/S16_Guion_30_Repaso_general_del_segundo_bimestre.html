@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repaso general del segundo bimestre</title>
+    <style>
+        :root {
+            --primary:   #0E2D52;
+            --primary-d: #1B4F8A;
+            --accent:    #2E6DAD;
+            --accent-d:  #0E2D52;
+            --gold:      #F5A800;
+            --gold-dark: #C98700;
+            --green:     #006747;
+            --green-l:   #B9D3B0;
+            --sand:      #E8F0FA;
+            --salmon:    #F5A800;
+            --blue-l:    #B8CCE4;
+            --bg:        #FFFFFF;
+            --surface:   #F4F7FB;
+            --text:      #0E2D52;
+            --muted:     #4A5568;
+            --border:    #B8CCE4;
+            --correct:   #006747;
+            --correct-bg:#e8f5ee;
+            --wrong:     #A51C30;
+            --wrong-bg:  #fdecea;
+            --shadow:    rgba(14, 45, 82, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .main-container {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            padding: 20px 28px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--salmon) 100%);
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 6px;
+        }
+
+        .header-meta {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            position: relative;
+        }
+
+        .intro-section {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--sand) 100%);
+            border-left: 4px solid var(--gold);
+            padding: 16px 20px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 20px;
+        }
+
+        .intro-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .instruction-hint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--green-l) 0%, var(--sand) 100%);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid var(--green);
+        }
+
+        .hint-icon {
+            font-size: 1.4rem;
+        }
+
+        .hint-text {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .weeks-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .week-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .week-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--salmon) 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .week-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px var(--shadow);
+            border-color: var(--accent);
+        }
+
+        .week-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .week-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 auto 10px;
+        }
+
+        .week-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            line-height: 1.3;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(14, 45, 82, 0.85);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-container {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border-radius: 16px;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            padding: 20px 28px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--salmon) 100%);
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .subsection-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 16px 0 10px 0;
+            padding-left: 12px;
+            border-left: 3px solid var(--gold);
+        }
+
+        .content-text {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, var(--sand) 0%, var(--surface) 100%);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 12px 0;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.95rem;
+            text-align: center;
+            color: var(--primary);
+            overflow-x: auto;
+        }
+
+        .bullet-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 10px 0;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: '•';
+            position: absolute;
+            left: 6px;
+            color: var(--gold-dark);
+            font-weight: bold;
+        }
+
+        .sub-bullet {
+            list-style: none;
+            padding-left: 20px;
+            margin: 6px 0;
+        }
+
+        .sub-bullet li {
+            position: relative;
+            padding-left: 16px;
+            margin-bottom: 6px;
+            font-size: 0.82rem;
+        }
+
+        .sub-bullet li::before {
+            content: '◦';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        .highlight-box {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            margin: 12px 0;
+        }
+
+        .highlight-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--gold-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:nth-child(even) {
+            background: var(--surface);
+        }
+
+        .modal-footer {
+            padding: 16px 28px;
+            background: var(--surface);
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface);
+            border-color: var(--accent);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .reference-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 2px solid var(--border);
+        }
+
+        .reference-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .reference-content {
+            font-size: 0.85rem;
+            color: var(--text);
+            font-style: italic;
+        }
+
+        sup, sub {
+            font-size: 0.75em;
+        }
+
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            margin: 0 3px;
+        }
+
+        .fraction-top {
+            display: block;
+            border-bottom: 1px solid var(--text);
+            padding-bottom: 2px;
+        }
+
+        .fraction-bottom {
+            display: block;
+            padding-top: 2px;
+        }
+
+        .sqrt {
+            border-top: 1px solid var(--text);
+            padding-left: 3px;
+            padding-top: 2px;
+        }
+
+        @media (max-width: 840px) {
+            .main-container, .modal-container {
+                width: 100%;
+                height: auto;
+                min-height: 600px;
+                max-height: none;
+            }
+
+            .weeks-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <h1>Repaso general del segundo bimestre</h1>
+            <div class="header-meta">Estadística para análisis de datos — ESTA_2033 • Juan Carlos Torres Diaz</div>
+        </header>
+
+        <div class="content-area">
+            <div class="intro-section">
+                <p class="intro-text">Explore un repaso integral que resalta la relevancia de los contenidos de las semanas 9 a la 14 sobre inferencia estadística, regresión y predicción.</p>
+            </div>
+
+            <div class="instruction-hint">
+                <span class="hint-icon">👆</span>
+                <span class="hint-text">Haga clic en los temas para visualizar la información</span>
+            </div>
+
+            <div class="weeks-grid">
+                <div class="week-card" onclick="openModal(0)">
+                    <div class="week-number">9</div>
+                    <div class="week-title">Inferencia Estadística: Estimación y Propiedades</div>
+                </div>
+                <div class="week-card" onclick="openModal(1)">
+                    <div class="week-number">10</div>
+                    <div class="week-title">Pruebas de Hipótesis y ANOVA</div>
+                </div>
+                <div class="week-card" onclick="openModal(2)">
+                    <div class="week-number">11</div>
+                    <div class="week-title">Pruebas Múltiples, Tamaño del Efecto y Remuestreo</div>
+                </div>
+                <div class="week-card" onclick="openModal(3)">
+                    <div class="week-number">12</div>
+                    <div class="week-title">Regresión y Predicción: Correlación y Lineal</div>
+                </div>
+                <div class="week-card" onclick="openModal(4)">
+                    <div class="week-number">13</div>
+                    <div class="week-title">No Linealidades y Regularización</div>
+                </div>
+                <div class="week-card" onclick="openModal(5)">
+                    <div class="week-number">14</div>
+                    <div class="week-title">Clasificación: Regresión Logística</div>
+                </div>
+            </div>
+
+            <div class="reference-section">
+                <div class="reference-label">Referencia bibliográfica</div>
+                <div class="reference-content">Elaboración propia.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="modalTitle">Semana 9</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            
+            <div class="modal-content" id="modalContent">
+                <!-- Content injected via JavaScript -->
+            </div>
+
+            <div class="modal-footer">
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary" id="prevBtn" onclick="navigateWeek(-1)">
+                        ← Anterior
+                    </button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="navigateWeek(1)">
+                        Siguiente →
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="closeModal()">
+                    Cerrar ✕
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weeksData = [
+            {
+                title: "Semana 9: UNIDAD 3 - INFERENCIA ESTADÍSTICA",
+                content: `
+                    <div class="fade-in">
+                        <p class="content-text">En esta semana se presentan los fundamentos del análisis exploratorio de datos (EDA), incluyendo la estructura de los datos, los tipos y escalas de medición, y los conceptos de población, muestra, parámetro y estadístico.</p>
+                        
+                        <div class="subsection-title">3.1. Estimación puntual por intervalo</div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Propiedades de los estimadores</div>
+                            <ul class="bullet-list">
+                                <li><strong>Concepto:</strong> Un estimador es una regla o fórmula que usamos para calcular un estimado del parámetro poblacional.</li>
+                                <li><strong>Insesgadez:</strong> El estimador no tiende a sobrestimar ni subestimar el parámetro. En términos formales, E(est) = parámetro.</li>
+                                <li><strong>Eficiencia:</strong> Entre varios estimadores insesgados, el mejor será el que tenga menor varianza.</li>
+                                <li><strong>Consistencia:</strong> A medida que aumenta el tamaño de la muestra n, el estimador se acerca al verdadero valor del parámetro.</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Intervalos de confianza para medias</div>
+                        <p class="content-text">Un intervalo de confianza expresa la incertidumbre asociada a una estimación.</p>
+                        
+                        <div class="formula-box">
+                            <strong>Población normal o n grande:</strong><br>
+                            IC = x̄ ± Z · (<span class="fraction"><span class="fraction-top">σ</span><span class="fraction-bottom">√n</span></span>)
+                        </div>
+                        
+                        <div class="formula-box">
+                            <strong>σ desconocida y muestra pequeña (n < 30):</strong><br>
+                            IC = x̄ ± t · (<span class="fraction"><span class="fraction-top">s</span><span class="fraction-bottom">√n</span></span>)
+                        </div>
+
+                        <div class="subsection-title">Intervalos de confianza para proporciones</div>
+                        <p class="content-text">Cuando el parámetro de interés es una proporción poblacional (p), estimamos con p̂ = x/n.</p>
+                        
+                        <div class="formula-box">
+                            IC = p̂ ± Z · √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;"><span class="fraction"><span class="fraction-top">p̂(1−p̂)</span><span class="fraction-bottom">n</span></span></span>
+                        </div>
+
+                        <div class="subsection-title">Intervalos de confianza para varianzas</div>
+                        <p class="content-text">Usamos el estadístico basado en la distribución χ² (ji-cuadrado).</p>
+                        
+                        <div class="formula-box">
+                            <strong>IC para varianza σ²:</strong><br>
+                            (<span class="fraction"><span class="fraction-top">(n−1)s²</span><span class="fraction-bottom">χ²<sub>derecha</sub></span></span>, <span class="fraction"><span class="fraction-top">(n−1)s²</span><span class="fraction-bottom">χ²<sub>izquierda</sub></span></span>)
+                        </div>
+                        
+                        <p class="content-text">Para IC de desviación estándar σ, basta con obtener la raíz cuadrada de los límites del intervalo anterior.</p>
+
+                        <div class="subsection-title">Intervalos de confianza para diferencias</div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Diferencia entre medias (independientes)</div>
+                            <p class="content-text"><strong>σ conocidas:</strong></p>
+                            <div class="formula-box">
+                                IC = (x̄₁ − x̄₂) ± Z · √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;">(<span class="fraction"><span class="fraction-top">σ₁²</span><span class="fraction-bottom">n₁</span></span> + <span class="fraction"><span class="fraction-top">σ₂²</span><span class="fraction-bottom">n₂</span></span>)</span>
+                            </div>
+                            
+                            <p class="content-text"><strong>σ desconocidas, muestras pequeñas, varianzas iguales:</strong></p>
+                            <div class="formula-box">
+                                IC = (x̄₁ − x̄₂) ± t · s<sub>p</sub> · √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;">(<span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">n₁</span></span> + <span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">n₂</span></span>)</span>
+                            </div>
+                            
+                            <p class="content-text"><strong>Desviación combinada (pooled):</strong></p>
+                            <div class="formula-box">
+                                s<sub>p</sub> = √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;"><span class="fraction"><span class="fraction-top">(n₁−1)s₁² + (n₂−1)s₂²</span><span class="fraction-bottom">n₁ + n₂ − 2</span></span></span>
+                            </div>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Diferencia entre proporciones</div>
+                            <div class="formula-box">
+                                IC = (p̂₁ − p̂₂) ± Z · √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;">(<span class="fraction"><span class="fraction-top">p̂₁(1−p̂₁)</span><span class="fraction-bottom">n₁</span></span> + <span class="fraction"><span class="fraction-top">p̂₂(1−p̂₂)</span><span class="fraction-bottom">n₂</span></span>)</span>
+                            </div>
+                        </div>
+
+                        <div class="subsection-title">Elección de Z, t, χ² y F</div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Situación</th>
+                                        <th>Parámetro</th>
+                                        <th>Distribución</th>
+                                        <th>Condición típica</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Media (σ conocida, n grande)</td>
+                                        <td>μ</td>
+                                        <td>Z</td>
+                                        <td>Normal estándar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Media (σ desconocida, n pequeña)</td>
+                                        <td>μ</td>
+                                        <td>t</td>
+                                        <td>GL = n−1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Proporción</td>
+                                        <td>p</td>
+                                        <td>Z</td>
+                                        <td>np̂ ≥ 5, n(1−p̂) ≥ 5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Varianza</td>
+                                        <td>σ²</td>
+                                        <td>χ²</td>
+                                        <td>Normalidad requerida</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Comparación de dos medias</td>
+                                        <td>μ₁ − μ₂</td>
+                                        <td>t o Z</td>
+                                        <td>Según σ conocida o no</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Comparación de varianzas</td>
+                                        <td>σ₁² / σ₂²</td>
+                                        <td>F</td>
+                                        <td>Normalidad, muestras independientes</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="subsection-title">Intervalos de confianza Bootstrap</div>
+                        <p class="content-text">El bootstrap consiste en generar muchas muestras "simuladas" o reasignadas a partir de los propios datos muestrales, con reemplazo.</p>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento Bootstrap</div>
+                            <ul class="bullet-list">
+                                <li>De la muestra original de tamaño n, genere B réplicas (B suele ser al menos 1000)</li>
+                                <li>Calcule el estimador de interés en cada réplica (por ejemplo, la media x̄*)</li>
+                                <li>Ordene los B valores obtenidos</li>
+                                <li>Los límites del IC bootstrap se toman como los percentiles deseados de esa distribución empírica</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">3.2. Pruebas de hipótesis</div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Hipótesis nula y alternativa (H₀ / H₁)</div>
+                            <ul class="bullet-list">
+                                <li><strong>H₀ (hipótesis nula):</strong> no hay efecto, diferencia o relación. Representa el estado actual o el punto de referencia.</li>
+                                <li><strong>H₁ (hipótesis alternativa):</strong> sí hay efecto o diferencia.</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">p-valor</div>
+                            <p class="content-text">El <strong>p-valor</strong> indica la probabilidad de observar un estadístico al menos tan extremo como el obtenido, si H₀ fuera cierta.</p>
+                            <ul class="bullet-list">
+                                <li>Si p ≤ α → Rechazar H₀ (evidencia significativa)</li>
+                                <li>Si p > α → No rechazar H₀ (evidencia insuficiente)</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Errores tipo I y II</div>
+                            <ul class="bullet-list">
+                                <li><strong>Error tipo I (α):</strong> Rechazar H₀ siendo verdadera</li>
+                                <li><strong>Error tipo II (β):</strong> No rechazar H₀ siendo falsa</li>
+                            </ul>
+                            <p class="content-text">Cuando usamos un nivel de significación α, estamos fijando la probabilidad máxima tolerable de error tipo I.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Semana 10: UNIDAD 3 - INFERENCIA ESTADÍSTICA",
+                content: `
+                    <div class="fade-in">
+                        <p class="content-text">Durante la semana 10 se estudian los fundamentos de la inferencia estadística, enfocándose en la verificación de hipótesis, el uso de estadísticos de prueba (Z y t) y el análisis de varianza (ANOVA).</p>
+                        
+                        <div class="subsection-title">Pasos para verificar una hipótesis</div>
+                        <ul class="bullet-list">
+                            <li><strong>Paso 1:</strong> Plantear las hipótesis nula y alternativa. La hipótesis nula siempre afirma que no hay cambio en la media poblacional.</li>
+                            <li><strong>Paso 2:</strong> Definir la probabilidad de error aceptable. Normalmente se define un nivel de significancia de 0.05 (5%).</li>
+                            <li><strong>Paso 3:</strong> Definir el estadístico que se va a utilizar (Z o t). Z se utiliza cuando se conoce la desviación estándar de la población o cuando se tiene una muestra mayor a 30 (N>30).</li>
+                            <li><strong>Paso 4:</strong> Construir una regla de decisión.</li>
+                        </ul>
+
+                        <div class="formula-box">
+                            <strong>Fórmula clave:</strong><br>
+                            Z = <span class="fraction"><span class="fraction-top">X − μ</span><span class="fraction-bottom">σ/√n</span></span>
+                        </div>
+
+                        <div class="subsection-title">Verificación de hipótesis cuando se conoce σ</div>
+                        <p class="content-text">Si se conoce la desviación estándar de la población se utiliza el estadístico Z.</p>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Ejemplo</div>
+                            <ul class="bullet-list">
+                                <li>H₀: μ ≤ 80</li>
+                                <li>H₁: μ > 80</li>
+                                <li>Z = 7.71</li>
+                                <li>El valor cae en el área de rechazo, por lo tanto se procede a rechazar la H₀.</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Verificación de hipótesis cuando NO se conoce σ</div>
+                        <p class="content-text">Esto se debe a que se desconoce la desviación estándar de la población. Se utiliza el estadístico t.</p>
+                        
+                        <div class="formula-box">
+                            t = <span class="fraction"><span class="fraction-top">X − μ</span><span class="fraction-bottom">s/√n</span></span>
+                        </div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Ejemplo</div>
+                            <ul class="bullet-list">
+                                <li>H₀: μ ≥ 42.3</li>
+                                <li>H₁: μ < 42.3</li>
+                                <li>El valor t de la tabla es 1.319</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">ANOVA (Análisis de Varianza)</div>
+                        <p class="content-text">El ANOVA resuelve la comparación de múltiples medias con una única prueba. ANOVA evalúa si al menos una media difiere.</p>
+                        
+                        <div class="formula-box">
+                            <strong>Hipótesis:</strong><br>
+                            H₀: μ₁ = μ₂ = ... = μ<sub>k</sub><br>
+                            H₁: al menos una media es distinta
+                        </div>
+                        
+                        <div class="formula-box">
+                            <strong>Fórmula clave:</strong><br>
+                            F = <span class="fraction"><span class="fraction-top">variación entre grupos</span><span class="fraction-bottom">variación dentro de grupos</span></span> = <span class="fraction"><span class="fraction-top">CMB</span><span class="fraction-bottom">CMD</span></span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Semana 11: UNIDAD 3 - INFERENCIA ESTADÍSTICA",
+                content: `
+                    <div class="fade-in">
+                        <p class="content-text">Durante la semana 11 se abordan las pruebas múltiples, el tamaño del efecto y técnicas de remuestreo en inferencia estadística.</p>
+                        
+                        <div class="subsection-title">3.3. Pruebas múltiples, tamaño del efecto y remuestreo</div>
+                        <ul class="bullet-list">
+                            <li>La probabilidad de cometer un error tipo I (falso positivo) crece rápidamente, aunque usted use α = 0.05 en cada prueba.</li>
+                            <li>Controlar el error cuando hay pruebas múltiples.</li>
+                            <li>Cuantificar cuán grande es el efecto, no solo si existe.</li>
+                        </ul>
+
+                        <div class="subsection-title">Corrección de Bonferroni</div>
+                        <p class="content-text"><strong>Error familiar o FWER</strong> (Family-Wise Error Rate): la probabilidad de cometer al menos un error tipo I en un conjunto de pruebas.</p>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento Bonferroni</div>
+                            <ul class="bullet-list">
+                                <li>Determine cuántas pruebas hará: m</li>
+                                <li>Elija el nivel global de error permitido: α</li>
+                                <li><strong>Fórmula:</strong> α* = α/m</li>
+                            </ul>
+                            
+                            <p class="content-text"><strong>Ejemplo:</strong> α* = 0.05/5 = 0.01</p>
+                            <p class="content-text">Con Bonferroni (α* = 0.01), solo es significativa Física (0.008).</p>
+                            <p class="content-text"><em>Bonferroni reduce falsos positivos, pero puede aumentar falsos negativos (baja potencia).</em></p>
+                        </div>
+
+                        <div class="subsection-title">FDR (Benjamini-Hochberg)</div>
+                        <p class="content-text"><strong>FDR</strong> significa False Discovery Rate: la proporción esperada de falsos positivos entre los resultados declarados significativos.</p>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento FDR</div>
+                            <ul class="bullet-list">
+                                <li>Ordene los p-valores de menor a mayor: p₍₁₎ ≤ p₍₂₎ ≤ ... ≤ p₍ₘ₎</li>
+                                <li><strong>Fórmula:</strong> umbral(i) = (i/m)·q</li>
+                                <li>Declare significativos todos los p₍₁₎...p₍ᵢ₎</li>
+                            </ul>
+                            <p class="content-text">Aquí solo p₍₁₎ cumple: 0.002 ≤ 0.005.</p>
+                            <p class="content-text"><em>FDR no garantiza que no haya falsos positivos; garantiza que la proporción esperada sea limitada.</em></p>
+                        </div>
+
+                        <div class="subsection-title">Tamaños del efecto</div>
+                        <p class="content-text">Una prueba puede decirle "existe diferencia", pero no le dice si la diferencia es pequeña o grande.</p>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">d de Cohen</div>
+                            <p class="content-text">d de Cohen mide cuántas desviaciones estándar separan dos medias.</p>
+                            
+                            <div class="formula-box">
+                                s<sub>p</sub> = √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;"><span class="fraction"><span class="fraction-top">(n₁ − 1)s₁² + (n₂ − 1)s₂²</span><span class="fraction-bottom">n₁ + n₂ − 2</span></span></span>
+                            </div>
+                            
+                            <div class="formula-box">
+                                d = <span class="fraction"><span class="fraction-top">x̄₁ − x̄₂</span><span class="fraction-bottom">s<sub>p</sub></span></span>
+                            </div>
+                            
+                            <ul class="bullet-list">
+                                <li>d = 0.2 → efecto pequeño</li>
+                                <li>d = 0.5 → medio</li>
+                                <li>d = 0.8 → grande</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Odds Ratio con intervalos de confianza</div>
+                        <p class="content-text"><strong>Odds Ratio (OR)</strong> se usa para comparar la probabilidad de un evento entre dos grupos en una tabla 2×2.</p>
+                        
+                        <div class="formula-box">
+                            OR = <span class="fraction"><span class="fraction-top">a · d</span><span class="fraction-bottom">b · c</span></span>
+                        </div>
+                        
+                        <div class="formula-box">
+                            SE(ln(OR)) = √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;"><span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">a</span></span> + <span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">b</span></span> + <span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">c</span></span> + <span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">d</span></span></span>
+                        </div>
+                        
+                        <ul class="bullet-list">
+                            <li>Si OR = 1 → no hay asociación</li>
+                            <li>Si OR > 1 → el evento es más probable</li>
+                            <li>Si OR < 1 → el evento es menos probable</li>
+                        </ul>
+
+                        <div class="subsection-title">3.4 Remuestreo, permutaciones y potencia</div>
+                        <p class="content-text">Muchas pruebas dependen de supuestos como normalidad o varianzas similares. Las pruebas por permutación ofrecen enfoques robustos.</p>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Pruebas por permutación</div>
+                            <p class="content-text">Una prueba por permutación construye el "mundo de H₀" reordenando los datos.</p>
+                            
+                            <ul class="bullet-list">
+                                <li>Permute aleatoriamente las etiquetas A y B muchas veces</li>
+                                <li><strong>Fórmula:</strong> p-valor ≈ (número de permutaciones con |Δ*| ≥ |Δ<sub>obs</sub>|) / B</li>
+                            </ul>
+                            
+                            <p class="content-text">p-valor (0.024) es menor al nivel de significancia común (0.05) → El Método A es significativamente mejor que el B.</p>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Fallo de supuestos</div>
+                            <ul class="bullet-list">
+                                <li>Asimetría severa, valores extremos, varianzas muy diferentes, muestras pequeñas</li>
+                                <li>Usar pruebas t o z de forma automática puede ser riesgoso</li>
+                                <li>Usar alternativas robustas: bootstrap, pruebas por permutación, transformaciones</li>
+                                <li>Cuando el supuesto falla, usted cambia de herramienta, no fuerza el método</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Potencia estadística</div>
+                            <p class="content-text"><strong>Potencia = 1 − β</strong></p>
+                            <p class="content-text">Es la probabilidad de detectar un efecto real.</p>
+                            <p class="content-text">Factores: α, tamaño del efecto esperado, variabilidad esperada, tamaño muestral n.</p>
+                            <p class="content-text">d ≈ 8/20 = 0.4 (moderado).</p>
+                            <p class="content-text"><em>Un resultado no significativo con potencia baja no debe interpretarse como "no hay efecto".</em></p>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Tamaño muestral para diseño de experimentos</div>
+                            <p class="content-text">Garantizar una potencia deseada (por ejemplo 80% o 90%).</p>
+                            
+                            <div class="formula-box">
+                                n ≈ <span class="fraction"><span class="fraction-top">2(z<sub>α/2</sub> + z<sub>β</sub>)²</span><span class="fraction-bottom">d²</span></span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Semana 12: UNIDAD 4 - REGRESIÓN Y PREDICCIÓN",
+                content: `
+                    <div class="fade-in">
+                        <p class="content-text">Durante la semana 12 se estudia la relación entre variables mediante correlación y regresión lineal. Se desarrollan herramientas para analizar, interpretar y predecir datos cuantitativos.</p>
+                        
+                        <div class="subsection-title">4.1 Introducción</div>
+                        <ul class="bullet-list">
+                            <li>Comprender si dos variables están relacionadas</li>
+                            <li><strong>Correlación:</strong> cuantifica el nivel de relación entre dos variables</li>
+                            <li><strong>Regresión lineal:</strong> construye una ecuación matemática para describir esa relación y realizar predicciones</li>
+                        </ul>
+
+                        <div class="subsection-title">4.2 Correlación</div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">¿Qué es la correlación?</div>
+                            <ul class="bullet-list">
+                                <li>Estudia la relación entre dos variables numéricas</li>
+                                <li>Qué tan asociadas están estas variables</li>
+                                <li>Si una variable cambia, la otra tiende a cambiar también</li>
+                                <li>Dirección de la relación (positiva o negativa)</li>
+                                <li>Fuerza de la relación (débil, moderada o fuerte)</li>
+                                <li><strong>La correlación no implica causalidad</strong></li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Tipos de correlación</div>
+                            <ul class="bullet-list">
+                                <li><strong>Correlación positiva:</strong> una variable aumenta y la otra también aumenta</li>
+                                <li><strong>Correlación negativa:</strong> una variable aumenta y la otra disminuye</li>
+                                <li><strong>Correlación nula:</strong> no se observa una relación clara</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Diagrama de dispersión</div>
+                        <ul class="bullet-list">
+                            <li>Primer paso es visualizar la relación mediante un diagrama de dispersión</li>
+                            <li>Variable X en el eje horizontal</li>
+                            <li>Variable Y en el eje vertical</li>
+                            <li>Tendencia ascendente → correlación positiva</li>
+                            <li>Tendencia descendente → correlación negativa</li>
+                            <li>Sin forma clara → correlación débil o nula</li>
+                        </ul>
+
+                        <div class="subsection-title">Ejemplo práctico</div>
+                        <ul class="bullet-list">
+                            <li><strong>X:</strong> Llamadas</li>
+                            <li><strong>Y:</strong> CopiadorasVendidas</li>
+                            <li>Analizar si el número de llamadas influye en el número de copiadoras vendidas</li>
+                        </ul>
+
+                        <div class="subsection-title">Coeficiente de correlación (Pearson)</div>
+                        <ul class="bullet-list">
+                            <li>Coeficiente de Pearson (r) mide la fuerza y dirección de la relación lineal</li>
+                            <li><strong>r = 0.7179361</strong></li>
+                            <li>Correlación positiva</li>
+                            <li>Relación fuerte</li>
+                        </ul>
+
+                        <div class="subsection-title">4.3 Regresión lineal</div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">¿Por qué usar regresión?</div>
+                            <ul class="bullet-list">
+                                <li>Construir una ecuación que describa esta relación</li>
+                                <li>Predecir ventas a partir del número de llamadas</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Modelo matemático</div>
+                        <div class="formula-box">
+                            Y = a + bX
+                        </div>
+                        <ul class="bullet-list">
+                            <li><strong>Y:</strong> variable dependiente</li>
+                            <li><strong>X:</strong> variable independiente</li>
+                            <li><strong>a:</strong> intercepto</li>
+                            <li><strong>b:</strong> pendiente</li>
+                        </ul>
+
+                        <div class="subsection-title">Interpretación de la ecuación de regresión</div>
+                        <div class="formula-box">
+                            Y = 19.2821 + 1.0079X
+                        </div>
+                        <ul class="bullet-list">
+                            <li>Intercepto ≈ 19 ventas cuando X = 0</li>
+                            <li>Pendiente 1.0079 copiadoras más por cada llamada</li>
+                        </ul>
+
+                        <div class="subsection-title">Predicción con el modelo</div>
+                        <div class="formula-box">
+                            Y = 19.2821 + 1.0079(41) = 60.60 ≈ 60
+                        </div>
+                        <p class="content-text">Estimación de ventas según número de llamadas.</p>
+
+                        <div class="subsection-title">4.4 Supuestos del modelo de regresión lineal</div>
+                        <ul class="bullet-list">
+                            <li><strong>Supuesto 1:</strong> Linealidad</li>
+                            <li><strong>Supuesto 2:</strong> Independencia de los errores</li>
+                            <li><strong>Supuesto 3:</strong> Homocedasticidad</li>
+                            <li><strong>Supuesto 4:</strong> Normalidad de los residuos</li>
+                            <li><strong>Supuesto 5:</strong> Ausencia de valores atípicos influyentes</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Semana 13: UNIDAD 4 - REGRESIÓN Y PREDICCIÓN",
+                content: `
+                    <div class="fade-in">
+                        <p class="content-text">Durante la semana 13 se estudian modelos más avanzados de regresión, incorporando no linealidades y técnicas de regularización.</p>
+                        
+                        <div class="subsection-title">4.5 No linealidades y regularización</div>
+                        <ul class="bullet-list">
+                            <li>Curvaturas, umbrales, saturaciones y patrones complejos</li>
+                            <li>No linealidades permiten relaciones más flexibles entre variables</li>
+                            <li>Regularización controla la complejidad del modelo</li>
+                            <li>Evitar sobre-entrenamiento (overfitting)</li>
+                            <li>Minimizar error, controlar varianza y evaluar generalización</li>
+                            <li>Un buen ajuste en entrenamiento no garantiza buen desempeño en datos nuevos</li>
+                        </ul>
+
+                        <div class="subsection-title">Regresión polinomial</div>
+                        <ul class="bullet-list">
+                            <li>Capturar curvaturas agregando potencias de X</li>
+                            <li>Modelo lineal: Y = a + bX</li>
+                            <li>Modelo cuadrático: Y = a + b₁X + b₂X²</li>
+                            <li>Modelo cúbico: Y = a + b₁X + b₂X² + b₃X³</li>
+                            <li>Sigue siendo lineal en los parámetros</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento</div>
+                            <ul class="bullet-list">
+                                <li>Elegir el grado del polinomio</li>
+                                <li>Crear variables X², X³</li>
+                                <li>Ajustar con mínimos cuadrados</li>
+                                <li>Evaluar desempeño en datos nuevos</li>
+                            </ul>
+                            <p class="content-text">b₂ negativo → curva se abre hacia abajo</p>
+                        </div>
+
+                        <div class="subsection-title">Splines</div>
+                        <ul class="bullet-list">
+                            <li>Función compuesta por varios polinomios</li>
+                            <li>Nudos (knots)</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento</div>
+                            <ul class="bullet-list">
+                                <li>Elegir número y ubicación de nudos</li>
+                                <li>Ajustar polinomios en cada tramo</li>
+                                <li>Garantizar continuidad y suavidad</li>
+                                <li>Evaluar con validación cruzada</li>
+                            </ul>
+                            <p class="content-text">Flexibilidad controlada. Crecimiento fuerte al inicio, crecimiento moderado después. Un spline con demasiados nudos puede sobreajustar.</p>
+                        </div>
+
+                        <div class="subsection-title">Ridge</div>
+                        <p class="content-text">Modelo se vuelve demasiado complejo con muchos predictores. Penaliza la suma de los cuadrados de los coeficientes.</p>
+                        
+                        <div class="formula-box">
+                            SSE + λ∑(b<sub>j</sub>²)
+                        </div>
+                        
+                        <ul class="bullet-list">
+                            <li>λ: parámetro de regularización</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento</div>
+                            <ul class="bullet-list">
+                                <li>Ajustar modelo ridge</li>
+                                <li>Probar distintos λ</li>
+                                <li>Validar con cross-validation</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Lasso</div>
+                        <p class="content-text">Selección automática de variables. Penaliza valores absolutos.</p>
+                        
+                        <div class="formula-box">
+                            SSE + λ∑|b<sub>j</sub>|
+                        </div>
+                        
+                        <ul class="bullet-list">
+                            <li>Coeficientes pueden volverse 0</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento</div>
+                            <ul class="bullet-list">
+                                <li>Ajustar modelos con distintos λ</li>
+                                <li>Validar</li>
+                                <li>Elegir λ óptimo</li>
+                            </ul>
+                            <p class="content-text">Variables relevantes quedan distintas de 0.</p>
+                        </div>
+
+                        <div class="subsection-title">Elastic Net</div>
+                        <p class="content-text">Combina Ridge y Lasso.</p>
+                        
+                        <div class="formula-box">
+                            SSE + λ₁∑|b<sub>j</sub>| + λ₂∑(b<sub>j</sub>²)
+                        </div>
+                        
+                        <ul class="bullet-list">
+                            <li>Mantiene grupos de variables correlacionadas</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento</div>
+                            <ul class="bullet-list">
+                                <li>Elegir mezcla α</li>
+                                <li>Probar λ</li>
+                                <li>Validar</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Validación cruzada</div>
+                        <ul class="bullet-list">
+                            <li>Dividir datos en partes</li>
+                            <li>Entrenar en unas y validar en otras</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento k-fold</div>
+                            <ul class="bullet-list">
+                                <li>Dividir en k folds</li>
+                                <li>Entrenar con k-1</li>
+                                <li>Evaluar en el restante</li>
+                                <li>Repetir k veces</li>
+                                <li>Promediar desempeño</li>
+                            </ul>
+                            <p class="content-text">Evita depender de una sola partición.</p>
+                        </div>
+
+                        <div class="subsection-title">Métricas de evaluación</div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">MSE (Error Cuadrático Medio)</div>
+                            <div class="formula-box">
+                                MSE = <span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">n</span></span>∑(y<sub>i</sub> − ŷ<sub>i</sub>)²
+                            </div>
+                            <ul class="bullet-list">
+                                <li>Penaliza errores grandes</li>
+                                <li>Sensible a outliers</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">RMSE (Raíz del Error Cuadrático Medio)</div>
+                            <div class="formula-box">
+                                RMSE = √<span class="sqrt" style="display: inline-block; border-top: 1px solid var(--text); padding-left: 3px;">MSE</span>
+                            </div>
+                            <ul class="bullet-list">
+                                <li>Misma escala de Y</li>
+                                <li>Más interpretable</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">MAE (Error Absoluto Medio)</div>
+                            <div class="formula-box">
+                                MAE = <span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">n</span></span>∑|y<sub>i</sub> − ŷ<sub>i</sub>|
+                            </div>
+                            <ul class="bullet-list">
+                                <li>Menos sensible a outliers</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">R² (Coeficiente de Determinación)</div>
+                            <div class="formula-box">
+                                R² = 1 − <span class="fraction"><span class="fraction-top">∑(y<sub>i</sub> − ŷ<sub>i</sub>)²</span><span class="fraction-bottom">∑(y<sub>i</sub> − ȳ)²</span></span>
+                            </div>
+                            <ul class="bullet-list">
+                                <li>Proporción de variabilidad explicada</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">R² ajustado</div>
+                            <div class="formula-box">
+                                R²<sub>ajustado</sub> = 1 − <span class="fraction"><span class="fraction-top">(1 − R²)(n − 1)</span><span class="fraction-bottom">n − p − 1</span></span>
+                            </div>
+                            <ul class="bullet-list">
+                                <li>Penaliza por añadir variables innecesarias</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Semana 14: UNIDAD 4 - REGRESIÓN Y PREDICCIÓN",
+                content: `
+                    <div class="fade-in">
+                        <p class="content-text">Durante la semana 14 se estudian los modelos de clasificación estadística, enfocándose en la regresión logística y la predicción de variables categóricas.</p>
+                        
+                        <div class="subsection-title">4.6 Clasificación estadística esencial</div>
+                        <ul class="bullet-list">
+                            <li>Variable que queremos predecir no es numérica continua, sino categórica (0 y 1)</li>
+                            <li>Problemas de clasificación</li>
+                            <li>Regresión lineal puede producir valores fuera de 0 y 1</li>
+                            <li>Regresión logística modela la probabilidad</li>
+                            <li>Clasificar es estimar probabilidades, elegir umbrales y tomar decisiones</li>
+                        </ul>
+
+                        <div class="subsection-title">Regresión logística</div>
+                        <ul class="bullet-list">
+                            <li>Predecir probabilidad de pertenecer a una clase</li>
+                            <li>Función logística transforma valores en rango entre 0 y 1</li>
+                        </ul>
+
+                        <div class="formula-box">
+                            p = <span class="fraction"><span class="fraction-top">1</span><span class="fraction-bottom">1 + e<sup>−(a + b₁X₁ + b₂X₂ + ... + bₖXₖ)</sup></span></span>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Procedimiento</div>
+                            <ul class="bullet-list">
+                                <li>Definir variable objetivo 0/1</li>
+                                <li>Seleccionar predictores</li>
+                                <li>Ajustar modelo</li>
+                                <li>Obtener probabilidades</li>
+                                <li>Elegir umbral</li>
+                                <li>Evaluar desempeño</li>
+                            </ul>
+                        </div>
+
+                        <div class="subsection-title">Odds y log-odds</div>
+                        
+                        <div class="formula-box">
+                            Odds = <span class="fraction"><span class="fraction-top">p</span><span class="fraction-bottom">1 − p</span></span>
+                        </div>
+                        
+                        <div class="formula-box">
+                            Log-odds = ln(<span class="fraction"><span class="fraction-top">p</span><span class="fraction-bottom">1 − p</span></span>)
+                        </div>
+                        
+                        <div class="formula-box">
+                            ln(<span class="fraction"><span class="fraction-top">p</span><span class="fraction-bottom">1 − p</span></span>) = a + b₁X₁ + ... + bₖXₖ
+                        </div>
+
+                        <ul class="bullet-list">
+                            <li>Odds comparan probabilidad de ocurrir vs no ocurrir</li>
+                            <li>Log-odds pueden tomar cualquier valor real</li>
+                        </ul>
+
+                        <div class="subsection-title">Odds ratios con intervalos de confianza</div>
+                        <ul class="bullet-list">
+                            <li>OR compara odds entre dos grupos</li>
+                            <li>OR = e^(bⱼ)</li>
+                        </ul>
+
+                        <div class="formula-box">
+                            OR = e<sup>bⱼ</sup>
+                        </div>
+                        
+                        <div class="formula-box">
+                            IC(bⱼ) = bⱼ ± z · SE
+                        </div>
+
+                        <ul class="bullet-list">
+                            <li>OR > 1: aumento del riesgo</li>
+                            <li>OR < 1: efecto protector</li>
+                            <li>OR = 1: no asociación</li>
+                        </ul>
+
+                        <div class="subsection-title">Evaluación del modelo</div>
+                        
+                        <div class="highlight-box">
+                            <div class="highlight-title">Matriz de confusión</div>
+                            <ul class="bullet-list">
+                                <li><strong>VP:</strong> verdaderos positivos</li>
+                                <li><strong>VN:</strong> verdaderos negativos</li>
+                                <li><strong>FP:</strong> falsos positivos</li>
+                                <li><strong>FN:</strong> falsos negativos</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Accuracy (Exactitud)</div>
+                            <div class="formula-box">
+                                Accuracy = <span class="fraction"><span class="fraction-top">VP + VN</span><span class="fraction-bottom">VP + VN + FP + FN</span></span>
+                            </div>
+                            <p class="content-text">Proporción de aciertos</p>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Precision y Recall</div>
+                            <div class="formula-box">
+                                Precision = <span class="fraction"><span class="fraction-top">VP</span><span class="fraction-bottom">VP + FP</span></span>
+                            </div>
+                            <div class="formula-box">
+                                Recall = <span class="fraction"><span class="fraction-top">VP</span><span class="fraction-bottom">VP + FN</span></span>
+                            </div>
+                            <ul class="bullet-list">
+                                <li>Precision mide aciertos en positivos predichos</li>
+                                <li>Recall mide detección de positivos reales</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">F1-score</div>
+                            <div class="formula-box">
+                                F1 = 2 · <span class="fraction"><span class="fraction-top">Precision · Recall</span><span class="fraction-bottom">Precision + Recall</span></span>
+                            </div>
+                            <p class="content-text">Balance entre precision y recall</p>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-title">Curva ROC y AUC</div>
+                            <div class="formula-box">
+                                TPR = <span class="fraction"><span class="fraction-top">VP</span><span class="fraction-bottom">VP + FN</span></span>
+                            </div>
+                            <div class="formula-box">
+                                FPR = <span class="fraction"><span class="fraction-top">FP</span><span class="fraction-bottom">FP + VN</span></span>
+                            </div>
+                        </div>
+
+                        <div class="subsection-title">Desbalanceo de clases</div>
+                        <ul class="bullet-list">
+                            <li>Clase positiva puede ser muy rara</li>
+                            <li>Accuracy puede ser engañosa</li>
+                            <li>Afecta entrenamiento, métricas y umbral</li>
+                        </ul>
+
+                        <div class="subsection-title">Umbral</div>
+                        <ul class="bullet-list">
+                            <li>p̂ ≥ 0.50 → clase 1</li>
+                            <li>p̂ < 0.50 → clase 0</li>
+                            <li>Ajustar según costo del error</li>
+                        </ul>
+
+                        <div class="subsection-title">Pesos de clase</div>
+                        <ul class="bullet-list">
+                            <li>Asignar mayor peso a clase minoritaria</li>
+                            <li>Errores en esa clase tienen mayor costo</li>
+                        </ul>
+
+                        <div class="subsection-title">Remuestreo</div>
+                        <ul class="bullet-list">
+                            <li>Submuestreo</li>
+                            <li>Sobremuestreo</li>
+                            <li>SMOTE</li>
+                            <li>Aplicar solo en entrenamiento</li>
+                            <li>No usar en datos de prueba</li>
+                        </ul>
+                    </div>
+                `
+            }
+        ];
+
+        let currentWeek = 0;
+
+        function openModal(index) {
+            currentWeek = index;
+            renderWeek();
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            updateNavButtons();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeModal();
+            }
+        }
+
+        function navigateWeek(direction) {
+            const newIndex = currentWeek + direction;
+            if (newIndex >= 0 && newIndex < weeksData.length) {
+                currentWeek = newIndex;
+                renderWeek();
+                updateNavButtons();
+            }
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentWeek === 0;
+            document.getElementById('nextBtn').disabled = currentWeek === weeksData.length - 1;
+        }
+
+        function renderWeek() {
+            const week = weeksData[currentWeek];
+            document.getElementById('modalTitle').textContent = week.title;
+            document.getElementById('modalContent').innerHTML = week.content;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('modalOverlay').classList.contains('active')) {
+                if (e.key === 'Escape') closeModal();
+                if (e.key === 'ArrowLeft') navigateWeek(-1);
+                if (e.key === 'ArrowRight') navigateWeek(1);
+            }
+        });
+    </script>
+</body>
+</html>
