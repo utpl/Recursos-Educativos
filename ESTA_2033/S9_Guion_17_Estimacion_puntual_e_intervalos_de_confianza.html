@@ -760,7 +760,6 @@
     let round = 0;
     let connections = {};
     let selectedCon = null;
-    let selectedDesc = null;
     let checked = false;
     let totalCorrect = 0;
     let roundScores = [0, 0];
@@ -773,7 +772,7 @@
 
     /* ── BUILD ── */
     function build() {
-      connections = {}; selectedCon = null; selectedDesc = null; checked = false;
+      connections = {}; selectedCon = null; checked = false;
       const items = currentItems();
       const shuffledDescs = shuffle(items.map(p => ({ letter: p.letter, desc: p.desc, color: p.color })));
 
@@ -825,33 +824,61 @@
       document.getElementById('btnCheck').style.display = 'flex';
     }
 
-    /* ── PICK ── */
+    /* ── PICK CONCEPT ── */
     function pickCon(id) {
       if (checked) return;
-      const already = Object.keys(connections).find(k => parseInt(k) === id);
-      if (already !== undefined) { delete connections[id]; renderLines(); updateDots(); updateCheckBtn(); clearSel(); return; }
-      clearSel();
-      selectedCon = id;
-      document.getElementById(`con-${id}`).classList.add('selected');
-      tryConnect();
-    }
-    function pickDesc(letter) {
-      if (checked) return;
-      const existingCon = Object.keys(connections).find(k => connections[k] === letter);
-      if (existingCon !== undefined) { delete connections[existingCon]; renderLines(); updateDots(); updateCheckBtn(); clearSel(); return; }
-      clearSel();
-      selectedDesc = letter;
-      document.getElementById(`desc-${letter}`).classList.add('selected');
-      tryConnect();
-    }
-    function tryConnect() {
-      if (selectedCon !== null && selectedDesc !== null) {
-        connections[selectedCon] = selectedDesc;
-        clearSel(); renderLines(); updateDots(); updateCheckBtn();
+      
+      // If already connected, remove connection
+      if (connections[id]) {
+        delete connections[id];
+        renderLines(); 
+        updateDots(); 
+        updateCheckBtn(); 
+        return; 
+      }
+      
+      // Toggle selection
+      if (selectedCon === id) {
+        clearSel();
+      } else {
+        clearSel();
+        selectedCon = id;
+        document.getElementById(`con-${id}`).classList.add('selected');
       }
     }
+
+    /* ── PICK DESCRIPTION ── */
+    function pickDesc(letter) {
+      if (checked) return;
+      
+      // Find if this letter is already connected to something
+      const existingCon = Object.keys(connections).find(k => connections[k] === letter);
+      
+      if (existingCon !== undefined) { 
+        // Remove existing connection
+        delete connections[existingCon]; 
+        renderLines(); 
+        updateDots(); 
+        updateCheckBtn(); 
+        return; 
+      }
+      
+      // If we have a selected concept, create connection
+      if (selectedCon !== null) {
+        connections[selectedCon] = letter;
+        clearSel(); 
+        renderLines(); 
+        updateDots(); 
+        updateCheckBtn();
+        return;
+      }
+      
+      // Optional: allow selecting description alone (not needed for this flow)
+      clearSel();
+    }
+
     function clearSel() {
-      selectedCon = null; selectedDesc = null;
+      selectedCon = null;
       document.querySelectorAll('.con-card.selected,.desc-card.selected').forEach(el => el.classList.remove('selected'));
     }
 
