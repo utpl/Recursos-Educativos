@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repaso del módulo — Análisis Matemático</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Nunito+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    :root {
+      --c-bg: #edf3fb;
+      --c-surface: #ffffff;
+      --c-surface2: #f4f8fd;
+      --c-border: #c6d6ec;
+      --c-text: #0f2040;
+      --c-text2: #2b4a70;
+      --c-muted: #5e7d9e;
+      --c-pri: #1a5fb4;
+      --c-pri-dk: #114090;
+      --c-pri-lt: #dce9fb;
+      --c-pri-bd: #90b8f0;
+      --c-acc: #0d7c6e;
+      --c-acc-lt: #d2f0ec;
+      --c-acc-bd: #70c4b8;
+      --c-ok: #1a8c48;
+      --c-ok-lt: #d2f5e2;
+      --c-ok-bd: #68cfa0;
+      --c-warn: #c47a1a;
+      --c-warn-lt: #fef4de;
+      --c-warn-bd: #f0c878;
+      --c-err: #c43030;
+      --c-err-lt: #fde8e8;
+      --c-err-bd: #f2a0a0;
+      --c-vio: #6c3fd6;
+      --c-vio-lt: #ede8fb;
+      --c-vio-bd: #c0aaef;
+      --c-hdr-a: #1a5fb4;
+      --c-hdr-b: #0d7c6e;
+      --r-sm: 6px;
+      --r-md: 10px;
+      --r-lg: 14px;
+      --r-xl: 18px;
+      --sh-sm: 0 2px 8px rgba(15, 45, 90, .08);
+      --sh-md: 0 4px 20px rgba(15, 45, 90, .11);
+      --sh-lg: 0 8px 36px rgba(15, 45, 90, .14);
+      --canvas-w: 780px;
+      --canvas-h: 780px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .canvas {
+      width: 100%;
+      max-width: var(--canvas-w);
+      height: var(--canvas-h);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--sh-lg);
+      overflow: hidden;
+    }
+
+    .site-header {
+      background: linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+      padding: 12px 20px 10px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 80% 15%, rgba(255, 255, 255, .13) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hdr-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .hdr-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, .22);
+      border: 1px solid rgba(255, 255, 255, .36);
+      border-radius: 100px;
+      padding: 2px 8px;
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .site-header h1 {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .prog-wrap {
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border);
+      padding: 6px 20px;
+      flex-shrink: 0;
+    }
+
+    .prog-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prog-lbl {
+      font-size: .62rem;
+      font-weight: 700;
+      color: var(--c-muted);
+      white-space: nowrap;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .prog-track {
+      flex: 1;
+      height: 6px;
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--c-hdr-a), var(--c-hdr-b));
+      border-radius: 100px;
+      width: 0%;
+      transition: width .4s ease;
+    }
+
+    .prog-score {
+      font-size: .62rem;
+      font-weight: 800;
+      color: var(--c-pri);
+      text-align: right;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .main {
+      flex: 1;
+      padding: 12px 20px 16px;
+      background: var(--c-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .weeks-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .week-btn {
+      background: var(--c-surface);
+      border: 2px solid var(--c-pri-bd);
+      border-radius: var(--r-md);
+      padding: 8px 6px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: .7rem;
+      color: var(--c-pri);
+      cursor: pointer;
+      transition: all .2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .week-btn:hover {
+      background: var(--c-pri-lt);
+      border-color: var(--c-pri);
+      transform: translateY(-1px);
+    }
+
+    .week-btn.active {
+      background: var(--c-pri);
+      color: #fff;
+      border-color: var(--c-pri-dk);
+    }
+
+    .week-btn .week-icon {
+      font-size: .9rem;
+    }
+
+    .week-btn .week-num {
+      font-size: .65rem;
+      opacity: .85;
+    }
+
+    .week-view {
+      flex: 1;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      box-shadow: var(--sh-md);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+    }
+
+    .week-view.active {
+      display: flex;
+    }
+
+    .week-view-header {
+      background: var(--c-pri-lt);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--c-pri-bd);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .week-view-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      font-weight: 800;
+      color: var(--c-pri);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .week-view-unit {
+      font-size: .65rem;
+      color: var(--c-muted);
+      font-weight: 600;
+    }
+
+    .sections-list {
+      flex: 1;
+      padding: 12px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section-item {
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all .2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-item:hover {
+      background: var(--c-pri-lt);
+      border-color: var(--c-pri-bd);
+      transform: translateX(2px);
+    }
+
+    .section-item .sec-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .section-item .sec-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .section-item .sec-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--c-text2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section-item .sec-desc {
+      font-size: .62rem;
+      color: var(--c-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section-item .sec-arrow {
+      color: var(--c-pri);
+      font-size: .8rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-top: 1px solid var(--c-border);
+      background: var(--c-surface);
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      background: var(--c-pri);
+      border: none;
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: .68rem;
+      color: #fff;
+      cursor: pointer;
+      transition: all .2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--c-pri-dk);
+    }
+
+    .nav-btn:disabled {
+      background: var(--c-border);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 32, 64, .6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--c-surface);
+      border-radius: var(--r-xl);
+      box-shadow: var(--sh-lg);
+      max-width: 700px;
+      max-height: 680px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalIn .25s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(.95) translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--c-hdr-a) 0%, var(--c-hdr-b) 100%);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      background: rgba(255, 255, 255, .2);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, .35);
+    }
+
+    .modal-body {
+      flex: 1;
+      padding: 16px 20px;
+      overflow-y: auto;
+    }
+
+    .modal-body p {
+      font-size: .8rem;
+      line-height: 1.6;
+      color: var(--c-text2);
+      margin-bottom: 12px;
+    }
+
+    .modal-body ul,
+    .modal-body ol {
+      margin-left: 18px;
+      margin-bottom: 12px;
+    }
+
+    .modal-body li {
+      font-size: .78rem;
+      line-height: 1.55;
+      color: var(--c-text2);
+      margin-bottom: 5px;
+    }
+
+    .modal-body li::marker {
+      color: var(--c-pri);
+    }
+
+    .modal-body strong {
+      color: var(--c-pri);
+    }
+
+    .subsection-modal {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--c-border);
+    }
+
+    .subsection-modal h4 {
+      font-family: 'Nunito', sans-serif;
+      font-size: .82rem;
+      font-weight: 800;
+      color: var(--c-acc);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .formula-block {
+      background: var(--c-pri-lt);
+      border: 1px solid var(--c-pri-bd);
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+      text-align: center;
+      margin: 10px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+    }
+
+    .simulator-link {
+      background: var(--c-acc-lt);
+      border: 1px solid var(--c-acc-bd);
+      border-radius: var(--r-md);
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+     
+    }
+
+    .simulator-link span {
+      font-weight: 700;
+      color: var(--c-acc);
+      font-size: .75rem;
+    }
+
+    .ex-tags {
+      padding: 0 16px 12px;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .tag {
+      font-size: .58rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 100px;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .t-blue {
+      background: var(--c-pri-lt);
+      color: var(--c-pri);
+      border: 1px solid var(--c-pri-bd);
+    }
+
+    .t-green {
+      background: var(--c-ok-lt);
+      color: var(--c-ok);
+      border: 1px solid var(--c-ok-bd);
+    }
+
+    .t-teal {
+      background: var(--c-acc-lt);
+      color: var(--c-acc);
+      border: 1px solid var(--c-acc-bd);
+    }
+
+    .t-warn {
+      background: var(--c-warn-lt);
+      color: var(--c-warn);
+      border: 1px solid var(--c-warn-bd);
+    }
+
+    .site-foot {
+      width: 100%;
+      max-width: var(--canvas-w);
+      padding: 10px 20px;
+      text-align: center;
+      font-size: .6rem;
+      color: var(--c-muted);
+      border-top: 1px solid var(--c-border);
+      font-family: 'Nunito', sans-serif;
+      background: var(--c-surface);
+      line-height: 1.6;
+      flex-shrink: 0;
+    }
+
+    .site-foot strong {
+      color: var(--c-text2);
+    }
+
+    .sections-list::-webkit-scrollbar,
+    .modal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sections-list::-webkit-scrollbar-track,
+    .modal-body::-webkit-scrollbar-track {
+      background: var(--c-surface2);
+      border-radius: 3px;
+    }
+
+    .sections-list::-webkit-scrollbar-thumb,
+    .modal-body::-webkit-scrollbar-thumb {
+      background: var(--c-border);
+      border-radius: 3px;
+    }
+
+    .week-intro {
+      background: var(--c-surface2);
+      margin: 8px 16px 0 16px;
+      padding: 10px 12px;
+      border-radius: var(--r-md);
+      border-left: 4px solid var(--c-pri);
+      font-size: .7rem;
+      color: var(--c-text2);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="canvas">
+    <header class="site-header">
+      <div class="hdr-inner">
+        <div>
+          <div class="hdr-chip">📐 Análisis Matemático</div>
+          <h1>Repaso del módulo</h1>
+        </div>
+        <div class="hdr-chip" style="background:rgba(255,255,255,.15);">8 Semanas</div>
+      </div>
+    </header>
+    <div class="prog-wrap">
+      <div class="prog-row">
+        <span class="prog-lbl" id="prog-lbl">S1/8</span>
+        <div class="prog-track">
+          <div class="prog-fill" id="prog-fill" style="width:12.5%"></div>
+        </div>
+        <span class="prog-score" id="prog-score">📖 S1</span>
+      </div>
+    </div>
+    <main class="main">
+      <div class="weeks-grid" id="weeksGrid">
+        <button class="week-btn active" data-week="1"><span class="week-icon">📖</span><span class="week-num">Semana
+            1</span></button>
+        <button class="week-btn" data-week="2"><span class="week-icon">➡️</span><span class="week-num">Semana
+            2</span></button>
+        <button class="week-btn" data-week="3"><span class="week-icon">📈</span><span class="week-num">Semana
+            3</span></button>
+        <button class="week-btn" data-week="4"><span class="week-icon">🎯</span><span class="week-num">Semana
+            4</span></button>
+        <button class="week-btn" data-week="5"><span class="week-icon">∫</span><span class="week-num">Semana
+            5</span></button>
+        <button class="week-btn" data-week="6"><span class="week-icon">🔧</span><span class="week-num">Semana
+            6</span></button>
+        <button class="week-btn" data-week="7"><span class="week-icon">∇</span><span class="week-num">Semana
+            7</span></button>
+        <button class="week-btn" data-week="8"><span class="week-icon">∫∫</span><span class="week-num">Semana
+            8</span></button>
+      </div>
+
+      <!-- Semana 1 -->
+      <div class="week-view active" id="view1">
+        <div class="week-view-header"><span class="week-view-title"><span>📖</span> Semana 1: Fundamentos y
+            Funciones</span><span class="week-view-unit">Unidad 1</span></div>
+        <div class="week-intro"><strong>📘 Semana 1</strong><br>En esta primera semana se sientan las bases del cálculo:
+          se repasan los conceptos fundamentales del álgebra, incluyendo operaciones con expresiones algebraicas,
+          factorización y manipulación de ecuaciones. Además, se introducen las funciones elementales —lineales,
+          cuadráticas, exponenciales, logarítmicas y trigonométricas— junto con sus representaciones gráficas, lo que
+          permite desarrollar la intuición necesaria para el estudio de límites, derivadas e integrales.</div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s1-1"><span class="sec-icon">📐</span>
+            <div class="sec-info">
+              <div class="sec-title">1.1. Álgebra básica</div>
+              <div class="sec-desc">Conjuntos numéricos, recta real, intervalos, notación científica, operaciones
+                algebraicas</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+          <div class="section-item" data-modal="s1-2"><span class="sec-icon">📈</span>
+            <div class="sec-info">
+              <div class="sec-title">1.2. Funciones elementales y gráficas</div>
+              <div class="sec-desc">Concepto de función, dominio, rango, representaciones, funciones lineales,
+                cuadráticas, exponenciales, racionales</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn1" disabled>← Ant</button><button class="nav-btn"
+            id="nextBtn1">Sig →</button></div>
+      </div>
+
+      <!-- Semana 2 -->
+      <div class="week-view" id="view2">
+        <div class="week-view-header"><span class="week-view-title"><span>➡️</span> Semana 2: Límites y
+            continuidad</span><span class="week-view-unit">Unidad 1</span></div>
+        <div class="week-intro"><strong>📘 Semana 2</strong><br>En esta semana se estudia el concepto de límite, que
+          permite analizar cómo se comporta una función cuando una variable se aproxima a un valor específico. Este
+          concepto es fundamental para comprender cambios en sistemas energéticos, como variaciones de voltaje,
+          temperatura o potencia. Además, se analizan las propiedades de los límites y el concepto de continuidad,
+          herramientas matemáticas que permiten describir el comportamiento de modelos utilizados en ingeniería.</div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s2-1"><span class="sec-icon">➡️</span>
+            <div class="sec-info">
+              <div class="sec-title">1.3. Límites y propiedades</div>
+              <div class="sec-desc">Idea intuitiva, límites laterales, reglas algebraicas, cálculo de límites</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+          <div class="section-item" data-modal="s2-2"><span class="sec-icon">🔗</span>
+            <div class="sec-info">
+              <div class="sec-title">1.4. Continuidad</div>
+              <div class="sec-desc">Continuidad en un punto, tipos de discontinuidades</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn2">← Ant</button><button class="nav-btn"
+            id="nextBtn2">Sig →</button></div>
+      </div>
+
+      <!-- Semana 3 -->
+      <div class="week-view" id="view3">
+        <div class="week-view-header"><span class="week-view-title"><span>📈</span> Semana 3: Derivadas</span><span
+            class="week-view-unit">Unidad 2</span></div>
+        <div class="week-intro"><strong>📘 Semana 3</strong><br>Se inicia la Unidad 2 con el estudio de las derivadas.
+          La derivada es la herramienta fundamental del cálculo diferencial y representa la tasa de cambio instantánea
+          de una función. Se abordan las derivadas ordinarias —con sus reglas básicas— y las derivadas parciales para
+          funciones de varias variables, esenciales en modelado físico e ingeniería.</div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s3-1"><span class="sec-icon">📈</span>
+            <div class="sec-info">
+              <div class="sec-title">2.1. Derivadas Ordinarias y Parciales</div>
+              <div class="sec-desc">Tasa de cambio, definición como límite, interpretación, reglas de derivación,
+                derivadas parciales</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn3">← Ant</button><button class="nav-btn"
+            id="nextBtn3">Sig →</button></div>
+      </div>
+
+      <!-- Semana 4 -->
+      <div class="week-view" id="view4">
+        <div class="week-view-header"><span class="week-view-title"><span>🎯</span> Semana 4: Optimización</span><span
+            class="week-view-unit">Unidad 2</span></div>
+        <div class="week-intro"><strong>📘 Semana 4</strong><br>Durante esta semana se estudiarán las aplicaciones de
+          las derivadas en problemas de optimización, particularmente en contextos relacionados con variables
+          energéticas. El objetivo es comprender cómo identificar máximos y mínimos de funciones y cómo interpretar
+          estos resultados dentro de un modelo real de ingeniería.</div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s4-1"><span class="sec-icon">🎯</span>
+            <div class="sec-info">
+              <div class="sec-title">2.2. Aplicaciones en problemas de optimización y modelado</div>
+              <div class="sec-desc">Optimización de funciones, tasas relacionadas, aplicaciones en ingeniería energética
+              </div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn4">← Ant</button><button class="nav-btn"
+            id="nextBtn4">Sig →</button></div>
+      </div>
+
+      <!-- Semana 5 -->
+      <div class="week-view" id="view5">
+        <div class="week-view-header"><span class="week-view-title"><span>∫</span> Semana 5: Integrales</span><span
+            class="week-view-unit">Unidad 3</span></div>
+        <div class="week-intro"><strong>📘 Semana 5</strong><br>En esta semana se inicia el estudio del cálculo
+          integral, una herramienta fundamental para cuantificar magnitudes acumuladas en sistemas físicos y de
+          ingeniería. Mientras que la derivada permite analizar cambios instantáneos, la integral permite determinar el
+          total acumulado de una variable en un intervalo. En el contexto de la ingeniería energética, las integrales se
+          utilizan para calcular magnitudes como energía total generada, trabajo realizado o carga eléctrica acumulada.
+        </div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s5-1"><span class="sec-icon">∫</span>
+            <div class="sec-info">
+              <div class="sec-title">3.1. Integrales Indefinidas y Antiderivadas</div>
+              <div class="sec-desc">Definición, constante de integración, teoremas de antiderivación</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+          <div class="section-item" data-modal="s5-2"><span class="sec-icon">∫</span>
+            <div class="sec-info">
+              <div class="sec-title">3.2. Integrales Definidas</div>
+              <div class="sec-desc">Área bajo curva, Teorema Fundamental del Cálculo, Regla de Barrow</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+          <div class="section-item" data-modal="s5-3"><span class="sec-icon">🛠️</span>
+            <div class="sec-info">
+              <div class="sec-title">3.3. Métodos de Integración</div>
+              <div class="sec-desc">Integración inmediata, sustitución, partes</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn5">← Ant</button><button class="nav-btn"
+            id="nextBtn5">Sig →</button></div>
+      </div>
+
+      <!-- Semana 6 -->
+      <div class="week-view" id="view6">
+        <div class="week-view-header"><span class="week-view-title"><span>🔧</span> Semana 6: Aplicaciones
+            Integrales</span><span class="week-view-unit">Unidad 3</span></div>
+        <div class="week-intro"><strong>📘 Semana 6</strong><br>En esta semana se continúa con el estudio de la integral
+          definida, enfocándose en sus aplicaciones en física e ingeniería. Estas permiten transformar el cálculo
+          matemático en herramientas prácticas para cuantificar fenómenos como energía, trabajo, áreas, volúmenes y
+          longitudes de curvas. El objetivo es interpretar resultados matemáticos dentro de contextos reales,
+          especialmente en sistemas energéticos y problemas de ingeniería.</div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s6-1"><span class="sec-icon">🔧</span>
+            <div class="sec-info">
+              <div class="sec-title">3.4. Aplicaciones en Física e Ingeniería</div>
+              <div class="sec-desc">Áreas entre curvas, volúmenes, longitud de arco, trabajo, energía, fuerza
+                hidrostática</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn6">← Ant</button><button class="nav-btn"
+            id="nextBtn6">Sig →</button></div>
+      </div>
+
+      <!-- Semana 7 -->
+      <div class="week-view" id="view7">
+        <div class="week-view-header"><span class="week-view-title"><span>∇</span> Semana 7: Multivariable</span><span
+            class="week-view-unit">Unidad 4</span></div>
+        <div class="week-intro"><strong>📘 Semana 7</strong><br>En esta semana se inicia el estudio del cálculo
+          multivariable, una herramienta fundamental para analizar sistemas donde varias variables interactúan
+          simultáneamente, como ocurre en la ingeniería energética con variables como temperatura, presión, potencia o
+          rendimiento. El objetivo es utilizar derivadas parciales, gradientes y métodos de optimización para analizar
+          la sensibilidad de modelos y tomar decisiones informadas en sistemas energéticos.</div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s7-1"><span class="sec-icon">∇</span>
+            <div class="sec-info">
+              <div class="sec-title">4.1. Gradiente y Derivadas Direccionales</div>
+              <div class="sec-desc">Vector gradiente, derivada direccional, tasa máxima de cambio</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+          <div class="section-item" data-modal="s7-2"><span class="sec-icon">🎯</span>
+            <div class="sec-info">
+              <div class="sec-title">4.2. Optimización Multivariada</div>
+              <div class="sec-desc">Optimización no restringida, multiplicadores de Lagrange</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn7">← Ant</button><button class="nav-btn"
+            id="nextBtn7">Sig →</button></div>
+      </div>
+
+      <!-- Semana 8 -->
+      <div class="week-view" id="view8">
+        <div class="week-view-header"><span class="week-view-title"><span>∫∫</span> Semana 8: Integrales
+            Múltiples</span><span class="week-view-unit">Unidad 4</span></div>
+        <div class="week-intro"><strong>📘 Semana 8</strong><br>En esta semana se continúa con el estudio del cálculo
+          multivariable, enfocándose en las integrales múltiples y el cambio de variables. Estas herramientas permiten
+          calcular acumulaciones de magnitudes físicas en regiones bidimensionales y tridimensionales, lo cual es
+          fundamental en problemas de energía, masa o temperatura distribuidos en el espacio. El objetivo es resolver
+          integrales dobles y triples e interpretar sus aplicaciones en sistemas físicos y energéticos.</div>
+        <div class="sections-list">
+          <div class="section-item" data-modal="s8-1"><span class="sec-icon">∫∫</span>
+            <div class="sec-info">
+              <div class="sec-title">4.3. Integrales Dobles y Triples</div>
+              <div class="sec-desc">Áreas, volúmenes, masa con densidad variable</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+          <div class="section-item" data-modal="s8-2"><span class="sec-icon">🔄</span>
+            <div class="sec-info">
+              <div class="sec-title">4.4. Cambio de Variables: Coordenadas Polares y Esféricas</div>
+              <div class="sec-desc">Coordenadas polares, coordenadas esféricas, aplicaciones</div>
+            </div><span class="sec-arrow">→</span>
+          </div>
+        </div>
+        <div class="nav-buttons"><button class="nav-btn" id="prevBtn8">← Ant</button><button class="nav-btn"
+            id="nextBtn8" disabled>Sig →</button></div>
+      </div>
+
+      <div class="ex-tags">
+        <span class="tag t-blue">📐 Fundamentos</span><span class="tag t-teal">📈 Límites</span><span
+          class="tag t-green">📊 Derivadas</span><span class="tag t-warn">∫ Integrales</span><span class="tag t-blue">∇
+          Multivariable</span>
+      </div>
+    </main>
+  </div>
+  <footer class="site-foot"><strong>Referencia:</strong> Elaboración propia</footer>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <div class="modal-header"><span class="modal-title" id="modalTitle"><span>📐</span> Título</span><button
+          class="modal-close" id="modalClose">×</button></div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const modalContent = {
+      's1-1': {
+        title: '<span>📐</span> 1.1. Álgebra básica', content: `<p>En esta sección se revisan los fundamentos algebraicos necesarios para el estudio del cálculo y la modelización de fenómenos en ingeniería energética. Se analizan los números reales, su representación en la recta real, los intervalos, la notación científica y las operaciones algebraicas fundamentales.</p>
+<div class="subsection-modal"><h4><span>🔢</span> Conjuntos numéricos</h4><ul><li>Los números reales se clasifican en <strong>racionales e irracionales</strong>.</li><li>Los racionales pueden expresarse como fracción, mientras que los irracionales tienen decimales infinitos no periódicos.</li><li>Dentro de los racionales se encuentran los <strong>enteros y naturales</strong>.</li></ul></div>
+<div class="subsection-modal"><h4><span>📏</span> La recta real</h4><p>La recta real representa todos los números reales de manera ordenada. Permite analizar propiedades como:</p><ul><li><strong>Orden:</strong> establece qué números son mayores o menores.</li><li><strong>Densidad:</strong> entre dos números siempre existen infinitos números reales.</li><li><strong>Completez:</strong> no existen "vacíos" en la recta real.</li></ul></div>
+<div class="subsection-modal"><h4><span>📊</span> Intervalos</h4><p>Los intervalos son subconjuntos de la recta real que contienen todos los valores entre dos extremos. Pueden ser: abiertos, cerrados, semiabiertos, infinitos. Se utilizan frecuentemente para describir <strong>dominios y soluciones de desigualdades</strong>.</p></div>
+<div class="subsection-modal"><h4><span>🔬</span> Notación científica</h4><p>La notación científica permite expresar números muy grandes o muy pequeños utilizando <strong>potencias de 10</strong>. Se escribe en la forma:</p><div class="formula-block">$$a \\times 10^{n}$$</div><p>donde $1 &le; |a| &lt; 10$. Es ampliamente utilizada en ingeniería para representar magnitudes como <strong>potencia eléctrica, energía o escalas microscópicas</strong>.</p></div>
+<div class="subsection-modal"><h4><span>🧮</span> Operaciones algebraicas, potencias y radicales</h4><p>El álgebra utiliza números y variables para representar cantidades. Las operaciones fundamentales incluyen: suma, resta, multiplicación, división, potenciación, radicación. El dominio de estas operaciones permite <strong>simplificar expresiones y resolver modelos matemáticos utilizados en ingeniería</strong>.</p></div>
+`},
+      's1-2': {
+        title: '<span>📈</span> 1.2. Funciones elementales y gráficas', content: `<p>Las funciones permiten describir matemáticamente la relación entre variables. Son herramientas fundamentales para analizar fenómenos de cambio y modelar procesos presentes en sistemas energéticos.</p>
+<div class="subsection-modal"><h4><span>🎯</span> Concepto de función, variables, dominio y rango</h4><p>Una función asigna <strong>un único valor de salida</strong> a cada valor de entrada. Elementos principales:</p><ul><li><strong>Variable independiente (x):</strong> valor de entrada.</li><li><strong>Variable dependiente (f(x)):</strong> resultado de la función.</li><li><strong>Dominio:</strong> conjunto de valores permitidos para x.</li><li><strong>Rango:</strong> conjunto de valores que puede tomar la función.</li></ul></div>
+<div class="subsection-modal"><h4><span>📊</span> Representaciones de funciones</h4><p>Las funciones pueden representarse de cuatro maneras: <strong>Verbal</strong> (descripción del comportamiento), <strong>Numérica</strong> (tabla de valores), <strong>Gráfica</strong> (representación visual), <strong>Algebraica</strong> (fórmula matemática). Estas representaciones permiten analizar el comportamiento de la función desde diferentes perspectivas.</p></div>
+<div class="subsection-modal"><h4><span>📉</span> Funciones lineales</h4><ul><li>Se expresan como: $$f(x) = mx + b$$</li><li>Su gráfica es una <strong>línea recta</strong> y su característica principal es la <strong>pendiente constante</strong>, que representa la razón de cambio.</li><li>Se utilizan para modelar fenómenos con <strong>crecimiento o decrecimiento uniforme</strong>.</li></ul></div>
+<div class="subsection-modal"><h4><span>🔄</span> Funciones cuadráticas</h4><ul><li>Tienen la forma: $$f(x) = ax^{2} + bx + c$$</li><li>Su gráfica es una <strong>parábola</strong>.</li><li>Permiten modelar situaciones donde existe un <strong>máximo o mínimo</strong>, como picos de demanda o procesos de optimización.</li></ul></div>
+<div class="subsection-modal"><h4><span>⚡</span> Funciones exponenciales</h4><ul><li>Tienen la forma: $$f(x) = ab^{x}$$</li><li>Se utilizan para describir procesos de: <strong>crecimiento exponencial</strong> y <strong>decaimiento exponencial</strong>.</li><li>Ejemplos comunes son el <strong>decaimiento radiactivo o procesos de carga y descarga eléctrica</strong>.</li></ul></div>
+<div class="subsection-modal"><h4><span>➗</span> Funciones racionales</h4><ul><li>Son funciones expresadas como el cociente de dos polinomios: $$f(x) = \\frac{P(x)}{Q(x)}$$</li><li>Su dominio excluye los valores que hacen <strong>cero el denominador</strong>. Estas funciones permiten modelar fenómenos donde existen <strong>límites o singularidades en el sistema</strong>.</li></ul></div>
+<div class="simulator-link"><iframe src="./Ejercicios_Propuestos_Fundamentos_de_Algebra_y_Funciones.html" 
+                style="width: 100%; height: 800px; border: none;" 
+                title="Contenido Educativo">
+              </iframe></div>`},
+      's2-1': {
+        title: '<span>➡️</span> 1.3. Límites y propiedades', content: `<p>Los límites permiten describir la <strong>tendencia de una función</strong> cuando la variable independiente se aproxima a un punto determinado. Este concepto es fundamental para analizar fenómenos físicos y el comportamiento de modelos matemáticos en ingeniería.</p><p>Entre los aspectos principales se estudian:</p><ul><li><strong>Idea intuitiva de límite:</strong> valor al que se aproxima una función cuando la variable se acerca a un punto.</li><li><strong>Límites laterales:</strong> permiten analizar el comportamiento de la función desde la izquierda y la derecha de un punto.</li><li><strong>Reglas algebraicas de límites:</strong> propiedades que facilitan el cálculo de límites (suma, producto, cociente, múltiplo constante, potencias y raíces).</li><li><strong>Cálculo de límites:</strong> Los límites pueden calcularse mediante: <strong>Sustitución directa</strong>, cuando la función es continua; <strong>Factorización y simplificación</strong>, en casos de indeterminación $0/0$; <strong>Racionalización</strong>, cuando existen radicales.</li></ul><p>Estos conceptos permiten interpretar el comportamiento de variables cercanas a <strong>puntos críticos en sistemas energéticos</strong>, como cambios de tensión, temperatura o potencia.</p>
+`},
+      's2-2': {
+        title: '<span>🔗</span> 1.4. Continuidad', content: `<p>La continuidad en una función se relaciona con la idea intuitiva de que su gráfica puede trazarse sin levantar el lápiz del papel. Se dice que las salidas de una función continua varían continuamente con las entradas y no saltan de un valor a otro sin tomar los valores intermedios.</p>
+<div class="subsection-modal"><h4><span>📍</span> Continuidad en un punto</h4><p>Para que una función sea continua en un punto deben cumplirse tres condiciones:</p><ul><li>La función está definida en el punto.</li><li>El límite existe cuando la variable se aproxima al punto.</li><li>El límite coincide con el valor de la función.</li></ul></div>
+<div class="subsection-modal"><h4><span>⚠️</span> Tipos de discontinuidades</h4><p>Cuando estas condiciones no se cumplen aparecen <strong>discontinuidades</strong>, que pueden ser:</p><ul><li><strong>Removibles (huecos):</strong> el límite existe, pero la función no está definida correctamente.</li><li><strong>De salto:</strong> los límites laterales son distintos.</li><li><strong>Infinitas:</strong> la función crece sin límite cerca de una asíntota vertical.</li></ul></div><p>El análisis de continuidad permite identificar comportamientos críticos en modelos utilizados en ingeniería.</p>
+<div class="simulator-link"><iframe src="./Ejercicios_Propuestos_de_Limites_Continuidad_y_Derivabilidad.html" 
+                style="width: 100%; height: 800px; border: none;" 
+                title="Contenido Educativo">
+              </iframe></div>`},
+      's3-1': {
+        title: '<span>📈</span> 2.1. Derivadas Ordinarias y Parciales', content: `<p>Las derivadas permiten estudiar cómo cambia una variable con respecto a otra, proporcionando una herramienta fundamental para modelar fenómenos físicos y analizar sistemas de ingeniería.</p>
+<div class="subsection-modal"><h4><span>📊</span> Tasa de cambio promedio y tasa de cambio instantánea</h4><ul><li><strong>Tasa de cambio promedio:</strong> mide el cambio de una función en un intervalo determinado y corresponde a la pendiente de una <strong>recta secante</strong>.</li><li><strong>Tasa de cambio instantánea:</strong> representa el cambio en un punto específico y se obtiene cuando el intervalo de análisis tiende a cero.</li></ul><p>Este concepto permite describir fenómenos como la rapidez con la que cambia la corriente o la potencia en un sistema energético.</p></div>
+<div class="subsection-modal"><h4><span>🧮</span> Definición de derivada como límite</h4><p>La derivada de una función se define como <strong>el límite del cociente de diferencias</strong>, cuando el incremento de la variable tiende a cero. Este proceso permite calcular la <strong>pendiente de la recta tangente</strong> a una curva en un punto específico.</p></div>
+<div class="subsection-modal"><h4><span>💡</span> Interpretación de la derivada</h4><ul><li><strong>Interpretación geométrica:</strong> representa la pendiente de la recta tangente a una curva en un punto.</li><li><strong>Interpretación física:</strong> corresponde a la <strong>tasa de cambio instantánea</strong> de una variable respecto a otra.</li></ul><p>En ingeniería en energía, esta interpretación permite analizar cómo cambian variables como corriente, potencia o temperatura en el tiempo.</p></div>
+<div class="subsection-modal"><h4><span>📜</span> Reglas Fundamentales de Derivación</h4><p>Entre las principales reglas se encuentran: Regla de la constante, Regla de la potencia, Regla del producto, Regla del cociente, Regla de la cadena.</p><div class="simulator-link"><iframe src="./Reglas_Fundamentales_de_Derivacion.html" 
+                style="width: 100%; height: 800px; border: none;" 
+                title="Contenido Educativo">
+              </iframe></div></div>
+<div class="subsection-modal"><h4><span>🔀</span> Aplicación de derivadas en ingeniería</h4><p>Las derivadas permiten analizar fenómenos reales como: Cambios en la <strong>corriente eléctrica</strong> en un circuito, Variaciones de <strong>potencia eléctrica</strong>, Relación entre variables en sistemas energéticos.</p></div>
+<div class="subsection-modal"><h4><span>🔀</span> Derivadas Parciales</h4><p>Las <strong>derivadas parciales</strong> se utilizan para funciones que dependen de <strong>dos o más variables</strong>. Estas derivadas permiten analizar cómo cambia una variable respecto a otra mientras las demás se mantienen constantes. Este concepto es fundamental para el estudio de <strong>modelos multivariables en ingeniería</strong>.</p></div>`},
+      's4-1': {
+        title: '<span>🎯</span> 2.2. Aplicaciones en problemas de optimización y modelado', content: `<p>Las derivadas permiten resolver diferentes problemas en ingeniería, entre los que destacan: <strong>Optimización de funciones</strong>, identificando valores máximos y mínimos; <strong>Modelado de tasas relacionadas</strong>, analizando cómo cambian diferentes variables dentro de un sistema; <strong>Estudio del crecimiento y decaimiento exponencial</strong>, aplicado a fenómenos físicos y energéticos.</p>
+<div class="subsection-modal"><h4><span>⚡</span> Aplicación de derivadas en optimización</h4><p>En los problemas de optimización se busca determinar el valor de una variable que <strong>maximiza o minimiza una función</strong>. Generalmente, estos puntos se encuentran cuando la <strong>derivada de la función es igual a cero</strong>, lo que indica que la tasa de cambio se detiene momentáneamente. Entre las aplicaciones analizadas se encuentran: <strong>Optimización de volumen</strong> en diseños industriales, <strong>Optimización en funciones de varias variables</strong> mediante derivadas parciales, <strong>Modelos de optimización aplicados a sistemas energéticos</strong>.</p></div>
+<div class="subsection-modal"><h4><span>🔋</span> Aplicaciones en ingeniería energética</h4><p>Las derivadas permiten analizar distintos fenómenos físicos, por ejemplo: <strong>Diseño óptimo de un colector solar</strong>, minimizando el área de material necesario; <strong>Análisis del decaimiento radiactivo</strong>, donde la masa de un material disminuye con el tiempo. Estos ejemplos muestran cómo las derivadas permiten <strong>interpretar tasas de cambio y optimizar procesos energéticos</strong>.</p></div>
+<div class="simulator-link"><iframe src="./Aplicaciones_de_la_derivada_en_problemas_de_optimizacion_y_modelado.html" 
+                style="width: 100%; height: 800px; border: none;" 
+                title="Contenido Educativo">
+              </iframe></div>`},
+      's5-1': {
+        title: '<span>∫</span> 3.1. Integrales Indefinidas y Antiderivadas', content: `<div class="subsection-modal"><h4><span>📝</span> Definición</h4><p>Una <strong>antiderivada</strong> de una función es aquella cuya derivada corresponde a la función original. La <strong>integral indefinida</strong> representa el conjunto de todas las antiderivadas de una función y se expresa mediante el símbolo:</p><div class="formula-block">$$\\int f(x)dx = F(x) + C$$</div><p>donde <strong>C es la constante de integración</strong>, que representa una familia de funciones que difieren únicamente por un desplazamiento vertical.</p></div>
+<div class="subsection-modal"><h4><span>⭐</span> Aspectos importantes</h4><ul><li>Concepto de <strong>antiderivada</strong>.</li><li>Interpretación de la <strong>constante de integración</strong>.</li><li><strong>Teoremas de antiderivación</strong> para resolver integrales algebraicas.</li><li>Reconocimiento <strong>gráfico de familias de funciones</strong> generadas por una integral indefinida.</li></ul></div>
+<div class="simulator-link"><iframe src="./Ejercicios_de_Aplicacion_Integral_Indefinida_y_Ecuaciones_Diferenciales.html" 
+                style="width: 100%; height: 800px; border: none;" 
+                title="Contenido Educativo">
+              </iframe></div>`},
+      's5-2': { title: '<span>∫</span> 3.2. Integrales Definidas', content: `<p>La <strong>integral definida</strong> permite calcular el <strong>cambio acumulado de una función en un intervalo</strong>, lo cual puede interpretarse geométricamente como el <strong>área bajo la curva</strong> de una función.</p><p>Este concepto se fundamenta en el <strong>Teorema Fundamental del Cálculo</strong>, que establece la relación entre derivadas e integrales y permite evaluar integrales definidas mediante antiderivadas.</p><p>En ingeniería, este tipo de integrales se utiliza para calcular: <strong>Energía total producida</strong> en un intervalo de tiempo, <strong>Carga eléctrica acumulada</strong> en un circuito, <strong>Trabajo mecánico realizado por una fuerza</strong>.</p><p>La evaluación de estas integrales se realiza mediante la <strong>Regla de Barrow</strong>, que permite calcular el valor de la integral utilizando los límites de integración.</p>` },
+      's5-3': {
+        title: '<span>🛠️</span> 3.3. Métodos de Integración', content: `<p>Debido a que no existe una regla universal para resolver todas las integrales, es necesario aplicar diferentes <strong>técnicas de integración</strong>, entre las que destacan:</p>
+<div class="subsection-modal"><h4><span>⚡</span> Integración inmediata</h4><p>Consiste en aplicar <strong>tablas o fórmulas básicas de integración</strong> para funciones simples como potencias, exponenciales o funciones trigonométricas.</p></div>
+<div class="subsection-modal"><h4><span>🔄</span> Integración por sustitución</h4><p>También conocida como <strong>cambio de variable</strong>, se utiliza para simplificar integrales que contienen <strong>composición de funciones</strong>, aplicando de forma inversa la regla de la cadena.</p></div>
+<div class="subsection-modal"><h4><span>✖️</span> Integración por partes</h4><p>Este método se utiliza para resolver integrales que contienen <strong>productos de funciones</strong> y se basa en la regla del producto para derivadas. Una técnica útil para aplicarlo es la regla <strong>ILATE</strong>, que ayuda a seleccionar adecuadamente las funciones que intervienen en el proceso.</p></div>
+<p>Estas técnicas permiten resolver problemas matemáticos complejos que aparecen en <strong>modelos físicos, eléctricos y energéticos</strong>.</p>`},
+      's6-1': {
+        title: '<span>🔧</span> 3.4. Aplicaciones en Física e Ingeniería', content: `<p>La integral definida representa el <strong>área neta bajo la curva de una función en un intervalo</strong> y se utiliza para calcular diversas magnitudes físicas y geométricas.</p><p>Entre sus aplicaciones más importantes se encuentran: Cálculo de <strong>áreas entre curvas</strong>, Determinación de <strong>volúmenes de sólidos de revolución</strong>, Obtención de <strong>longitud de arco</strong> de una curva, Cálculo del <strong>área de superficies de revolución</strong>, Modelación de fenómenos físicos como <strong>trabajo mecánico, energía acumulada o fuerzas en sistemas físicos</strong>.</p>
+<div class="subsection-modal"><h4><span>📐</span> Área entre Curvas</h4><p>Permite calcular el <strong>área de una región limitada por dos funciones continuas</strong> en un intervalo determinado. Para encontrar esta área es necesario: Identificar <strong>cuál función es la superior y cuál la inferior</strong>, Determinar los <strong>puntos de intersección</strong> que establecen los límites de integración, Plantear la integral que represente la diferencia entre ambas funciones.</p></div>
+<div class="subsection-modal"><h4><span>🥏</span> Volúmenes de Sólidos de Revolución</h4><p>Los métodos más utilizados son: <strong>Método del disco</strong>, <strong>Método de arandelas</strong>, <strong>Método de cascarones cilíndricos</strong>. La elección del método depende de la <strong>forma de la región y del eje de rotación</strong>.</p></div>
+<div class="subsection-modal"><h4><span>📏</span> Longitud de Arco</h4><p>Permite calcular la <strong>longitud real de una curva suave</strong> en un intervalo determinado. Este concepto es importante en ingeniería para determinar la <strong>distancia recorrida en trayectorias curvas</strong>.</p></div>
+<div class="subsection-modal"><h4><span>⚙️</span> Aplicaciones Físicas y de Ingeniería</h4><p>Las integrales definidas permiten <strong>cuantificar fenómenos físicos que varían continuamente</strong>, como: <strong>Trabajo mecánico</strong> realizado por una fuerza variable, <strong>Energía acumulada</strong> en sistemas de potencia, <strong>Fuerza hidrostática</strong> sobre superficies sumergidas, <strong>Trabajo de bombeo de fluidos</strong> en depósitos o tanques.</p></div>
+<div class="simulator-link"><iframe src="./Aplicaciones_Fisicas_y_de_Ingenieria.html" 
+                style="width: 100%; height: 800px; border: none;" 
+                title="Contenido Educativo">
+              </iframe></div>`},
+      's7-1': {
+        title: '<span>∇</span> 4.1. Gradiente y Derivadas Direccionales', content: `<p>Las <strong>derivadas parciales</strong> miden la tasa de cambio de una función respecto a una variable mientras las demás permanecen constantes. A partir de estas se desarrollan conceptos como: <strong>Vector gradiente</strong>, que indica la dirección de mayor crecimiento de una función; <strong>Derivada direccional</strong>, que mide el cambio de una función en una dirección específica.</p>
+<div class="subsection-modal"><h4><span>➡️</span> El Vector Gradiente (∇f)</h4><p>El <strong>vector gradiente</strong> es un vector formado por las derivadas parciales de una función. Sus propiedades principales son: Apunta en la <strong>dirección de mayor incremento de la función</strong>; Su magnitud representa la <strong>tasa máxima de cambio</strong> en un punto. Aplicación en ingeniería: Se utiliza para analizar <strong>campos físicos</strong>, como potencial eléctrico, temperatura o campos de fuerza.</p></div>
+<div class="subsection-modal"><h4><span>🧭</span> La Derivada Direccional (Dᵤf)</h4><p>La <strong>derivada direccional</strong> mide la tasa de cambio de una función en un punto específico <strong>en la dirección de un vector unitario</strong>. Este concepto es útil para analizar fenómenos reales, por ejemplo: Cambios de <strong>temperatura en una trayectoria específica</strong>, Variación de <strong>potencial eléctrico o energía</strong> en una dirección determinada.</p></div>`},
+      's7-2': {
+        title: '<span>🎯</span> 4.2. Optimización Multivariada', content: `<p>La <strong>optimización de funciones de varias variables</strong> busca encontrar valores máximos o mínimos de una función. En ingeniería energética esto permite: <strong>Maximizar la eficiencia</strong> de un sistema, <strong>Minimizar costos de producción o pérdidas energéticas</strong>.</p>
+<div class="subsection-modal"><h4><span>📊</span> Optimización No Restringida (Máximos y Mínimos Locales)</h4><ul><li>Los extremos de una función de varias variables se encuentran en los <strong>puntos críticos</strong>, donde las derivadas parciales de primer orden se anulan o no están definidas.</li><li>Este análisis permite identificar condiciones óptimas de operación en sistemas como motores, procesos térmicos o modelos de rendimiento.</li></ul></div>
+<div class="subsection-modal"><h4><span>🔗</span> Optimización Restringida (Multiplicadores de Lagrange)</h4><p>Cuando una función debe optimizarse <strong>sujeta a una restricción</strong>, se utiliza el método de <strong>multiplicadores de Lagrange</strong>. Este método permite encontrar valores óptimos considerando limitaciones reales, como: Restricciones de producción, Disponibilidad de recursos, Condiciones físicas del sistema. El multiplicador de Lagrange también permite interpretar <strong>cómo cambia el valor óptimo cuando la restricción se modifica ligeramente</strong>.</p></div>`},
+      's8-1': {
+        title: '<span>∫∫</span> 4.3. Integrales Dobles y Triples', content: `<p>Las <strong>integrales múltiples</strong> extienden el concepto de integral de una variable hacia funciones que dependen de <strong>dos o más variables</strong>. Se utilizan para calcular: <strong>Áreas y volúmenes</strong>, <strong>Masas de sistemas con densidad variable</strong>, <strong>Distribuciones espaciales de energía o temperatura</strong>.</p>
+<div class="subsection-modal"><h4><span>📐</span> Integrales Dobles</h4><p>Una <strong>integral doble</strong> se utiliza para integrar una función sobre una <strong>región en el plano</strong>. <strong>Interpretación geométrica:</strong> Si la función es constante, la integral calcula el <strong>área de la región</strong>; Si representa una superficie, calcula el <strong>volumen bajo la superficie</strong>. <strong>Interpretación física:</strong> Si la función representa <strong>densidad superficial</strong>, la integral calcula la <strong>masa total de una placa</strong>.</p></div>
+<div class="subsection-modal"><h4><span>📦</span> Integrales Triples</h4><p>Las <strong>integrales triples</strong> permiten integrar funciones sobre un <strong>sólido tridimensional</strong>. <strong>Interpretación geométrica:</strong> Si la función es constante, permite calcular el <strong>volumen del sólido</strong>. <strong>Interpretación física:</strong> Si la función representa <strong>densidad volumétrica</strong>, la integral calcula la <strong>masa total de un cuerpo</strong>. También se utilizan para determinar <strong>momentos y centros de masa en sistemas tridimensionales</strong>.</p></div>`},
+      's8-2': {
+        title: '<span>🔄</span> 4.4. Cambio de Variables: Coordenadas Polares y Esféricas', content: `<p>El <strong>cambio de variables</strong> permite simplificar el cálculo de integrales cuando la región de integración tiene una forma particular. Este método adapta el sistema de coordenadas a la <strong>geometría natural del problema</strong>.</p>
+<div class="subsection-modal"><h4><span>⭕</span> Integrales en Coordenadas Polares</h4><p>Las <strong>coordenadas polares</strong> son especialmente útiles para regiones con <strong>simetría circular o radial</strong>, como: Difusión de calor, Distribución de energía, Potencia de señales. Este cambio de variables simplifica el cálculo cuando la región es <strong>un círculo o sector circular</strong>.</p></div>
+<div class="subsection-modal"><h4><span>🌐</span> Integrales en Coordenadas Esféricas</h4><p>Las <strong>coordenadas esféricas</strong> se utilizan para regiones con <strong>simetría esférica</strong>, como: Reactores o tanques esféricos, Campos gravitacionales o eléctricos, Distribuciones radiales de masa o energía. Este sistema permite calcular <strong>masa, volumen y propiedades físicas</strong> en sólidos esféricos.</p></div>
+`}
+    };
+
+    let currentWeek = 1;
+    const totalWeeks = 8;
+
+    function showWeek(week) {
+      for (let i = 1; i <= totalWeeks; i++) {
+        const view = document.getElementById(`view${i}`);
+        if (view) view.classList.remove('active');
+      }
+      const activeView = document.getElementById(`view${week}`);
+      if (activeView) activeView.classList.add('active');
+      const btns = document.querySelectorAll('.week-btn');
+      btns.forEach((btn, idx) => {
+        if (parseInt(btn.dataset.week) === week) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      const progressPercent = (week / totalWeeks) * 100;
+      document.getElementById('prog-fill').style.width = `${progressPercent}%`;
+      document.getElementById('prog-lbl').textContent = `S${week}/8`;
+      document.getElementById('prog-score').textContent = `📖 S${week}`;
+      currentWeek = week;
+    }
+
+    for (let i = 1; i <= totalWeeks; i++) {
+      const prevBtn = document.getElementById(`prevBtn${i === 1 ? '' : i}`);
+      const nextBtn = document.getElementById(`nextBtn${i === 8 ? '' : i}`);
+      if (prevBtn) prevBtn.addEventListener('click', () => { if (currentWeek > 1) showWeek(currentWeek - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', () => { if (currentWeek < totalWeeks) showWeek(currentWeek + 1); });
+    }
+
+    document.querySelectorAll('.week-btn').forEach(btn => {
+      btn.addEventListener('click', () => { showWeek(parseInt(btn.dataset.week)); });
+    });
+
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalClose = document.getElementById('modalClose');
+
+    document.querySelectorAll('.section-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const modalId = item.dataset.modal;
+        const content = modalContent[modalId];
+        if (content) {
+          modalTitle.innerHTML = content.title;
+          modalBody.innerHTML = content.content;
+          modalOverlay.classList.add('active');
+          if (window.MathJax) MathJax.typesetPromise().catch(() => { });
+        }
+      });
+    });
+
+    modalClose.addEventListener('click', () => modalOverlay.classList.remove('active'));
+    modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
+
+    showWeek(1);
+  </script>
+</body>
+
+</html>

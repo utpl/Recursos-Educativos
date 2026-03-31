@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ejercicios de Aplicación de la Distribución Normal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c1:#E84855;--c2:#F4A261;--c3:#2A9D8F;--c4:#457B9D;
+  --dark:#1A1A2E;--dark2:#16213E;
+  --surface:#FFFFFF;--bg:#F8F5F0;--text:#2C2C3E;
+  --muted:#6B6B80;--border:#E2DED8;
+  --font-d:'Playfair Display',serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
+  --r:13px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font-b);
+  background:
+    radial-gradient(ellipse at 18% 12%,rgba(42,157,143,.13) 0%,transparent 50%),
+    radial-gradient(ellipse at 82% 88%,rgba(69,123,157,.13) 0%,transparent 50%),
+    #EDE9E1;
+  min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:28px 16px;
+}
+
+/* ── CANVAS 800×800 ── */
+.canvas{
+  width:800px;min-height:500px;max-height:800px;
+  background:var(--bg);border-radius:28px;overflow:hidden;
+  box-shadow:0 24px 80px rgba(26,26,46,.22);
+  display:flex;flex-direction:column;
+}
+
+/* ── HEADER ── */
+.header{background:var(--dark);flex-shrink:0;position:relative;overflow:hidden;}
+.h-stripe{height:4px;background:linear-gradient(90deg,var(--c3) 0%,var(--c4) 33%,var(--c1) 66%,var(--c2) 100%);}
+.h-glow{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 12% 110%,rgba(42,157,143,.22) 0%,transparent 55%),
+             radial-gradient(ellipse at 88% -10%,rgba(69,123,157,.2) 0%,transparent 55%);
+  pointer-events:none;}
+.h-inner{position:relative;z-index:1;padding:16px 32px 14px;display:flex;align-items:center;gap:16px;}
+.h-embl{
+  width:46px;height:46px;flex-shrink:0;border-radius:13px;
+  background:linear-gradient(135deg,rgba(42,157,143,.28),rgba(69,123,157,.22));
+  border:1.5px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.h-meta{flex:1;}
+.h-course{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:3px;}
+.h-title{font-family:var(--font-d);font-size:18px;color:#fff;line-height:1.22;letter-spacing:-.02em;}
+.h-sub{font-size:10.5px;color:rgba(255,255,255,.45);margin-top:3px;}
+.h-sub strong{color:rgba(255,255,255,.75);font-weight:600;}
+
+/* ── STEP RAIL ── */
+.step-rail{
+  background:var(--dark2);padding:0 32px;flex-shrink:0;
+  display:flex;align-items:center;gap:0;overflow-x:auto;scrollbar-width:none;
+}
+.step-rail::-webkit-scrollbar{display:none;}
+.step-tab{
+  display:flex;align-items:center;gap:7px;padding:10px 16px;
+  cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;
+  font-size:11px;font-weight:600;color:rgba(255,255,255,.38);letter-spacing:.02em;
+  transition:border-color .22s,color .22s,background .18s;flex-shrink:0;
+}
+.step-tab:hover{color:rgba(255,255,255,.65);background:rgba(255,255,255,.04);}
+.step-tab.active{border-bottom-color:var(--tab-color);color:rgba(255,255,255,.92);}
+.tab-num{
+  width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;
+  display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;
+}
+.step-tab.active .tab-num{background:var(--tab-color);border-color:var(--tab-color);color:#fff;}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow:hidden;position:relative;}
+.panel{
+  position:absolute;inset:0;overflow-y:auto;
+  opacity:0;pointer-events:none;transform:translateY(14px);
+  transition:opacity .3s ease,transform .3s ease;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+  padding:18px 32px 16px;display:flex;flex-direction:column;gap:12px;
+}
+.panel.active{opacity:1;pointer-events:all;transform:translateY(0);}
+
+/* ── INTRO PANEL ── */
+.intro-hed{font-family:var(--font-d);font-size:22px;color:var(--dark);line-height:1.2;letter-spacing:-.02em;}
+.intro-body{font-size:12.5px;color:var(--text);line-height:1.72;}
+.inst-band{
+  background:linear-gradient(135deg,rgba(42,157,143,.1),rgba(69,123,157,.07));
+  border:1px solid rgba(42,157,143,.25);border-radius:10px;
+  padding:10px 14px;font-size:12px;color:var(--text);line-height:1.6;
+  display:flex;gap:10px;align-items:flex-start;
+}
+
+/* exercise index grid */
+.ex-index{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ex-index-card{
+  background:var(--surface);border-radius:var(--r);border:2px solid var(--border);
+  padding:12px 14px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;
+  transition:border-color .2s,box-shadow .2s,transform .15s;min-height:44px;
+}
+.ex-index-card:hover{
+  border-color:var(--eic-color);
+  box-shadow:0 6px 20px rgba(26,26,46,.1);transform:translateY(-2px);
+}
+.eic-num{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:#fff;background:var(--eic-color);
+}
+.eic-txt{font-size:11.5px;color:var(--text);line-height:1.5;font-weight:500;}
+
+/* ── EXERCISE PANELS ── */
+.ex-kicker{font-size:9.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--panel-color);}
+.ex-hed{font-family:var(--font-d);font-size:18px;color:var(--dark);line-height:1.22;letter-spacing:-.02em;}
+
+/* section label */
+.sec-lbl{
+  font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--panel-color);display:flex;align-items:center;gap:7px;
+}
+.sec-lbl::after{content:'';flex:1;height:1.5px;background:color-mix(in srgb,var(--panel-color) 22%,transparent);border-radius:1px;}
+
+/* planteamiento box */
+.plan-box{
+  background:var(--dark);border-radius:var(--r);padding:14px 18px;
+  position:relative;overflow:hidden;
+}
+.plan-box::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 90% 10%,rgba(255,255,255,.06) 0%,transparent 60%);}
+.plan-txt{font-size:12.5px;color:rgba(255,255,255,.75);line-height:1.7;position:relative;}
+.plan-txt strong{color:rgba(255,255,255,.95);}
+
+/* data chips */
+.data-row{display:flex;gap:8px;flex-wrap:wrap;}
+.data-chip{
+  border-radius:9px;padding:8px 14px;
+  background:color-mix(in srgb,var(--panel-color) 10%,var(--surface));
+  border:1.5px solid color-mix(in srgb,var(--panel-color) 25%,transparent);
+  font-size:11.5px;color:var(--text);display:flex;align-items:center;gap:8px;
+}
+.dc-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--panel-color);}
+.dc-val{font-family:var(--font-m);font-size:13px;font-weight:700;color:var(--dark);}
+
+/* steps list */
+.steps-list{display:flex;flex-direction:column;gap:8px;}
+.step-row{
+  display:flex;align-items:flex-start;gap:11px;
+  background:var(--surface);border-radius:var(--r);padding:11px 14px;
+  border:1.5px solid var(--border);
+}
+.step-dot{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:#fff;
+  background:var(--panel-color);margin-top:1px;
+}
+.step-content{flex:1;font-size:12px;color:var(--text);line-height:1.62;}
+.step-content strong{color:var(--dark);}
+.step-formula{
+  font-family:var(--font-m);font-size:12px;color:var(--panel-color);
+  font-weight:500;margin-top:5px;padding:5px 10px;
+  background:color-mix(in srgb,var(--panel-color) 8%,var(--bg));
+  border-radius:6px;display:inline-block;
+}
+
+/* result highlight */
+.result-box{
+  border-radius:var(--r);padding:12px 16px;
+  background:color-mix(in srgb,var(--panel-color) 12%,var(--surface));
+  border:2px solid color-mix(in srgb,var(--panel-color) 35%,transparent);
+  display:flex;align-items:center;gap:14px;
+}
+.rb-ico{font-size:24px;flex-shrink:0;}
+.rb-lbl{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--panel-color);margin-bottom:4px;}
+.rb-val{font-family:var(--font-d);font-size:22px;color:var(--dark);font-weight:700;}
+.rb-desc{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+/* SVG normal curve */
+.curve-box{
+  background:var(--surface);border-radius:var(--r);
+  border:1.5px solid var(--border);overflow:hidden;
+}
+.cb-top{background:var(--dark);padding:7px 14px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);display:flex;justify-content:space-between;align-items:center;}
+.cb-caption{font-size:9px;color:rgba(255,255,255,.35);}
+.cb-body{padding:10px 14px;}
+
+/* observe box */
+.obs-box{
+  border-left:3px solid var(--panel-color);border-radius:0 var(--r) var(--r) 0;
+  background:color-mix(in srgb,var(--panel-color) 6%,var(--bg));
+  padding:10px 14px;font-size:12px;color:var(--text);line-height:1.65;
+}
+.obs-box strong{color:var(--dark);}
+
+/* ── NAV ROW ── */
+.nav-row{padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.nav-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;border:2px solid var(--border);background:transparent;font-family:var(--font-b);font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;min-height:44px;}
+.nav-btn:hover:not(:disabled){border-color:var(--dark);color:var(--dark);background:var(--bg);}
+.nav-btn:disabled{opacity:.3;cursor:default;}
+.nav-btn.primary{background:var(--dark);color:#fff;border-color:var(--dark);}
+.nav-btn.primary:hover:not(:disabled){background:var(--dark2);border-color:var(--dark2);}
+.step-counter{font-size:11px;font-weight:600;color:var(--muted);}
+
+/* ── REF ── */
+.ref-bar{background:var(--dark);padding:8px 32px;flex-shrink:0;font-size:10px;color:rgba(255,255,255,.28);font-style:italic;}
+
+@media(max-width:840px){
+  body{padding:0;background:var(--bg);}
+  .canvas{width:100%;max-width:100%;max-height:none;border-radius:0;}
+  .h-inner,.step-rail,.panel,.nav-row,.ref-bar{padding-left:20px;padding-right:20px;}
+  .ex-index{grid-template-columns:1fr;}
+  .data-row{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="h-stripe"></div>
+    <div class="h-glow"></div>
+    <div class="h-inner">
+      <div class="h-embl">🔔</div>
+      <div class="h-meta">
+        <div class="h-course">Estadística para análisis de datos</div>
+        <div class="h-title">Ejercicios de aplicación de la distribución normal</div>
+        <div class="h-sub">Docente: <strong>Juan Carlos Torrez Díaz</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP RAIL -->
+  <div class="step-rail" id="stepRail">
+    <div class="step-tab active" style="--tab-color:var(--c3)" data-panel="0" onclick="goTo(0)">
+      <div class="tab-num">📋</div> Inicio
+    </div>
+    <div class="step-tab" style="--tab-color:var(--c1)" data-panel="1" onclick="goTo(1)">
+      <div class="tab-num">1</div> Edades
+    </div>
+    <div class="step-tab" style="--tab-color:var(--c2)" data-panel="2" onclick="goTo(2)">
+      <div class="tab-num">2</div> Áreas y Prob.
+    </div>
+    <div class="step-tab" style="--tab-color:var(--c4)" data-panel="3" onclick="goTo(3)">
+      <div class="tab-num">3</div> 420 y 480
+    </div>
+    <div class="step-tab" style="--tab-color:var(--c5,#7B4FBF)" data-panel="4" onclick="goTo(4)">
+      <div class="tab-num">4</div> Cruzan la media
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="contentArea">
+
+    <!-- PANEL 0: INTRO -->
+    <div class="panel active" id="panel-0" style="--panel-color:var(--c3)">
+      <div class="intro-hed">Ejercicios de aplicación de la distribución normal</div>
+      <div class="intro-body">A continuación, se presentan varios ejemplos prácticos que ilustran el cálculo de áreas y probabilidades en una distribución normal. Estos casos permitirán comprender cómo estimar proporciones en diferentes situaciones, fortaleciendo así el análisis estadístico aplicado.</div>
+
+      <div class="inst-band">
+        <div style="font-size:17px;flex-shrink:0;">💡</div>
+        <div>Haga clic en los temas para visualizar la información</div>
+      </div>
+
+      <div class="sec-lbl">Índice de ejercicios</div>
+      <div class="ex-index">
+        <div class="ex-index-card" style="--eic-color:var(--c1)" onclick="goTo(1)">
+          <div class="eic-num">1</div>
+          <div class="eic-txt">Ejercicio 1: Aplicación de la distribución normal para el análisis de edades</div>
+        </div>
+        <div class="ex-index-card" style="--eic-color:var(--c2)" onclick="goTo(2)">
+          <div class="eic-num">2</div>
+          <div class="eic-txt">Ejercicio 2: Aplicación de la distribución normal para el cálculo de áreas y probabilidades</div>
+        </div>
+        <div class="ex-index-card" style="--eic-color:var(--c4)" onclick="goTo(3)">
+          <div class="eic-num">3</div>
+          <div class="eic-txt">Ejercicio 3: Cálculo del área bajo la curva normal entre 420 y 480</div>
+        </div>
+        <div class="ex-index-card" style="--eic-color:#7B4FBF" onclick="goTo(4)">
+          <div class="eic-num">4</div>
+          <div class="eic-txt">Ejercicio 4: Cálculo de áreas en la distribución normal en intervalos que cruzan la media</div>
+        </div>
+      </div>
+
+      <!-- intro curve -->
+      <div class="curve-box">
+        <div class="cb-top">🔔 Curva de distribución normal estándar<span class="cb-caption">μ = 0, σ = 1</span></div>
+        <div class="cb-body">
+          <svg viewBox="0 0 680 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:80px;">
+            <defs>
+              <linearGradient id="ng0" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--c3)" stop-opacity=".3"/>
+                <stop offset="100%" stop-color="var(--c3)" stop-opacity=".04"/>
+              </linearGradient>
+            </defs>
+            <path d="M20,72 C80,72 140,60 220,20 C270,4 300,2 340,2 C380,2 410,4 460,20 C540,60 600,72 660,72" fill="url(#ng0)" stroke="var(--c3)" stroke-width="2.2" stroke-linecap="round"/>
+            <line x1="340" y1="2" x2="340" y2="72" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="340" y="78" text-anchor="middle" font-size="9" fill="var(--c3)" font-family="DM Sans,sans-serif" font-weight="700">μ</text>
+            <!-- sigma marks -->
+            <text x="234" y="76" text-anchor="middle" font-size="8.5" fill="var(--muted)" font-family="DM Sans,sans-serif">μ−σ</text>
+            <text x="446" y="76" text-anchor="middle" font-size="8.5" fill="var(--muted)" font-family="DM Sans,sans-serif">μ+σ</text>
+            <text x="128" y="76" text-anchor="middle" font-size="8.5" fill="var(--muted)" font-family="DM Sans,sans-serif">μ−2σ</text>
+            <text x="552" y="76" text-anchor="middle" font-size="8.5" fill="var(--muted)" font-family="DM Sans,sans-serif">μ+2σ</text>
+            <!-- 68-95 labels -->
+            <text x="340" y="38" text-anchor="middle" font-size="9" fill="rgba(42,157,143,.8)" font-family="DM Sans,sans-serif" font-weight="700">68.27%</text>
+            <text x="340" y="52" text-anchor="middle" font-size="8.5" fill="rgba(69,123,157,.7)" font-family="DM Sans,sans-serif">95.45% — — — — —</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 1: EJ1 -->
+    <div class="panel" id="panel-1" style="--panel-color:var(--c1)">
+      <div class="ex-kicker">Ejercicio 1</div>
+      <div class="ex-hed">Aplicación de la distribución normal para el análisis de edades</div>
+
+      <div class="sec-lbl">Planteamiento del problema</div>
+      <div class="plan-box">
+        <div class="plan-txt">Suponga que se hizo una encuesta y se preguntó la edad de 41 estudiantes de la UTPL. La media aritmética de la edad es 21 años y la desviación estándar 2 años.</div>
+      </div>
+
+      <div class="data-row">
+        <div class="data-chip"><div><div class="dc-lbl">n</div><div class="dc-val">41</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Media (μ)</div><div class="dc-val">21 años</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Desv. Est. (σ)</div><div class="dc-val">2 años</div></div></div>
+      </div>
+
+      <div class="sec-lbl">Preguntas de análisis</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot">❓</div>
+          <div class="step-content">¿Cuántas personas tienen 23 años o más?</div>
+        </div>
+        <div class="step-row">
+          <div class="step-dot">❓</div>
+          <div class="step-content">¿Cuántas personas tienen entre 18 y 20 años?</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Comprensión del problema</div>
+      <div class="obs-box">Lo primero es entender lo que realmente debemos calcular. En el primer caso (primera pregunta) de las 41 personas encuestadas debemos encontrar cuántas tienen 23 o 24 o 25 o 26 o más años de edad.</div>
+
+      <div class="sec-lbl">Procedimiento de cálculo</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c1)">1</div>
+          <div class="step-content">Para ello procedemos de la siguiente manera: Calculamos los valores de Z para 23 años.
+            <div class="step-formula">Z = (23 − 21) / 2 = 1</div>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c1)">2</div>
+          <div class="step-content"><strong>Interpretación del valor Z:</strong> El resultado de Z=1 lo buscamos en la tabla de distribución normal, el resultado de la tabla es 0,3413 que equivale al 34.13 %. Pero este porcentaje equivale a la cantidad de personas cuya edad está comprendida desde 21 años (la media) hasta 23 años.</div>
+        </div>
+      </div>
+
+      <!-- Curve figure 1 -->
+      <div class="curve-box">
+        <div class="cb-top">Figura 1. Área entre 21 y 23 años<span class="cb-caption">Nota. Torres, J., 2023.</span></div>
+        <div class="cb-body">
+          <svg viewBox="0 0 680 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:90px;">
+            <defs>
+              <linearGradient id="ng1a" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--c1)" stop-opacity=".0"/>
+                <stop offset="100%" stop-color="var(--c1)" stop-opacity=".0"/>
+              </linearGradient>
+            </defs>
+            <!-- full curve -->
+            <path d="M20,78 C100,78 170,60 270,14 C310,4 330,2 340,2 C350,2 370,4 410,14 C510,60 580,78 660,78" fill="rgba(232,72,85,.06)" stroke="var(--c1)" stroke-width="2" stroke-linecap="round"/>
+            <!-- shaded area 21-23 -->
+            <path d="M340,2 C350,2 370,4 410,14 L410,78 L340,78 Z" fill="rgba(232,72,85,.28)"/>
+            <line x1="340" y1="2" x2="340" y2="78" stroke="var(--c1)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <line x1="410" y1="14" x2="410" y2="78" stroke="var(--c1)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <text x="340" y="86" text-anchor="middle" font-size="9.5" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">21 (μ)</text>
+            <text x="410" y="86" text-anchor="middle" font-size="9.5" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">23</text>
+            <text x="375" y="50" text-anchor="middle" font-size="10" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="800">34.13%</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Análisis de la distribución</div>
+      <div class="obs-box">Ahora considere que vamos a hacer el cálculo en la parte derecha de la curva, esta contiene el 50 % de las observaciones. Lo que hemos calculado es la parte sombreada, pero necesitamos saber a cuánto equivale la parte que no está sombreada que representa a las personas con 23 años o más.</div>
+
+      <div class="sec-lbl">Cálculo de la proporción</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c1)">3</div>
+          <div class="step-content">Para obtener el valor lo que hacemos es restar el 50 % del valor de la parte sombreada. Esto es:
+            <div class="step-formula">Proporción = 0,5 − 0,3413 = 0,1587 → 15,87 %</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Curve figure 2 -->
+      <div class="curve-box">
+        <div class="cb-top">Figura 2. Distribución de áreas antes y después de 23<span class="cb-caption">Nota. Torres, J., 2023.</span></div>
+        <div class="cb-body">
+          <svg viewBox="0 0 680 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:90px;">
+            <path d="M20,78 C100,78 170,60 270,14 C310,4 330,2 340,2 C350,2 370,4 410,14 C510,60 580,78 660,78" fill="rgba(232,72,85,.06)" stroke="var(--c1)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M340,2 C350,2 370,4 410,14 L410,78 L340,78 Z" fill="rgba(232,72,85,.3)"/>
+            <path d="M410,14 C510,60 580,78 660,78 L660,78 L410,78 Z" fill="rgba(69,123,157,.2)"/>
+            <line x1="340" y1="2" x2="340" y2="78" stroke="var(--c1)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <line x1="410" y1="14" x2="410" y2="78" stroke="var(--c1)" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="340" y="86" text-anchor="middle" font-size="9.5" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">21</text>
+            <text x="410" y="86" text-anchor="middle" font-size="9.5" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">23</text>
+            <text x="375" y="52" text-anchor="middle" font-size="10" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="800">34.13%</text>
+            <text x="520" y="60" text-anchor="middle" font-size="10" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="800">15.87%</text>
+            <text x="520" y="72" text-anchor="middle" font-size="8.5" fill="var(--c4)" font-family="DM Sans,sans-serif">≥ 23 años</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="result-box">
+        <div class="rb-ico">🎯</div>
+        <div>
+          <div class="rb-lbl">Resultado final</div>
+          <div class="rb-val">15.87% → ~6.5 personas</div>
+          <div class="rb-desc">El 15.87% de 41 estudiantes tienen 23 años o más (0.1587 × 41 ≈ 6.5 personas).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: EJ2 -->
+    <div class="panel" id="panel-2" style="--panel-color:var(--c2)">
+      <div class="ex-kicker">Ejercicio 2</div>
+      <div class="ex-hed">Aplicación de la distribución normal para el cálculo de áreas y probabilidades</div>
+
+      <div class="sec-lbl">Planteamiento del problema</div>
+      <div class="plan-box">
+        <div class="plan-txt">Dada una curva normal con media de 500 y una desviación estándar de 50, calcule el área entre 555 y 600.</div>
+      </div>
+      <div class="data-row">
+        <div class="data-chip"><div><div class="dc-lbl">Media (μ)</div><div class="dc-val">500</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Desv. Est. (σ)</div><div class="dc-val">50</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Intervalo</div><div class="dc-val">555 — 600</div></div></div>
+      </div>
+
+      <div class="sec-lbl">Paso 1: Comprensión de la distribución</div>
+      <div class="obs-box">El paso 1 consiste en entender que, en la curva normal, la mitad de la distribución se halla a la izquierda de la media y la otra mitad a la derecha de la media.</div>
+
+      <div class="curve-box">
+        <div class="cb-top">Figura 3. Distribución simétrica<span class="cb-caption">Nota. Torres, J., 2023.</span></div>
+        <div class="cb-body">
+          <svg viewBox="0 0 680 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:80px;">
+            <path d="M20,72 C100,72 170,55 270,12 C310,2 330,1 340,1 C350,1 370,2 410,12 C510,55 580,72 660,72" fill="rgba(244,162,97,.08)" stroke="var(--c2)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M20,72 C100,72 170,55 270,12 C310,2 330,1 340,1 L340,72 Z" fill="rgba(244,162,97,.18)"/>
+            <path d="M340,1 C350,1 370,2 410,12 C510,55 580,72 660,72 L340,72 Z" fill="rgba(244,162,97,.26)"/>
+            <line x1="340" y1="1" x2="340" y2="72" stroke="var(--c2)" stroke-width="2" stroke-dasharray="4,3"/>
+            <text x="180" y="55" text-anchor="middle" font-size="11" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="800">50%</text>
+            <text x="500" y="55" text-anchor="middle" font-size="11" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="800">50%</text>
+            <text x="340" y="78" text-anchor="middle" font-size="9.5" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="700">500 (μ)</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Paso 2: Identificación del área de interés</div>
+      <div class="obs-box">Como paso 2, observe la figura y ubique los límites 555 y 600. Es el área entre esos dos valores lo que queremos determinar.</div>
+
+      <div class="sec-lbl">Cálculo de los valores Z</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c2);color:var(--dark)">Z₁</div>
+          <div class="step-content">Valor Z para 555:
+            <div class="step-formula">Z = (555 − 500) / 50 = 55/50 = 1.10</div>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c2);color:var(--dark)">Z₂</div>
+          <div class="step-content">Valor Z para 600:
+            <div class="step-formula">Z = (600 − 500) / 50 = 100/50 = 2</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="curve-box">
+        <div class="cb-top">Figura 5. Área entre z=1,1 y z=2<span class="cb-caption">Nota. Torres, J., 2023.</span></div>
+        <div class="cb-body">
+          <svg viewBox="0 0 680 84" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:84px;">
+            <path d="M20,76 C100,76 170,60 270,14 C310,4 330,2 340,2 C350,2 370,4 410,14 C510,60 580,76 660,76" fill="rgba(244,162,97,.06)" stroke="var(--c2)" stroke-width="2" stroke-linecap="round"/>
+            <!-- Z from 0 to 1.1 -->
+            <path d="M340,2 C350,2 370,4 410,14 C430,20 438,28 448,38 L448,76 L340,76 Z" fill="rgba(244,162,97,.18)"/>
+            <!-- Z from 1.1 to 2 -->
+            <path d="M448,38 C458,50 468,60 490,68 L490,76 L448,76 Z" fill="rgba(244,162,97,.45)"/>
+            <line x1="340" y1="2" x2="340" y2="76" stroke="rgba(244,162,97,.5)" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <line x1="448" y1="38" x2="448" y2="76" stroke="var(--c2)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <line x1="490" y1="68" x2="490" y2="76" stroke="var(--c2)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <text x="340" y="82" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="DM Sans,sans-serif">μ=500</text>
+            <text x="448" y="82" text-anchor="middle" font-size="9" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="700">555 (z=1.1)</text>
+            <text x="490" y="82" text-anchor="middle" font-size="9" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="700">600 (z=2)</text>
+            <text x="470" y="56" text-anchor="middle" font-size="9.5" fill="var(--c2)" font-family="DM Sans,sans-serif" font-weight="800">11.29%</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Búsqueda de valores en la tabla</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c2);color:var(--dark)">📋</div>
+          <div class="step-content">Lo que buscamos se encuentra entre los valores de Z=1,10 y Z=2. Para cada valor de Z, buscamos el porcentaje que le corresponde en una tabla de distribución normal.<br><br>
+            El porcentaje que corresponde a Z=1,10 es del 36,43 % (en la tabla consta el valor 0,3643), esto corresponde al porcentaje desde la media hasta Z=1,1.<br><br>
+            El porcentaje que corresponde a Z = 2 es del 47,72 % (en la tabla consta el valor 0,4772), esto corresponde al porcentaje desde la media hasta Z = 2.
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Cálculo del área</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c2);color:var(--dark)">−</div>
+          <div class="step-content">Lo que debemos hacer es restar:
+            <div class="step-formula">47,72% − 36,43% = 11,29%</div>
+            Por tanto, el área bajo la curva que se comprende entre los valores de 555 y 600 es el 11,29%.
+          </div>
+        </div>
+      </div>
+
+      <div class="result-box">
+        <div class="rb-ico">📐</div>
+        <div>
+          <div class="rb-lbl">Resultado final</div>
+          <div class="rb-val">11.29%</div>
+          <div class="rb-desc">El área bajo la curva normal entre 555 y 600 es el 11,29%. (Figura 6. Área entre z=1,1 y z=2. Nota. Torres, J., 2023.)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: EJ3 -->
+    <div class="panel" id="panel-3" style="--panel-color:var(--c4)">
+      <div class="ex-kicker">Ejercicio 3</div>
+      <div class="ex-hed">Cálculo del área bajo la curva normal entre 420 y 480</div>
+
+      <div class="sec-lbl">Planteamiento del problema</div>
+      <div class="plan-box">
+        <div class="plan-txt">Calculemos ahora el área o probabilidad que se encuentra entre 420 y 480. Recordemos que la media es 500 y la desviación estándar es 50.</div>
+      </div>
+      <div class="data-row">
+        <div class="data-chip"><div><div class="dc-lbl">Media (μ)</div><div class="dc-val">500</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Desv. Est. (σ)</div><div class="dc-val">50</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Intervalo</div><div class="dc-val">420 — 480</div></div></div>
+      </div>
+
+      <div class="curve-box">
+        <div class="cb-top">Figura 7. Área entre 420 y 480<span class="cb-caption">Nota. Torres, J., 2023.</span></div>
+        <div class="cb-body">
+          <svg viewBox="0 0 680 84" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:84px;">
+            <path d="M20,76 C100,76 170,60 270,14 C310,4 330,2 340,2 C350,2 370,4 410,14 C510,60 580,76 660,76" fill="rgba(69,123,157,.06)" stroke="var(--c4)" stroke-width="2" stroke-linecap="round"/>
+            <!-- shaded 420-480 (left of mean) -->
+            <path d="M197,52 C218,32 240,18 262,10 C280,4 300,2 313,2.5 C326,3 334,5 340,8 L340,76 L197,76 Z" fill="rgba(69,123,157,.32)"/>
+            <line x1="197" y1="52" x2="197" y2="76" stroke="var(--c4)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <line x1="265" y1="10" x2="265" y2="76" stroke="var(--c4)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <line x1="340" y1="2" x2="340" y2="76" stroke="rgba(69,123,157,.5)" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <text x="197" y="82" text-anchor="middle" font-size="9" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="700">420</text>
+            <text x="265" y="82" text-anchor="middle" font-size="9" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="700">480</text>
+            <text x="340" y="82" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="DM Sans,sans-serif">500 (μ)</text>
+            <text x="262" y="52" text-anchor="middle" font-size="10" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="800">28.98%</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Determinación del área desde la media a 420</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c4)">Z₁</div>
+          <div class="step-content">En primer lugar, procedemos a determinar el área desde 500 hasta 420:
+            <div class="step-formula">Z = (420 − 500) / 50 = −1.6</div>
+            Se busca Z=1.6 en la tabla de distribución normal, el resultado es: 0.4452 que equivale al 44,52%
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Determinación del área desde la media a 480</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c4)">Z₂</div>
+          <div class="step-content">Ahora determinamos el área que existe entre 500 y 480:
+            <div class="step-formula">Z = (480 − 500) / 50 = −0.4</div>
+            Se busca el valor 0.4 en la tabla de distribución normal y el resultado es: 0.1554 que equivale al 15.54%
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Cálculo del área entre 420 y 480</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:var(--c4)">−</div>
+          <div class="step-content">Para encontrar el área entre 420 y 480 al área mayor le vamos a restar el área menor:
+            <div class="step-formula">Área = 44.52% − 15.54% = 28.98%</div>
+            El área entre 420 y 480 abarca el 28.98%
+          </div>
+        </div>
+      </div>
+
+      <div class="obs-box"><strong>Observación final:</strong> En esta parte cabe resaltar algo muy importante: observe en la gráfica que el 44.53% es el área entre 500 y 420; así también, 155,54% es el área existente entre 500 y 480.</div>
+
+      <div class="result-box">
+        <div class="rb-ico">📊</div>
+        <div>
+          <div class="rb-lbl">Resultado final</div>
+          <div class="rb-val">28.98%</div>
+          <div class="rb-desc">El área bajo la curva normal entre 420 y 480 es el 28.98%.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 4: EJ4 -->
+    <div class="panel" id="panel-4" style="--panel-color:#7B4FBF">
+      <div class="ex-kicker">Ejercicio 4</div>
+      <div class="ex-hed">Cálculo de áreas en la distribución normal en intervalos que cruzan la media</div>
+
+      <div class="sec-lbl">Planteamiento del ejercicio</div>
+      <div class="plan-box">
+        <div class="plan-txt">Determinar el área entre 460 y 520, observe la figura:</div>
+      </div>
+      <div class="data-row">
+        <div class="data-chip"><div><div class="dc-lbl">Media (μ)</div><div class="dc-val">500</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Desv. Est. (σ)</div><div class="dc-val">50</div></div></div>
+        <div class="data-chip"><div><div class="dc-lbl">Intervalo</div><div class="dc-val">460 — 520</div></div></div>
+      </div>
+
+      <!-- Curve figure 8 -->
+      <div class="curve-box">
+        <div class="cb-top">Figura 8. Área 1 y área 2<span class="cb-caption">Nota. Torres, J., 2023.</span></div>
+        <div class="cb-body">
+          <svg viewBox="0 0 680 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:90px;">
+            <path d="M20,78 C100,78 170,62 270,16 C310,4 330,2 340,2 C350,2 370,4 410,16 C510,62 580,78 660,78" fill="rgba(123,79,191,.05)" stroke="#7B4FBF" stroke-width="2" stroke-linecap="round"/>
+            <!-- Area 2: 460 to 500 (left of mean) -->
+            <path d="M254,32 C270,20 290,10 310,5 C322,2 332,1 340,1 L340,78 L254,78 Z" fill="rgba(232,72,85,.28)"/>
+            <!-- Area 1: 500 to 520 (right of mean) -->
+            <path d="M340,1 C348,1 356,3 368,8 C382,14 393,22 404,32 L404,78 L340,78 Z" fill="rgba(69,123,157,.3)"/>
+            <line x1="254" y1="32" x2="254" y2="78" stroke="var(--c1)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <line x1="340" y1="1" x2="340" y2="78" stroke="#7B4FBF" stroke-width="2" stroke-dasharray="4,3"/>
+            <line x1="404" y1="32" x2="404" y2="78" stroke="var(--c4)" stroke-width="1.8" stroke-dasharray="4,3"/>
+            <text x="254" y="86" text-anchor="middle" font-size="9" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="700">460</text>
+            <text x="340" y="86" text-anchor="middle" font-size="9" fill="#7B4FBF" font-family="DM Sans,sans-serif" font-weight="700">500 (μ)</text>
+            <text x="404" y="86" text-anchor="middle" font-size="9" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="700">520</text>
+            <text x="297" y="52" text-anchor="middle" font-size="10" fill="var(--c1)" font-family="DM Sans,sans-serif" font-weight="800">Área 2</text>
+            <text x="372" y="52" text-anchor="middle" font-size="10" fill="var(--c4)" font-family="DM Sans,sans-serif" font-weight="800">Área 1</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Referencia visual</div>
+      <div class="obs-box">Observe que el intervalo entre 460 y 520 <strong>cruza la media (500)</strong>. Esto significa que debemos calcular dos áreas separadas y luego sumarlas.</div>
+
+      <div class="sec-lbl">Procedimiento</div>
+      <div class="steps-list">
+        <div class="step-row">
+          <div class="step-dot" style="background:#7B4FBF">1</div>
+          <div class="step-content"><strong>Área 1</strong> — Determinar el área entre 500 y 520:
+            <div class="step-formula">Z = (520 − 500) / 50 = 0.4 → tabla: 0.1554 → 15.54%</div>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-dot" style="background:#7B4FBF">2</div>
+          <div class="step-content"><strong>Área 2</strong> — Determinar el área entre 460 y 500:
+            <div class="step-formula">Z = (460 − 500) / 50 = −0.8 → tabla: 0.2881 → 28.81%</div>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-dot" style="background:#7B4FBF">+</div>
+          <div class="step-content"><strong>Sumar el área 1 y el área 2</strong>:
+            <div class="step-formula">Área total = 15.54% + 28.81% = 44.35%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="obs-box"><strong>Clave:</strong> Cuando el intervalo cruza la media, el procedimiento es: Determinar el área 1 entre 500 y 520, determinar el área 2 entre 460 y 500, y sumar el área 1 y el área 2.</div>
+
+      <div class="result-box">
+        <div class="rb-ico">✨</div>
+        <div>
+          <div class="rb-lbl">Resultado final</div>
+          <div class="rb-val">Área 1 + Área 2</div>
+          <div class="rb-desc">El área entre 460 y 520 se obtiene sumando el área entre 500–520 y el área entre 460–500. El procedimiento aplica siempre que el intervalo cruce la media.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAV ROW -->
+  <div class="nav-row">
+    <button class="nav-btn" id="btnPrev" onclick="stepNav(-1)" disabled>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Anterior
+    </button>
+    <div class="step-counter" id="stepCounter">Inicio · 1 de 5</div>
+    <button class="nav-btn primary" id="btnNext" onclick="stepNav(1)">
+      Siguiente
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- REF -->
+  <div class="ref-bar">Elaboración propia.</div>
+
+</div>
+
+<script>
+const PANELS = 5;
+const LABELS = ['Inicio','Ejercicio 1','Ejercicio 2','Ejercicio 3','Ejercicio 4'];
+let current = 0;
+
+function goTo(idx){
+  if(idx<0||idx>=PANELS)return;
+  document.getElementById(`panel-${current}`).classList.remove('active');
+  document.querySelectorAll('.step-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  current=idx;
+  const p=document.getElementById(`panel-${current}`);
+  p.classList.add('active');p.scrollTop=0;
+  updateNav();
+}
+function stepNav(dir){goTo(current+dir);}
+function updateNav(){
+  document.getElementById('btnPrev').disabled=current===0;
+  const btn=document.getElementById('btnNext');
+  if(current===PANELS-1){
+    btn.innerHTML='Reiniciar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>';
+    btn.onclick=()=>goTo(0);
+  } else {
+    btn.innerHTML='Siguiente <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    btn.onclick=()=>stepNav(1);
+  }
+  document.getElementById('stepCounter').textContent=`${LABELS[current]} · ${current+1} de ${PANELS}`;
+}
+updateNav();
+</script>
+</body>
+</html>

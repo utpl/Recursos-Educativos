@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelos de Distribución Discreta en la Toma de Decisiones</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c1:#E84855;--c2:#F4A261;--c3:#2A9D8F;--c4:#457B9D;--c5:#7B4FBF;
+  --dark:#1A1A2E;--dark2:#16213E;
+  --surface:#FFFFFF;--bg:#F8F5F0;--text:#2C2C3E;
+  --muted:#6B6B80;--border:#E2DED8;
+  --font-d:'Playfair Display',serif;--font-b:'DM Sans',sans-serif;
+  --r:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:var(--font-b);
+  background:
+    radial-gradient(ellipse at 20% 10%,rgba(232,72,85,.13) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 90%,rgba(69,123,157,.13) 0%,transparent 50%),
+    #EDE9E1;
+  min-height:100vh;
+  display:flex;justify-content:center;align-items:flex-start;
+  padding:28px 16px;
+}
+
+/* ── CANVAS 800 × 800 máx ── */
+.canvas{
+  width:800px;
+  min-height:500px;
+  max-height:800px;
+  background:var(--bg);
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 24px 80px rgba(26,26,46,.22);
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── HEADER ── */
+.header{background:var(--dark);flex-shrink:0;position:relative;overflow:hidden;}
+.h-stripe{height:4px;background:linear-gradient(90deg,var(--c1) 0%,var(--c2) 25%,var(--c3) 50%,var(--c4) 75%,var(--c5) 100%);}
+.h-glow{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 12% 110%,rgba(232,72,85,.2) 0%,transparent 55%),
+             radial-gradient(ellipse at 88% -10%,rgba(69,123,157,.2) 0%,transparent 55%);
+  pointer-events:none;}
+.h-inner{position:relative;z-index:1;padding:16px 32px 14px;display:flex;align-items:center;gap:16px;}
+.h-embl{
+  width:46px;height:46px;flex-shrink:0;border-radius:13px;
+  background:linear-gradient(135deg,rgba(244,162,97,.22),rgba(232,72,85,.18));
+  border:1.5px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.h-meta{flex:1;}
+.h-course{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:3px;}
+.h-title{font-family:var(--font-d);font-size:18px;color:#fff;line-height:1.22;letter-spacing:-.02em;}
+.h-sub{font-size:10.5px;color:rgba(255,255,255,.45);margin-top:3px;}
+.h-sub strong{color:rgba(255,255,255,.75);font-weight:600;}
+
+/* ── PROGRESS ── */
+.prog-bar{background:var(--dark2);padding:8px 32px;flex-shrink:0;display:flex;align-items:center;gap:12px;}
+.prog-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38);white-space:nowrap;}
+.prog-track{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--c1),var(--c2));border-radius:99px;transition:width .45s ease;}
+.prog-count{font-size:10px;font-weight:600;color:rgba(255,255,255,.45);white-space:nowrap;}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow:hidden;position:relative;}
+.slide{
+  position:absolute;inset:0;overflow-y:auto;
+  opacity:0;pointer-events:none;transform:translateX(28px);
+  transition:opacity .3s ease,transform .3s ease;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.exit{opacity:0;transform:translateX(-28px);}
+
+/* ── INTRO SLIDE ── */
+.s-intro{padding:20px 32px;display:flex;flex-direction:column;gap:12px;}
+.intro-kicker{font-size:9.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--c2);}
+.intro-hed{font-family:var(--font-d);font-size:22px;color:var(--dark);line-height:1.2;letter-spacing:-.02em;}
+
+.case-dark{background:var(--dark);border-radius:var(--r);padding:18px 22px;position:relative;overflow:hidden;}
+.case-dark::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 90% 10%,rgba(244,162,97,.18) 0%,transparent 60%),
+             radial-gradient(ellipse at 10% 90%,rgba(42,157,143,.14) 0%,transparent 60%);}
+.cd-tag{font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--c2);margin-bottom:6px;position:relative;}
+.cd-title{font-family:var(--font-d);font-size:14px;color:#fff;margin-bottom:10px;position:relative;}
+.cd-events{display:flex;flex-direction:column;gap:7px;position:relative;}
+.cd-event{
+  display:flex;align-items:flex-start;gap:10px;
+  background:rgba(255,255,255,.05);border-radius:9px;padding:8px 12px;
+}
+.cde-num{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:#fff;
+}
+.cde-txt{font-size:12px;color:rgba(255,255,255,.72);line-height:1.55;}
+
+/* model pills row */
+.models-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.model-pill{
+  background:var(--surface);border-radius:10px;padding:10px 10px;
+  border:2px solid var(--border);text-align:center;
+  transition:border-color .2s,transform .18s;
+}
+.model-pill:hover{border-color:var(--mp-color);transform:translateY(-2px);}
+.mp-ico{font-size:20px;margin-bottom:4px;}
+.mp-name{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mp-color);}
+.mp-key{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.3;}
+
+.intro-inst{
+  background:linear-gradient(135deg,rgba(244,162,97,.1),rgba(232,72,85,.07));
+  border:1px solid rgba(244,162,97,.25);border-radius:10px;
+  padding:10px 14px;font-size:12px;color:var(--text);line-height:1.6;
+  display:flex;gap:10px;align-items:flex-start;
+}
+
+/* ── QUESTION SLIDE ── */
+.s-q{padding:18px 32px;display:flex;flex-direction:column;gap:11px;}
+.q-toprow{display:flex;align-items:center;gap:10px;}
+.q-badge{
+  width:34px;height:34px;border-radius:9px;background:var(--dark);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.q-meta{flex:1;}
+.q-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.q-topic{font-size:10.5px;font-weight:600;color:var(--dark);margin-top:1px;}
+.q-ico{font-size:20px;margin-left:auto;}
+
+/* event chip */
+.q-event-chip{
+  border-radius:10px;padding:10px 14px;
+  border:1.5px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;gap:10px;
+}
+.qec-ico{font-size:22px;flex-shrink:0;}
+.qec-txt{font-size:12px;color:var(--muted);line-height:1.5;}
+.qec-txt strong{color:var(--dark);}
+
+/* model comparison mini */
+.q-models-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.qmm-box{
+  border-radius:8px;padding:7px 8px;text-align:center;
+  background:color-mix(in srgb,var(--qmm-color) 8%,var(--bg));
+  border:1.5px solid color-mix(in srgb,var(--qmm-color) 22%,transparent);
+}
+.qmm-box.highlight{
+  border-color:var(--qmm-color);
+  background:color-mix(in srgb,var(--qmm-color) 16%,transparent);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--qmm-color) 20%,transparent);
+}
+.qmm-ico{font-size:14px;}
+.qmm-name{font-size:8.5px;font-weight:700;color:var(--qmm-color);margin-top:2px;}
+
+.q-text{font-size:13.5px;color:var(--dark);line-height:1.7;font-weight:400;}
+.opts{display:flex;flex-direction:column;gap:8px;}
+.opt{
+  background:var(--surface);border:2px solid var(--border);border-radius:12px;
+  padding:11px 15px;display:flex;align-items:flex-start;gap:12px;
+  cursor:pointer;text-align:left;font-family:var(--font-b);
+  transition:border-color .18s,background .18s,transform .15s,box-shadow .18s;
+  min-height:44px;
+}
+.opt:hover:not(:disabled){border-color:var(--dark);background:#FFFDF9;transform:translateX(3px);box-shadow:0 4px 14px rgba(26,26,46,.08);}
+.opt-lt{
+  width:26px;height:26px;border-radius:7px;
+  background:var(--bg);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:700;color:var(--muted);flex-shrink:0;
+  transition:background .18s,color .18s,border-color .18s;
+}
+.opt-txt{font-size:12.5px;color:var(--text);line-height:1.58;padding-top:1px;}
+.opt.correct{border-color:var(--c3);background:rgba(42,157,143,.06);cursor:default;transform:none;}
+.opt.correct .opt-lt{background:var(--c3);color:#fff;border-color:var(--c3);}
+.opt.wrong{border-color:var(--c1);background:rgba(232,72,85,.05);cursor:default;}
+.opt.wrong .opt-lt{background:var(--c1);color:#fff;border-color:var(--c1);}
+.opt.neutral{opacity:.42;cursor:default;}
+.opt:disabled{cursor:default;}
+
+/* feedback carta */
+.fb-carta{border-radius:12px;overflow:hidden;opacity:0;transform:translateY(10px);transition:opacity .32s ease .05s,transform .32s ease .05s;pointer-events:none;}
+.fb-carta.show{opacity:1;transform:translateY(0);pointer-events:auto;}
+.fb-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--dark);position:relative;overflow:hidden;}
+.fb-head::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--fb-col);}
+.fb-head-ico{width:36px;height:36px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;background:color-mix(in srgb,var(--fb-col) 22%,rgba(255,255,255,.05));}
+.fb-verdict{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--fb-col);margin-bottom:3px;}
+.fb-body{font-size:12px;color:rgba(255,255,255,.78);line-height:1.65;}
+
+/* ── FINAL SLIDE ── */
+.s-final{padding:20px 32px;display:flex;flex-direction:column;gap:12px;}
+.trophy{text-align:center;}
+.trophy-ico{font-size:46px;display:block;margin-bottom:6px;}
+.f-kicker{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:4px;}
+.f-title{font-family:var(--font-d);font-size:22px;color:var(--dark);line-height:1.2;margin-bottom:4px;}
+.f-intro{font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:4px;}
+
+.summary-dark{background:var(--dark);border-radius:var(--r);padding:16px 20px;position:relative;overflow:hidden;}
+.summary-dark::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 100% 0%,rgba(42,157,143,.2) 0%,transparent 55%);}
+.sd-label{font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:10px;position:relative;}
+.sd-list{list-style:none;display:flex;flex-direction:column;gap:8px;position:relative;}
+.sd-item{display:flex;align-items:flex-start;gap:10px;font-size:11.5px;color:rgba(255,255,255,.72);line-height:1.6;}
+.sd-dot{
+  width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.sd-item strong{color:rgba(255,255,255,.93);}
+
+.f-conclusion{border:1.5px solid rgba(42,157,143,.28);border-radius:11px;padding:12px 16px;font-size:12px;color:var(--text);line-height:1.68;}
+
+/* ── NAV ROW ── */
+.nav-row{padding:10px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.nav-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;border:2px solid var(--border);background:transparent;font-family:var(--font-b);font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;min-height:44px;}
+.nav-btn:hover:not(:disabled){border-color:var(--dark);color:var(--dark);background:var(--bg);}
+.nav-btn:disabled{opacity:.3;cursor:default;}
+.nav-btn.primary{background:var(--dark);color:#fff;border-color:var(--dark);}
+.nav-btn.primary:hover:not(:disabled){background:var(--dark2);border-color:var(--dark2);}
+.nav-dots{display:flex;gap:5px;}
+.ndot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .22s,width .22s;}
+.ndot.done{background:var(--c3);}
+.ndot.active{background:var(--dark);width:18px;border-radius:3px;}
+
+@media(max-width:840px){
+  body{padding:0;background:var(--bg);}
+  .canvas{width:100%;max-width:100%;max-height:none;border-radius:0;}
+  .h-inner,.prog-bar,.s-intro,.s-q,.s-final,.nav-row{padding-left:20px;padding-right:20px;}
+  .models-row,.q-models-mini{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="h-stripe"></div>
+    <div class="h-glow"></div>
+    <div class="h-inner">
+      <div class="h-embl">🏭</div>
+      <div class="h-meta">
+        <div class="h-course">Estadística para análisis de datos</div>
+        <div class="h-title">Modelos de Distribución Discreta en la Toma de Decisiones</div>
+        <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-bar">
+    <div class="prog-lbl">Progreso</div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-count" id="progCount">0 / 4</div>
+  </div>
+
+  <!-- SLIDES -->
+  <div class="content" id="contentArea">
+
+    <!-- SLIDE 0: INTRO -->
+    <div class="slide s-intro active" id="slide-0">
+      <div class="intro-kicker">🏭 Caso de estudio — Planta Logística</div>
+      <div class="intro-hed">Control de Procesos en una Planta Logística</div>
+
+      <div class="case-dark">
+        <div class="cd-tag">Contexto — Centro de distribución</div>
+        <div class="cd-title">CASO: CONTROL DE PROCESOS EN UNA PLANTA LOGÍSTICA</div>
+        <div class="cd-events">
+          <div class="cd-event">
+            <div class="cde-num" style="background:var(--c1)">1</div>
+            <div class="cde-txt">Si un paquete específico sale a tiempo (evento único)</div>
+          </div>
+          <div class="cd-event">
+            <div class="cde-num" style="background:var(--c2)">2</div>
+            <div class="cde-txt">El número de paquetes dañados en un lote de 20 (donde cada uno tiene la misma probabilidad de falla)</div>
+          </div>
+          <div class="cd-event">
+            <div class="cde-num" style="background:var(--c3)">3</div>
+            <div class="cde-txt">La revisión de una caja pequeña de 10 suministros donde se extraen 3 sin devolverlos</div>
+          </div>
+          <div class="cd-event">
+            <div class="cde-num" style="background:var(--c4)">4</div>
+            <div class="cde-txt">El promedio de camiones que llegan al muelle de carga cada hora.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 models reference -->
+      <div class="models-row">
+        <div class="model-pill" style="--mp-color:var(--c1)">
+          <div class="mp-ico">🪙</div>
+          <div class="mp-name">Bernoulli</div>
+          <div class="mp-key">1 ensayo · 2 resultados</div>
+        </div>
+        <div class="model-pill" style="--mp-color:var(--c2)">
+          <div class="mp-ico">📦</div>
+          <div class="mp-name">Binomial</div>
+          <div class="mp-key">n ensayos independientes</div>
+        </div>
+        <div class="model-pill" style="--mp-color:var(--c3)">
+          <div class="mp-ico">🎓</div>
+          <div class="mp-name">Hipergeométrica</div>
+          <div class="mp-key">sin reemplazo</div>
+        </div>
+        <div class="model-pill" style="--mp-color:var(--c4)">
+          <div class="mp-ico">🚛</div>
+          <div class="mp-name">Poisson</div>
+          <div class="mp-key">tasa en intervalo continuo</div>
+        </div>
+      </div>
+
+      <div class="intro-inst">
+        <div style="font-size:17px;flex-shrink:0;">💡</div>
+        <div>Se invita a poner en práctica los conceptos de distribuciones discretas mediante la resolución del caso que se presenta.</div>
+      </div>
+    </div>
+
+    <!-- SLIDES 1–4 built by JS -->
+
+    <!-- SLIDE 5: FINAL -->
+    <div class="slide s-final" id="slide-5">
+      <div class="trophy">
+        <span class="trophy-ico">🏆</span>
+        <div class="f-kicker">Actividad completada</div>
+        <div class="f-title">¡Felicidades!</div>
+        <div class="f-intro">Ha concluido con éxito el análisis de modelos de distribución discreta. En esta sesión ha reforzado competencias clave para la modelación estadística:</div>
+      </div>
+
+      <div class="summary-dark">
+        <div class="sd-label">Competencias reforzadas</div>
+        <ul class="sd-list">
+          <li class="sd-item">
+            <div class="sd-dot" style="background:rgba(232,72,85,.2);border:1.5px solid var(--c1);color:var(--c1);">🪙</div>
+            <div><strong>Fundamentación (Bernoulli):</strong> Reconoció la unidad mínima de probabilidad para eventos binarios.</div>
+          </li>
+          <li class="sd-item">
+            <div class="sd-dot" style="background:rgba(244,162,97,.2);border:1.5px solid var(--c2);color:var(--c2);">📦</div>
+            <div><strong>Independencia (Binomial):</strong> Comprendió que cuando la probabilidad es constante y los ensayos son independientes, podemos predecir conteos en grandes grupos.</div>
+          </li>
+          <li class="sd-item">
+            <div class="sd-dot" style="background:rgba(42,157,143,.2);border:1.5px solid var(--c3);color:var(--c3);">🎓</div>
+            <div><strong>Dependencia (Hipergeométrica):</strong> Identificó la importancia del muestreo "sin reemplazo", donde cada decisión afecta la probabilidad de la siguiente.</div>
+          </li>
+          <li class="sd-item">
+            <div class="sd-dot" style="background:rgba(69,123,157,.2);border:1.5px solid var(--c4);color:var(--c4);">🚛</div>
+            <div><strong>Continuidad de Eventos (Poisson):</strong> Aprendió a modelar flujos y tasas de llegada en intervalos de tiempo o espacio.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="f-conclusion">Este dominio técnico le permitirá seleccionar el modelo que mejor se ajuste a la realidad de sus datos, garantizando que sus predicciones y análisis tengan un respaldo matemático sólido.</div>
+    </div>
+
+  </div>
+
+  <!-- NAV ROW -->
+  <div class="nav-row">
+    <button class="nav-btn" id="btnPrev" onclick="navigate(-1)" disabled>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Anterior
+    </button>
+    <div class="nav-dots" id="navDots"></div>
+    <button class="nav-btn primary" id="btnNext" onclick="navigate(1)">
+      Comenzar
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+</div>
+
+<script>
+/* ── DATA ── */
+const QS = [
+  {
+    icon:'🪙', topic:'Distribución de Bernoulli — Evento único binario',
+    eventIco:'📦', eventNum:1, eventColor:'var(--c1)',
+    eventTxt:'<strong>Evento 1:</strong> Si un paquete específico sale a tiempo — solo dos resultados posibles, evaluado una sola vez.',
+    highlight:0,
+    models:[
+      {ico:'🪙',name:'Bernoulli',color:'var(--c1)'},
+      {ico:'📦',name:'Binomial', color:'var(--c2)'},
+      {ico:'🎓',name:'Hipergeom.',color:'var(--c3)'},
+      {ico:'🚛',name:'Poisson',  color:'var(--c4)'}
+    ],
+    text:'Para el primer evento (¿un paquete específico salió a tiempo?), donde solo existen dos resultados posibles y se evalúa una sola vez, ¿qué modelo es el más básico para representarlo?',
+    options:[
+      {text:'Distribución de Bernoulli, definida por un éxito (p) y un fracaso (1 − p).',correct:true},
+      {text:'Distribución de Poisson, que cuenta eventos en un tiempo determinado.',correct:false}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!',body:'Bernoulli es la "pieza base" para experimentos de un solo ensayo con respuesta sí/no.',icon:'✅'},
+      wrong:  {verdict:'Incorrecto', body:'Poisson se usa para conteos en intervalos, no para un único intento de éxito o fracaso.',icon:'❌'}
+    }
+  },
+  {
+    icon:'📦', topic:'Distribución Binomial — n ensayos independientes',
+    eventIco:'📦', eventNum:2, eventColor:'var(--c2)',
+    eventTxt:'<strong>Evento 2:</strong> El número de paquetes dañados en un lote de 20, donde cada uno tiene la misma probabilidad de falla.',
+    highlight:1,
+    models:[
+      {ico:'🪙',name:'Bernoulli',color:'var(--c1)'},
+      {ico:'📦',name:'Binomial', color:'var(--c2)'},
+      {ico:'🎓',name:'Hipergeom.',color:'var(--c3)'},
+      {ico:'🚛',name:'Poisson',  color:'var(--c4)'}
+    ],
+    text:'Si queremos contar cuántos paquetes salen dañados en un grupo de 20 ensayos independientes con probabilidad constante, ¿qué modelo debemos aplicar?',
+    options:[
+      {text:'Distribución Hipergeométrica.',correct:false},
+      {text:'Distribución Binomial.',correct:true}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!', body:'La Binomial cuenta éxitos en n ensayos independientes con probabilidad constante.',icon:'✅'},
+      wrong:  {verdict:'Incorrecto',body:'Este modelo asume que las probabilidades cambian al no haber reemplazo.',icon:'❌'}
+    }
+  },
+  {
+    icon:'🎓', topic:'Distribución Hipergeométrica — Sin reemplazo',
+    eventIco:'📦', eventNum:3, eventColor:'var(--c3)',
+    eventTxt:'<strong>Evento 3:</strong> La revisión de una caja de 10 suministros donde se extraen 3 sin devolverlos.',
+    highlight:2,
+    models:[
+      {ico:'🪙',name:'Bernoulli',color:'var(--c1)'},
+      {ico:'📦',name:'Binomial', color:'var(--c2)'},
+      {ico:'🎓',name:'Hipergeom.',color:'var(--c3)'},
+      {ico:'🚛',name:'Poisson',  color:'var(--c4)'}
+    ],
+    text:'En la revisión de los 10 suministros, si extraemos 3 sin reemplazo para ver cuántos son defectuosos, ¿por qué no podemos usar la Binomial?',
+    options:[
+      {text:'Porque al no devolver los productos, los ensayos dejan de ser independientes (Hipergeométrica).',correct:true},
+      {text:'Porque el tamaño de la muestra es muy pequeño para una distribución de probabilidad.',correct:false}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!', body:'Sin reemplazo, la probabilidad de éxito cambia en cada extracción, rompiendo el principio de la Binomial.',icon:'✅'},
+      wrong:  {verdict:'Incorrecto',body:'El tamaño de la muestra no impide el uso de distribuciones, solo define cuál usar.',icon:'❌'}
+    }
+  },
+  {
+    icon:'🚛', topic:'Distribución de Poisson — Tasa en intervalo continuo',
+    eventIco:'📦', eventNum:4, eventColor:'var(--c4)',
+    eventTxt:'<strong>Evento 4:</strong> El promedio de camiones que llegan al muelle de carga cada hora.',
+    highlight:3,
+    models:[
+      {ico:'🪙',name:'Bernoulli',color:'var(--c1)'},
+      {ico:'📦',name:'Binomial', color:'var(--c2)'},
+      {ico:'🎓',name:'Hipergeom.',color:'var(--c3)'},
+      {ico:'🚛',name:'Poisson',  color:'var(--c4)'}
+    ],
+    text:'Si el promedio de llegada es de 5 camiones por hora y queremos saber la probabilidad de que lleguen exactamente 8, ¿qué distribución es la adecuada?',
+    options:[
+      {text:'Distribución de Poisson, ya que mide eventos en un intervalo continuo (tiempo).',correct:true},
+      {text:'Distribución de Bernoulli, enfocada en un solo camión.',correct:false}
+    ],
+    fb:{
+      correct:{verdict:'¡Correcto!', body:'Poisson modela el número de eventos en un intervalo de tiempo con una tasa promedio constante (λ).',icon:'✅'},
+      wrong:  {verdict:'Incorrecto',body:'Bernoulli no puede manejar conteos múltiples en un intervalo de tiempo.',icon:'❌'}
+    }
+  }
+];
+
+/* ── STATE ── */
+const TOTAL = 6; // 0=intro, 1-4=qs, 5=final
+let cur = 0;
+const answered = new Array(4).fill(null);
+const LETS = ['A','B','C','D'];
+
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+/* ── BUILD SLIDES ── */
+function buildSlides(){
+  const area = document.getElementById('contentArea');
+  const fin  = document.getElementById('slide-5');
+  QS.forEach((q,qi)=>{
+    const shuffled = shuffle(q.options);
+    const div = document.createElement('div');
+    div.className='slide s-q'; div.id=`slide-${qi+1}`;
+
+    // model mini bar
+    const miniModels = q.models.map((m,mi)=>`
+      <div class="qmm-box ${mi===q.highlight?'highlight':''}" style="--qmm-color:${m.color}">
+        <div class="qmm-ico">${m.ico}</div>
+        <div class="qmm-name">${m.name}</div>
+      </div>`).join('');
+
+    const opts = shuffled.map((o,idx)=>{
+      const L=LETS[idx];
+      return `<button class="opt" id="opt-${qi}-${idx}" onclick="pick(${qi},${idx},${o.correct})" data-correct="${o.correct}">
+        <div class="opt-lt">${L}</div>
+        <div class="opt-txt"><strong>Opción ${L}:</strong> ${o.text}</div>
+      </button>`;
+    }).join('');
+
+    div.innerHTML=`
+      <div class="q-toprow">
+        <div class="q-badge" style="background:${q.models[q.highlight].color}">${qi+1}</div>
+        <div class="q-meta">
+          <div class="q-label">Pregunta ${qi+1} de 4</div>
+          <div class="q-topic">${q.topic}</div>
+        </div>
+        <div class="q-ico">${q.icon}</div>
+      </div>
+      <div class="q-event-chip">
+        <div class="qec-ico">${q.eventIco}</div>
+        <div class="qec-txt">${q.eventTxt}</div>
+      </div>
+      <div class="q-models-mini">${miniModels}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="opts" id="opts-${qi}">${opts}</div>
+      <div class="fb-carta" id="fb-c-${qi}" style="--fb-col:var(--c3)">
+        <div class="fb-head">
+          <div class="fb-head-ico">${q.fb.correct.icon}</div>
+          <div><div class="fb-verdict">${q.fb.correct.verdict}</div><div class="fb-body">${q.fb.correct.body}</div></div>
+        </div>
+      </div>
+      <div class="fb-carta" id="fb-w-${qi}" style="--fb-col:var(--c1)">
+        <div class="fb-head">
+          <div class="fb-head-ico">${q.fb.wrong.icon}</div>
+          <div><div class="fb-verdict">${q.fb.wrong.verdict}</div><div class="fb-body">${q.fb.wrong.body}</div></div>
+        </div>
+      </div>`;
+    area.insertBefore(div, fin);
+  });
+}
+
+/* ── PICK ── */
+function pick(qi,idx,isCorrect){
+  if(answered[qi]!==null)return;
+  answered[qi]=isCorrect?'correct':'wrong';
+  document.getElementById(`opts-${qi}`).querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===idx){b.classList.add(isCorrect?'correct':'wrong');}
+    else if(!isCorrect&&b.dataset.correct==='true'){b.classList.add('correct');}
+    else{b.classList.add('neutral');}
+  });
+  document.getElementById(isCorrect?`fb-c-${qi}`:`fb-w-${qi}`).classList.add('show');
+  updateProg(); updateNav();
+}
+
+/* ── NAVIGATE ── */
+function navigate(dir){
+  const next=cur+dir;if(next<0||next>=TOTAL)return;
+  const c=document.getElementById(`slide-${cur}`);
+  c.classList.add('exit');c.classList.remove('active');
+  setTimeout(()=>c.classList.remove('exit'),360);
+  cur=next;
+  const n=document.getElementById(`slide-${cur}`);
+  n.classList.add('active');n.scrollTop=0;
+  updateNav();updateProg();
+}
+
+function updateProg(){
+  const done=answered.filter(a=>a!==null).length;
+  document.getElementById('progFill').style.width=(done/4*100)+'%';
+  document.getElementById('progCount').textContent=done+' / 4';
+}
+
+function updateNav(){
+  document.getElementById('btnPrev').disabled=cur===0;
+  const dots=document.getElementById('navDots');
+  dots.innerHTML='';
+  for(let i=1;i<=4;i++){
+    const d=document.createElement('div');
+    d.className='ndot'+(i===cur?' active':answered[i-1]!==null?' done':'');
+    dots.appendChild(d);
+  }
+  const btn=document.getElementById('btnNext');
+  if(cur===0){
+    btn.innerHTML='Comenzar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    btn.disabled=false;btn.onclick=()=>navigate(1);
+  } else if(cur>=1&&cur<=4){
+    const done=answered[cur-1]!==null;
+    const isLast=cur===4;
+    btn.innerHTML=(isLast&&done?'Ver resultados':'Siguiente')+' <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    btn.disabled=!done;btn.onclick=()=>navigate(1);
+  } else if(cur===5){
+    btn.innerHTML='Reintentar <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/></svg>';
+    btn.disabled=false;btn.onclick=restart;
+  }
+}
+
+function restart(){
+  for(let i=0;i<4;i++)answered[i]=null;
+  for(let i=1;i<=4;i++){const s=document.getElementById(`slide-${i}`);if(s)s.remove();}
+  buildSlides();
+  document.getElementById('slide-5').classList.remove('active');
+  cur=0;document.getElementById('slide-0').classList.add('active');
+  document.getElementById('btnNext').onclick=()=>navigate(1);
+  updateNav();updateProg();
+}
+
+buildSlides();updateNav();updateProg();
+</script>
+</body>
+</html>
