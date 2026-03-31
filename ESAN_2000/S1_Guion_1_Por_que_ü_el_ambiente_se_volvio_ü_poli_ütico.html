@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Por qué el ambiente se volvió político?</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5c37;
+            --secondary: #2d7aed;
+            --accent: #f39c12;
+            --danger: #c0392b;
+            --purple: #8e44ad;
+            --bg-light: #f8fafc;
+            --text-main: #1e293b;
+            --white: #ffffff;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.4;
+            overflow: hidden;
+        }
+
+        /* Contenedor Principal (Ancho fijo 800px) */
+        .main-container {
+            width: 800px;
+            height: 600px;
+            background: var(--bg-light);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Header Estilo Dashboard */
+        header {
+            background: var(--white);
+            padding: 20px;
+            border-bottom: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-group h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+
+        .title-group p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .instruction {
+            background: #eef2ff;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Grid de Nodos */
+        .content-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            padding: 20px;
+            align-items: center;
+        }
+
+        .timeline-node {
+            height: 380px;
+            background: var(--white);
+            border-top: 6px solid var(--node-color);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .timeline-node:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .node-year {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--node-color);
+            margin-bottom: 5px;
+        }
+
+        .node-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .node-icon {
+            font-size: 40px;
+            color: var(--node-color);
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .node-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        .btn-more {
+            margin-top: auto;
+            background: var(--node-color);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Colores por Nodo */
+        .node-1960 { --node-color: var(--primary); }
+        .node-1970 { --node-color: var(--accent); }
+        .node-1980 { --node-color: var(--danger); }
+        .node-1990 { --node-color: var(--secondary); }
+        .node-2010 { --node-color: var(--purple); }
+
+        /* Modales */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--white);
+            width: 80%;
+            max-height: 80%;
+            padding: 40px;
+            position: relative;
+            animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-header {
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--active-color);
+        }
+
+        .modal-body ul {
+            list-style: none;
+        }
+
+        .modal-body li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+        }
+
+        .modal-body li::before {
+            content: "check_circle";
+            font-family: 'Material Icons';
+            position: absolute;
+            left: 0;
+            color: var(--active-color);
+        }
+
+        /* Footer / Referencias */
+        footer {
+            padding: 10px 20px;
+            background: #f1f5f9;
+            font-size: 0.7rem;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Clases de Imagen Placeholder */
+        .imagen {
+            background: #e2e8f0;
+            border: 2px dashed #cbd5e1;
+            padding: 15px;
+            text-align: center;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .main-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+            .content-grid {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+            body { overflow: auto; }
+            .timeline-node { height: auto; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <header>
+        <div class="title-group">
+            <h1>¿Por qué el ambiente se volvió político?</h1>
+            <p>Explore los hitos que marcaron la transformación del ambiente en un tema político global</p>
+        </div>
+        <div class="instruction">
+            <span class="material-icons">touch_app</span>
+            Haga clic en cada ítem para visualizar la información.
+        </div>
+    </header>
+
+    <main class="content-grid">
+        <article class="timeline-node node-1960" onclick="openModal('1960s')">
+            <div class="node-year">1960s</div>
+            <div class="node-tag">Ciencia y conservación</div>
+            <div class="node-icon"><span class="material-icons" style="font-size: 48px;">biotech</span></div>
+            <div class="node-title">Crisis ecológica</div>
+            <div class="btn-more">Ver detalles</div>
+        </article>
+
+        <article class="timeline-node node-1970" onclick="openModal('1970s')">
+            <div class="node-year">1970s</div>
+            <div class="node-tag">Auge petrolero</div>
+            <div class="node-icon"><span class="material-icons" style="font-size: 48px;">oil_barrel</span></div>
+            <div class="node-title">Cumbre de la Tierra (1972)</div>
+            <div class="btn-more">Ver detalles</div>
+        </article>
+
+        <article class="timeline-node node-1980" onclick="openModal('1980s')">
+            <div class="node-year">1980s</div>
+            <div class="node-tag">Desastre nuclear</div>
+            <div class="node-icon"><span class="material-icons" style="font-size: 48px;">warning</span></div>
+            <div class="node-title">Chernóbil (1986)</div>
+            <div class="btn-more">Ver detalles</div>
+        </article>
+
+        <article class="timeline-node node-1990" onclick="openModal('1990s')">
+            <div class="node-year">1990s</div>
+            <div class="node-tag">Internacionalización</div>
+            <div class="node-icon"><span class="material-icons" style="font-size: 48px;">public</span></div>
+            <div class="node-title">Protocolo de Kioto (1997)</div>
+            <div class="btn-more">Ver detalles</div>
+        </article>
+
+        <article class="timeline-node node-2010" onclick="openModal('2010s')">
+            <div class="node-year">2010s</div>
+            <div class="node-tag">Conflictos Globales</div>
+            <div class="node-icon"><span class="material-icons" style="font-size: 48px;">gavel</span></div>
+            <div class="node-title">Acuerdo de París (2015)</div>
+            <div class="btn-more">Ver detalles</div>
+        </article>
+    </main>
+
+    <footer>
+        <div>Elaboración propia</div>
+        <div>Referencia: Brundtland, G. H. (1987). <i>Nuestro futuro común</i>. ONU.</div>
+    </footer>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <span class="material-icons close-modal" onclick="closeModal()">cancel</span>
+            <div id="modalData"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const data = {
+        '1960s': {
+            title: '1960s: Ciencia y conservación',
+            color: '#1a5c37',
+            items: [
+                'Crisis ecológica',
+                'Conciencia global sobre la contaminación y la pérdida de biodiversidad',
+                'Emergen movimientos ambientalistas'
+            ]
+        },
+        '1970s': {
+            title: '1970s: Auge petrolero y Cumbre de la Tierra (1972)',
+            color: '#f39c12',
+            items: [
+                'Crisis energética de 1973 y geopolítica del petróleo',
+                'Estocolmo 1972: primera cumbre global sobre medio ambiente'
+            ]
+        },
+        '1980s': {
+            title: '1980s: Desastre de Chernóbil (1986)',
+            color: '#c0392b',
+            items: [
+                'Desastre nuclear y pérdida de confianza en la modernidad industrial',
+                '“Nuestro Futuro Común” (1987): surge el desarrollo sostenible (ONU)'
+            ]
+        },
+        '1990s': {
+            title: '1990s: Internacionalización del ambiente',
+            color: '#2d7aed',
+            items: [
+                'Protocolo de Kioto (1997)',
+                'Disputas por las emisiones entre países industrializados y en desarrollo'
+            ]
+        },
+        '2010s': {
+            title: '2010s: Conflictos socioambientales',
+            color: '#8e44ad',
+            items: [
+                'El ambiente como política global',
+                'Acuerdo de París (2015)',
+                'El cambio climático en el centro de las negociaciones internacionales'
+            ]
+        }
+    };
+
+    function openModal(year) {
+        const overlay = document.getElementById('modalOverlay');
+        const container = document.getElementById('modalData');
+        const content = data[year];
+        
+        document.documentElement.style.setProperty('--active-color', content.color);
+        
+        container.innerHTML = `
+            <div class="modal-header">
+                <h2>${content.title}</h2>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    ${content.items.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        
+        overlay.style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    // Cerrar al hacer clic fuera del contenido
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+
+</body>
+</html>

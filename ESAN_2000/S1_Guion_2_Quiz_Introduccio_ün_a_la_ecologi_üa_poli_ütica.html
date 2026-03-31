@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Introducción a la ecología política</title>
+    <style>
+        :root {
+            --primary: #00b4d8;
+            --secondary: #ff6b35;
+            --accent: #2ec4b6;
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --text: #212529;
+            --text-light: #6c757d;
+            --success: #06d6a0;
+            --error: #ef476f;
+            --warning: #ffd166;
+            --border: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --geo-alpha: 0.03;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .container {
+            width: 800px;
+            min-height: 500px;
+            max-height: 800px;
+            margin: 0 auto;
+            background: var(--surface);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 40px var(--shadow);
+        }
+
+        .geometric-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .geo-shape {
+            position: absolute;
+            opacity: var(--geo-alpha);
+        }
+
+        .triangle1 {
+            width: 0;
+            height: 0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-bottom: 173px solid var(--primary);
+            top: -50px;
+            right: -50px;
+            transform: rotate(15deg);
+        }
+
+        .triangle2 {
+            width: 0;
+            height: 0;
+            border-left: 60px solid transparent;
+            border-right: 60px solid transparent;
+            border-top: 104px solid var(--secondary);
+            bottom: 50px;
+            left: -20px;
+            transform: rotate(-10deg);
+        }
+
+        .hexagon {
+            width: 80px;
+            height: 46px;
+            background: var(--accent);
+            position: absolute;
+            top: 40%;
+            left: 5%;
+        }
+
+        .hexagon:before,
+        .hexagon:after {
+            content: "";
+            position: absolute;
+            width: 0;
+            border-left: 40px solid transparent;
+            border-right: 40px solid transparent;
+        }
+
+        .hexagon:before {
+            bottom: 100%;
+            border-bottom: 23px solid var(--accent);
+        }
+
+        .hexagon:after {
+            top: 100%;
+            border-top: 23px solid var(--accent);
+        }
+
+        .circle {
+            width: 120px;
+            height: 120px;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            bottom: 10%;
+            right: 10%;
+            opacity: 0.1;
+        }
+
+        header {
+            position: relative;
+            z-index: 1;
+            padding: 24px 32px;
+            background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 14px;
+            max-width: 600px;
+        }
+
+        .progress-container {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            padding: 24px 32px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 16px;
+            align-content: center;
+        }
+
+        .question-node {
+            aspect-ratio: 1;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 4px 4px 0 var(--shadow);
+        }
+
+        .question-node:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--primary);
+            border-color: var(--primary);
+        }
+
+        .question-node.correct {
+            border-color: var(--success);
+            background: rgba(6, 214, 160, 0.05);
+        }
+
+        .question-node.incorrect {
+            border-color: var(--error);
+            background: rgba(239, 71, 111, 0.05);
+        }
+
+        .question-node.answered {
+            cursor: default;
+        }
+
+        .node-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .node-status {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .question-node.correct .node-status {
+            color: var(--success);
+        }
+
+        .question-node.incorrect .node-status {
+            color: var(--error);
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            display: none;
+        }
+
+        .question-node.correct .checkmark {
+            display: block;
+            color: var(--success);
+        }
+
+        .question-node.incorrect .checkmark {
+            display: block;
+            color: var(--error);
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            width: 100%;
+            max-width: 600px;
+            max-height: 600px;
+            border: 2px solid var(--text);
+            box-shadow: 8px 8px 0 var(--text);
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--border);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--error);
+            color: white;
+            border-color: var(--error);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .question-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .option-btn {
+            padding: 20px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--primary);
+        }
+
+        .option-btn.true {
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .option-btn.false {
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+            opacity: 0.6;
+        }
+
+        .option-btn.selected.correct {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .option-btn.selected.incorrect {
+            background: var(--error);
+            color: white;
+            border-color: var(--error);
+        }
+
+        .feedback {
+            padding: 16px;
+            border-left: 4px solid;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .feedback.correct {
+            background: rgba(6, 214, 160, 0.1);
+            border-color: var(--success);
+        }
+
+        .feedback.incorrect {
+            background: rgba(239, 71, 111, 0.1);
+            border-color: var(--error);
+        }
+
+        .feedback-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .feedback.correct .feedback-title {
+            color: var(--success);
+        }
+
+        .feedback.incorrect .feedback-title {
+            color: var(--error);
+        }
+
+        .feedback-text {
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .final-modal .modal-body {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .trophy {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--warning), var(--secondary));
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .final-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .final-message {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 500px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.2) 100%);
+            padding: 0 4px;
+            font-weight: 600;
+        }
+
+        .reset-btn {
+            margin-top: 16px;
+            padding: 16px 32px;
+            background: var(--text);
+            color: white;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--primary);
+        }
+
+        .complete-badge {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 12px 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+            display: none;
+            z-index: 50;
+        }
+
+        .complete-badge.show {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @media (max-width: 800px) {
+            .container {
+                width: 100%;
+                max-height: none;
+                height: auto;
+            }
+            
+            main {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, 1fr);
+                padding: 16px;
+            }
+            
+            .modal-overlay {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="geometric-bg">
+            <div class="geo-shape triangle1"></div>
+            <div class="geo-shape triangle2"></div>
+            <div class="geo-shape hexagon"></div>
+            <div class="geo-shape circle"></div>
+        </div>
+
+        <header>
+            <h1>
+                <span class="icon">?</span>
+                Quiz: Introducción a la ecología política
+            </h1>
+            <p class="subtitle">
+                Analice cada enunciado y determine si es verdadero o falso. Considere los fundamentos de la ecología política, la relación entre sociedad y naturaleza y el carácter político de los problemas ambientales.
+            </p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="progress-text" id="progressText">0/10</span>
+            </div>
+        </header>
+
+        <main id="questionGrid">
+            <!-- Generated by JS -->
+        </main>
+
+        <div class="complete-badge" id="completeBadge">
+            ¡Quiz Completado!
+        </div>
+
+        <!-- Question Modal -->
+        <div class="modal-overlay" id="questionModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <span class="badge" id="modalBadge">Pregunta 1</span>
+                    </div>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="question-text" id="questionText"></div>
+                    <div class="options">
+                        <button class="option-btn true" id="btnTrue" onclick="answerQuestion(true)">Verdadero</button>
+                        <button class="option-btn false" id="btnFalse" onclick="answerQuestion(false)">Falso</button>
+                    </div>
+                    <div class="feedback" id="feedbackBox">
+                        <div class="feedback-title" id="feedbackTitle"></div>
+                        <div class="feedback-text" id="feedbackText"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Modal -->
+        <div class="modal-overlay final-modal" id="finalModal">
+            <div class="modal">
+                <div class="modal-body">
+                    <div class="trophy">★</div>
+                    <h2 class="final-title">¡Excelente trabajo!</h2>
+                    <div class="final-message">
+                        <p>Las respuestas seleccionadas evidencian una comprensión adecuada de los fundamentos de la ecología política y de su enfoque crítico sobre la relación entre sociedad, naturaleza y poder.</p>
+                        <br>
+                        <p><span class="highlight">Ahora ya lo sabe, si toda ecología es política, entonces estudiar el ambiente es, en el fondo, debatir qué mundo queremos construir y quién tiene derecho a decidirlo.</span></p>
+                        <br>
+                        <p><strong>¡Felicidades! Estamos listas y listos para continuar con nuestro aprendizaje.</strong></p>
+                    </div>
+                    <button class="reset-btn" onclick="resetQuiz()">Reiniciar Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                text: "La naturaleza fue considerada históricamente como un objeto político central desde el inicio de las ciencias ambientales.",
+                correct: false,
+                feedbackCorrect: "Durante mucho tiempo, desde una visión hegemónica occidental, la naturaleza fue entendida como un elemento inerte y técnico, no como un espacio de disputas políticas.",
+                feedbackIncorrect: "La politización del ambiente es un proceso relativamente reciente, vinculado a la crisis ecológica y a debates sobre poder y desigualdad."
+            },
+            {
+                text: "La crisis ecológica de las décadas de 1960 y 1970 contribuyó a cuestionar el modelo de desarrollo industrial dominante.",
+                correct: true,
+                feedbackCorrect: "Eventos como la industrialización acelerada, el auge petrolero y desastres tecnológicos evidenciaron límites ambientales y sociales del modelo de desarrollo.",
+                feedbackIncorrect: "Precisamente estas crisis dieron origen a cuestionamientos profundos sobre la modernidad capitalista."
+            },
+            {
+                text: "Los problemas ambientales pueden analizarse únicamente desde la ciencia, sin involucrar dimensiones políticas.",
+                correct: false,
+                feedbackCorrect: "La ecología política sostiene que los problemas ambientales implican decisiones humanas, intereses, disputas y relaciones de poder.",
+                feedbackIncorrect: "Reducir el ambiente a lo técnico invisibiliza quién decide, quién gana y quién pierde."
+            },
+            {
+                text: "El cambio climático pasó de ser un tema científico a convertirse en un asunto de política internacional.",
+                correct: true,
+                feedbackCorrect: "Acuerdos como el Protocolo de Kioto y el Acuerdo de París muestran que el clima es hoy un tema de negociación política global.",
+                feedbackIncorrect: "Actualmente, el cambio climático involucra compromisos, conflictos y responsabilidades diferenciadas entre Estados."
+            },
+            {
+                text: "La ecología política estudia la relación entre ecología y poder, así como los conflictos derivados del uso y control de los recursos.",
+                correct: true,
+                feedbackCorrect: "Este campo analiza cómo las relaciones sociales y de poder influyen en el manejo ambiental.",
+                feedbackIncorrect: "La ecología política no se limita a lo ecológico, sino que incorpora lo social, económico y político."
+            },
+            {
+                text: "El término \"ecología política\" se popularizó en 1972 con los aportes de Eric Wolf.",
+                correct: true,
+                feedbackCorrect: "Aunque el término fue acuñado antes, Wolf lo posicionó como una categoría analítica clave al vincular ambiente y poder.",
+                feedbackIncorrect: "La popularización del concepto está directamente ligada a estos debates de los años setenta."
+            },
+            {
+                text: "La ecología política sostiene que la relación entre sociedad y naturaleza es independiente y no se condicionan mutuamente.",
+                correct: false,
+                feedbackCorrect: "Uno de sus supuestos centrales es la relación dialéctica entre sociedad y naturaleza.",
+                feedbackIncorrect: "Separar radicalmente lo social de lo natural reproduce el \"naturalismo bipolar\" que la ecología política critica."
+            },
+            {
+                text: "Desde la ecología política, el ambiente es considerado una construcción social además de un sistema natural.",
+                correct: true,
+                feedbackCorrect: "El ambiente es \"producido\" socialmente por decisiones políticas, económicas, históricas y culturales.",
+                feedbackIncorrect: "Ignorar esta producción social impide comprender desigualdades y conflictos ambientales."
+            },
+            {
+                text: "Los conflictos socioambientales son vistos únicamente como fenómenos negativos que deben evitarse.",
+                correct: false,
+                feedbackCorrect: "La ecología política reconoce que los conflictos también producen ciudadanía, resistencia y nuevas formas de acción política.",
+                feedbackIncorrect: "Verlos solo como problemas elimina su potencial transformador."
+            },
+            {
+                text: "La ecología política busca identificar alternativas institucionales y políticas públicas frente a los conflictos ambientales.",
+                correct: true,
+                feedbackCorrect: "No es solo un campo crítico, sino también propositivo, orientado a soluciones y alternativas.",
+                feedbackIncorrect: "El análisis sin propuestas limitaría su alcance político y académico."
+            }
+        ];
+
+        let currentQuestion = null;
+        let answers = new Array(10).fill(null);
+        let answeredCount = 0;
+
+        function init() {
+            const grid = document.getElementById('questionGrid');
+            grid.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const node = document.createElement('div');
+                node.className = 'question-node';
+                node.onclick = () => openQuestion(index);
+                node.innerHTML = `
+                    <span class="node-number">${index + 1}</span>
+                    <span class="node-status" id="status-${index}">Pendiente</span>
+                    <svg class="checkmark" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                `;
+                grid.appendChild(node);
+            });
+        }
+
+        function openQuestion(index) {
+            if (answers[index] !== null) return; // Already answered
+            
+            currentQuestion = index;
+            const q = questions[index];
+            
+            document.getElementById('modalBadge').textContent = `Pregunta ${index + 1}`;
+            document.getElementById('questionText').textContent = q.text;
+            document.getElementById('feedbackBox').className = 'feedback';
+            document.getElementById('btnTrue').className = 'option-btn true';
+            document.getElementById('btnFalse').className = 'option-btn false';
+            document.getElementById('btnTrue').disabled = false;
+            document.getElementById('btnFalse').disabled = false;
+            
+            document.getElementById('questionModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('questionModal').classList.remove('active');
+            currentQuestion = null;
+        }
+
+        function answerQuestion(answer) {
+            if (currentQuestion === null) return;
+            
+            const q = questions[currentQuestion];
+            const isCorrect = answer === q.correct;
+            answers[currentQuestion] = isCorrect;
+            answeredCount++;
+            
+            // Update UI
+            const btnTrue = document.getElementById('btnTrue');
+            const btnFalse = document.getElementById('btnFalse');
+            
+            btnTrue.disabled = true;
+            btnFalse.disabled = true;
+            
+            if (answer === true) {
+                btnTrue.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+                if (!isCorrect) btnFalse.classList.add('correct');
+            } else {
+                btnFalse.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+                if (!isCorrect) btnTrue.classList.add('correct');
+            }
+            
+            // Show feedback
+            const feedbackBox = document.getElementById('feedbackBox');
+            const feedbackTitle = document.getElementById('feedbackTitle');
+            const feedbackText = document.getElementById('feedbackText');
+            
+            feedbackBox.className = `feedback show ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedbackTitle.textContent = isCorrect ? 'Correcta' : 'Incorrecta';
+            feedbackText.textContent = isCorrect ? q.feedbackCorrect : q.feedbackIncorrect;
+            
+            // Update node
+            const node = document.getElementById('questionGrid').children[currentQuestion];
+            node.classList.add('answered', isCorrect ? 'correct' : 'incorrect');
+            document.getElementById(`status-${currentQuestion}`).textContent = isCorrect ? 'Correcta' : 'Incorrecta';
+            
+            // Update progress
+            updateProgress();
+            
+            // Check if complete
+            if (answeredCount === 10) {
+                setTimeout(() => {
+                    closeModal();
+                    setTimeout(() => {
+                        document.getElementById('finalModal').classList.add('active');
+                        document.getElementById('completeBadge').classList.add('show');
+                    }, 300);
+                }, 2000);
+            }
+        }
+
+        function updateProgress() {
+            const percent = (answeredCount / 10) * 100;
+            document.getElementById('progressFill').style.width = `${percent}%`;
+            document.getElementById('progressText').textContent = `${answeredCount}/10`;
+        }
+
+        function resetQuiz() {
+            answers = new Array(10).fill(null);
+            answeredCount = 0;
+            document.getElementById('finalModal').classList.remove('active');
+            document.getElementById('completeBadge').classList.remove('show');
+            updateProgress();
+            init();
+        }
+
+        // Close modal on outside click
+        document.getElementById('questionModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
