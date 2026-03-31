@@ -1,332 +1,684 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Identificación de Gráficos Estadísticos</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --c1:#E84855;--c2:#F4A261;--c3:#2A9D8F;--c4:#457B9D;
-  --dark:#1A1A2E;--dark2:#16213E;
-  --surface:#FFFFFF;--bg:#F8F5F0;--text:#2C2C3E;
-  --muted:#6B6B80;--border:#E2DED8;
-  --correct:var(--c3);--wrong:var(--c1);
-  --font-d:'Playfair Display',serif;--font-b:'DM Sans',sans-serif;
-  --r:14px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:var(--font-b);
-  background:
-    radial-gradient(ellipse at 18% 12%,rgba(232,72,85,.13) 0%,transparent 50%),
-    radial-gradient(ellipse at 82% 88%,rgba(69,123,157,.13) 0%,transparent 50%),
-    #EDE9E1;
-  min-height:100vh;display:flex;justify-content:center;
-  align-items:flex-start;padding:28px 16px;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identificación de Gráficos Estadísticos</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --c1: #E84855;
+      --c2: #F4A261;
+      --c3: #2A9D8F;
+      --c4: #457B9D;
+      --dark: #1A1A2E;
+      --dark2: #16213E;
+      --surface: #FFFFFF;
+      --bg: #F8F5F0;
+      --text: #2C2C3E;
+      --muted: #6B6B80;
+      --border: #E2DED8;
+      --correct: var(--c3);
+      --wrong: var(--c1);
+      --font-d: 'Playfair Display', serif;
+      --font-b: 'DM Sans', sans-serif;
+      --r: 14px;
+    }
 
-/* ── CANVAS ── */
-.canvas{
-  width:800px;min-height:500px;max-height:800px;
-  background:var(--bg);border-radius:28px;overflow:hidden;
-  box-shadow:0 24px 80px rgba(26,26,46,.22);
-  display:flex;flex-direction:column;
-}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ── HEADER ── */
-.header{background:var(--dark);flex-shrink:0;position:relative;overflow:hidden;}
-.h-stripe{height:4px;background:linear-gradient(90deg,var(--c1) 0%,var(--c2) 33%,var(--c3) 66%,var(--c4) 100%);}
-.h-glow{position:absolute;inset:0;
-  background:radial-gradient(ellipse at 12% 110%,rgba(232,72,85,.2) 0%,transparent 55%),
-             radial-gradient(ellipse at 88% -10%,rgba(69,123,157,.2) 0%,transparent 55%);
-  pointer-events:none;}
-.h-inner{position:relative;z-index:1;padding:18px 36px 16px;display:flex;align-items:center;gap:18px;}
-.h-embl{
-  width:50px;height:50px;flex-shrink:0;border-radius:14px;
-  background:linear-gradient(135deg,rgba(244,162,97,.22),rgba(232,72,85,.18));
-  border:1.5px solid rgba(255,255,255,.12);
-  display:flex;align-items:center;justify-content:center;font-size:22px;
-}
-.h-meta{flex:1;}
-.h-course{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:4px;}
-.h-title{font-family:var(--font-d);font-size:20px;color:#fff;line-height:1.2;letter-spacing:-.02em;}
-.h-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;}
-.h-sub strong{color:rgba(255,255,255,.75);font-weight:600;}
+    body {
+      font-family: var(--font-b);
+      background:
+        radial-gradient(ellipse at 18% 12%, rgba(232, 72, 85, .13) 0%, transparent 50%),
+        radial-gradient(ellipse at 82% 88%, rgba(69, 123, 157, .13) 0%, transparent 50%),
+        #EDE9E1;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+     
+    }
 
-/* ── INSTRUCTION BAND ── */
-.inst-band{
-  background:linear-gradient(90deg,rgba(244,162,97,.1),rgba(232,72,85,.07));
-  border-bottom:1px solid rgba(244,162,97,.2);
-  padding:10px 36px;flex-shrink:0;
-  display:flex;align-items:center;gap:10px;
-}
-.inst-band svg{flex-shrink:0;opacity:.7;}
-.inst-txt{font-size:12px;color:var(--text);}
-.inst-txt strong{color:var(--dark);}
+    /* ── CANVAS ── */
+    .canvas {
+      width: 800px;
+      max-height: 800px;
+      background: var(--bg);
 
-/* ── SCORE ROW ── */
-.score-row{
-  background:var(--dark2);padding:8px 36px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-}
-.score-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.38);}
-.score-dots{display:flex;gap:6px;}
-.sdot{
-  width:28px;height:8px;border-radius:4px;
-  background:rgba(255,255,255,.1);transition:background .3s;
-}
-.sdot.done{background:var(--c3);}
-.sdot.wrong-dot{background:var(--c1);}
-.check-btn{
-  background:var(--c3);color:#fff;border:none;
-  padding:7px 18px;border-radius:8px;font-family:var(--font-b);
-  font-size:11px;font-weight:700;cursor:pointer;
-  transition:opacity .2s,transform .15s;letter-spacing:.04em;
-  display:flex;align-items:center;gap:6px;min-height:34px;
-}
-.check-btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px);}
-.check-btn:disabled{opacity:.4;cursor:default;transform:none;}
-.reset-btn{
-  background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;
-  padding:7px 14px;border-radius:8px;font-family:var(--font-b);
-  font-size:11px;font-weight:600;cursor:pointer;
-  transition:background .18s;min-height:34px;display:none;
-  align-items:center;gap:5px;
-}
-.reset-btn:hover{background:rgba(255,255,255,.18);}
-.reset-btn.show{display:flex;}
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(26, 26, 46, .22);
+      display: flex;
+      flex-direction: column;
+    }
 
-/* ── MAIN AREA ── */
-.main-area{
-  flex:1;overflow-y:auto;overflow-x:hidden;
-  padding:20px 36px 22px;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
-  position:relative;
-}
+    /* ── HEADER ── */
+    .header {
+      background: var(--dark);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* ── MATCH LAYOUT ── */
-.match-layout{
-  display:grid;
-  grid-template-columns:1fr 44px 1fr;
-  gap:0;
-  align-items:center;
-  position:relative;
-}
+    .h-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, var(--c1) 0%, var(--c2) 33%, var(--c3) 66%, var(--c4) 100%);
+    }
 
-/* LEFT column — graphs */
-.col-left{display:flex;flex-direction:column;gap:10px;}
-/* RIGHT column — descriptions */
-.col-right{display:flex;flex-direction:column;gap:10px;}
-/* MIDDLE — SVG canvas for lines */
-.col-mid{position:relative;align-self:stretch;}
-#lineCanvas{
-  position:absolute;top:0;left:0;
-  width:100%;height:100%;
-  overflow:visible;pointer-events:none;
-}
+    .h-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 12% 110%, rgba(232, 72, 85, .2) 0%, transparent 55%),
+        radial-gradient(ellipse at 88% -10%, rgba(69, 123, 157, .2) 0%, transparent 55%);
+      pointer-events: none;
+    }
 
-/* ── GRAPH CARD ── */
-.graph-card{
-  background:var(--surface);border-radius:var(--r);
-  border:2px solid var(--border);
-  overflow:hidden;cursor:pointer;
-  transition:border-color .2s,box-shadow .2s,transform .15s;
-}
-.graph-card:hover{
-  border-color:var(--dark);
-  box-shadow:0 6px 22px rgba(26,26,46,.1);
-  transform:translateX(-2px);
-}
-.graph-card.selected{border-color:var(--c2);box-shadow:0 0 0 3px rgba(244,162,97,.25);}
-.graph-card.matched-ok{border-color:var(--c3);box-shadow:0 0 0 3px rgba(42,157,143,.18);cursor:default;}
-.graph-card.matched-fail{border-color:var(--c1);box-shadow:0 0 0 3px rgba(232,72,85,.18);cursor:default;}
-.gc-label{
-  background:var(--dark);padding:7px 14px;
-  font-size:9px;font-weight:700;letter-spacing:.14em;
-  text-transform:uppercase;color:rgba(255,255,255,.5);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.gc-badge{
-  width:20px;height:20px;border-radius:5px;
-  background:rgba(255,255,255,.1);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;color:#fff;
-}
-.gc-svg-wrap{padding:10px 12px 8px;display:flex;justify-content:center;}
-.gc-svg-wrap svg{width:100%;max-width:220px;height:72px;}
+    .h-inner {
+      position: relative;
+      z-index: 1;
+      padding: 18px 36px 16px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
 
-/* ── DESCRIPTION CARD ── */
-.desc-card{
-  background:var(--surface);border-radius:var(--r);
-  border:2px solid var(--border);
-  padding:12px 15px;cursor:pointer;
-  transition:border-color .2s,box-shadow .2s,transform .15s;
-  min-height:44px;display:flex;align-items:center;gap:10px;
-}
-.desc-card:hover{
-  border-color:var(--dark);
-  box-shadow:0 6px 22px rgba(26,26,46,.1);
-  transform:translateX(2px);
-}
-.desc-card.selected{border-color:var(--c2);box-shadow:0 0 0 3px rgba(244,162,97,.25);}
-.desc-card.matched-ok{border-color:var(--c3);box-shadow:0 0 0 3px rgba(42,157,143,.18);cursor:default;}
-.desc-card.matched-fail{border-color:var(--c1);box-shadow:0 0 0 3px rgba(232,72,85,.18);cursor:default;}
-.dc-letter{
-  width:28px;height:28px;border-radius:8px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:800;color:#fff;
-  transition:background .2s;
-}
-.dc-txt{font-size:12px;color:var(--text);line-height:1.55;}
+    .h-embl {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(244, 162, 97, .22), rgba(232, 72, 85, .18));
+      border: 1.5px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
 
-/* ── CONNECTOR DOTS ── */
-.conn-dot{
-  width:12px;height:12px;border-radius:50%;
-  border:2.5px solid var(--border);background:var(--bg);
-  transition:border-color .2s,background .2s;cursor:pointer;
-  margin:0 auto;flex-shrink:0;
-}
-.graph-card.selected .conn-dot-right,
-.conn-dot.active{border-color:var(--c2);background:var(--c2);}
+    .h-meta {
+      flex: 1;
+    }
 
-/* ── FEEDBACK SECTION ── */
-.feedback-section{
-  background:var(--dark);border-radius:var(--r);
-  padding:18px 22px;margin-top:16px;
-  position:relative;overflow:hidden;
-  opacity:0;transform:translateY(12px);
-  transition:opacity .38s ease,transform .38s ease;
-  pointer-events:none;
-}
-.feedback-section.show{opacity:1;transform:translateY(0);pointer-events:auto;}
-.feedback-section::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 90% 10%,rgba(42,157,143,.2) 0%,transparent 60%);
-}
-.fb-lbl{font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--c3);margin-bottom:10px;position:relative;}
-.fb-body{font-size:12.5px;color:rgba(255,255,255,.78);line-height:1.72;position:relative;}
-.fb-body strong{color:rgba(255,255,255,.95);}
+    .h-course {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .38);
+      margin-bottom: 4px;
+    }
 
-/* ── REF BAR ── */
-.ref-bar{
-  background:var(--dark);padding:8px 36px;flex-shrink:0;
-  font-size:10px;color:rgba(255,255,255,.3);font-style:italic;
-}
+    .h-title {
+      font-family: var(--font-d);
+      font-size: 20px;
+      color: #fff;
+      line-height: 1.2;
+      letter-spacing: -.02em;
+    }
 
-/* ── RESULT OVERLAY ── */
-.result-bar{
-  background:rgba(26,26,46,.96);backdrop-filter:blur(4px);
-  padding:10px 36px;flex-shrink:0;
-  display:none;align-items:center;justify-content:space-between;
-  border-top:1px solid rgba(255,255,255,.06);
-}
-.result-bar.show{display:flex;}
-.rb-score{font-family:var(--font-d);font-size:20px;color:#fff;}
-.rb-score span{color:var(--c3);}
-.rb-msg{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;}
+    .h-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .45);
+      margin-top: 4px;
+    }
 
-@media(max-width:840px){
-  body{padding:0;background:var(--bg);}
-  .canvas{width:100%;max-width:100%;max-height:none;border-radius:0;}
-  .h-inner,.inst-band,.score-row,.main-area,.ref-bar,.result-bar{padding-left:20px;padding-right:20px;}
-  .match-layout{grid-template-columns:1fr 32px 1fr;}
-}
-</style>
+    .h-sub strong {
+      color: rgba(255, 255, 255, .75);
+      font-weight: 600;
+    }
+
+    /* ── INSTRUCTION BAND ── */
+    .inst-band {
+      background: linear-gradient(90deg, rgba(244, 162, 97, .1), rgba(232, 72, 85, .07));
+      border-bottom: 1px solid rgba(244, 162, 97, .2);
+      padding: 10px 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .inst-band svg {
+      flex-shrink: 0;
+      opacity: .7;
+    }
+
+    .inst-txt {
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .inst-txt strong {
+      color: var(--dark);
+    }
+
+    /* ── SCORE ROW ── */
+    .score-row {
+      background: var(--dark2);
+      padding: 8px 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .score-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .38);
+    }
+
+    .score-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .sdot {
+      width: 28px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .1);
+      transition: background .3s;
+    }
+
+    .sdot.done {
+      background: var(--c3);
+    }
+
+    .sdot.wrong-dot {
+      background: var(--c1);
+    }
+
+    .check-btn {
+      background: var(--c3);
+      color: #fff;
+      border: none;
+      padding: 7px 18px;
+      border-radius: 8px;
+      font-family: var(--font-b);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      letter-spacing: .04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+    }
+
+    .check-btn:hover:not(:disabled) {
+      opacity: .88;
+      transform: translateY(-1px);
+    }
+
+    .check-btn:disabled {
+      opacity: .4;
+      cursor: default;
+      transform: none;
+    }
+
+    .reset-btn {
+      background: rgba(255, 255, 255, .1);
+      color: rgba(255, 255, 255, .7);
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-family: var(--font-b);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .18s;
+      min-height: 34px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .reset-btn:hover {
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .reset-btn.show {
+      display: flex;
+    }
+
+    /* ── MAIN AREA ── */
+    .main-area {
+      flex: 1;
+      overflow-y: auto;
+  
+      padding: 2px 36px 2px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+      position: relative;
+    }
+
+    /* ── MATCH LAYOUT ── */
+    .match-layout {
+      display: grid;
+      grid-template-columns: 1fr 44px 1fr;
+      gap: 0;
+      align-items: center;
+      position: relative;
+    }
+
+    /* LEFT column — graphs */
+    .col-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* RIGHT column — descriptions */
+    .col-right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* MIDDLE — SVG canvas for lines */
+    .col-mid {
+      position: relative;
+      align-self: stretch;
+    }
+
+    #lineCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    /* ── GRAPH CARD ── */
+    .graph-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 2px solid var(--border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+    }
+
+    .graph-card:hover {
+      border-color: var(--dark);
+      box-shadow: 0 6px 22px rgba(26, 26, 46, .1);
+      transform: translateX(-2px);
+    }
+
+    .graph-card.selected {
+      border-color: var(--c2);
+      box-shadow: 0 0 0 3px rgba(244, 162, 97, .25);
+    }
+
+    .graph-card.matched-ok {
+      border-color: var(--c3);
+      box-shadow: 0 0 0 3px rgba(42, 157, 143, .18);
+      cursor: default;
+    }
+
+    .graph-card.matched-fail {
+      border-color: var(--c1);
+      box-shadow: 0 0 0 3px rgba(232, 72, 85, .18);
+      cursor: default;
+    }
+
+    .gc-label {
+      background: var(--dark);
+      padding: 7px 14px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .gc-badge {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, .1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .gc-svg-wrap {
+      padding: 10px 12px 8px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .gc-svg-wrap svg {
+      width: 100%;
+      max-width: 220px;
+      height: 72px;
+    }
+
+    /* ── DESCRIPTION CARD ── */
+    .desc-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 2px solid var(--border);
+      padding: 12px 15px;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .desc-card:hover {
+      border-color: var(--dark);
+      box-shadow: 0 6px 22px rgba(26, 26, 46, .1);
+      transform: translateX(2px);
+    }
+
+    .desc-card.selected {
+      border-color: var(--c2);
+      box-shadow: 0 0 0 3px rgba(244, 162, 97, .25);
+    }
+
+    .desc-card.matched-ok {
+      border-color: var(--c3);
+      box-shadow: 0 0 0 3px rgba(42, 157, 143, .18);
+      cursor: default;
+    }
+
+    .desc-card.matched-fail {
+      border-color: var(--c1);
+      box-shadow: 0 0 0 3px rgba(232, 72, 85, .18);
+      cursor: default;
+    }
+
+    .dc-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      transition: background .2s;
+    }
+
+    .dc-txt {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    /* ── CONNECTOR DOTS ── */
+    .conn-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2.5px solid var(--border);
+      background: var(--bg);
+      transition: border-color .2s, background .2s;
+      cursor: pointer;
+      margin: 0 auto;
+      flex-shrink: 0;
+    }
+
+    .graph-card.selected .conn-dot-right,
+    .conn-dot.active {
+      border-color: var(--c2);
+      background: var(--c2);
+    }
+
+    /* ── FEEDBACK SECTION ── */
+    .feedback-section {
+      background: var(--dark);
+      border-radius: var(--r);
+      padding: 18px 22px;
+      margin-top: 16px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .38s ease, transform .38s ease;
+      pointer-events: none;
+    }
+
+    .feedback-section.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .feedback-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 90% 10%, rgba(42, 157, 143, .2) 0%, transparent 60%);
+    }
+
+    .fb-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--c3);
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .fb-body {
+      font-size: 12.5px;
+      color: rgba(255, 255, 255, .78);
+      line-height: 1.72;
+      position: relative;
+    }
+
+    .fb-body strong {
+      color: rgba(255, 255, 255, .95);
+    }
+
+    /* ── REF BAR ── */
+    .ref-bar {
+      background: var(--dark);
+      padding: 8px 36px;
+      flex-shrink: 0;
+      font-size: 10px;
+      color: rgba(255, 255, 255, .3);
+      font-style: italic;
+    }
+
+    /* ── RESULT OVERLAY ── */
+    .result-bar {
+      background: rgba(26, 26, 46, .96);
+      backdrop-filter: blur(4px);
+      padding: 10px 36px;
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .result-bar.show {
+      display: flex;
+    }
+
+    .rb-score {
+      font-family: var(--font-d);
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .rb-score span {
+      color: var(--c3);
+    }
+
+    .rb-msg {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .6);
+      margin-top: 2px;
+    }
+
+    @media(max-width:840px) {
+      body {
+        padding: 0;
+        background: var(--bg);
+      }
+
+      .canvas {
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        border-radius: 0;
+      }
+
+      .h-inner,
+      .inst-band,
+      .score-row,
+      .main-area,
+      .ref-bar,
+      .result-bar {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .match-layout {
+        grid-template-columns: 1fr 32px 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="canvas">
+  <div class="canvas">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="h-stripe"></div>
-    <div class="h-glow"></div>
-    <div class="h-inner">
-      <div class="h-embl">📊</div>
-      <div class="h-meta">
-        <div class="h-course">Estadística para Análisis de Datos</div>
-        <div class="h-title">Identificación de Gráficos Estadísticos</div>
-        <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+    <!-- HEADER -->
+    <div class="header">
+      <div class="h-stripe"></div>
+      <div class="h-glow"></div>
+      <div class="h-inner">
+        <div class="h-embl">📊</div>
+        <div class="h-meta">
+          <div class="h-course">Estadística para Análisis de Datos</div>
+          <div class="h-title">Identificación de Gráficos Estadísticos</div>
+          <div class="h-sub">Docente: <strong>Juan Carlos Torres Díaz</strong></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- INSTRUCTION -->
-  <div class="inst-band">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-    <div class="inst-txt"><strong>Instrucción:</strong> Relacione cada tipo de gráfico con la descripción que mejor corresponde a su uso en el análisis de datos. Haga clic en un gráfico y luego en la descripción para unirlos.</div>
-  </div>
-
-  <!-- SCORE ROW -->
-  <div class="score-row">
-    <div>
-      <div class="score-lbl">Conexiones</div>
-      <div class="score-dots" id="scoreDots">
-        <div class="sdot" id="dot-0"></div>
-        <div class="sdot" id="dot-1"></div>
-        <div class="sdot" id="dot-2"></div>
-        <div class="sdot" id="dot-3"></div>
+    <!-- INSTRUCTION -->
+    <div class="inst-band">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4m0 4h.01" />
+      </svg>
+      <div class="inst-txt"><strong>Instrucción:</strong> Relacione cada tipo de gráfico con la descripción que mejor
+        corresponde a su uso en el análisis de datos. Haga clic en un gráfico y luego en la descripción para unirlos.
       </div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="reset-btn" id="resetBtn" onclick="resetGame()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        Reintentar
-      </button>
-      <button class="check-btn" id="checkBtn" onclick="checkAnswers()" disabled>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-        Verificar
-      </button>
-    </div>
-  </div>
 
-  <!-- MAIN AREA -->
-  <div class="main-area" id="mainArea">
-    <div class="match-layout" id="matchLayout">
-
-      <!-- LEFT: Graph cards -->
-      <div class="col-left" id="colLeft"></div>
-
-      <!-- MIDDLE: Line canvas -->
-      <div class="col-mid" id="colMid">
-        <svg id="lineCanvas" xmlns="http://www.w3.org/2000/svg"></svg>
+    <!-- SCORE ROW -->
+    <div class="score-row">
+      <div>
+        <div class="score-lbl">Conexiones</div>
+        <div class="score-dots" id="scoreDots">
+          <div class="sdot" id="dot-0"></div>
+          <div class="sdot" id="dot-1"></div>
+          <div class="sdot" id="dot-2"></div>
+          <div class="sdot" id="dot-3"></div>
+        </div>
       </div>
-
-      <!-- RIGHT: Description cards -->
-      <div class="col-right" id="colRight"></div>
-
-    </div>
-
-    <!-- FEEDBACK -->
-    <div class="feedback-section" id="feedbackSection">
-      <div class="fb-lbl">✦ Retroalimentación</div>
-      <div class="fb-body">
-        Los gráficos estadísticos son herramientas fundamentales en el análisis exploratorio de datos. El <strong>histograma</strong> permite observar la distribución de variables cuantitativas, mientras que el <strong>diagrama de caja y bigotes</strong> resume la información destacando la mediana y la dispersión. Por su parte, el <strong>gráfico de barras</strong> es ideal para variables categóricas, y el <strong>gráfico de dispersión</strong> facilita identificar relaciones entre dos variables numéricas. Reconocer correctamente cada tipo de gráfico permite interpretar datos de manera más efectiva y tomar decisiones basadas en evidencia.
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="reset-btn" id="resetBtn" onclick="resetGame()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+          </svg>
+          Reintentar
+        </button>
+        <button class="check-btn" id="checkBtn" onclick="checkAnswers()" disabled>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          Verificar
+        </button>
       </div>
     </div>
-  </div>
 
-  <!-- RESULT BAR -->
-  <div class="result-bar" id="resultBar">
-    <div>
-      <div class="rb-score" id="rbScore"></div>
-      <div class="rb-msg" id="rbMsg"></div>
+    <!-- MAIN AREA -->
+    <div class="main-area" id="mainArea">
+      <div class="match-layout" id="matchLayout">
+
+        <!-- LEFT: Graph cards -->
+        <div class="col-left" id="colLeft"></div>
+
+        <!-- MIDDLE: Line canvas -->
+        <div class="col-mid" id="colMid">
+          <svg id="lineCanvas" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+
+        <!-- RIGHT: Description cards -->
+        <div class="col-right" id="colRight"></div>
+
+      </div>
+
+      <!-- FEEDBACK -->
+      <div class="feedback-section" id="feedbackSection">
+        <div class="fb-lbl">✦ Retroalimentación</div>
+        <div class="fb-body">
+          Los gráficos estadísticos son herramientas fundamentales en el análisis exploratorio de datos. El
+          <strong>histograma</strong> permite observar la distribución de variables cuantitativas, mientras que el
+          <strong>diagrama de caja y bigotes</strong> resume la información destacando la mediana y la dispersión. Por
+          su parte, el <strong>gráfico de barras</strong> es ideal para variables categóricas, y el <strong>gráfico de
+            dispersión</strong> facilita identificar relaciones entre dos variables numéricas. Reconocer correctamente
+          cada tipo de gráfico permite interpretar datos de manera más efectiva y tomar decisiones basadas en evidencia.
+        </div>
+      </div>
     </div>
+
+    <!-- RESULT BAR -->
+    <div class="result-bar" id="resultBar">
+      <div>
+        <div class="rb-score" id="rbScore"></div>
+        <div class="rb-msg" id="rbMsg"></div>
+      </div>
+    </div>
+
+    <!-- REFERENCE -->
+    <div class="ref-bar">Elaboración propia.</div>
+
   </div>
 
-  <!-- REFERENCE -->
-  <div class="ref-bar">Elaboración propia.</div>
-
-</div>
-
-<script>
-/* ────────── DATA ────────── */
-const GRAPHS = [
-  {
-    id:1, num:'1', label:'Gráfico 1', correct:'b',
-    color:'var(--c2)',
-    name:'Histograma',
-    svg:`<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
+  <script>
+    /* ────────── DATA ────────── */
+    const GRAPHS = [
+      {
+        id: 1, num: '1', label: 'Gráfico 1', correct: 'b',
+        color: 'var(--c2)',
+        name: 'Histograma',
+        svg: `<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
       <rect x="14" y="48" width="26" height="18" rx="2" fill="rgba(244,162,97,.35)" stroke="#F4A261" stroke-width="1.5"/>
       <rect x="44" y="30" width="26" height="36" rx="2" fill="rgba(244,162,97,.55)" stroke="#F4A261" stroke-width="1.5"/>
       <rect x="74" y="12" width="26" height="54" rx="2" fill="rgba(244,162,97,.75)" stroke="#F4A261" stroke-width="1.5"/>
@@ -336,12 +688,12 @@ const GRAPHS = [
       <line x1="10" y1="66" x2="200" y2="66" stroke="#E2DED8" stroke-width="1.2"/>
       <line x1="10" y1="10" x2="10" y2="66" stroke="#E2DED8" stroke-width="1.2"/>
     </svg>`
-  },
-  {
-    id:2, num:'2', label:'Gráfico 2', correct:'c',
-    color:'var(--c3)',
-    name:'Caja y Bigotes',
-    svg:`<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
+      },
+      {
+        id: 2, num: '2', label: 'Gráfico 2', correct: 'c',
+        color: 'var(--c3)',
+        name: 'Caja y Bigotes',
+        svg: `<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
       <line x1="30" y1="36" x2="60" y2="36" stroke="#2A9D8F" stroke-width="1.8"/>
       <rect x="60" y="20" width="100" height="32" rx="3" fill="rgba(42,157,143,.18)" stroke="#2A9D8F" stroke-width="2"/>
       <line x1="110" y1="20" x2="110" y2="52" stroke="#2A9D8F" stroke-width="2.2"/>
@@ -351,12 +703,12 @@ const GRAPHS = [
       <circle cx="204" cy="36" r="4" fill="none" stroke="#E84855" stroke-width="1.8"/>
       <line x1="10" y1="62" x2="210" y2="62" stroke="#E2DED8" stroke-width="1"/>
     </svg>`
-  },
-  {
-    id:3, num:'3', label:'Gráfico 3', correct:'d',
-    color:'var(--c1)',
-    name:'Gráfico de Barras',
-    svg:`<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
+      },
+      {
+        id: 3, num: '3', label: 'Gráfico 3', correct: 'd',
+        color: 'var(--c1)',
+        name: 'Gráfico de Barras',
+        svg: `<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
       <rect x="18" y="28" width="30" height="34" rx="3" fill="rgba(232,72,85,.55)" stroke="#E84855" stroke-width="1.5"/>
       <rect x="60" y="14" width="30" height="48" rx="3" fill="rgba(232,72,85,.75)" stroke="#E84855" stroke-width="1.5"/>
       <rect x="102" y="36" width="30" height="26" rx="3" fill="rgba(232,72,85,.4)" stroke="#E84855" stroke-width="1.5"/>
@@ -368,12 +720,12 @@ const GRAPHS = [
       <line x1="10" y1="62" x2="210" y2="62" stroke="#E2DED8" stroke-width="1.2"/>
       <line x1="10" y1="10" x2="10" y2="62" stroke="#E2DED8" stroke-width="1.2"/>
     </svg>`
-  },
-  {
-    id:4, num:'4', label:'Gráfico 4', correct:'a',
-    color:'var(--c4)',
-    name:'Dispersión',
-    svg:`<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
+      },
+      {
+        id: 4, num: '4', label: 'Gráfico 4', correct: 'a',
+        color: 'var(--c4)',
+        name: 'Dispersión',
+        svg: `<svg viewBox="0 0 220 72" xmlns="http://www.w3.org/2000/svg">
       <line x1="10" y1="62" x2="210" y2="62" stroke="#E2DED8" stroke-width="1.2"/>
       <line x1="10" y1="10" x2="10" y2="62" stroke="#E2DED8" stroke-width="1.2"/>
       <path d="M18,54 Q60,40 100,28 Q150,14 202,8" fill="none" stroke="rgba(69,123,157,.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
@@ -391,251 +743,252 @@ const GRAPHS = [
       <circle cx="112" cy="38" r="3.5" fill="#457B9D" opacity=".6"/>
       <circle cx="142" cy="30" r="3.5" fill="#457B9D" opacity=".6"/>
     </svg>`
-  }
-];
+      }
+    ];
 
-const DESCRIPTIONS_ORIG = [
-  {id:'a', color:'var(--c4)', txt:'Representa la relación entre dos variables cuantitativas mediante puntos en un plano.'},
-  {id:'b', color:'var(--c2)', txt:'Muestra la distribución de una variable cuantitativa agrupando los datos en intervalos.'},
-  {id:'c', color:'var(--c3)', txt:'Resume la mediana, cuartiles, dispersión y posibles valores atípicos de los datos.'},
-  {id:'d', color:'var(--c1)', txt:'Representa frecuencias de variables cualitativas o categóricas.'}
-];
+    const DESCRIPTIONS_ORIG = [
+      { id: 'a', color: 'var(--c4)', txt: 'Representa la relación entre dos variables cuantitativas mediante puntos en un plano.' },
+      { id: 'b', color: 'var(--c2)', txt: 'Muestra la distribución de una variable cuantitativa agrupando los datos en intervalos.' },
+      { id: 'c', color: 'var(--c3)', txt: 'Resume la mediana, cuartiles, dispersión y posibles valores atípicos de los datos.' },
+      { id: 'd', color: 'var(--c1)', txt: 'Representa frecuencias de variables cualitativas o categóricas.' }
+    ];
 
-/* ────────── STATE ────────── */
-let descriptions = [];   // shuffled order shown
-let selectedGraph = null; // graph id
-let selectedDesc  = null; // desc id
-let connections   = {};   // graphId -> descId
-let checked       = false;
+    /* ────────── STATE ────────── */
+    let descriptions = [];   // shuffled order shown
+    let selectedGraph = null; // graph id
+    let selectedDesc = null; // desc id
+    let connections = {};   // graphId -> descId
+    let checked = false;
 
-function shuffle(a){
-  const r=[...a];
-  for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}
-  return r;
-}
+    function shuffle(a) {
+      const r = [...a];
+      for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[r[i], r[j]] = [r[j], r[i]]; }
+      return r;
+    }
 
-/* ────────── BUILD ────────── */
-function build(){
-  descriptions = shuffle(DESCRIPTIONS_ORIG);
-  connections = {};
-  selectedGraph = null;
-  selectedDesc  = null;
-  checked = false;
+    /* ────────── BUILD ────────── */
+    function build() {
+      descriptions = shuffle(DESCRIPTIONS_ORIG);
+      connections = {};
+      selectedGraph = null;
+      selectedDesc = null;
+      checked = false;
 
-  // Left column
-  const left = document.getElementById('colLeft');
-  left.innerHTML = '';
-  GRAPHS.forEach(g => {
-    const div = document.createElement('div');
-    div.className = 'graph-card';
-    div.id = `gc-${g.id}`;
-    div.setAttribute('data-id', g.id);
-    div.innerHTML = `
+      // Left column
+      const left = document.getElementById('colLeft');
+      left.innerHTML = '';
+      GRAPHS.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'graph-card';
+        div.id = `gc-${g.id}`;
+        div.setAttribute('data-id', g.id);
+        div.innerHTML = `
       <div class="gc-label">
         <span>Gráfico ${g.num}</span>
         <div class="gc-badge">${g.num}</div>
       </div>
       <div class="gc-svg-wrap">${g.svg}</div>`;
-    div.addEventListener('click', () => pickGraph(g.id));
-    left.appendChild(div);
-  });
+        div.addEventListener('click', () => pickGraph(g.id));
+        left.appendChild(div);
+      });
 
-  // Right column
-  const right = document.getElementById('colRight');
-  right.innerHTML = '';
-  descriptions.forEach(d => {
-    const div = document.createElement('div');
-    div.className = 'desc-card';
-    div.id = `dc-${d.id}`;
-    div.setAttribute('data-id', d.id);
-    div.innerHTML = `
+      // Right column
+      const right = document.getElementById('colRight');
+      right.innerHTML = '';
+      descriptions.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'desc-card';
+        div.id = `dc-${d.id}`;
+        div.setAttribute('data-id', d.id);
+        div.innerHTML = `
       <div class="dc-letter" style="background:${d.color}">
         ${d.id.toUpperCase()}
       </div>
       <div class="dc-txt">${d.txt}</div>`;
-    div.addEventListener('click', () => pickDesc(d.id));
-    right.appendChild(div);
-  });
+        div.addEventListener('click', () => pickDesc(d.id));
+        right.appendChild(div);
+      });
 
-  updateScoreDots();
-  updateCheckBtn();
-  document.getElementById('lineCanvas').innerHTML = '';
-  document.getElementById('feedbackSection').classList.remove('show');
-  document.getElementById('resultBar').classList.remove('show');
-  document.getElementById('checkBtn').disabled = true;
-  document.getElementById('resetBtn').classList.remove('show');
-  drawLines();
-}
-
-/* ────────── PICK ────────── */
-function pickGraph(id){
-  if(checked) return;
-  // If already matched, deselect
-  if(connections[id]){
-    // Allow removal before checking
-    delete connections[id];
-    drawLines();
-    updateScoreDots();
-    updateCheckBtn();
-    clearSelections();
-    return;
-  }
-  clearSelections();
-  selectedGraph = id;
-  document.getElementById(`gc-${id}`).classList.add('selected');
-  tryConnect();
-}
-
-function pickDesc(id){
-  if(checked) return;
-  // If already matched, allow removal
-  const existingGraph = Object.keys(connections).find(k => connections[k] === id);
-  if(existingGraph){
-    delete connections[existingGraph];
-    drawLines();
-    updateScoreDots();
-    updateCheckBtn();
-    clearSelections();
-    return;
-  }
-  clearSelections();
-  selectedDesc = id;
-  document.getElementById(`dc-${id}`).classList.add('selected');
-  tryConnect();
-}
-
-function tryConnect(){
-  if(selectedGraph !== null && selectedDesc !== null){
-    connections[selectedGraph] = selectedDesc;
-    clearSelections();
-    drawLines();
-    updateScoreDots();
-    updateCheckBtn();
-  }
-}
-
-function clearSelections(){
-  selectedGraph = null;
-  selectedDesc  = null;
-  document.querySelectorAll('.graph-card.selected,.desc-card.selected').forEach(el => el.classList.remove('selected'));
-}
-
-/* ────────── LINES ────────── */
-function drawLines(){
-  const svg = document.getElementById('lineCanvas');
-  svg.innerHTML = '';
-  const mid  = document.getElementById('colMid');
-  const midR = mid.getBoundingClientRect();
-
-  Object.entries(connections).forEach(([gid, did]) => {
-    const gc = document.getElementById(`gc-${gid}`);
-    const dc = document.getElementById(`dc-${did}`);
-    if(!gc || !dc) return;
-    const gcR = gc.getBoundingClientRect();
-    const dcR = dc.getBoundingClientRect();
-
-    const x1 = gcR.right - midR.left;
-    const y1 = gcR.top + gcR.height/2 - midR.top;
-    const x2 = dcR.left - midR.left;
-    const y2 = dcR.top + dcR.height/2 - midR.top;
-
-    let color = 'rgba(244,162,97,.7)';
-    if(checked){
-      const g = GRAPHS.find(g => g.id == gid);
-      color = g && g.correct === did ? 'rgba(42,157,143,.85)' : 'rgba(232,72,85,.85)';
+      updateScoreDots();
+      updateCheckBtn();
+      document.getElementById('lineCanvas').innerHTML = '';
+      document.getElementById('feedbackSection').classList.remove('show');
+      document.getElementById('resultBar').classList.remove('show');
+      document.getElementById('checkBtn').disabled = true;
+      document.getElementById('resetBtn').classList.remove('show');
+      drawLines();
     }
 
-    const cx1 = x1 + 18, cx2 = x2 - 18;
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',`M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke', color);
-    path.setAttribute('stroke-width','2.5');
-    path.setAttribute('stroke-linecap','round');
-
-    // end circles
-    [x1,y1,x2,y2].forEach((_,i,a)=>{
-      if(i%2===0){
-        const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        c.setAttribute('cx',a[i]);c.setAttribute('cy',a[i+1]);c.setAttribute('r','5');
-        c.setAttribute('fill',color);svg.appendChild(c);
+    /* ────────── PICK ────────── */
+    function pickGraph(id) {
+      if (checked) return;
+      // If already matched, deselect
+      if (connections[id]) {
+        // Allow removal before checking
+        delete connections[id];
+        drawLines();
+        updateScoreDots();
+        updateCheckBtn();
+        clearSelections();
+        return;
       }
-    });
-    svg.appendChild(path);
-  });
-}
-
-/* ────────── CHECK ────────── */
-function checkAnswers(){
-  if(Object.keys(connections).length < 4) return;
-  checked = true;
-  let correct = 0;
-
-  GRAPHS.forEach((g,i) => {
-    const gc = document.getElementById(`gc-${g.id}`);
-    const did = connections[g.id];
-    const dc = did ? document.getElementById(`dc-${did}`) : null;
-    const ok = g.correct === did;
-    if(ok) correct++;
-
-    gc.classList.remove('selected');
-    gc.classList.add(ok ? 'matched-ok' : 'matched-fail');
-    if(dc){
-      dc.classList.remove('selected');
-      dc.classList.add(ok ? 'matched-ok' : 'matched-fail');
+      clearSelections();
+      selectedGraph = id;
+      document.getElementById(`gc-${id}`).classList.add('selected');
+      tryConnect();
     }
-    // update dot
-    const dot = document.getElementById(`dot-${i}`);
-    dot.classList.remove('done');
-    dot.classList.add(ok ? 'done' : 'wrong-dot');
-  });
 
-  drawLines();
-  document.getElementById('checkBtn').disabled = true;
+    function pickDesc(id) {
+      if (checked) return;
+      // If already matched, allow removal
+      const existingGraph = Object.keys(connections).find(k => connections[k] === id);
+      if (existingGraph) {
+        delete connections[existingGraph];
+        drawLines();
+        updateScoreDots();
+        updateCheckBtn();
+        clearSelections();
+        return;
+      }
+      clearSelections();
+      selectedDesc = id;
+      document.getElementById(`dc-${id}`).classList.add('selected');
+      tryConnect();
+    }
 
-  // Result bar
-  const bar = document.getElementById('resultBar');
-  bar.classList.add('show');
-  const msgs = ['Sigue practicando — revisa la retroalimentación','¡Buen intento! Revisa los conceptos','¡Casi perfecto!','¡Perfecto! Todas correctas 🎉'];
-  document.getElementById('rbScore').innerHTML = `<span>${correct}</span> / 4 correctas`;
-  document.getElementById('rbMsg').textContent = msgs[correct] || msgs[3];
+    function tryConnect() {
+      if (selectedGraph !== null && selectedDesc !== null) {
+        connections[selectedGraph] = selectedDesc;
+        clearSelections();
+        drawLines();
+        updateScoreDots();
+        updateCheckBtn();
+      }
+    }
 
-  // Feedback
-  document.getElementById('feedbackSection').classList.add('show');
-  document.getElementById('resetBtn').classList.add('show');
+    function clearSelections() {
+      selectedGraph = null;
+      selectedDesc = null;
+      document.querySelectorAll('.graph-card.selected,.desc-card.selected').forEach(el => el.classList.remove('selected'));
+    }
 
-  // Scroll to feedback
-  setTimeout(() => {
-    document.getElementById('feedbackSection').scrollIntoView({behavior:'smooth', block:'nearest'});
-  }, 400);
-}
+    /* ────────── LINES ────────── */
+    function drawLines() {
+      const svg = document.getElementById('lineCanvas');
+      svg.innerHTML = '';
+      const mid = document.getElementById('colMid');
+      const midR = mid.getBoundingClientRect();
 
-function resetGame(){
-  build();
-}
+      Object.entries(connections).forEach(([gid, did]) => {
+        const gc = document.getElementById(`gc-${gid}`);
+        const dc = document.getElementById(`dc-${did}`);
+        if (!gc || !dc) return;
+        const gcR = gc.getBoundingClientRect();
+        const dcR = dc.getBoundingClientRect();
 
-/* ────────── HELPERS ────────── */
-function updateScoreDots(){
-  GRAPHS.forEach((g,i) => {
-    const dot = document.getElementById(`dot-${i}`);
-    dot.classList.remove('done','wrong-dot');
-    if(connections[g.id]) dot.classList.add('done');
-  });
-}
+        const x1 = gcR.right - midR.left;
+        const y1 = gcR.top + gcR.height / 2 - midR.top;
+        const x2 = dcR.left - midR.left;
+        const y2 = dcR.top + dcR.height / 2 - midR.top;
 
-function updateCheckBtn(){
-  document.getElementById('checkBtn').disabled = Object.keys(connections).length < 4;
-}
+        let color = 'rgba(244,162,97,.7)';
+        if (checked) {
+          const g = GRAPHS.find(g => g.id == gid);
+          color = g && g.correct === did ? 'rgba(42,157,143,.85)' : 'rgba(232,72,85,.85)';
+        }
 
-/* ────────── RESIZE: redraw lines ────────── */
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(drawLines, 80);
-});
+        const cx1 = x1 + 18, cx2 = x2 - 18;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', color);
+        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('stroke-linecap', 'round');
 
-/* ────────── INIT ────────── */
-build();
-</script>
+        // end circles
+        [x1, y1, x2, y2].forEach((_, i, a) => {
+          if (i % 2 === 0) {
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', a[i]); c.setAttribute('cy', a[i + 1]); c.setAttribute('r', '5');
+            c.setAttribute('fill', color); svg.appendChild(c);
+          }
+        });
+        svg.appendChild(path);
+      });
+    }
+
+    /* ────────── CHECK ────────── */
+    function checkAnswers() {
+      if (Object.keys(connections).length < 4) return;
+      checked = true;
+      let correct = 0;
+
+      GRAPHS.forEach((g, i) => {
+        const gc = document.getElementById(`gc-${g.id}`);
+        const did = connections[g.id];
+        const dc = did ? document.getElementById(`dc-${did}`) : null;
+        const ok = g.correct === did;
+        if (ok) correct++;
+
+        gc.classList.remove('selected');
+        gc.classList.add(ok ? 'matched-ok' : 'matched-fail');
+        if (dc) {
+          dc.classList.remove('selected');
+          dc.classList.add(ok ? 'matched-ok' : 'matched-fail');
+        }
+        // update dot
+        const dot = document.getElementById(`dot-${i}`);
+        dot.classList.remove('done');
+        dot.classList.add(ok ? 'done' : 'wrong-dot');
+      });
+
+      drawLines();
+      document.getElementById('checkBtn').disabled = true;
+
+      // Result bar
+      const bar = document.getElementById('resultBar');
+      bar.classList.add('show');
+      const msgs = ['Sigue practicando — revisa la retroalimentación', '¡Buen intento! Revisa los conceptos', '¡Casi perfecto!', '¡Perfecto! Todas correctas 🎉'];
+      document.getElementById('rbScore').innerHTML = `<span>${correct}</span> / 4 correctas`;
+      document.getElementById('rbMsg').textContent = msgs[correct] || msgs[3];
+
+      // Feedback
+      document.getElementById('feedbackSection').classList.add('show');
+      document.getElementById('resetBtn').classList.add('show');
+
+      // Scroll to feedback
+      setTimeout(() => {
+        document.getElementById('feedbackSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 400);
+    }
+
+    function resetGame() {
+      build();
+    }
+
+    /* ────────── HELPERS ────────── */
+    function updateScoreDots() {
+      GRAPHS.forEach((g, i) => {
+        const dot = document.getElementById(`dot-${i}`);
+        dot.classList.remove('done', 'wrong-dot');
+        if (connections[g.id]) dot.classList.add('done');
+      });
+    }
+
+    function updateCheckBtn() {
+      document.getElementById('checkBtn').disabled = Object.keys(connections).length < 4;
+    }
+
+    /* ────────── RESIZE: redraw lines ────────── */
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(drawLines, 80);
+    });
+
+    /* ────────── INIT ────────── */
+    build();
+  </script>
 </body>
+
 </html>
