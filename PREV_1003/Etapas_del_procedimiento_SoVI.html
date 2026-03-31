@@ -6,10 +6,10 @@
     <title>SoVI · Etapas del procedimiento | Visualización interactiva</title>
     <style>
         /* ============================================
-           DISEÑO OPTIMIZADO PARA CANVAS LMS
-           - Rendimiento: sin animaciones pesadas, transforms suaves
-           - Responsivo: scroll automático si el contenedor es pequeño
-           - Accesibilidad y estabilidad en Chrome/Edge
+           OPTIMIZADO PARA IFRAME DE CANVAS LMS
+           - Tamaño dinámico: se adapta al contenedor sin scroll forzado
+           - En escritorio: tamaño relativo (80vh máximo) en lugar de fijo 800px
+           - En móvil: scroll vertical suave si es necesario
            ============================================ */
         
         * {
@@ -35,41 +35,41 @@
             --accent-10: #0d9488;
             --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
-            --border-radius-card: 28px;
         }
 
         body {
-            background: #eef2ff;
+            background: linear-gradient(135deg, #eef2ff 0%, #f1f5f9 100%);
             font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-         
+            padding: 16px;
             margin: 0;
         }
 
-        /* Contenedor principal: tamaño fijo en escritorio, scroll automático si el viewport es pequeño */
+        /* Contenedor principal: se adapta al espacio disponible SIN scroll externo forzado */
         .sovi-wrapper {
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             background: transparent;
-        
-            /* IMPORTANTE: permitir scroll cuando el contenido interno exceda la altura */
+            border-radius: 32px;
+            /* IMPORTANTE: altura máxima relativa al viewport, pero sin overflow forzado */
+            max-height: 90vh;
             overflow-y: auto;
             overflow-x: hidden;
-            max-height: 95vh;
-            box-shadow: var(--shadow-md);
             scrollbar-width: thin;
         }
 
-        /* El contenedor circular SOLO en pantallas grandes */
+        /* Contenedor circular: en escritorio usa tamaño dinámico basado en el ancho */
         .sovi-container {
             position: relative;
-            width: 800px;
-            height: 800px;
-            
+            width: 100%;
+            /* Altura dinámica: en desktop se mantiene cuadrada pero con max-width */
+            aspect-ratio: 1 / 1;
+            max-width: 650px;
+            margin: 0 auto;
             background: radial-gradient(circle at 30% 30%, rgba(255,255,240,0.6), rgba(226, 232, 240, 0.9));
             border-radius: 50%;
             box-shadow: 0 20px 35px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.7);
@@ -82,27 +82,30 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 600px;
-            height: 600px;
+            width: 80%;
+            height: 80%;
             transform: translate(-50%, -50%);
             border: 1px solid rgba(100, 116, 139, 0.2);
             border-radius: 50%;
             pointer-events: none;
         }
         .orbit-line:nth-child(2) {
-            width: 500px;
-            height: 500px;
+            width: 66%;
+            height: 66%;
             border-color: rgba(8, 145, 178, 0.15);
         }
 
-        /* Núcleo central */
+        /* Núcleo central - tamaño relativo */
         .center-core {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 210px;
-            height: 210px;
+            width: 26%;
+            min-width: 140px;
+            max-width: 210px;
+            height: auto;
+            aspect-ratio: 1 / 1;
             background: linear-gradient(145deg, #ffffff, #f9fafb);
             border-radius: 50%;
             display: flex;
@@ -113,22 +116,24 @@
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
             border: 2px solid rgba(8, 145, 178, 0.4);
             backdrop-filter: blur(2px);
-            transition: all 0.2s;
+            padding: 12px;
         }
         .center-core h1 {
-            font-size: 1.2rem;
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
             font-weight: 700;
             color: var(--text-primary);
-            padding: 0 20px;
             line-height: 1.4;
             letter-spacing: -0.2px;
         }
 
-        /* Nodos: elementos interactivos */
+        /* Nodos: elementos interactivos - tamaño relativo */
         .node {
             position: absolute;
-            width: 110px;
-            height: 110px;
+            width: 13%;
+            min-width: 85px;
+            max-width: 110px;
+            height: auto;
+            aspect-ratio: 1 / 1;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(2px);
             border-radius: 50%;
@@ -153,18 +158,19 @@
             z-index: 25;
         }
         .node-number {
-            font-size: 1.7rem;
+            font-size: clamp(1.2rem, 4vw, 1.7rem);
             font-weight: 800;
             line-height: 1;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .node-title {
-            font-size: 0.7rem;
+            font-size: clamp(0.6rem, 2vw, 0.7rem);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             color: var(--text-primary);
-            max-width: 90px;
+            max-width: 90%;
+            word-break: break-word;
         }
 
         /* ========== MODAL MEJORADO ========== */
@@ -230,7 +236,6 @@
             color: #1e293b;
             font-size: 1rem;
             line-height: 1.55;
-            padding-left: 0;
             margin-top: 8px;
         }
         .close-btn {
@@ -255,32 +260,32 @@
             transform: rotate(90deg);
         }
 
-        /* ========== RESPONSIVE: MODO LISTA VERTICAL CON SCROLL ========== */
-        @media (max-width: 780px) {
+        /* ========== RESPONSIVE: MODO LISTA VERTICAL CON SCROLL SUAVE ========== */
+        @media (max-width: 700px) {
             body {
                 padding: 12px;
                 align-items: flex-start;
             }
             .sovi-wrapper {
-                max-height: 98vh;
+                max-height: 95vh;
                 overflow-y: auto;
-                border-radius: 32px;
-                background: #f8fafc;
-                box-shadow: none;
+                border-radius: 24px;
+                background: transparent;
             }
             .sovi-container {
+                aspect-ratio: auto;
                 width: 100%;
                 height: auto;
-                min-height: auto;
                 background: #f8fafc;
-                border-radius: 32px;
+                border-radius: 28px;
                 margin: 0;
-                padding: 24px 16px 40px 16px;
+                padding: 20px 16px 32px 16px;
                 display: flex;
                 flex-direction: column;
                 align-items: stretch;
                 box-shadow: none;
                 border: none;
+                max-width: 100%;
             }
             /* Ocultar elementos decorativos circulares */
             .orbit-line {
@@ -291,44 +296,51 @@
                 top: auto;
                 left: auto;
                 transform: none;
-                width: 180px;
-                height: 180px;
-                margin: 0 auto 28px auto;
+                width: 160px;
+                min-width: 140px;
+                height: 160px;
+                margin: 0 auto 24px auto;
                 background: white;
                 border: 2px solid rgba(8,145,178,0.3);
+            }
+            .center-core h1 {
+                font-size: 1rem;
             }
             /* Nodos en bloque vertical */
             .node {
                 position: relative !important;
                 width: 100% !important;
+                min-width: unset !important;
+                max-width: unset !important;
                 height: auto !important;
-                min-height: 80px;
-                border-radius: 24px !important;
+                min-height: 75px;
+                aspect-ratio: auto !important;
+                border-radius: 20px !important;
                 flex-direction: row !important;
                 justify-content: flex-start !important;
-                gap: 18px;
-                padding: 16px 20px;
-                margin-bottom: 14px;
+                gap: 16px;
+                padding: 14px 18px;
+                margin-bottom: 12px;
                 background: white;
-                border-left-width: 6px;
+                border-left-width: 5px;
                 border-left-style: solid;
-                border-top: 2px solid;
-                border-right: 2px solid;
-                border-bottom: 2px solid;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                border-top: 1px solid rgba(0,0,0,0.08);
+                border-right: 1px solid rgba(0,0,0,0.08);
+                border-bottom: 1px solid rgba(0,0,0,0.08);
+                box-shadow: 0 2px 6px rgba(0,0,0,0.04);
                 transition: transform 0.1s, background 0.2s;
                 left: auto !important;
                 top: auto !important;
                 transform: none !important;
             }
             .node:hover {
-                transform: translateX(6px) !important;
-                background: #fefefe;
+                transform: translateX(4px) !important;
+                background: #ffffff;
             }
             .node-number {
-                font-size: 2rem;
-                width: 54px;
-                height: 54px;
+                font-size: 1.8rem;
+                width: 50px;
+                height: 50px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -337,14 +349,14 @@
                 margin-bottom: 0;
             }
             .node-title {
-                font-size: 1rem;
+                font-size: 0.95rem;
                 text-transform: none;
                 letter-spacing: normal;
                 font-weight: 600;
                 max-width: 100%;
                 text-align: left;
             }
-            /* Los colores de borde izquierdo se asignan dinámicamente con js o data-style */
+            /* Colores de borde izquierdo */
             .node[data-stage="1"] { border-left-color: var(--accent-1); }
             .node[data-stage="2"] { border-left-color: var(--accent-2); }
             .node[data-stage="3"] { border-left-color: var(--accent-3); }
@@ -357,18 +369,30 @@
             .node[data-stage="10"] { border-left-color: var(--accent-10); }
         }
 
-        /* Para pantallas muy pequeñas (altura reducida) forzamos scroll interno en el wrapper */
-        @media (max-height: 700px) and (max-width: 780px) {
-            .sovi-wrapper {
-                max-height: 94vh;
+        /* Para pantallas de escritorio más pequeñas (iframe estrecho) */
+        @media (min-width: 701px) and (max-width: 850px) {
+            .sovi-container {
+                max-width: 550px;
             }
             .node {
-                padding: 12px 16px;
-                min-height: 70px;
+                width: 14%;
+                min-width: 75px;
+            }
+            .node-title {
+                font-size: 0.6rem;
+            }
+            .node-number {
+                font-size: 1.3rem;
             }
         }
 
-        /* Mejora focus para accesibilidad */
+        /* Para pantallas muy pequeñas en altura, mantener scroll solo interno */
+        @media (max-height: 700px) and (min-width: 701px) {
+            .sovi-wrapper {
+                max-height: 85vh;
+            }
+        }
+
         .node:focus-visible {
             outline: 3px solid #0891b2;
             outline-offset: 4px;
@@ -395,7 +419,7 @@
             <h1>📊 Etapas del<br>procedimiento SoVI</h1>
         </div>
 
-        <!-- 10 nodos interactivos con atributos data-stage -->
+        <!-- 10 nodos interactivos -->
         <button class="node" data-stage="1" aria-label="Etapa 1: Delimitación del área">
             <span class="node-number">1</span>
             <span class="node-title">Delimitación del área</span>
@@ -439,7 +463,7 @@
     </div>
 </div>
 
-<!-- Modal estructura -->
+<!-- Modal -->
 <div class="modal" id="stageModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-content">
         <button class="close-btn" id="closeModalBtn" aria-label="Cerrar ventana">✕</button>
@@ -455,7 +479,7 @@
 
 <script>
     // --------------------------------------------------------------
-    // DATOS COMPLETOS DE CADA ETAPA (contenido académico)
+    // DATOS COMPLETOS DE CADA ETAPA
     // --------------------------------------------------------------
     const stagesData = {
         1: { 
@@ -518,30 +542,24 @@
     const modalContent = document.querySelector('.modal-content');
     let lastFocusedNode = null;
 
-    // Función para abrir modal con información
     function openModal(stageId, nodeElement) {
         const data = stagesData[stageId];
         if (!data) return;
         
         lastFocusedNode = nodeElement;
         
-        // Actualizar contenido modal
         modalNumberSpan.textContent = stageId;
         modalNumberSpan.style.backgroundColor = data.color;
         modalNumberSpan.style.boxShadow = `0 6px 14px ${data.color}60`;
         modalTitle.textContent = data.title;
         modalBody.innerHTML = data.desc;
-        
-        // Cambiar color del borde superior del modal
         modalContent.style.borderTopColor = data.color;
         
-        // Mostrar modal y enfocar al botón cerrar para accesibilidad
         modal.classList.add('active');
         const closeBtn = document.getElementById('closeModalBtn');
         if (closeBtn) closeBtn.focus();
     }
 
-    // Cerrar modal y devolver focus
     function closeModal() {
         modal.classList.remove('active');
         if (lastFocusedNode && typeof lastFocusedNode.focus === 'function') {
@@ -549,7 +567,7 @@
         }
     }
 
-    // Asignar eventos a todos los nodos
+    // Asignar eventos a los nodos
     const nodes = document.querySelectorAll('.node');
     nodes.forEach(node => {
         node.addEventListener('click', (e) => {
@@ -557,7 +575,6 @@
             const stage = node.getAttribute('data-stage');
             if (stage) openModal(parseInt(stage), node);
         });
-        // Accesibilidad teclado: Enter o espacio ya funcionan pero prevenimos doble click
         node.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -567,139 +584,124 @@
         });
     });
 
-    // Cerrar modal con botón específico
     const closeBtn = document.getElementById('closeModalBtn');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
     
-    // Cerrar al hacer clic en fondo oscuro
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
     
-    // Cerrar con tecla ESC
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
+        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
     });
 
     // --------------------------------------------------------------
-    // POSICIONAMIENTO CIRCULAR EN ESCRITORIO (RESPONSIVE CON RE-DIBUJO)
+    // POSICIONAMIENTO CIRCULAR EN ESCRITORIO (totalmente dinámico)
     // --------------------------------------------------------------
     function positionNodesDesktop() {
-        // Solo aplica si el ancho de pantalla es mayor a 780px (no modo lista)
-        if (window.innerWidth <= 780) return;
+        // Solo en modo escritorio (pantalla > 700px)
+        if (window.innerWidth <= 700) return;
         
         const container = document.querySelector('.sovi-container');
         if (!container) return;
         const nodesList = document.querySelectorAll('.node');
         if (!nodesList.length) return;
         
-        // Obtener dimensiones relativas al contenedor
-        const containerRect = container.getBoundingClientRect();
-        // Para posicionamiento con left/top absoluto relativo al contenedor, usamos offsetWidth/Height
-        const centerX = container.offsetWidth / 2;
-        const centerY = container.offsetHeight / 2;
-        const radius = Math.min(container.offsetWidth * 0.34, 290); // radio dinámico pero estable
-        const nodeHalf = 55; // aprox 110/2
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+        const centerX = containerWidth / 2;
+        const centerY = containerHeight / 2;
+        
+        // Radio dinámico: 38% del contenedor para que los nodos queden dentro del círculo
+        const radius = Math.min(containerWidth, containerHeight) * 0.36;
         
         nodesList.forEach((node, idx) => {
-            // ángulo: comenzar desde -90° (arriba) y espaciar 36°
-            const angleDeg = -90 + (idx * 36);
+            const nodeWidth = node.offsetWidth;
+            const nodeHeight = node.offsetHeight;
+            const angleDeg = -90 + (idx * 36); // empezar arriba (12 en punto)
             const angleRad = angleDeg * Math.PI / 180;
-            let x = centerX + radius * Math.cos(angleRad) - nodeHalf;
-            let y = centerY + radius * Math.sin(angleRad) - nodeHalf;
             
-            // Asegurar que no se salga de bordes (clipping)
-            x = Math.min(Math.max(x, 8), container.offsetWidth - 110);
-            y = Math.min(Math.max(y, 8), container.offsetHeight - 110);
+            let x = centerX + radius * Math.cos(angleRad) - (nodeWidth / 2);
+            let y = centerY + radius * Math.sin(angleRad) - (nodeHeight / 2);
+            
+            // Evitar que se salga completamente del borde
+            x = Math.min(Math.max(x, 5), containerWidth - nodeWidth - 5);
+            y = Math.min(Math.max(y, 5), containerHeight - nodeHeight - 5);
             
             node.style.position = 'absolute';
             node.style.left = `${x}px`;
             node.style.top = `${y}px`;
             node.style.right = 'auto';
             node.style.bottom = 'auto';
-            node.style.transform = 'none';  // quitar transformaciones previas
-            // Asegurar visibilidad
+            node.style.transform = 'none';
             node.style.display = 'flex';
         });
     }
 
-    // Función para resetear estilos en móvil (garantizar que los nodos se comporten como bloque)
     function resetForMobile() {
-        if (window.innerWidth <= 780) {
+        if (window.innerWidth <= 700) {
+            const container = document.querySelector('.sovi-container');
+            if (container) {
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.height = 'auto';
+            }
             const nodesMobile = document.querySelectorAll('.node');
             nodesMobile.forEach(node => {
                 node.style.position = 'relative';
                 node.style.left = '';
                 node.style.top = '';
                 node.style.transform = '';
-                node.style.display = 'flex';
                 node.style.width = '';
-                node.style.height = '';
-                node.style.marginBottom = '14px';
+                node.style.marginBottom = '12px';
             });
-            const container = document.querySelector('.sovi-container');
-            if (container) {
-                container.style.height = 'auto';
-                container.style.display = 'flex';
-                container.style.flexDirection = 'column';
-            }
         } else {
-            // Restaurar contenedor a posicionamiento relativo para hijos absolutos
             const container = document.querySelector('.sovi-container');
             if (container) {
                 container.style.display = 'block';
-                container.style.height = '800px';   // altura fija en desktop
-                container.style.position = 'relative';
+                container.style.height = 'auto';
             }
             const nodesDesktop = document.querySelectorAll('.node');
             nodesDesktop.forEach(node => {
                 node.style.position = 'absolute';
                 node.style.marginBottom = '0';
             });
-            // Llamar posicionamiento después de restablecer
-            positionNodesDesktop();
+            // Esperar a que termine el reflow para posicionar
+            setTimeout(() => positionNodesDesktop(), 10);
         }
     }
 
-    // Inicialización robusta con observador de cambios de tamaño
+    // Manejar resize con debounce
     let resizeTimer;
     function handleResize() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
             resetForMobile();
-        }, 80);
+        }, 100);
     }
     
     window.addEventListener('load', () => {
-        resetForMobile();
-        // Recalcular en caso de cambios de orientación o zoom
-        window.addEventListener('resize', handleResize);
-        // Observador por si el contenedor cambia dinámicamente (Canvas LMS a veces reflow)
-        if (window.ResizeObserver) {
-            const containerObserve = document.querySelector('.sovi-container');
-            if (containerObserve) {
-                const resizeObserver = new ResizeObserver(() => {
-                    if (window.innerWidth > 780) positionNodesDesktop();
-                });
-                resizeObserver.observe(containerObserve);
-            }
-        }
-    });
-    
-    // También ejecutar cuando se cargue completamente todo
-    document.addEventListener('DOMContentLoaded', () => {
-        // Aplicar colores consistentes de borde para mobile (ya están en CSS)
-        // Pequeño detalle: agregar color de texto en los números según etapa (opcional)
+        // Asignar colores de borde a cada nodo
         nodes.forEach(node => {
             const stage = node.getAttribute('data-stage');
             const colorVar = stagesData[stage]?.color || '#0891b2';
             node.style.borderColor = colorVar;
-            node.querySelector('.node-number')?.style.setProperty('color', colorVar, 'important');
+            const numberSpan = node.querySelector('.node-number');
+            if (numberSpan) numberSpan.style.color = colorVar;
         });
+        resetForMobile();
+        window.addEventListener('resize', handleResize);
+        
+        // Observador para cambios de tamaño del contenedor (útil en iframes)
+        if (window.ResizeObserver) {
+            const containerObserve = document.querySelector('.sovi-container');
+            if (containerObserve) {
+                const resizeObserver = new ResizeObserver(() => {
+                    if (window.innerWidth > 700) positionNodesDesktop();
+                });
+                resizeObserver.observe(containerObserve);
+            }
+        }
     });
 </script>
 </body>
