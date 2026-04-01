@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tipos de JOIN en consultas SQL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
+    <title>🔗 Tipos de JOIN en consultas SQL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #1565C0;
@@ -23,18 +23,15 @@
             --text: #1A237E;
             --text-body: #263238;
             --tag-bg: #E3F2FD;
-            --tag-border: #90CAF9;
             --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-            --drop-hover: #E3F2FD;
-            --drop-border: #42A5F5;
-            --font: 'Inter', sans-serif;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 6px 20px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 25px rgba(46, 125, 50, 0.15);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: var(--font);
@@ -46,178 +43,134 @@
             margin: 0 auto;
             overflow: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
+        /* 🎨 Header */
         .header {
             background: var(--header-bg);
             color: white;
-            padding: 22px 30px;
+            padding: 18px 28px;
             text-align: center;
-            position: relative;
+            flex-shrink: 0;
         }
 
         .header h1 {
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .header p {
-            font-size: 15px;
-            opacity: 0.9;
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 400;
         }
 
+        /* 📦 Contenedor principal */
         .main-container {
-            padding: 20px;
-            height: calc(100% - 118px);
+            padding: 16px 20px 20px;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
+            overflow: hidden;
         }
 
+        /* 📚 Tarjeta de contexto */
         .case-card {
             background: var(--card);
-            border: 3px solid var(--accent);
-            padding: 24px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border: 2px solid var(--accent);
+            border-left: 4px solid var(--accent);
+            padding: 20px 24px;
+            border-radius: 0;
+            box-shadow: var(--shadow-md);
             position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .case-card::before {
             content: "📚";
             position: absolute;
-            top: -18px;
-            right: 30px;
-            font-size: 48px;
-            opacity: 0.15;
+            top: -12px;
+            right: 20px;
+            font-size: 32px;
+            opacity: 0.2;
+            pointer-events: none;
         }
 
+        .case-card h2 {
+            color: var(--primary);
+            margin-bottom: 14px;
+            font-size: 19px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .case-card p {
+            line-height: 1.6;
+            font-size: 14.5px;
+            color: var(--text-body);
+        }
+
+        .case-card strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .case-highlight {
+            background: var(--tag-bg);
+            padding: 12px 16px;
+            border-left: 3px solid var(--primary);
+            margin: 16px 0;
+            font-size: 14px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* ❓ Contenedor de preguntas */
         .question-container {
             background: var(--card);
             border: 2px solid var(--primary);
-            padding: 24px;
+            border-left: 4px solid var(--primary);
+            padding: 20px 24px;
             flex: 1;
             display: none;
             flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: var(--shadow-md);
+            animation: fadeIn 0.25s ease-out;
         }
 
-        .question-container.active {
-            display: flex;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .question-header {
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text);
-            line-height: 1.4;
-        }
+        .question-container.active { display: flex; }
 
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-top: auto;
-        }
-
-        .option {
-            background: white;
-            border: 2px solid var(--border);
-            padding: 18px 22px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-size: 15.5px;
-            line-height: 1.45;
-            position: relative;
-        }
-
-        .option:hover {
-            border-color: var(--accent);
-            transform: translateX(6px);
-        }
-
-        .option.selected {
-            border-color: var(--primary);
-            background: #E3F2FD;
-        }
-
-        .feedback-card {
-            display: none;
-            background: var(--card);
-            border: 3px solid var(--success);
-            padding: 26px;
-            margin-top: 20px;
-            box-shadow: 0 8px 25px rgba(46, 125, 50, 0.15);
-            position: relative;
-        }
-
-        .feedback-card::before {
-            content: "💡";
-            position: absolute;
-            top: -20px;
-            left: 30px;
-            font-size: 42px;
-        }
-
-        .feedback-correct {
-            border-color: var(--success);
-        }
-
-        .feedback-incorrect {
-            border-color: var(--error);
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 140px;
-        }
-
-        button:hover {
-            background: var(--primary-light);
-        }
-
-        button:disabled {
-            background: #90A4AE;
-            cursor: not-allowed;
-        }
-
-        .reset-btn {
-            background: var(--neutral-light);
-            padding: 10px 24px;
-            font-size: 14px;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: linear-gradient(to right, var(--accent), var(--primary));
-            margin-top: 12px;
-            border-radius: 0;
-        }
-
+        /* 📊 Indicador de pasos */
         .step-indicator {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
 
         .step {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: var(--border);
             color: var(--neutral);
@@ -225,181 +178,533 @@
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
+            transition: var(--transition);
+            position: relative;
         }
 
-        .step.active {
+        .step::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .step:not(:last-child)::after { opacity: 1; }
+        .step.completed { background: var(--success); color: white; }
+        .step.active { background: var(--primary); color: white; transform: scale(1.1); }
+
+        /* ❓ Pregunta */
+        .question-header {
+            margin-bottom: 18px;
+            font-size: 16.5px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.5;
+            padding-left: 4px;
+            border-left: 3px solid var(--accent);
+            padding-left: 12px;
+        }
+
+        .question-header strong {
+            color: var(--primary);
+        }
+
+        /* 🔘 Opciones */
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid var(--border);
+            border-left: 3px solid transparent;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14.5px;
+            line-height: 1.5;
+            position: relative;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .option:hover {
+            border-color: var(--accent-light);
+            border-left-color: var(--accent);
+            background: #FFF8E1;
+            transform: translateX(4px);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            border-left-color: var(--primary);
+            background: var(--tag-bg);
+            font-weight: 500;
+        }
+
+        .option:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option-key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background: var(--neutral-light);
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .option.selected .option-key {
+            background: var(--primary);
+        }
+
+        /* 💡 Feedback */
+        .feedback-card {
+            display: none;
+            background: var(--card);
+            border: 2px solid var(--success);
+            border-left: 4px solid var(--success);
+            padding: 16px 20px;
+            margin-top: 16px;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease-out;
+            border-radius: 0 4px 4px 0;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback-card::before {
+            content: "💡";
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .feedback-correct {
+            border-color: var(--success);
+            border-left-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .feedback-incorrect {
+            border-color: var(--error);
+            border-left-color: var(--error);
+            background: var(--error-bg);
+        }
+
+        .feedback-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feedback-correct .feedback-title { color: var(--success); }
+        .feedback-incorrect .feedback-title { color: var(--error); }
+
+        .feedback-text {
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--text-body);
+        }
+
+        /* 🔘 Botones */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            gap: 12px;
+        }
+
+        button {
             background: var(--primary);
             color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 120px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        .step.completed {
-            background: var(--success);
+        button:hover:not(:disabled) {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        button:disabled {
+            background: #B0BEC5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--neutral-light);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--neutral);
+        }
+
+        .reset-btn {
+            background: var(--neutral-light);
+            padding: 10px 20px;
+            font-size: 13.5px;
+            margin-top: 8px;
+        }
+
+        /* 🎯 Pantalla final */
+        .final-screen {
+            text-align: center;
+            padding: 10px 20px 20px;
+        }
+
+        .final-icon {
+            font-size: 52px;
+            margin-bottom: 12px;
+            animation: bounce 0.6s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .final-title {
+            color: var(--success);
+            margin-bottom: 12px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .final-feedback {
+            background: var(--success-bg);
+            border: 2px solid var(--success);
+            border-left: 4px solid var(--success);
+            padding: 18px 20px;
+            font-size: 14px;
+            line-height: 1.65;
+            text-align: left;
+            margin: 16px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .final-feedback ul {
+            margin: 12px 0 12px 24px;
+            padding-left: 0;
+        }
+
+        .final-feedback li {
+            margin-bottom: 6px;
+            padding-left: 4px;
+        }
+
+        .score-badge {
+            display: inline-block;
+            background: var(--primary);
             color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            margin: 8px 0;
+        }
+
+        /* 🎨 Utilidades */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-auto { margin-top: auto; }
+
+        /* ♿ Accesibilidad */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .option:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🔗 Tipos de JOIN en consultas SQL</h1>
-        <p>Fundamentos de Base de Datos • Caso Práctico</p>
-    </div>
+    <!-- 🎨 Header -->
+    <header class="header">
+        <h1>🔗 Tipos de JOIN en SQL</h1>
+        <p>🎓 Fundamentos de Base de Datos • Caso Práctico</p>
+    </header>
 
-    <div class="main-container">
+    <!-- 📦 Contenedor principal -->
+    <main class="main-container">
 
-        <!-- Caso de estudio (siempre visible al inicio) -->
-        <div class="case-card" id="case-screen">
-            <h2 style="color:var(--primary); margin-bottom:18px; font-size:21px;">📖 Caso de Estudio</h2>
-            <p style="line-height:1.65; font-size:15.5px;">
-                En un sistema académico, se requiere generar distintos reportes a partir de tablas relacionadas como <strong>Estudiantes</strong>, <strong>Cursos</strong> y <strong>Matrículas</strong>. 
-                El equipo técnico debe decidir qué tipo de JOIN utilizar según el objetivo del análisis: en algunos casos se necesita visualizar únicamente registros coincidentes entre tablas, mientras que en otros se requiere incluir información completa incluso cuando no existen relaciones. 
-                Además, se debe considerar la correcta interpretación de valores NULL cuando no hay correspondencia entre registros. 
-                La elección incorrecta podría generar resultados incompletos o inconsistentes, afectando la toma de decisiones institucionales.
+        <!-- 📚 Caso de estudio (pantalla inicial) -->
+        <section class="case-card" id="case-screen">
+            <h2>📖 Contexto del Caso</h2>
+            <p>
+                En un sistema académico, se requiere generar reportes a partir de las tablas 
+                <strong>Estudiantes</strong>, <strong>Cursos</strong> y <strong>Matrículas</strong>. 
+                El equipo técnico debe decidir qué tipo de JOIN utilizar según el objetivo del análisis.
             </p>
-            <p style="margin-top:20px; font-weight:500; color:var(--accent);">Es momento de analizar cada situación y seleccionar el tipo de JOIN más adecuado para cada requerimiento.</p>
             
-            <div style="text-align:center; margin-top:30px;">
-                <button onclick="startQuiz()">Comenzar el caso práctico →</button>
+            <div class="case-highlight">
+                ⚙️ <strong>Consideraciones clave:</strong><br>
+                • Visualizar registros coincidentes entre tablas<br>
+                • Incluir información completa aunque no existan relaciones<br>
+                • Interpretar correctamente valores NULL cuando no hay correspondencia
             </div>
-        </div>
+            
+            <p>
+                La elección incorrecta podría generar resultados incompletos o inconsistentes, 
+                afectando la toma de decisiones institucionales. 🌍
+            </p>
+            
+            <div class="text-center" style="margin-top: 20px;">
+                <button onclick="startQuiz()">
+                    🚀 Comenzar caso práctico
+                </button>
+            </div>
+        </section>
 
-        <!-- Contenedor de preguntas -->
+        <!-- ❓ Contenedor de preguntas -->
         <div id="quiz-container">
 
             <!-- Pregunta 1 -->
-            <div class="question-container active" id="q1">
-                <div class="step-indicator">
-                    <div class="step active" id="step1">1</div>
+            <section class="question-container active" id="q1" role="group" aria-label="Pregunta 1">
+                <div class="step-indicator" aria-label="Progreso">
+                    <div class="step active" id="step1" aria-current="step">1</div>
                     <div class="step" id="step2">2</div>
                     <div class="step" id="step3">3</div>
                 </div>
                 
                 <div class="question-header">
-                    <strong>Pregunta 1:</strong> ¿Qué tipo de JOIN se debe utilizar si se desea obtener únicamente los registros que tienen coincidencias en ambas tablas?
+                    <strong>Pregunta 1:</strong> ¿Qué tipo de JOIN se debe utilizar si se desea obtener 
+                    únicamente los registros que tienen coincidencias en ambas tablas?
                 </div>
                 
-                <div class="options" id="options-q1">
-                    <!-- Opciones generadas por JS con orden aleatorio -->
-                </div>
+                <div class="options" id="options-q1" role="radiogroup"></div>
 
-                <div class="feedback-card" id="feedback-q1"></div>
+                <div class="feedback-card" id="feedback-q1" role="status" aria-live="polite"></div>
 
                 <div class="nav-buttons">
-                    <button onclick="prevQuestion()" id="btn-prev" style="visibility:hidden;">← Anterior</button>
-                    <button onclick="nextQuestion()" id="btn-next-q1" disabled>Siguiente →</button>
+                    <button onclick="prevQuestion()" id="btn-prev" class="btn-secondary" style="visibility:hidden;">
+                        ← Anterior
+                    </button>
+                    <button onclick="nextQuestion()" id="btn-next-q1" disabled>
+                        Siguiente →
+                    </button>
                 </div>
-            </div>
+            </section>
 
             <!-- Pregunta 2 -->
-            <div class="question-container" id="q2">
-                <div class="step-indicator">
+            <section class="question-container" id="q2" role="group" aria-label="Pregunta 2">
+                <div class="step-indicator" aria-label="Progreso">
                     <div class="step completed" id="step1b">1</div>
-                    <div class="step active" id="step2b">2</div>
+                    <div class="step active" id="step2b" aria-current="step">2</div>
                     <div class="step" id="step3b">3</div>
                 </div>
                 
                 <div class="question-header">
-                    <strong>Pregunta 2:</strong> ¿Qué tipo de JOIN permite obtener todos los registros de una tabla, incluso si no tienen coincidencia en la otra?
+                    <strong>Pregunta 2:</strong> ¿Qué tipo de JOIN permite obtener todos los registros 
+                    de una tabla, incluso si no tienen coincidencia en la otra?
                 </div>
                 
-                <div class="options" id="options-q2"></div>
-
-                <div class="feedback-card" id="feedback-q2"></div>
+                <div class="options" id="options-q2" role="radiogroup"></div>
+                <div class="feedback-card" id="feedback-q2" role="status" aria-live="polite"></div>
 
                 <div class="nav-buttons">
-                    <button onclick="prevQuestion()">← Anterior</button>
+                    <button onclick="prevQuestion()" class="btn-secondary">← Anterior</button>
                     <button onclick="nextQuestion()" id="btn-next-q2" disabled>Siguiente →</button>
                 </div>
-            </div>
+            </section>
 
             <!-- Pregunta 3 -->
-            <div class="question-container" id="q3">
-                <div class="step-indicator">
+            <section class="question-container" id="q3" role="group" aria-label="Pregunta 3">
+                <div class="step-indicator" aria-label="Progreso">
                     <div class="step completed">1</div>
                     <div class="step completed">2</div>
-                    <div class="step active">3</div>
+                    <div class="step active" aria-current="step">3</div>
                 </div>
                 
                 <div class="question-header">
-                    <strong>Pregunta 3:</strong> ¿Qué tipo de JOIN se debe utilizar para obtener todas las combinaciones posibles entre dos tablas?
+                    <strong>Pregunta 3:</strong> ¿Qué tipo de JOIN se debe utilizar para obtener 
+                    todas las combinaciones posibles entre dos tablas?
                 </div>
                 
-                <div class="options" id="options-q3"></div>
-
-                <div class="feedback-card" id="feedback-q3"></div>
+                <div class="options" id="options-q3" role="radiogroup"></div>
+                <div class="feedback-card" id="feedback-q3" role="status" aria-live="polite"></div>
 
                 <div class="nav-buttons">
-                    <button onclick="prevQuestion()">← Anterior</button>
-                    <button onclick="finishQuiz()" id="btn-finish" disabled>Finalizar</button>
+                    <button onclick="prevQuestion()" class="btn-secondary">← Anterior</button>
+                    <button onclick="finishQuiz()" id="btn-finish" disabled>✅ Finalizar</button>
                 </div>
-            </div>
+            </section>
 
         </div>
 
-        <!-- Pantalla de retroalimentación final -->
-        <div class="question-container" id="final-screen" style="display:none; text-align:center;">
-            <div style="font-size:68px; margin-bottom:20px;">🎯</div>
-            <h2 style="color:var(--success); margin-bottom:16px;">¡Caso completado!</h2>
-            <div id="final-feedback" style="background:#E8F5E9; border:2px solid var(--success); padding:28px; border-radius:0; font-size:15.5px; line-height:1.7; text-align:left; margin:25px 0;"></div>
-            <button onclick="restartQuiz()" class="reset-btn" style="margin-top:10px;">🔄 Reiniciar caso práctico</button>
-        </div>
+        <!-- 🎯 Pantalla de resultados -->
+        <section class="question-container final-screen" id="final-screen">
+            <div class="final-icon">🎯</div>
+            <h2 class="final-title">✨ ¡Caso completado!</h2>
+            <div id="final-feedback" class="final-feedback"></div>
+            <div class="score-badge" id="score-display">3/3 correctas</div>
+            <button onclick="restartQuiz()" class="reset-btn">
+                🔄 Reiniciar caso práctico
+            </button>
+        </section>
 
-    </div>
+    </main>
 
     <script>
-        // Datos fieles al documento
+        // 📋 Datos del cuestionario
         const questions = [
             {
                 id: 1,
                 text: "¿Qué tipo de JOIN se debe utilizar si se desea obtener únicamente los registros que tienen coincidencias en ambas tablas?",
                 options: [
-                    { text: "Utilizar INNER JOIN para recuperar solo filas con valores coincidentes en ambas tablas.", isCorrect: true, feedback: "Es la opción más adecuada, ya que INNER JOIN retorna exclusivamente las filas que tienen correspondencia en ambas tablas, garantizando consistencia en los datos relacionados." },
-                    { text: "Utilizar LEFT JOIN para incluir también registros sin coincidencia en la tabla derecha.", isCorrect: false, feedback: "Es una alternativa válida en ciertos análisis; sin embargo, incluye registros sin coincidencia, lo que no cumple el criterio de coincidencia estricta requerido." }
+                    { 
+                        text: "Utilizar INNER JOIN para recuperar solo filas con valores coincidentes en ambas tablas.", 
+                        isCorrect: true, 
+                        feedback: "✅ Es la opción más adecuada. INNER JOIN retorna exclusivamente las filas que tienen correspondencia en ambas tablas, garantizando consistencia en los datos relacionados." 
+                    },
+                    { 
+                        text: "Utilizar LEFT JOIN para incluir también registros sin coincidencia en la tabla derecha.", 
+                        isCorrect: false, 
+                        feedback: "⚠️ Es una alternativa válida en ciertos análisis; sin embargo, incluye registros sin coincidencia, lo que no cumple el criterio de coincidencia estricta requerido." 
+                    }
                 ]
             },
             {
                 id: 2,
                 text: "¿Qué tipo de JOIN permite obtener todos los registros de una tabla, incluso si no tienen coincidencia en la otra?",
                 options: [
-                    { text: "Aplicar LEFT JOIN para incluir todos los registros de la tabla izquierda y valores NULL en caso de no coincidencia.", isCorrect: true, feedback: "Es la opción más pertinente, ya que LEFT JOIN incluye todos los registros de la tabla principal, mostrando NULL cuando no existen coincidencias en la tabla relacionada." },
-                    { text: "Aplicar INNER JOIN para asegurar que todos los registros tengan correspondencia en ambas tablas.", isCorrect: false, feedback: "Es una opción correcta en escenarios de coincidencia estricta; sin embargo, excluye registros sin correspondencia, limitando la visión completa de los datos." }
+                    { 
+                        text: "Aplicar LEFT JOIN para incluir todos los registros de la tabla izquierda y valores NULL en caso de no coincidencia.", 
+                        isCorrect: true, 
+                        feedback: "✅ Es la opción más pertinente. LEFT JOIN incluye todos los registros de la tabla principal, mostrando NULL cuando no existen coincidencias en la tabla relacionada." 
+                    },
+                    { 
+                        text: "Aplicar INNER JOIN para asegurar que todos los registros tengan correspondencia en ambas tablas.", 
+                        isCorrect: false, 
+                        feedback: "⚠️ Es correcta en escenarios de coincidencia estricta; sin embargo, excluye registros sin correspondencia, limitando la visión completa de los datos." 
+                    }
                 ]
             },
             {
                 id: 3,
                 text: "¿Qué tipo de JOIN se debe utilizar para obtener todas las combinaciones posibles entre dos tablas?",
                 options: [
-                    { text: "Utilizar CROSS JOIN para generar el producto cartesiano entre las tablas.", isCorrect: true, feedback: "Es la opción más adecuada, ya que CROSS JOIN genera todas las combinaciones posibles entre registros de ambas tablas, sin requerir condiciones de coincidencia." },
-                    { text: "Utilizar FULL OUTER JOIN para incluir registros coincidentes y no coincidentes de ambas tablas.", isCorrect: false, feedback: "Es una alternativa válida para combinar datos completos; sin embargo, no genera todas las combinaciones posibles, sino únicamente coincidencias y no coincidencias." }
+                    { 
+                        text: "Utilizar CROSS JOIN para generar el producto cartesiano entre las tablas.", 
+                        isCorrect: true, 
+                        feedback: "✅ Es la opción más adecuada. CROSS JOIN genera todas las combinaciones posibles entre registros de ambas tablas, sin requerir condiciones de coincidencia." 
+                    },
+                    { 
+                        text: "Utilizar FULL OUTER JOIN para incluir registros coincidentes y no coincidentes de ambas tablas.", 
+                        isCorrect: false, 
+                        feedback: "⚠️ Es una alternativa válida para combinar datos completos; sin embargo, no genera todas las combinaciones posibles, sino únicamente coincidencias y no coincidencias." 
+                    }
                 ]
             }
         ];
 
+        // 🎮 Estado de la aplicación
         let currentQuestion = 0;
         let answers = {};
         let shuffledOptions = [];
 
+        // 🔀 Función para mezclar arrays (Fisher-Yates simplificado)
         function shuffle(array) {
-            return [...array].sort(() => Math.random() - 0.5);
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
         }
 
+        // 🔄 Cargar pregunta actual
         function loadQuestion(qIndex) {
-            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
-            document.getElementById(`q${qIndex + 1}`).classList.add('active');
+            // Ocultar todas las preguntas
+            document.querySelectorAll('.question-container').forEach(q => {
+                q.classList.remove('active');
+                q.style.display = 'none';
+            });
+            
+            // Mostrar pregunta actual
+            const currentEl = document.getElementById(`q${qIndex + 1}`);
+            currentEl.classList.add('active');
+            currentEl.style.display = 'flex';
 
             const q = questions[qIndex];
-            shuffledOptions[qIndex] = shuffle(q.options);
+            
+            // Mezclar opciones si no están mezcladas aún
+            if (!shuffledOptions[qIndex]) {
+                shuffledOptions[qIndex] = shuffle(q.options);
+            }
 
+            // Renderizar opciones
             const optionsContainer = document.getElementById(`options-q${qIndex + 1}`);
             optionsContainer.innerHTML = '';
 
             shuffledOptions[qIndex].forEach((opt, idx) => {
                 const div = document.createElement('div');
                 div.className = 'option';
-                div.textContent = opt.text;
+                div.setAttribute('role', 'radio');
+                div.setAttribute('aria-label', `Opción ${idx + 1}`);
+                div.setAttribute('tabindex', '0');
                 div.dataset.index = idx;
+                
+                // Agregar key visual (A, B, C...)
+                const key = String.fromCharCode(65 + idx);
+                div.innerHTML = `<span class="option-key">${key}</span>${opt.text}`;
+                
+                // Eventos
                 div.onclick = () => selectOption(qIndex, idx);
+                div.onkeydown = (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectOption(qIndex, idx);
+                    }
+                };
+                
                 optionsContainer.appendChild(div);
             });
 
@@ -408,34 +713,38 @@
             feedbackEl.style.display = 'none';
             feedbackEl.innerHTML = '';
 
-            // Actualizar botones
+            // Actualizar navegación
             updateNavigationButtons();
         }
 
+        // ✋ Seleccionar opción
         function selectOption(qIndex, optIndex) {
+            // Guardar respuesta
             answers[qIndex] = optIndex;
 
             const q = questions[qIndex];
             const selectedOpt = shuffledOptions[qIndex][optIndex];
             const isCorrect = selectedOpt.isCorrect;
 
-            // Marcar opción seleccionada
+            // Marcar opción seleccionada visualmente
             const options = document.querySelectorAll(`#options-q${qIndex + 1} .option`);
             options.forEach((opt, i) => {
-                if (i === optIndex) opt.classList.add('selected');
+                opt.classList.toggle('selected', i === optIndex);
+                opt.setAttribute('aria-checked', i === optIndex);
                 opt.style.pointerEvents = 'none';
+                opt.tabIndex = -1;
             });
 
-            // Mostrar feedback en formato carta
+            // Mostrar feedback
             const feedbackEl = document.getElementById(`feedback-q${qIndex + 1}`);
             feedbackEl.style.display = 'block';
             feedbackEl.className = `feedback-card ${isCorrect ? 'feedback-correct' : 'feedback-incorrect'}`;
             
             feedbackEl.innerHTML = `
-                <strong style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}; font-size:17px;">
-                    ${isCorrect ? '✅ Correcto' : '⚠️ No es la mejor opción'}
-                </strong>
-                <p style="margin-top:14px; line-height:1.6;">${selectedOpt.feedback}</p>
+                <div class="feedback-title">
+                    ${isCorrect ? '✅ Correcto' : '⚠️ Revisa esta opción'}
+                </div>
+                <p class="feedback-text">${selectedOpt.feedback}</p>
             `;
 
             // Habilitar botón siguiente
@@ -445,11 +754,15 @@
             updateNavigationButtons();
         }
 
+        // 🔘 Actualizar estado de botones
         function updateNavigationButtons() {
             const finishBtn = document.getElementById('btn-finish');
-            if (finishBtn) finishBtn.disabled = Object.keys(answers).length < 3;
+            if (finishBtn) {
+                finishBtn.disabled = Object.keys(answers).length < 3;
+            }
         }
 
+        // ➡️ Siguiente pregunta
         function nextQuestion() {
             if (currentQuestion < 2) {
                 currentQuestion++;
@@ -457,6 +770,7 @@
             }
         }
 
+        // ⬅️ Pregunta anterior
         function prevQuestion() {
             if (currentQuestion > 0) {
                 currentQuestion--;
@@ -464,51 +778,113 @@
             }
         }
 
+        // 🚀 Iniciar cuestionario
         function startQuiz() {
             document.getElementById('case-screen').style.display = 'none';
             document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('final-screen').style.display = 'none';
+            
             currentQuestion = 0;
             answers = {};
+            shuffledOptions = [];
             loadQuestion(0);
         }
 
+        // 🏁 Finalizar cuestionario
         function finishQuiz() {
-            document.querySelectorAll('.question-container').forEach(q => q.style.display = 'none');
+            // Ocultar preguntas
+            document.querySelectorAll('.question-container').forEach(q => {
+                q.style.display = 'none';
+                q.classList.remove('active');
+            });
+            
+            // Mostrar pantalla final
             const finalScreen = document.getElementById('final-screen');
             finalScreen.style.display = 'flex';
+            finalScreen.classList.add('active');
 
+            // Calcular puntuación
             const correctCount = Object.keys(answers).filter(key => {
                 const qIdx = parseInt(key);
                 const selectedIdx = answers[key];
                 return shuffledOptions[qIdx][selectedIdx].isCorrect;
             }).length;
 
+            // Actualizar badge de puntuación
+            document.getElementById('score-display').textContent = `${correctCount}/3 correctas`;
+
+            // Generar feedback personalizado
             let finalHTML = `
-                <p><strong>La selección del tipo de JOIN determina la calidad y alcance de los resultados obtenidos.</strong></p>
-                <ul style="margin:18px 0 0 20px; line-height:1.8;">
-                    <li><strong>INNER JOIN</strong> permite recuperar coincidencias estrictas entre tablas.</li>
-                    <li><strong>LEFT JOIN</strong> amplía la consulta incluyendo registros sin correspondencia.</li>
-                    <li><strong>CROSS JOIN</strong> genera combinaciones completas entre conjuntos de datos.</li>
+                <p><strong>📊 La selección del tipo de JOIN determina la calidad de los resultados:</strong></p>
+                <ul>
+                    <li><strong>INNER JOIN</strong> → Coincidencias estrictas entre tablas 🔍</li>
+                    <li><strong>LEFT JOIN</strong> → Todos los registros de la tabla izquierda + NULLs 📥</li>
+                    <li><strong>CROSS JOIN</strong> → Producto cartesiano: todas las combinaciones ✖️</li>
                 </ul>
-                <p style="margin-top:22px; color:var(--success); font-weight:600;">
-                    ¡Has completado el caso práctico con ${correctCount} de 3 respuestas correctas!
-                </p>
             `;
+
+            if (correctCount === 3) {
+                finalHTML += `<p style="margin-top:12px;color:var(--success);font-weight:600">
+                    🎉 ¡Excelente! Dominas los conceptos fundamentales de JOIN.
+                </p>`;
+            } else if (correctCount >= 2) {
+                finalHTML += `<p style="margin-top:12px;color:var(--accent);font-weight:500">
+                    👍 ¡Muy bien! Tienes una base sólida. Repasa los casos con NULL para perfeccionar.
+                </p>`;
+            } else {
+                finalHTML += `<p style="margin-top:12px;color:var(--neutral-light);font-weight:500">
+                    📚 ¡Sigue practicando! Revisa cómo cada JOIN maneja las coincidencias y valores NULL.
+                </p>`;
+            }
 
             document.getElementById('final-feedback').innerHTML = finalHTML;
         }
 
+        // 🔄 Reiniciar
         function restartQuiz() {
             document.getElementById('final-screen').style.display = 'none';
             document.getElementById('case-screen').style.display = 'block';
             document.getElementById('quiz-container').style.display = 'none';
             answers = {};
+            shuffledOptions = [];
+            currentQuestion = 0;
         }
 
-        // Inicializar
-        window.onload = () => {
-            // Las preguntas se cargan dinámicamente al comenzar
-        };
+        // ⌨️ Navegación con teclado (teclas 1,2,3 para opciones)
+        document.addEventListener('keydown', (e) => {
+            const activeContainer = document.querySelector('.question-container.active');
+            if (!activeContainer || activeContainer.id === 'final-screen') return;
+            
+            const qIndex = parseInt(activeContainer.id.replace('q', '')) - 1;
+            if (isNaN(qIndex)) return;
+            
+            // Permitir selección con teclas A, B, C o 1, 2, 3
+            const key = e.key.toLowerCase();
+            const optionMap = { 'a': 0, 'b': 1, 'c': 2, '1': 0, '2': 1, '3': 2 };
+            
+            if (optionMap[key] !== undefined && !answers[qIndex]) {
+                const optIndex = optionMap[key];
+                const options = activeContainer.querySelectorAll('.option');
+                if (options[optIndex]) {
+                    e.preventDefault();
+                    selectOption(qIndex, optIndex);
+                }
+            }
+            
+            // Navegación con flechas
+            if (e.key === 'ArrowRight' && !document.getElementById(`btn-next-q${qIndex + 1}`)?.disabled) {
+                nextQuestion();
+            }
+            if (e.key === 'ArrowLeft' && qIndex > 0) {
+                prevQuestion();
+            }
+        });
+
+        // 🎬 Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            // Precargar fuentes y asegurar renderizado
+            document.body.style.opacity = '1';
+        });
     </script>
 </body>
 </html>
