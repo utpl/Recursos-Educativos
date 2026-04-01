@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tipos de usuarios en SGBD</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+  :root {
+    --primary:     #0D47A1;
+    --primary-mid: #1565C0;
+    --primary-lt:  #1976D2;
+    --accent:      #E65100;
+    --ok-color:    #1B5E20;
+    --ok-bg:       #E8F5E9;
+    --ok-bd:       #66BB6A;
+    --warn-color:  #E65100;
+    --warn-bg:     #FFF3E0;
+    --warn-bd:     #FFCC80;
+    --neutral:     #37474F;
+    --neutral-mid: #546E7A;
+    --bg:          #F0F4FA;
+    --card:        #FFFFFF;
+    --border:      #CFD8DC;
+    --text:        #1A237E;
+    --text-body:   #263238;
+    --header-grad: linear-gradient(135deg,#0D47A1 0%,#1565C0 55%,#1976D2 100%);
+    --case-bg:     linear-gradient(135deg,#E3F2FD 0%,#EDE7F6 100%);
+    --font:        'Inter', sans-serif;
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-body);
+    font-size: 13px;
+    line-height: 1.55;
+    width: 800px;
+    max-width: 800px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--header-grad);
+    padding: 14px 20px 12px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .header::before { content:''; position:absolute; right:-18px; top:-22px; width:120px; height:120px; background:rgba(255,255,255,.06); transform:rotate(45deg); }
+  .header::after  { content:''; position:absolute; right:60px; bottom:-30px; width:75px; height:75px; background:rgba(255,255,255,.04); transform:rotate(30deg); }
+  .h-icon { background:rgba(255,255,255,.15); width:44px; height:44px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .h-icon .material-symbols-outlined { color:#fff; font-size:26px; }
+  .h-text { flex:1; }
+  .h-title { color:#fff; font-size:15px; font-weight:700; letter-spacing:.02em; line-height:1.2; }
+  .h-sub   { color:rgba(255,255,255,.75); font-size:11px; margin-top:2px; }
+  .h-badge { background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:3px 9px; letter-spacing:.05em; text-transform:uppercase; flex-shrink:0; }
+
+  /* ── PROGRESS STRIP ── */
+  .progress-strip {
+    background:#fff; padding:8px 16px;
+    display:flex; align-items:center; gap:10px;
+    border-bottom:1px solid var(--border);
+  }
+  .prog-track { flex:1; height:6px; background:#E0E0E0; overflow:hidden; }
+  .prog-fill  { height:100%; background:var(--primary-lt); width:0%; transition:width .4s ease; }
+  .prog-label { font-size:11px; font-weight:700; color:var(--neutral-mid); white-space:nowrap; }
+  .step-dots  { display:flex; gap:6px; }
+  .step-dot   { width:28px; height:6px; background:var(--border); transition:background .3s; }
+  .step-dot.done { background:var(--ok-bd); }
+  .step-dot.active { background:var(--primary-lt); }
+
+  /* ── MAIN LAYOUT ── */
+  .main { height: 680px; display:flex; flex-direction:column; overflow:hidden; }
+
+  /* ── CASE BANNER ── */
+  .case-banner {
+    background: var(--case-bg);
+    border-bottom: 2px solid #B3C6F5;
+    padding: 12px 16px;
+    display: flex; gap: 12px; align-items: flex-start;
+    flex-shrink: 0;
+  }
+  .case-icon-wrap {
+    background: var(--primary); color:#fff;
+    width:40px; height:40px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .case-body { flex:1; }
+  .case-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.12em; color:var(--primary); margin-bottom:4px; }
+  .case-text  { font-size:11.5px; color:var(--text-body); line-height:1.6; }
+
+  /* ── QUESTION AREA ── */
+  .q-area {
+    flex:1; overflow:hidden; position:relative;
+    display:flex; flex-direction:column;
+  }
+
+  /* ── SLIDE ── */
+  .slide {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    opacity:0; pointer-events:none;
+    transform:translateX(40px);
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .slide.active {
+    opacity:1; pointer-events:all; transform:translateX(0);
+    position:relative; flex:1;
+  }
+  .slide.exit-left { opacity:0; transform:translateX(-40px); }
+
+  /* Question header */
+  .q-header {
+    background: var(--primary);
+    padding: 10px 16px;
+    display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+  }
+  .q-num-badge {
+    background:rgba(255,255,255,.2); color:#fff;
+    font-size:11px; font-weight:800; padding:3px 10px;
+    white-space:nowrap;
+  }
+  .q-text { color:#fff; font-size:13px; font-weight:600; line-height:1.4; flex:1; }
+
+  /* Options */
+  .options-area {
+    padding: 14px 16px;
+    flex-shrink:0;
+  }
+  .opt-btn {
+    width:100%; text-align:left;
+    display:flex; align-items:flex-start; gap:12px;
+    padding:12px 14px; margin-bottom:9px;
+    border:2px solid var(--border); background:var(--card);
+    cursor:pointer; font-family:var(--font); font-size:12px;
+    color:var(--text-body); line-height:1.5;
+    transition:all .18s; min-height:50px;
+  }
+  .opt-btn:hover { border-color:var(--primary-lt); background:#E3F2FD; }
+  .opt-btn .opt-letter {
+    background:var(--border); color:var(--neutral);
+    width:24px; height:24px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; margin-top:1px;
+  }
+  .opt-btn .opt-body { flex:1; }
+  .opt-btn .opt-label { font-weight:700; color:var(--primary); font-size:10px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:2px; }
+  .opt-btn:disabled { cursor:not-allowed; }
+
+  .opt-btn.chosen-ok   { border-color:var(--ok-bd); background:var(--ok-bg); }
+  .opt-btn.chosen-ok   .opt-letter { background:var(--ok-bd); color:#fff; }
+  .opt-btn.chosen-warn { border-color:var(--warn-bd); background:var(--warn-bg); }
+  .opt-btn.chosen-warn .opt-letter { background:var(--warn-color); color:#fff; }
+
+  /* ── FEEDBACK CARD ── */
+  .fb-card {
+    margin: 0 16px 14px;
+    border: 2px solid;
+    padding: 14px 16px;
+    display:none; flex-direction:column; gap:10px;
+    animation: fbIn .3s ease;
+    flex-shrink:0;
+  }
+  @keyframes fbIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fb-card.show { display:flex; }
+  .fb-card.fb-ok   { border-color:var(--ok-bd); background:var(--ok-bg); }
+  .fb-card.fb-warn { border-color:var(--warn-bd); background:var(--warn-bg); }
+
+  .fb-header { display:flex; align-items:center; gap:9px; }
+  .fb-icon-wrap {
+    width:34px; height:34px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .fb-ok   .fb-icon-wrap { background:var(--ok-bd); }
+  .fb-warn .fb-icon-wrap { background:var(--warn-bd); }
+  .fb-icon-wrap .material-symbols-outlined { color:#fff; font-size:20px; }
+  .fb-title { font-size:12px; font-weight:800; }
+  .fb-ok   .fb-title { color:var(--ok-color); }
+  .fb-warn .fb-title { color:var(--warn-color); }
+  .fb-text { font-size:12px; line-height:1.6; color:var(--text-body); }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    background:var(--card); border-top:2px solid var(--border);
+    padding:10px 16px; display:flex; align-items:center; gap:10px;
+    flex-shrink:0;
+  }
+  .btn {
+    padding:8px 18px; font-size:12px; font-weight:700; border:none;
+    cursor:pointer; display:flex; align-items:center; gap:6px;
+    letter-spacing:.04em; min-height:38px; transition:all .2s;
+    text-transform:uppercase; font-family:var(--font);
+  }
+  .btn-primary  { background:var(--primary); color:#fff; }
+  .btn-primary:hover  { background:#0A3880; }
+  .btn-primary:disabled { background:#B0BEC5; cursor:not-allowed; }
+  .btn-ghost { background:transparent; color:var(--neutral-mid); border:1.5px solid var(--border); }
+  .btn-ghost:hover  { border-color:var(--neutral-mid); color:var(--neutral); }
+  .btn-ghost:disabled { opacity:.3; cursor:not-allowed; }
+  .btn .material-symbols-outlined { font-size:16px; }
+  .nav-counter { font-size:12px; font-weight:700; color:var(--neutral-mid); margin-left:auto; }
+
+  /* ── FINAL SLIDE ── */
+  .final-slide {
+    display:none; flex-direction:column;
+    height:100%; overflow-y:auto;
+    scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+  }
+  .final-slide.show { display:flex; }
+  .final-slide::-webkit-scrollbar { width:4px; }
+  .final-slide::-webkit-scrollbar-thumb { background:var(--border); }
+
+  .final-header {
+    background:var(--header-grad);
+    padding:16px 20px; display:flex; gap:12px; align-items:center; flex-shrink:0;
+  }
+  .final-header .material-symbols-outlined { color:#fff; font-size:30px; }
+  .final-header-text .fh-title { color:#fff; font-size:15px; font-weight:800; }
+  .final-header-text .fh-sub   { color:rgba(255,255,255,.8); font-size:11px; margin-top:2px; }
+
+  .final-score-wrap {
+    display:flex; align-items:center; justify-content:center; gap:16px;
+    padding:16px 20px; background:#fff; border-bottom:1px solid var(--border);
+  }
+  .score-circle {
+    width:72px; height:72px;
+    border:4px solid var(--primary);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .score-big   { font-size:26px; font-weight:800; color:var(--primary); line-height:1; }
+  .score-small { font-size:10px; color:var(--neutral-mid); font-weight:600; }
+  .score-summary { flex:1; }
+  .score-summary .ss-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .score-summary .ss-items { font-size:11px; color:var(--text-body); line-height:1.9; }
+
+  .final-body { padding:14px 16px; flex:1; }
+  .fb-section-label {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.1em; color:var(--neutral-mid);
+    display:flex; align-items:center; gap:5px; margin-bottom:10px;
+  }
+  .fb-section-label .material-symbols-outlined { font-size:14px; }
+
+  .final-point {
+    display:flex; gap:9px; align-items:flex-start;
+    padding:9px 12px; margin-bottom:7px;
+    border-left:3px solid var(--primary-lt); background:var(--card);
+    border:1px solid var(--border); border-left-width:3px; border-left-color:var(--primary-lt);
+    font-size:12px; line-height:1.55;
+  }
+  .final-point .material-symbols-outlined { font-size:16px; color:var(--primary-lt); flex-shrink:0; margin-top:2px; }
+
+  .final-cta {
+    background:linear-gradient(135deg,#E3F2FD,#F1F8E9);
+    border:2px solid #90CAF9; padding:13px 16px;
+    display:flex; gap:10px; align-items:flex-start; margin-top:8px;
+  }
+  .final-cta .material-symbols-outlined { color:var(--primary); font-size:26px; flex-shrink:0; margin-top:2px; }
+  .final-cta-text { font-size:12px; line-height:1.65; color:var(--text-body); }
+
+  @media (max-width:700px) {
+    body { width:100%; }
+    .main { height:auto; }
+    .slide { position:relative; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="h-icon"><span class="material-symbols-outlined">manage_accounts</span></div>
+  <div class="h-text">
+    <div class="h-title">Tipos de usuarios en SGBD</div>
+    <div class="h-sub">Fundamentos de Base de Datos · Caso de estudio</div>
+  </div>
+  <span class="h-badge">📋 Caso</span>
+</header>
+
+<!-- PROGRESS STRIP -->
+<div class="progress-strip">
+  <span class="material-symbols-outlined" style="font-size:16px;color:var(--primary-lt);">school</span>
+  <div class="step-dots" id="stepDots">
+    <div class="step-dot active" id="dot-0"></div>
+    <div class="step-dot" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+  <span class="prog-label" id="progLabel">Pregunta 1 de 3</span>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- CASE BANNER -->
+  <div class="case-banner">
+    <div class="case-icon-wrap">🏛️</div>
+    <div class="case-body">
+      <div class="case-label">📌 Caso de estudio</div>
+      <div class="case-text" id="caseText">En una institución universitaria se implementa un nuevo sistema centralizado de gestión académica basado en bases de datos. Durante su despliegue, participan diversos perfiles: personal administrativo que registra asistencias, desarrolladores que construyen módulos del sistema, analistas que requieren consultas complejas para informes estratégicos y especialistas que integran herramientas avanzadas de procesamiento de datos. La dirección necesita definir qué tipo de usuario corresponde a cada rol para asignar interfaces adecuadas y permisos correctos, evitando riesgos de seguridad o uso ineficiente del sistema. La clasificación adecuada permitirá garantizar que cada actor interactúe conforme a sus competencias técnicas y objetivos operativos. Es momento de decidir cómo proceder ante esta situación.</div>
+    </div>
+  </div>
+
+  <!-- QUESTION AREA -->
+  <div class="q-area" id="qArea">
+
+    <!-- SLIDE 1 -->
+    <div class="slide active" id="slide-0">
+      <div class="q-header">
+        <span class="q-num-badge">Pregunta 1</span>
+        <div class="q-text">¿Qué tipo de usuario corresponde al personal administrativo que registra asistencias mediante una aplicación gráfica?</div>
+      </div>
+      <div class="options-area" id="opts-0"></div>
+      <div class="fb-card" id="fb-0"></div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" id="slide-1">
+      <div class="q-header">
+        <span class="q-num-badge">Pregunta 2</span>
+        <div class="q-text">¿Cómo debe clasificarse al profesional que desarrolla módulos y conecta la aplicación con la base de datos mediante código?</div>
+      </div>
+      <div class="options-area" id="opts-1"></div>
+      <div class="fb-card" id="fb-1"></div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" id="slide-2">
+      <div class="q-header">
+        <span class="q-num-badge">Pregunta 3</span>
+        <div class="q-text">¿Qué tipo de usuario representa el analista que ejecuta consultas SQL complejas para obtener información estratégica?</div>
+      </div>
+      <div class="options-area" id="opts-2"></div>
+      <div class="fb-card" id="fb-2"></div>
+    </div>
+
+  </div><!-- /q-area -->
+
+  <!-- FINAL SLIDE (hidden) -->
+  <div class="final-slide" id="finalSlide">
+    <div class="final-header">
+      <span class="material-symbols-outlined">emoji_events</span>
+      <div class="final-header-text">
+        <div class="fh-title">Resultado del caso de estudio</div>
+        <div class="fh-sub">Tipos de usuarios en SGBD</div>
+      </div>
+    </div>
+    <div class="final-score-wrap" id="finalScoreWrap"></div>
+    <div class="final-body">
+      <div class="fb-section-label">
+        <span class="material-symbols-outlined">lightbulb</span>
+        Retroalimentación final de la actividad
+      </div>
+      <div class="final-point">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span>La correcta identificación de perfiles permite asignar interfaces y permisos adecuados según responsabilidades técnicas.</span>
+      </div>
+      <div class="final-point">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span>Diferenciar usuarios finales de perfiles técnicos evita sobreexposición a complejidad innecesaria.</span>
+      </div>
+      <div class="final-point">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span>Reconocer programadores permite gestionar el desarrollo seguro de aplicaciones.</span>
+      </div>
+      <div class="final-point">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span>Identificar usuarios sofisticados facilita el análisis directo de información.</span>
+      </div>
+      <div class="final-cta">
+        <span class="material-symbols-outlined">analytics</span>
+        <div class="final-cta-text">Esta clasificación optimiza seguridad, eficiencia operativa y aprovechamiento del sistema.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="btn btn-ghost" id="prevBtn" onclick="navigate(-1)" disabled>
+      <span class="material-symbols-outlined">arrow_back</span> Anterior
+    </button>
+    <button class="btn btn-primary" id="nextBtn" onclick="navigate(1)" disabled>
+      Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+    </button>
+    <button class="btn btn-ghost" id="resetBtn" onclick="resetAll()" style="display:none;">
+      <span class="material-symbols-outlined">refresh</span> Reiniciar
+    </button>
+    <span class="nav-counter" id="navCounter">1 / 3</span>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+/* ══ DATA ══ */
+const QUESTIONS = [
+  {
+    opts: [
+      { key:'A', text:'Clasificarlo como usuario final, ya que ejecuta operaciones predefinidas sin conocimiento técnico del sistema.', correct:true,
+        fb: { title:'Opción A — Correcta ✓', text:'Es la opción más adecuada, porque estos usuarios utilizan interfaces diseñadas para tareas específicas sin manipular directamente la base de datos ni conocer su estructura.', type:'ok' } },
+      { key:'B', text:'Clasificarlo como programador de aplicaciones, porque interactúa frecuentemente con el sistema informático.', correct:false,
+        fb: { title:'Opción B — No es la más adecuada', text:'Es una interpretación válida por su uso constante del sistema; sin embargo, no desarrollan software ni implementan lógica, por lo que no corresponde a ese perfil técnico.', type:'warn' } }
+    ]
+  },
+  {
+    opts: [
+      { key:'A', text:'Considerarlo usuario sofisticado, debido a su conocimiento técnico avanzado sobre datos.', correct:false,
+        fb: { title:'Opción A — No es la más adecuada', text:'Es una opción plausible porque posee conocimientos técnicos; no obstante, su función principal no es el análisis directo de datos sino el desarrollo de aplicaciones.', type:'warn' } },
+      { key:'B', text:'Identificarlo como programador de aplicaciones, responsable de implementar la interacción entre software y base de datos.', correct:true,
+        fb: { title:'Opción B — Correcta ✓', text:'Es la clasificación más pertinente, ya que diseña interfaces, implementa lógica de negocio y establece la comunicación programática con la base de datos.', type:'ok' } }
+    ]
+  },
+  {
+    opts: [
+      { key:'A', text:'Usuario sofisticado, por interactuar directamente con la base de datos mediante herramientas de consulta.', correct:true,
+        fb: { title:'Opción A — Correcta ✓', text:'Es la opción más adecuada, ya que estos usuarios emplean lenguajes de consulta y herramientas analíticas sin intermediación de aplicaciones predefinidas.', type:'ok' } },
+      { key:'B', text:'Usuario especializado, debido a su trabajo con información crítica para la organización.', correct:false,
+        fb: { title:'Opción B — No es la más adecuada', text:'Es una alternativa razonable por la importancia de sus tareas, aunque el perfil especializado se asocia a aplicaciones técnicas específicas fuera del procesamiento convencional.', type:'warn' } }
+    ]
+  }
+];
+
+/* ══ STATE ══ */
+let current = 0;
+let answered = [null, null, null]; // index of chosen option per question
+let shuffled = [[], [], []];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* ══ INIT ══ */
+function init() {
+  QUESTIONS.forEach((q, qi) => {
+    shuffled[qi] = shuffle(q.opts.map((o,i) => i));
+    renderOpts(qi);
+  });
+  updateNav();
+}
+
+function renderOpts(qi) {
+  const container = document.getElementById('opts-' + qi);
+  container.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  shuffled[qi].forEach((origIdx, pos) => {
+    const opt = QUESTIONS[qi].opts[origIdx];
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.dataset.oi = origIdx;
+    btn.innerHTML = `
+      <div class="opt-letter">${letters[pos]}</div>
+      <div class="opt-body">
+        <div class="opt-label">Opción ${letters[pos]}</div>
+        <div>${opt.text}</div>
+      </div>`;
+    btn.onclick = () => choose(qi, origIdx, btn);
+    container.appendChild(btn);
+  });
+  // Restore state if already answered
+  if (answered[qi] !== null) {
+    restoreAnswer(qi);
+  }
+}
+
+function choose(qi, origIdx, btn) {
+  if (answered[qi] !== null) return;
+  answered[qi] = origIdx;
+  const opt = QUESTIONS[qi].opts[origIdx];
+
+  // Style chosen button
+  btn.classList.add(opt.correct ? 'chosen-ok' : 'chosen-warn');
+
+  // Disable all
+  document.querySelectorAll(`#opts-${qi} .opt-btn`).forEach(b => b.disabled = true);
+
+  // Show feedback card
+  const fbEl = document.getElementById('fb-' + qi);
+  fbEl.className = `fb-card show fb-${opt.fb.type}`;
+  const icon = opt.fb.type === 'ok' ? 'check_circle' : 'info';
+  fbEl.innerHTML = `
+    <div class="fb-header">
+      <div class="fb-icon-wrap"><span class="material-symbols-outlined">${icon}</span></div>
+      <div class="fb-title">${opt.fb.title}</div>
+    </div>
+    <div class="fb-text">${opt.fb.text}</div>`;
+
+  updateNav();
+}
+
+function restoreAnswer(qi) {
+  const origIdx = answered[qi];
+  const opt = QUESTIONS[qi].opts[origIdx];
+  // Mark button
+  document.querySelectorAll(`#opts-${qi} .opt-btn`).forEach(b => {
+    b.disabled = true;
+    if (parseInt(b.dataset.oi) === origIdx) {
+      b.classList.add(opt.correct ? 'chosen-ok' : 'chosen-warn');
+    }
+  });
+  // Show feedback
+  const fbEl = document.getElementById('fb-' + qi);
+  if (!fbEl.classList.contains('show')) {
+    fbEl.className = `fb-card show fb-${opt.fb.type}`;
+    const icon = opt.fb.type === 'ok' ? 'check_circle' : 'info';
+    fbEl.innerHTML = `
+      <div class="fb-header">
+        <div class="fb-icon-wrap"><span class="material-symbols-outlined">${icon}</span></div>
+        <div class="fb-title">${opt.fb.title}</div>
+      </div>
+      <div class="fb-text">${opt.fb.text}</div>`;
+  }
+}
+
+/* ══ NAVIGATION ══ */
+function navigate(dir) {
+  const total = QUESTIONS.length;
+  const newIdx = current + dir;
+
+  // Going to final screen
+  if (newIdx >= total) {
+    showFinal();
+    return;
+  }
+  if (newIdx < 0) return;
+
+  // Transition
+  const oldSlide = document.getElementById('slide-' + current);
+  const newSlide = document.getElementById('slide-' + newIdx);
+  oldSlide.classList.add('exit-left');
+  setTimeout(() => { oldSlide.classList.remove('active','exit-left'); }, 300);
+  newSlide.classList.add('active');
+
+  current = newIdx;
+  updateNav();
+}
+
+function updateNav() {
+  const total = QUESTIONS.length;
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const counter = document.getElementById('navCounter');
+  const progFill = document.getElementById('progFill');
+  const progLabel = document.getElementById('progLabel');
+
+  const answeredCount = answered.filter(a => a !== null).length;
+
+  prevBtn.disabled = current <= 0;
+  nextBtn.disabled = answered[current] === null;
+
+  // Is last question answered?
+  if (current === total - 1 && answered[current] !== null) {
+    nextBtn.innerHTML = 'Ver resultados <span class="material-symbols-outlined">emoji_events</span>';
+  } else {
+    nextBtn.innerHTML = 'Siguiente <span class="material-symbols-outlined">arrow_forward</span>';
+  }
+
+  counter.textContent = `${current + 1} / ${total}`;
+  progFill.style.width = (answeredCount / total * 100) + '%';
+  progLabel.textContent = `Pregunta ${current + 1} de ${total}`;
+
+  // Step dots
+  for (let i = 0; i < total; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.className = 'step-dot';
+    if (answered[i] !== null) dot.classList.add('done');
+    else if (i === current) dot.classList.add('active');
+  }
+}
+
+/* ══ FINAL ══ */
+function showFinal() {
+  // Hide questions
+  document.getElementById('qArea').style.display = 'none';
+  document.querySelector('.case-banner').style.display = 'none';
+
+  // Score
+  const score = answered.filter((a, qi) => a !== null && QUESTIONS[qi].opts[a].correct).length;
+  const finalSlide = document.getElementById('finalSlide');
+  finalSlide.classList.add('show');
+
+  // Score wrap
+  const sw = document.getElementById('finalScoreWrap');
+  sw.innerHTML = `
+    <div class="score-circle">
+      <div class="score-big">${score}</div>
+      <div class="score-small">/ 3</div>
+    </div>
+    <div class="score-summary">
+      <div class="ss-title">${score === 3 ? '¡Excelente resultado!' : score === 2 ? '¡Buen trabajo!' : 'Sigue practicando'}</div>
+      <div class="ss-items">
+        ${QUESTIONS.map((q, qi) => {
+          const a = answered[qi];
+          const ok = a !== null && q.opts[a].correct;
+          const icon = ok ? '✅' : '❌';
+          return `${icon} Pregunta ${qi+1}: ${ok ? 'Correcta' : 'No correcta'}`;
+        }).join('<br>')}
+      </div>
+    </div>`;
+
+  // Nav bar update
+  document.getElementById('prevBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('resetBtn').style.display = 'flex';
+  document.getElementById('navCounter').textContent = 'Fin del caso';
+
+  // Progress full
+  document.getElementById('progFill').style.width = '100%';
+  document.getElementById('progLabel').textContent = 'Completado';
+}
+
+/* ══ RESET ══ */
+function resetAll() {
+  current = 0;
+  answered = [null, null, null];
+
+  document.getElementById('qArea').style.display = '';
+  document.querySelector('.case-banner').style.display = '';
+  document.getElementById('finalSlide').classList.remove('show');
+
+  // Reset slides
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    const slide = document.getElementById('slide-' + i);
+    slide.classList.remove('active', 'exit-left');
+    document.getElementById('fb-' + i).className = 'fb-card';
+    document.getElementById('fb-' + i).innerHTML = '';
+  }
+  document.getElementById('slide-0').classList.add('active');
+
+  document.getElementById('prevBtn').style.display = '';
+  document.getElementById('nextBtn').style.display = '';
+  document.getElementById('resetBtn').style.display = 'none';
+
+  init();
+}
+
+/* ══ START ══ */
+init();
+</script>
+</body>
+</html>
