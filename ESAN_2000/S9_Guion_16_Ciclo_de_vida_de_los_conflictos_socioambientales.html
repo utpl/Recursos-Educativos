@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciclo de vida de los conflictos socioambientales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #1a3a5a;
+            --latencia: #689f38;
+            --escalamiento: #ffa000;
+            --crisis: #d32f2f;
+            --resolucion: #1976d2;
+            --bg-light: #ffffff;
+            --text-main: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Contenedor Principal Canvas 800px x 800px max */
+        .main-container {
+            width: 800px;
+            height: 700px;
+            margin: 0 auto;
+            position: relative;
+            background: radial-gradient(circle, #f8f9fa 0%, #e9ecef 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #ddd;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            background: white;
+            border-bottom: 2px solid #eee;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .instruction {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 8px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Diagrama Circular */
+        .diagram-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cycle-base {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            border-radius: 50% !important;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Cuadrantes */
+        .quadrant {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .quadrant:hover {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+        }
+
+        .quad-1 { border-radius: 380px 0 0 0 !important; background: #f1f8e9; border-top: 10px solid var(--latencia); }
+        .quad-2 { border-radius: 0 380px 0 0 !important; background: #fff8e1; border-top: 10px solid var(--escalamiento); }
+        .quad-3 { border-radius: 0 0 380px 0 !important; background: #ffebee; border-bottom: 10px solid var(--crisis); }
+        .quad-4 { border-radius: 0 0 0 380px !important; background: #e3f2fd; border-bottom: 10px solid var(--resolucion); }
+
+        .quad-icon {
+        
+            font-size: 35px;
+            margin-bottom: 4px;
+        }
+
+        .quad-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .quad-1 .quad-title { color: var(--latencia); }
+        .quad-2 .quad-title { color: var(--escalamiento); }
+        .quad-3 .quad-title { color: var(--crisis); }
+        .quad-4 .quad-title { color: var(--resolucion); }
+
+        .quad-desc {
+            font-size: 12px;
+            line-height: 1;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .quad-desc-b {
+            margin-bottom: 95px;
+            font-size: 12px;
+            line-height: 1;
+            color: #000000;
+            font-weight: 600;
+        }
+        /* Centro decorativo */
+        .center-hole {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50% !important;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .center-hole span {
+            font-size: 50px;
+            color: var(--latencia);
+        }
+
+        /* Modales */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 80%;
+            padding: 30px;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            border-left: 10px solid var(--accent);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-title-full {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .modal-subtitle-full {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #555;
+            display: block;
+        }
+
+        .modal-text-full {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            text-align: justify;
+        }
+
+        /* Footer Referencias */
+        footer {
+            width: 100%;
+            padding: 10px 25px;
+            background: #f1f1f1;
+            font-size: 11px;
+            color: #555;
+            border-top: 1px solid #ddd;
+        }
+
+        .ref-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        /* Utilidades */
+        .btn-interact {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50% !important;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container" id="container">
+    <header>
+        <h1>Ciclo de vida de los conflictos socioambientales </h1>
+        <p class="subtitle">La evolución de los conflictos socioambientales puede simplificarse en las siguientes fases. </p>
+    </header>
+
+    <div class="instruction">
+        <span class="material-symbols-outlined">touch_app</span>
+        Haga clic en cada ítem para visualizar la información. 
+    </div>
+
+    <main class="diagram-container">
+        <div class="cycle-base">
+            <div class="quadrant quad-1" onclick="openModal(1)">
+                <span class="emoji quad-icon">🌱</span>
+                <h2 class="quad-title">Latencia </h2>
+                <p class="quad-desc">Contradicción estructural y deudas ecológicas </p>
+            </div>
+
+            <div class="quadrant quad-2" onclick="openModal(2)">
+                <span class="emoji quad-icon">🚜</span>
+                <h2 class="quad-title">Escalamiento </h2>
+                <p class="quad-desc">Imposición de proyectos extractivos y medidas ilegítimas </p>
+            </div>
+
+            <div class="quadrant quad-4" onclick="openModal(4)">
+                <span class="emoji quad-icon">🤝</span>
+                <h2 class="quad-title">Transformación / Resolución </h2>
+                <p class="quad-desc-b">Negociación y nuevos marcos<br> de gobernanza </p>
+            </div>
+
+            <div class="quadrant quad-3" onclick="openModal(3)">
+                <span class="emoji quad-icon">📢</span>
+                <h2 class="quad-title">Crisis y Confrontación </h2>
+                <p class="quad-desc-b">Movilización social y represión contra defensores </p>
+            </div>
+
+            <div class="center-hole">
+                <span class="material-symbols-outlined">sync</span>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer-ref">
+        <span class="ref-title">Referencia: </span>
+        Martínez Alier, J. (2021). El ecologismo de los pobres: Conflictos ambientales y lenguajes de valoración (6ª ed.). Icaria Editorial. 
+    </footer>
+
+    <div class="modal-overlay" id="overlay">
+        <div class="modal-content" id="m-content">
+            <span class="material-symbols-outlined close-btn" onclick="closeModal()">close</span>
+            <h2 class="modal-title-full" id="m-title"></h2>
+            <span class="modal-subtitle-full" id="m-subtitle"></span>
+            <p class="modal-text-full" id="m-text"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const data = {
+        1: {
+            title: "Latencia",
+            subtitle: "• Contradicción estructural y deudas ecológicas",
+            text: "Es el proceso de contradicción estructural en el metabolismo social global. Incluye la progresiva ampliación de las fronteras extractivas. Se expresa en la acumulación de la deuda ecológica no reclamada por el Sur Global. (Martínez Alier 2021). ",
+            color: "#689f38"
+        },
+        2: {
+            title: "Escalamiento",
+            subtitle: "• Imposición de proyectos extractivos y medidas ilegítimas",
+            text: "Agencia de actores primariamente estatales, pero no exclusivamente estatales. Estos actores imponen o buscan imponer proyectos extractivos o que afectan las condiciones del ambiente, la cultura o las comprensiones del territorio. El escalamiento suele ir de la mano de medidas o políticas no inclusivas o ilegítimas y se da por la imposición de un único lenguaje de valoración generalmente monetario. (Martínez Alier 2021). ",
+            color: "#ffa000"
+        },
+        3: {
+            title: "Crisis y confrontación",
+            subtitle: "• Movilización social y represión contra defensores",
+            text: "Esta fase incorpora repertorios de acción colectiva como movilización social o tomas simbólicas. La manifestación más visible y violenta de la confrontación es la criminalización de la protesta social e incluso el asesinato de líderes y lideresas, aunque también incluye medidas de política pública orientadas a desmovilizar a los defensores, defensoras o líderes o lideresas comunitarias. ",
+            color: "#d32f2f"
+        },
+        4: {
+            title: "Transformación o resolución",
+            subtitle: "• Negociación y nuevos marcos de gobernanza",
+            text: "Esta fase puede integrar procesos de negociación y resolución de conflictos socioambientales o, en otros casos, implicar decisiones jurisdiccionales de litio estratégico, mecanismos de democracia directa como el caso Yasuní, o nuevos marcos de gobernanza como el Acuerdo de Escazú. La resolución del conflicto por alguna de estas vías, sin embargo, no implica la resolución de la deuda ecológica. ",
+            color: "#1976d2"
+        }
+    };
+
+    const overlay = document.getElementById('overlay');
+    const mContent = document.getElementById('m-content');
+    const mTitle = document.getElementById('m-title');
+    const mSubtitle = document.getElementById('m-subtitle');
+    const mText = document.getElementById('m-text');
+
+    function openModal(id) {
+        const info = data[id];
+        mTitle.innerText = info.title + " ";
+        mSubtitle.innerText = info.subtitle + " ";
+        mText.innerText = info.text;
+        mContent.style.borderLeftColor = info.color;
+        mTitle.style.color = info.color;
+        overlay.style.display = 'flex';
+    }
+
+    function closeModal() {
+        overlay.style.display = 'none';
+    }
+
+    // Cerrar con click fuera del modal
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+    });
+</script>
+
+</body>
+</html>

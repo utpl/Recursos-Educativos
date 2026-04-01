@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz: Territorio, Resistencias y Disputas de Poder</title>
+  <style>
+    :root {
+      --bg: #fff7ed;
+      --card-bg: #ffffff;
+      --accent: #c2410c;
+      --accent-light: #f97316;
+      --success: #16a34a;
+      --error: #dc2626;
+      --text: #431407;
+      --text-light: #9a3412;
+      --border: #fed7aa;
+      --shadow: rgba(194, 65, 12, 0.15);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    
+    .container {
+      width: 800px;
+      height: 800px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 50%, #fff7ed 100%);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Decoraciones */
+    .deco-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.06;
+      background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c2410c' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    
+    .deco-fist {
+      position: absolute;
+      top: 40px;
+      right: 60px;
+      font-size: 80px;
+      opacity: 0.1;
+      transform: rotate(15deg);
+    }
+    
+    .deco-flame {
+      position: absolute;
+      bottom: 100px;
+      left: 40px;
+      font-size: 60px;
+      opacity: 0.08;
+    }
+    
+    /* Header */
+    .header {
+      padding: 20px 24px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+    
+    .header-icon {
+      font-size: 48px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    
+    .header h1 {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--accent);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+    
+    .header p {
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+    
+    .progress-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .progress-dot {
+      width: 36px;
+      height: 8px;
+      background: #fed7aa;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+    
+    .progress-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(194, 65, 12, 0.4);
+    }
+    
+    .progress-dot.correct {
+      background: var(--success);
+    }
+    
+    .progress-dot.wrong {
+      background: var(--error);
+    }
+    
+    /* Screens */
+    .screen {
+      display: none;
+      flex: 1;
+      padding: 0 40px 80px;
+      position: relative;
+      z-index: 2;
+      overflow-y: auto;
+      flex-direction: column;
+    }
+    
+    .screen.active {
+      display: flex;
+    }
+    
+    /* Intro Screen */
+    .intro-box {
+      background: var(--card-bg);
+      border: 4px solid var(--border);
+      padding: 30px;
+      box-shadow: 8px 8px 0 var(--shadow);
+      margin-bottom: 20px;
+    }
+    
+    .intro-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--accent);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .intro-text {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    
+    .intro-text strong {
+      color: var(--accent);
+    }
+    
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .topic-tag {
+      background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+      border: 2px solid #f97316;
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .start-btn {
+      margin-top: 24px;
+      padding: 16px 48px;
+      background: linear-gradient(135deg, var(--accent) 0%, #9a3412 100%);
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #7c2d12;
+      transition: all 0.2s;
+      align-self: center;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .start-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 9px 0 #7c2d12;
+    }
+    
+    .start-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 0 #7c2d12;
+    }
+    
+    /* Quiz Container */
+    .quiz-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .question-slide {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+    }
+    
+    .question-slide.active {
+      display: flex;
+    }
+    
+    .question-box {
+      background: var(--card-bg);
+      border: 4px solid var(--accent);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 6px 6px 0 var(--shadow);
+      position: relative;
+    }
+    
+    .question-number {
+      position: absolute;
+      top: -14px;
+      left: 24px;
+      background: var(--accent);
+      color: white;
+      padding: 6px 20px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .question-text {
+      font-size: 16px;
+      line-height: 1.6;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 12px;
+    }
+    
+    /* Options */
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    
+    .option-btn {
+      background: white;
+      border: 3px solid #fed7aa;
+      padding: 16px 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.05);
+    }
+    
+    .option-btn:hover:not(.disabled) {
+      border-color: var(--accent-light);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 rgba(0,0,0,0.1);
+    }
+    
+    .option-btn.selected-correct {
+      border-color: var(--success);
+      background: #dcfce7;
+      color: #166534;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3);
+    }
+    
+    .option-btn.selected-wrong {
+      border-color: var(--error);
+      background: #fee2e2;
+      color: #991b1b;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+    }
+    
+    .option-btn.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .option-letter {
+      background: var(--accent);
+      color: white;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .option-btn.selected-correct .option-letter {
+      background: var(--success);
+    }
+    
+    .option-btn.selected-wrong .option-letter {
+      background: var(--error);
+    }
+    
+    /* Matching Question Special Styles */
+    .matching-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .matching-column h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .matching-item {
+      background: white;
+      border: 3px solid #fed7aa;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .matching-item:hover:not(.matched) {
+      border-color: var(--accent-light);
+      transform: translateX(-3px);
+    }
+    
+    .matching-item.selected {
+      border-color: var(--accent);
+      background: #ffedd5;
+      box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.2);
+    }
+    
+    .matching-item.matched {
+      border-color: var(--success);
+      background: #dcfce7;
+      cursor: default;
+    }
+    
+    .matching-item.matched-wrong {
+      border-color: var(--error);
+      background: #fee2e2;
+    }
+    
+    /* Feedback Panel */
+    .feedback-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 20px;
+      border: 3px solid;
+      animation: slideUp 0.4s ease;
+    }
+    
+    .feedback-panel.show {
+      display: block;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .feedback-panel.correct {
+      background: #dcfce7;
+      border-color: var(--success);
+    }
+    
+    .feedback-panel.wrong {
+      background: #fee2e2;
+      border-color: var(--error);
+    }
+    
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .feedback-panel.correct .feedback-header {
+      color: #166534;
+    }
+    
+    .feedback-panel.wrong .feedback-header {
+      color: #991b1b;
+    }
+    
+    .feedback-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    
+    /* Navigation */
+    .quiz-nav {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    
+    .nav-btn {
+      padding: 12px 28px;
+      background: white;
+      border: 3px solid var(--accent);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 var(--shadow);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .nav-btn:hover:not(:disabled) {
+      background: var(--accent);
+      color: white;
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--shadow);
+    }
+    
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    
+    .nav-btn.finish {
+      background: linear-gradient(135deg, var(--success) 0%, #15803d 100%);
+      border-color: #15803d;
+      color: white;
+      display: none;
+    }
+    
+    .nav-btn.finish.show {
+      display: flex;
+    }
+    
+    /* Final Screen */
+    .final-box {
+      background: var(--card-bg);
+      border: 4px solid var(--success);
+      padding: 30px;
+      box-shadow: 8px 8px 0 rgba(22, 163, 74, 0.2);
+      text-align: center;
+    }
+    
+    .final-trophy {
+      font-size: 70px;
+      margin-bottom: 16px;
+      display: block;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-15px) scale(1.1); }
+    }
+    
+    .final-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--success);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .final-subtitle {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 24px;
+      font-weight: 700;
+    }
+    
+    .final-content {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      border: 3px solid #86efac;
+      padding: 24px;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    
+    .final-content strong {
+      color: #166534;
+    }
+    
+    .score-display {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin: 24px 0;
+    }
+    
+    .score-item {
+      text-align: center;
+    }
+    
+    .score-number {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+    
+    .score-label {
+      font-size: 12px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      padding: 14px;
+      font-size: 11px;
+      color: var(--text-light);
+      text-align: center;
+      border-top: 3px solid var(--border);
+      z-index: 10;
+      font-weight: 600;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+      }
+      
+      .topics-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .matching-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="deco-pattern"></div>
+    <div class="deco-fist">✊</div>
+    <div class="deco-flame">🔥</div>
+    
+    <header class="header">
+      <span class="header-icon">⚔️🌎🛡️</span>
+      <h1>Territorio, Resistencias y Disputas de Poder</h1>
+      <p>Quiz interactivo | Semana 12 | ESAN_2000 Ecología Política</p>
+      <div class="progress-container" id="progress-bar">
+        <div class="progress-dot active"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+      </div>
+    </header>
+    
+    <!-- PANTALLA 1: INTRO -->
+    <div class="screen active" id="screen-intro">
+      <div class="intro-box">
+        <div class="intro-title">📖 Instrucciones</div>
+        <p class="intro-text">
+          Analice cada pregunta y <strong>seleccione la respuesta correcta</strong>. Considere los procesos de <strong>acumulación por desposesión</strong>, el rol de los <strong>movimientos sociales</strong>, las <strong>resistencias territoriales</strong> y las <strong>relaciones de poder</strong> entre actores políticos, empresariales y crimen organizado.
+        </p>
+        
+        <div class="topics-grid">
+          <div class="topic-tag">
+            <span>💰</span> Acumulación por desposesión
+          </div>
+          <div class="topic-tag">
+            <span>✊</span> Movimientos sociales
+          </div>
+          <div class="topic-tag">
+            <span>🛡️</span> Resistencias territoriales
+          </div>
+          <div class="topic-tag">
+            <span>⚡</span> Relaciones de poder
+          </div>
+        </div>
+      </div>
+      
+      <button class="start-btn" onclick="startQuiz()">
+        <span>🚀</span> Iniciar Quiz
+      </button>
+    </div>
+    
+    <!-- PANTALLA 2: QUIZ -->
+    <div class="screen" id="screen-quiz">
+      <div class="quiz-container">
+        
+        <!-- PREGUNTA 1 -->
+        <div class="question-slide active" data-question="1">
+          <div class="question-box">
+            <span class="question-number">Pregunta 1 de 4</span>
+            <p class="question-text">
+              ¿Cuál es la característica central del proceso de acumulación por desposesión en el contexto territorial?
+            </p>
+          </div>
+          
+          <div class="options-container">
+            <button class="option-btn" onclick="selectOption(1, 'A', false)">
+              <span class="option-letter">A</span>
+              <span>Promueve la distribución equitativa de los recursos naturales entre comunidades.</span>
+            </button>
+            <button class="option-btn" onclick="selectOption(1, 'B', true)">
+              <span class="option-letter">B</span>
+              <span>Se basa en la apropiación de bienes naturales mediante mecanismos como violencia, fraude y depredación.</span>
+            </button>
+            <button class="option-btn" onclick="selectOption(1, 'C', false)">
+              <span class="option-letter">C</span>
+              <span>Fortalece la autonomía de los territorios sin intervención externa.</span>
+            </button>
+            <button class="option-btn" onclick="selectOption(1, 'D', false)">
+              <span class="option-letter">D</span>
+              <span>Garantiza el uso sostenible de los recursos sin conflictos sociales.</span>
+            </button>
+          </div>
+          
+          <div class="feedback-panel correct" id="feedback-1">
+            <div class="feedback-header">
+              <span>✅</span> ¡Correcto!
+            </div>
+            <p class="feedback-text">
+              Este proceso explica cómo el <strong>capital se expande a través de la apropiación desigual de territorios y recursos</strong>, generando conflictos socioambientales.
+            </p>
+          </div>
+        </div>
+        
+        <!-- PREGUNTA 2 -->
+        <div class="question-slide" data-question="2">
+          <div class="question-box">
+            <span class="question-number">Pregunta 2 de 4</span>
+            <p class="question-text">
+              Los movimientos sociales, organizaciones y comunidades cumplen un rol activo en la defensa del territorio, la generación de alternativas y la incidencia política.
+            </p>
+          </div>
+          
+          <div class="options-container">
+            <button class="option-btn" onclick="selectOption(2, 'V', true)">
+              <span class="option-letter">V</span>
+              <span>Verdadero</span>
+            </button>
+            <button class="option-btn" onclick="selectOption(2, 'F', false)">
+              <span class="option-letter">F</span>
+              <span>Falso</span>
+            </button>
+          </div>
+          
+          <div class="feedback-panel correct" id="feedback-2">
+            <div class="feedback-header">
+              <span>✅</span> ¡Correcto!
+            </div>
+            <p class="feedback-text">
+              Estos actores <strong>no solo resisten</strong>, sino que también <strong>proponen modelos alternativos</strong> y participan en procesos políticos y legales.
+            </p>
+          </div>
+        </div>
+        
+        <!-- PREGUNTA 3 -->
+        <div class="question-slide" data-question="3">
+          <div class="question-box">
+            <span class="question-number">Pregunta 3 de 4</span>
+            <p class="question-text">
+              Relacione cada dimensión del accionar de los movimientos sociales con su descripción:
+            </p>
+          </div>
+          
+          <div class="matching-container">
+            <div class="matching-column">
+              <h4>🎯 Conceptos</h4>
+              <div class="matching-item" data-concept="1" onclick="selectConcept(1)">
+                1. Resistencia territorial
+              </div>
+              <div class="matching-item" data-concept="2" onclick="selectConcept(2)">
+                2. Propuestas alternativas
+              </div>
+              <div class="matching-item" data-concept="3" onclick="selectConcept(3)">
+                3. Visibilización y denuncia
+              </div>
+            </div>
+            
+            <div class="matching-column">
+              <h4>📝 Descripciones</h4>
+              <div class="matching-item" data-desc="A" onclick="selectDesc('A')">
+                A. Promoción de modelos de gobernanza ambiental y protección de recursos
+              </div>
+              <div class="matching-item" data-desc="B" onclick="selectDesc('B')">
+                B. Defensa frente a la apropiación de bienes naturales y territorios
+              </div>
+              <div class="matching-item" data-desc="C" onclick="selectDesc('C')">
+                C. Denuncia de crímenes corporativos y exigencia de reparación
+              </div>
+            </div>
+          </div>
+          
+          <div class="feedback-panel correct" id="feedback-3">
+            <div class="feedback-header">
+              <span>✅</span> ¡Correcto!
+            </div>
+            <p class="feedback-text">
+              Las acciones de los movimientos sociales integran <strong>defensa, propuesta y denuncia</strong> como estrategias complementarias.
+            </p>
+          </div>
+        </div>
+        
+        <!-- PREGUNTA 4 -->
+        <div class="question-slide" data-question="4">
+          <div class="question-box">
+            <span class="question-number">Pregunta 4 de 4</span>
+            <p class="question-text">
+              En un territorio, autoridades locales aprueban un proyecto extractivo en alianza con empresas privadas. Posteriormente, se evidencia la participación de actores vinculados al crimen organizado, afectando derechos de las comunidades.
+            </p>
+            <p class="question-text" style="margin-top: 12px; color: var(--accent);">
+              En este contexto, ¿cuál interpretación es más adecuada?
+            </p>
+          </div>
+          
+          <div class="options-container">
+            <button class="option-btn" onclick="selectOption(4, 'A', false)">
+              <span class="option-letter">A</span>
+              <span>Se trata de un problema exclusivamente económico relacionado con inversión y desarrollo local.</span>
+            </button>
+            <button class="option-btn" onclick="selectOption(4, 'B', true)">
+              <span class="option-letter">B</span>
+              <span>Se evidencia un triángulo de poder entre actores políticos, empresariales y crimen organizado que afecta la gobernanza y los derechos humanos.</span>
+            </button>
+          </div>
+          
+          <div class="feedback-panel correct" id="feedback-4-correct">
+            <div class="feedback-header">
+              <span>✅</span> ¡Correcto! - Retroalimentación más adecuada
+            </div>
+            <p class="feedback-text">
+              Esta opción reconoce la <strong>articulación entre actores políticos, económicos y criminales</strong>, lo que explica la vulneración de derechos y la captura de estructuras estatales.
+            </p>
+          </div>
+          
+          <div class="feedback-panel wrong" id="feedback-4-wrong">
+            <div class="feedback-header">
+              <span>⚠️</span> Retroalimentación alternativa
+            </div>
+            <p class="feedback-text">
+              Esta interpretación es <strong>limitada</strong>, ya que reduce el problema a lo económico e <strong>ignora las relaciones de poder</strong> y sus impactos sociales y políticos.
+            </p>
+          </div>
+        </div>
+        
+        <div class="quiz-nav">
+          <button class="nav-btn" id="prev-btn" onclick="changeQuestion(-1)" disabled>
+            ← Anterior
+          </button>
+          <button class="nav-btn" id="next-btn" onclick="changeQuestion(1)">
+            Siguiente →
+          </button>
+          <button class="nav-btn finish" id="finish-btn" onclick="showFinal()">
+            <span>🏆</span> Ver Resultado
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- PANTALLA 3: FINAL -->
+    <div class="screen" id="screen-final">
+      <div class="final-box">
+        <span class="final-trophy">🏆</span>
+        <h2 class="final-title">¡Excelente trabajo!</h2>
+        <p class="final-subtitle">Has completado el quiz exitosamente</p>
+        
+        <div class="score-display">
+          <div class="score-item">
+            <div class="score-number" id="correct-count">4</div>
+            <div class="score-label">Correctas</div>
+          </div>
+          <div class="score-item">
+            <div class="score-number">4</div>
+            <div class="score-label">Total</div>
+          </div>
+        </div>
+        
+        <div class="final-content">
+          Las respuestas seleccionadas reflejan una <strong>comprensión adecuada del territorio como un espacio dinámico</strong> atravesado por procesos de acumulación, resistencias y relaciones de poder.
+          <br><br>
+          Se reconoce el <strong>papel fundamental de los movimientos sociales</strong> en la defensa de los bienes comunes y la importancia de analizar críticamente la <strong>articulación entre actores políticos, empresariales y criminales</strong> en los conflictos socioambientales.
+        </div>
+      </div>
+    </div>
+    
+    <footer class="footer">
+      📚 ESAN_2000 Ecología Política | Prof. Melania Noemí Carrión Gualán | Quiz Semana 12
+    </footer>
+  </div>
+  
+  <script>
+    let currentQuestion = 1;
+    const totalQuestions = 4;
+    const answered = { 1: false, 2: false, 3: false, 4: false };
+    let correctAnswers = 0;
+    
+    // Matching game state
+    let selectedConcept = null;
+    let matches = { 1: false, 2: false, 3: false };
+    const correctMatches = { 1: 'B', 2: 'A', 3: 'C' };
+    
+    function startQuiz() {
+      document.getElementById('screen-intro').classList.remove('active');
+      document.getElementById('screen-quiz').classList.add('active');
+    }
+    
+    function selectOption(question, option, isCorrect) {
+      if (answered[question]) return;
+      
+      answered[question] = true;
+      
+      // Update progress
+      const dot = document.querySelectorAll('.progress-dot')[question - 1];
+      dot.classList.remove('active');
+      dot.classList.add(isCorrect ? 'correct' : 'wrong');
+      if (question < totalQuestions) {
+        document.querySelectorAll('.progress-dot')[question].classList.add('active');
+      }
+      
+      // Mark buttons
+      const slide = document.querySelector(`.question-slide[data-question="${question}"]`);
+      slide.querySelectorAll('.option-btn').forEach(btn => {
+        btn.classList.add('disabled');
+        btn.style.pointerEvents = 'none';
+      });
+      
+      const selectedBtn = slide.querySelector(`.option-btn:nth-child(${option === 'A' ? 1 : option === 'B' ? 2 : option === 'C' ? 3 : 4})`);
+      selectedBtn.classList.remove('disabled');
+      selectedBtn.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+      
+      // Show feedback
+      if (question === 4) {
+        document.getElementById(isCorrect ? 'feedback-4-correct' : 'feedback-4-wrong').classList.add('show');
+      } else {
+        document.getElementById(`feedback-${question}`).classList.add('show');
+      }
+      
+      if (isCorrect) correctAnswers++;
+      
+      updateNavButtons();
+    }
+    
+    function selectConcept(num) {
+      if (matches[num] || answered[3]) return;
+      
+      // Clear previous selection
+      document.querySelectorAll('.matching-item[data-concept]').forEach(item => {
+        item.classList.remove('selected');
+      });
+      
+      selectedConcept = num;
+      document.querySelector(`.matching-item[data-concept="${num}"]`).classList.add('selected');
+      
+      checkMatchComplete();
+    }
+    
+    function selectDesc(letter) {
+      if (!selectedConcept || matches[selectedConcept] || answered[3]) return;
+      
+      const conceptNum = selectedConcept;
+      const isCorrect = correctMatches[conceptNum] === letter;
+      
+      matches[conceptNum] = true;
+      
+      // Mark items
+      document.querySelector(`.matching-item[data-concept="${conceptNum}"]`).classList.add(isCorrect ? 'matched' : 'matched-wrong');
+      document.querySelector(`.matching-item[data-desc="${letter}"]`).classList.add(isCorrect ? 'matched' : 'matched-wrong');
+      
+      // Clear selection
+      document.querySelector(`.matching-item[data-concept="${conceptNum}"]`).classList.remove('selected');
+      selectedConcept = null;
+      
+      // Check if all matched
+      if (Object.values(matches).every(m => m)) {
+        answered[3] = true;
+        const allCorrect = Object.keys(matches).every(k => 
+          document.querySelector(`.matching-item[data-concept="${k}"]`).classList.contains('matched')
+        );
+        
+        // Update progress
+        const dot = document.querySelectorAll('.progress-dot')[2];
+        dot.classList.remove('active');
+        dot.classList.add(allCorrect ? 'correct' : 'wrong');
+        document.querySelectorAll('.progress-dot')[3].classList.add('active');
+        
+        // Show feedback
+        document.getElementById('feedback-3').classList.add('show');
+        
+        if (allCorrect) correctAnswers++;
+        
+        updateNavButtons();
+      }
+    }
+    
+    function checkMatchComplete() {
+      // Visual feedback that we're waiting for a description
+      document.querySelectorAll('.matching-item[data-desc]').forEach(item => {
+        if (!item.classList.contains('matched')) {
+          item.style.borderStyle = 'dashed';
+          setTimeout(() => {
+            item.style.borderStyle = 'solid';
+          }, 300);
+        }
+      });
+    }
+    
+    function changeQuestion(direction) {
+      const newQ = currentQuestion + direction;
+      if (newQ >= 1 && newQ <= totalQuestions) {
+        document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.remove('active');
+        currentQuestion = newQ;
+        document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.add('active');
+        updateNavButtons();
+      }
+    }
+    
+    function updateNavButtons() {
+      document.getElementById('prev-btn').disabled = currentQuestion === 1;
+      
+      const currentAnswered = answered[currentQuestion];
+      
+      if (currentQuestion === totalQuestions) {
+        document.getElementById('next-btn').style.display = 'none';
+        const allAnswered = Object.values(answered).every(v => v);
+        if (allAnswered) {
+          document.getElementById('finish-btn').classList.add('show');
+        }
+      } else {
+        document.getElementById('next-btn').style.display = currentAnswered ? 'flex' : 'none';
+        document.getElementById('finish-btn').classList.remove('show');
+      }
+    }
+    
+    function showFinal() {
+      document.getElementById('screen-quiz').classList.remove('active');
+      document.getElementById('screen-final').classList.add('active');
+      document.getElementById('correct-count').textContent = correctAnswers;
+    }
+  </script>
+</body>
+</html>

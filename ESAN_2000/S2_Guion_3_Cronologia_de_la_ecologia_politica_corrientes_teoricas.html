@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronología de la Ecología Política</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --c1: #d32f2f; /* Rojo - Marxista */
+            --c2: #f57c00; /* Naranja - Distributivo */
+            --c3: #fbc02d; /* Amarillo - Poscolonial */
+            --c4: #1976d2; /* Azul - Cultural */
+            --c5: #7b1fa2; /* Púrpura - Feminista */
+            --c6: #388e3c; /* Verde - Síntesis */
+            --bg: #fdfdfd;
+            --text: #2c3e50;
+            --white: #ffffff;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* Contenedor Fijo Canvas (800x800px) */
+        .canvas-container {
+            width: 800px;
+            height: 750px;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid #eee;
+        }
+
+        header {
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .instruction {
+            background: #f1f5f9;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Línea de Tiempo Central */
+        .timeline-wrapper {
+            flex: 1;
+            position: relative;
+            padding: 20px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Flecha de Progreso */
+        .progress-arrow {
+            position: absolute;
+            top: 50%;
+            left: 40px;
+            right: 40px;
+            height: 12px;
+            background: rgb(49, 149, 203);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .progress-arrow::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: -10px;
+            border-left: 25px solid rgb(49, 149, 203);
+            border-top: 16px solid transparent;
+            border-bottom: 16px solid transparent;
+        }
+
+        .nodes-container {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Nodo Individual */
+        .node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 110px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .node:hover {
+            transform: scale(1.05);
+        }
+
+        .node-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50% !important; /* Forzado por regla circular */
+            background: var(--white);
+            border: 4px solid var(--node-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 15px 0;
+            transition: var(--transition);
+        }
+
+        .node:hover .node-circle {
+            background: var(--node-color);
+            color: var(--white);
+        }
+
+        .node-circle .material-icons {
+            font-size: 32px;
+            color: var(--node-color);
+        }
+
+        .node:hover .node-circle .material-icons {
+            color: var(--white);
+        }
+
+        .node-year {
+            font-weight: 800;
+            font-size: 0.8rem;
+            color: #333;
+            background: #eee;
+            padding: 2px 8px;
+            text-align: center;
+        }
+
+        .node-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.2;
+            color: #444;
+        }
+
+        /* Modales */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            width: 85%;
+            background: var(--white);
+            padding: 0;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+            border-left: 10px solid var(--modal-color);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 25px 30px 10px 30px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            color: var(--modal-color);
+            margin-bottom: 5px;
+        }
+
+        .modal-body {
+            padding: 0 30px 30px 30px;
+        }
+
+        .data-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .data-item {
+            font-size: 0.95rem;
+        }
+
+        .data-label {
+            display: block;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            color: #999;
+            margin-bottom: 3px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            color: #ccc;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        /* Footer */
+        footer {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            font-size: 0.75rem;
+            color: #888;
+            border-top: 1px solid #eee;
+        }
+
+        footer p { margin-bottom: 4px; }
+
+        /* Colores Específicos */
+        .c1 { --node-color: var(--c1); }
+        .c2 { --node-color: var(--c2); }
+        .c3 { --node-color: var(--c3); }
+        .c4 { --node-color: var(--c4); }
+        .c5 { --node-color: var(--c5); }
+        .c6 { --node-color: var(--c6); }
+
+        @media (max-width: 600px) {
+            .canvas-container { width: 100%; height: auto; min-height: 800px; }
+            .nodes-container { flex-direction: column; align-items: center; gap: 20px; }
+            .progress-arrow { display: none; }
+            .node { width: 100%; flex-direction: row; gap: 15px; }
+            .node-circle { width: 50px; height: 50px; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="canvas-container">
+    <header>
+        <h1>Cronología de la ecología política: corrientes teóricas</h1>
+        <p>Explore el campo crítico, interdisciplinario y normativo de la ecología política [cite: 5]</p>
+    </header>
+
+    <div class="instruction">
+        <span class="material-icons">ads_click</span>
+        Haga clic en cada ítem para visualizar la información.
+    </div>
+
+    <main class="timeline-wrapper">
+        <div class="progress-arrow"></div>
+        <div class="nodes-container">
+            <div class="node c1" onclick="openModal(1)">
+                <span class="node-year">1970s–1980s</span>
+                <div class="node-circle"><span class="material-icons">factory</span></div>
+                <span class="node-label">Político-económico (Marxista)</span>
+            </div>
+            <div class="node c2" onclick="openModal(2)">
+                <span class="node-year">1980s–1990s</span>
+                <div class="node-circle"><span class="material-icons">balance</span></div>
+                <span class="node-label">Conflictos distributivos</span>
+            </div>
+            <div class="node c3" onclick="openModal(3)">
+                <span class="node-year">1980s–2000s</span>
+                <div class="node-circle"><span class="material-icons">public</span></div>
+                <span class="node-label">Poscolonial y Decolonial</span>
+            </div>
+            <div class="node c4" onclick="openModal(4)">
+                <span class="node-year">1990s</span>
+                <div class="node-circle"><span class="material-icons">psychology</span></div>
+                <span class="node-label">Cultural y posestructural</span>
+            </div>
+            <div class="node c5" onclick="openModal(5)">
+                <span class="node-year">1990s–2000s</span>
+                <div class="node-circle"><span class="material-icons">diversity_3</span></div>
+                <span class="node-label">Feminista e Interseccional</span>
+            </div>
+            <div class="node c6" onclick="openModal(6)">
+                <span class="node-year">2000s–Act.</span>
+                <div class="node-circle"><span class="material-icons">auto_awesome</span></div>
+                <span class="node-label">Síntesis latinoamericana</span>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p><strong>Elaboración propia</strong> [cite: 6]</p>
+        <p><strong>Referencia:</strong> Leff, E. (2006). La ecología política en América Latina. <i>Sociedad y Estado</i>. [cite: 6]</p>
+    </footer>
+
+    <div class="modal-overlay" id="overlay" onclick="closeModal(event)">
+        <div class="modal-card" id="modalCard">
+            <span class="material-icons close-btn" onclick="document.getElementById('overlay').style.display='none'">close</span>
+            <div class="modal-header">
+                <span id="m-period" style="font-weight: 800; font-size: 0.8rem; color: #999;"></span>
+                <h2 id="m-title"></h2>
+            </div>
+            <div class="modal-body">
+                <div class="data-grid">
+                    <div class="data-item">
+                        <span class="data-label">Idea Fuerza</span>
+                        <p id="m-idea"></p>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Clave Teórica</span>
+                        <p id="m-key"></p>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Exponentes</span>
+                        <p id="m-exp"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const content = {
+        1: {
+            period: "1970s–1980s",
+            title: "Enfoque político-económico (marxista)",
+            idea: "La crisis ambiental es estructural al capitalismo. [cite: 6]",
+            key: "“Segunda contradicción del capitalismo”. [cite: 6]",
+            exp: "James O’Connor · André Gorz · John Bellamy Foster [cite: 6]",
+            color: "#d32f2f"
+        },
+        2: {
+            period: "1980s–1990s",
+            title: "Conflictos distributivos (economía ecológica crítica)",
+            idea: "Los costos ambientales del crecimiento se distribuyen de forma desigual. [cite: 6]",
+            key: "Justicia ambiental · “Ambientalismo de los pobres”. [cite: 6]",
+            exp: "Joan Martínez-Alier · James O’Connor [cite: 6]",
+            color: "#f57c00"
+        },
+        3: {
+            period: "1980s–2000s",
+            title: "Enfoque poscolonial y decolonial (Sur Global)",
+            idea: "La naturaleza está históricamente colonizada; persiste la colonialidad del poder. [cite: 6]",
+            key: "Extractivismo contrapoderes socioambientales. [cite: 6]",
+            exp: "Aníbal Quijano · Héctor Alimonda · Walter Porto-Gonçalves [cite: 6]",
+            color: "#fbc02d"
+        },
+        4: {
+            period: "1990s",
+            title: "Enfoque cultural y posestructural",
+            idea: "La naturaleza se construye culturalmente; el discurso produce poder. [cite: 6]",
+            key: "Saberes, narrativas e identidad. [cite: 6]",
+            exp: "Arturo Escobar · Arun Agrawal · Donald Moore [cite: 6]",
+            color: "#1976d2"
+        },
+        5: {
+            period: "1990s–2000s",
+            title: "Enfoque feminista e interseccional",
+            idea: "Impactos ambientales diferenciados por género, clase y etnia. [cite: 6]",
+            key: "“Lo personal es político y ecológico”. [cite: 6]",
+            exp: "Bina Agarwal · Vandana Shiva · Astrid Ulloa [cite: 6]",
+            color: "#7b1fa2"
+        },
+        6: {
+            period: "2000s–Actualidad",
+            title: "Síntesis latinoamericana crítica",
+            idea: "Poder, territorio y conocimiento para la justicia ambiental. [cite: 6]",
+            key: "Epistemologías políticas y saberes plurales. [cite: 6]",
+            exp: "Enrique Leff · Germán Palacio · Eduardo Gudynas [cite: 6]",
+            color: "#388e3c"
+        }
+    };
+
+    function openModal(id) {
+        const item = content[id];
+        const overlay = document.getElementById('overlay');
+        const card = document.getElementById('modalCard');
+        
+        document.getElementById('m-period').innerText = item.period;
+        document.getElementById('m-title').innerText = item.title;
+        document.getElementById('m-idea').innerText = item.idea;
+        document.getElementById('m-key').innerText = item.key;
+        document.getElementById('m-exp').innerText = item.exp;
+        
+        card.style.setProperty('--modal-color', item.color);
+        overlay.style.display = 'flex';
+    }
+
+    function closeModal(e) {
+        if (e.target.id === 'overlay') {
+            document.getElementById('overlay').style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

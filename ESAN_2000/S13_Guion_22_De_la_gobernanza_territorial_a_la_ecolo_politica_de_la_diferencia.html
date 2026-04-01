@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>De la gobernanza territorial a la ecología política de la diferencia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #1a5fb4;
+      --color-primary-dark: #155099;
+      --color-secondary: #2ec27e;
+      --color-accent: #e5a50a;
+      --color-bg: #ffffff;
+      --color-surface: #f6f5f4;
+      --color-text: #2e3436;
+      --color-text-light: #5e5c64;
+      --color-border: #d5d3cf;
+      --color-error: #c01c28;
+      --color-success: #26a269;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 8px rgba(0,0,0,0.12);
+      --shadow-lg: 0 8px 16px rgba(0,0,0,0.16);
+      --transition: all 0.2s ease-in-out;
+      --font-base: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-size-base: 12pt;
+      --touch-target: 44px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-base);
+      font-size: var(--font-size-base);
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #resource-container {
+      width: 800px;
+      min-height: 500px;
+      max-height: 800px;
+      background: var(--color-bg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid var(--color-secondary);
+      flex-shrink: 0;
+    }
+
+    .header-icon {
+      font-size: 24px;
+    }
+
+    .header h1 {
+      font-size: 14pt;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .instruction-bar {
+      background: var(--color-surface);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 11pt;
+      color: var(--color-text-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .instruction-bar .material-symbols-outlined {
+      color: var(--color-primary);
+      font-size: 18px;
+    }
+
+    .main-content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      gap: 8px;
+      padding: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .column-title {
+      font-weight: 600;
+      font-size: 11pt;
+      color: var(--color-primary);
+      padding: 6px 8px;
+      background: var(--color-surface);
+      border-left: 3px solid var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .card {
+      background: white;
+      border: 2px solid var(--color-border);
+      padding: 2px 12px;
+      cursor: grab;
+      transition: var(--transition);
+      font-size: 9.5pt;
+      position: relative;
+      min-height: var(--touch-target);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+      transform: translateX(2px);
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .card.selected {
+      border-color: var(--color-accent);
+      background: #fff9e6;
+      box-shadow: var(--shadow-md);
+    }
+
+    .card.matched {
+      border-color: var(--color-success);
+      background: #e8f5e9;
+      cursor: default;
+      opacity: 0.9;
+    }
+
+    .card.matched:hover {
+      transform: none;
+    }
+
+    .card-number {
+      background: var(--color-primary);
+      color: white;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 9pt;
+      flex-shrink: 0;
+    }
+
+    .card-letter {
+      background: var(--color-secondary);
+      color: white;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 9pt;
+      flex-shrink: 0;
+    }
+
+    .connector-area {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .connector-line {
+      width: 2px;
+      height: 30px;
+      background: var(--color-border);
+      position: relative;
+    }
+
+    .connector-line::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background: var(--color-accent);
+      border: 2px solid white;
+    }
+
+    .action-bar {
+      padding: 10px 16px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      background: var(--color-surface);
+      flex-shrink: 0;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      font-family: var(--font-base);
+      font-weight: 600;
+      font-size: 11pt;
+      cursor: pointer;
+      transition: var(--transition);
+      min-height: var(--touch-target);
+      min-width: var(--touch-target);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: 2px solid var(--color-border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--color-primary);
+      background: white;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(46, 52, 54, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      width: 100%;
+      max-width: 520px;
+      border: 3px solid var(--color-secondary);
+      display: flex;
+      flex-direction: column;
+      max-height: 90%;
+    }
+
+    .modal-header {
+      background: var(--color-secondary);
+      color: white;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 13pt;
+    }
+
+    .modal-body {
+      padding: 18px;
+      overflow-y: auto;
+      font-size: 11pt;
+      line-height: 1.5;
+    }
+
+    .modal-body p {
+      margin-bottom: 12px;
+    }
+
+    .modal-body ul {
+      margin: 10px 0 10px 24px;
+      color: var(--color-text-light);
+    }
+
+    .modal-body li {
+      margin-bottom: 6px;
+    }
+
+    .feedback-correct {
+      color: var(--color-success);
+      font-weight: 600;
+    }
+
+    .modal-footer {
+      padding: 14px 18px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: var(--color-surface);
+    }
+
+    /* Geometric decorations */
+    .geo-decoration {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.06;
+      z-index: 0;
+    }
+
+    .geo-1 {
+      top: 60px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border: 3px solid var(--color-primary);
+      transform: rotate(45deg);
+    }
+
+    .geo-2 {
+      bottom: 80px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      background: var(--color-secondary);
+    }
+
+    .geo-3 {
+      top: 180px;
+      left: 30px;
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 35px solid var(--color-accent);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: var(--color-text);
+      color: white;
+      padding: 8px 12px;
+      font-size: 10pt;
+      border-radius: 0;
+      max-width: 220px;
+      z-index: 50;
+      pointer-events: none;
+      display: none;
+      line-height: 1.3;
+    }
+
+    .tooltip.active {
+      display: block;
+    }
+
+    /* Progress indicator */
+    .progress-bar {
+      height: 4px;
+      background: var(--color-border);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--color-success);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Status badge */
+    .status-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 4px 10px;
+      font-size: 9pt;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-badge .material-symbols-outlined {
+      font-size: 16px;
+      color: var(--color-primary);
+    }
+
+    /* Scrollbar styling */
+    .column::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .column::-webkit-scrollbar-track {
+      background: var(--color-surface);
+    }
+
+    .column::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+    }
+
+    .column::-webkit-scrollbar-thumb:hover {
+      background: var(--color-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 820px) {
+      #resource-container {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        max-height: none;
+      }
+      
+      .main-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        overflow-y: auto;
+      }
+      
+      .connector-area {
+        flex-direction: row;
+        padding: 8px 0;
+      }
+      
+      .connector-line {
+        width: 30px;
+        height: 2px;
+      }
+      
+      .card {
+        cursor: pointer;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="resource-container">
+    <!-- Geometric decorations -->
+    <div class="geo-decoration geo-1"></div>
+    <div class="geo-decoration geo-2"></div>
+    <div class="geo-decoration geo-3"></div>
+
+    <!-- Header -->
+    <header class="header">
+      <span class="material-symbols-outlined header-icon">public</span>
+      <h1>De la gobernanza territorial a la ecología política de la diferencia</h1>
+    </header>
+
+    <!-- Instruction bar -->
+    <div class="instruction-bar">
+      <span class="material-symbols-outlined">lightbulb</span>
+      <span>Analice los enfoques de gobernanza territorial y las dinámicas de defensa del lugar. Relacione cada concepto con su descripción correspondiente.</span>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <!-- Concepts Column -->
+      <div class="column" id="conceptsColumn">
+        <div class="column-title">
+          <span class="material-symbols-outlined">category</span>
+          Conceptos
+        </div>
+        <div class="card" draggable="true" data-id="1">
+          <span class="card-number">1</span>
+          <span>Modelo clásico de gobernanza del territorio</span>
+        </div>
+        <div class="card" draggable="true" data-id="2">
+          <span class="card-number">2</span>
+          <span>Acaparamiento de tierras (land grabbing)</span>
+        </div>
+        <div class="card" draggable="true" data-id="3">
+          <span class="card-number">3</span>
+          <span>Respuesta política: facilitar el acaparamiento</span>
+        </div>
+        <div class="card" draggable="true" data-id="4">
+          <span class="card-number">4</span>
+          <span>Respuesta política: mitigar efectos</span>
+        </div>
+        <div class="card" draggable="true" data-id="5">
+          <span class="card-number">5</span>
+          <span>Respuesta política: revertir el acaparamiento</span>
+        </div>
+        <div class="card" draggable="true" data-id="6">
+          <span class="card-number">6</span>
+          <span>Ecología política de la diferencia</span>
+        </div>
+        <div class="card" draggable="true" data-id="7">
+          <span class="card-number">7</span>
+          <span>Defensa del lugar</span>
+        </div>
+        <div class="card" draggable="true" data-id="8">
+          <span class="card-number">8</span>
+          <span>Dimensión sujeto-cuerpo</span>
+        </div>
+        <div class="card" draggable="true" data-id="9">
+          <span class="card-number">9</span>
+          <span>Dimensión comunidad</span>
+        </div>
+        <div class="card" draggable="true" data-id="10">
+          <span class="card-number">10</span>
+          <span>Dimensión espacio público</span>
+        </div>
+      </div>
+
+      <!-- Connector Area -->
+      <div class="connector-area">
+        <span class="material-symbols-outlined" style="color: var(--color-accent); font-size: 20px;">link</span>
+        <div class="connector-line"></div>
+        <span class="material-symbols-outlined" style="color: var(--color-primary); font-size: 20px;">check_circle</span>
+      </div>
+
+      <!-- Descriptions Column -->
+      <div class="column" id="descriptionsColumn">
+        <div class="column-title">
+          <span class="material-symbols-outlined">description</span>
+          Descripciones
+        </div>
+        <div class="card" draggable="true" data-id="A">
+          <span class="card-letter">A</span>
+          <span>Estrategia que busca detener procesos de acumulación y recuperar control sobre los territorios</span>
+        </div>
+        <div class="card" draggable="true" data-id="B">
+          <span class="card-letter">B</span>
+          <span>Proceso histórico y contemporáneo de apropiación de grandes extensiones de tierra por actores con poder económico</span>
+        </div>
+        <div class="card" draggable="true" data-id="C">
+          <span class="card-letter">C</span>
+          <span>Enfoque que prioriza identidad, cultura y territorio frente a modelos hegemónicos globales</span>
+        </div>
+        <div class="card" draggable="true" data-id="D">
+          <span class="card-letter">D</span>
+          <span>Nivel donde se articulan redes, solidaridades y conexiones entre lo local y lo global</span>
+        </div>
+        <div class="card" draggable="true" data-id="E">
+          <span class="card-letter">E</span>
+          <span>Modelo vinculado a reformas neoliberales, desregulación y concentración de tierras</span>
+        </div>
+        <div class="card" draggable="true" data-id="F">
+          <span class="card-letter">F</span>
+          <span>Perspectiva que promueve la defensa territorial desde prácticas culturales y movimientos sociales</span>
+        </div>
+        <div class="card" draggable="true" data-id="G">
+          <span class="card-letter">G</span>
+          <span>Estrategia que regula para aprovechar beneficios del acaparamiento reduciendo impactos negativos</span>
+        </div>
+        <div class="card" draggable="true" data-id="H">
+          <span class="card-letter">H</span>
+          <span>Nivel donde las personas reclaman autonomía sobre su cuerpo como base de acción política</span>
+        </div>
+        <div class="card" draggable="true" data-id="I">
+          <span class="card-letter">I</span>
+          <span>Estrategia que impulsa condiciones para expandir mercados de tierras</span>
+        </div>
+        <div class="card" draggable="true" data-id="J">
+          <span class="card-letter">J</span>
+          <span>Espacio donde se transforman prácticas colectivas y se recuperan identidad territorial</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Status badge -->
+    <div class="status-badge">
+      <span class="material-symbols-outlined">task_alt</span>
+      <span id="matchCount">0/10</span>
+    </div>
+
+    <!-- Action bar -->
+    <div class="action-bar">
+      <button class="btn btn-secondary" id="resetBtn">
+        <span class="material-symbols-outlined">refresh</span>
+        Reiniciar
+      </button>
+      <button class="btn btn-primary" id="checkBtn">
+        <span class="material-symbols-outlined">verified</span>
+        Verificar respuestas
+      </button>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Modal for feedback -->
+    <div class="modal-overlay" id="feedbackModal">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="material-symbols-outlined">celebration</span>
+          ¡Retroalimentación!
+        </div>
+        <div class="modal-body">
+          <p class="feedback-correct">¡Excelente trabajo! 🎉</p>
+          <p>Las relaciones establecidas evidencian una comprensión adecuada de:</p>
+          <ul>
+            <li>Los modelos de gobernanza territorial</li>
+            <li>El fenómeno del acaparamiento de tierras</li>
+            <li>Las respuestas políticas frente a este proceso</li>
+          </ul>
+          <p>Asimismo, se reconoce la importancia de la <strong>ecología política de la diferencia</strong> y la <strong>defensa del lugar</strong> como enfoques que priorizan la identidad, la cultura y la acción colectiva en la construcción de alternativas territoriales. 🌍✊</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="closeModal">
+            <span class="material-symbols-outlined">close</span>
+            Cerrar
+          </button>
+          <button class="btn btn-primary" id="retryBtn">
+            <span class="material-symbols-outlined">restart_alt</span>
+            Intentar de nuevo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Correct answers mapping
+      const correctAnswers = {
+        '1': 'E', '2': 'B', '3': 'I', '4': 'G', '5': 'A',
+        '6': 'C', '7': 'F', '8': 'H', '9': 'J', '10': 'D'
+      };
+
+      // State
+      let selectedConcept = null;
+      let matches = {};
+      let isMobile = window.innerWidth <= 820;
+
+      // DOM Elements
+      const conceptsColumn = document.getElementById('conceptsColumn');
+      const descriptionsColumn = document.getElementById('descriptionsColumn');
+      const checkBtn = document.getElementById('checkBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const progressFill = document.getElementById('progressFill');
+      const matchCount = document.getElementById('matchCount');
+      const feedbackModal = document.getElementById('feedbackModal');
+      const closeModal = document.getElementById('closeModal');
+      const retryBtn = document.getElementById('retryBtn');
+      const tooltip = document.getElementById('tooltip');
+
+      // Initialize
+      function init() {
+        setupEventListeners();
+        updateProgress();
+        detectMobile();
+      }
+
+      // Detect mobile for touch interaction
+      function detectMobile() {
+        isMobile = window.innerWidth <= 820;
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+          if (isMobile) {
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
+          }
+        });
+      }
+
+      // Setup event listeners
+      function setupEventListeners() {
+        // Desktop drag events
+        if (!isMobile) {
+          document.querySelectorAll('.card[draggable="true"]').forEach(card => {
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+          });
+
+          document.querySelectorAll('.column').forEach(column => {
+            column.addEventListener('dragover', handleDragOver);
+            column.addEventListener('drop', handleDrop);
+          });
+        }
+
+        // Click/tap events for all devices
+        document.querySelectorAll('.card').forEach(card => {
+          card.addEventListener('click', handleClick);
+          card.addEventListener('mouseenter', handleHover);
+          card.addEventListener('mouseleave', hideTooltip);
+          
+          // Keyboard support
+          card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick({ target: card });
+            }
+          });
+        });
+
+        // Buttons
+        checkBtn.addEventListener('click', checkAnswers);
+        resetBtn.addEventListener('click', resetActivity);
+        closeModal.addEventListener('click', () => feedbackModal.classList.remove('active'));
+        retryBtn.addEventListener('click', () => {
+          feedbackModal.classList.remove('active');
+          resetActivity();
+        });
+
+        // Close modal on overlay click
+        feedbackModal.addEventListener('click', (e) => {
+          if (e.target === feedbackModal) {
+            feedbackModal.classList.remove('active');
+          }
+        });
+
+        // Responsive
+        window.addEventListener('resize', detectMobile);
+      }
+
+      // Drag and Drop handlers (Desktop)
+      function handleDragStart(e) {
+        if (this.classList.contains('matched')) {
+          e.preventDefault();
+          return;
+        }
+        e.dataTransfer.setData('text/plain', this.dataset.id);
+        e.dataTransfer.effectAllowed = 'move';
+        this.classList.add('selected');
+        selectedConcept = this.dataset.id;
+      }
+
+      function handleDragEnd() {
+        this.classList.remove('selected');
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        const descriptionId = e.dataTransfer.getData('text/plain');
+        
+        if (selectedConcept && !selectedConcept.match(/^[A-J]$/)) {
+          // Concept dropped on description column
+          tryMatch(selectedConcept, descriptionId);
+        } else if (selectedConcept && selectedConcept.match(/^[A-J]$/)) {
+          // Description dropped on concept column
+          tryMatch(descriptionId, selectedConcept);
+        }
+        
+        selectedConcept = null;
+      }
+
+      // Click handler (All devices)
+      function handleClick(e) {
+        const card = e.target.closest('.card');
+        if (!card || card.classList.contains('matched')) return;
+
+        const id = card.dataset.id;
+        const isConcept = !id.match(/^[A-J]$/);
+
+        if (isConcept) {
+          // Select concept
+          document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+          if (selectedConcept === id) {
+            selectedConcept = null;
+          } else {
+            selectedConcept = id;
+            card.classList.add('selected');
+          }
+        } else {
+          // Try to match with selected concept
+          if (selectedConcept && !selectedConcept.match(/^[A-J]$/)) {
+            tryMatch(selectedConcept, id);
+            document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+            selectedConcept = null;
+          }
+        }
+      }
+
+      // Try to create a match
+      function tryMatch(conceptId, descriptionId) {
+        if (matches[conceptId]) return; // Already matched
+
+        // Check if correct
+        if (correctAnswers[conceptId] === descriptionId) {
+          // Mark as matched
+          matches[conceptId] = descriptionId;
+          
+          const conceptCard = document.querySelector(`.card[data-id="${conceptId}"]`);
+          const descCard = document.querySelector(`.card[data-id="${descriptionId}"]`);
+          
+          if (conceptCard) conceptCard.classList.add('matched');
+          if (descCard) descCard.classList.add('matched');
+          
+          // Visual feedback
+          conceptCard?.style.setProperty('border-color', 'var(--color-success)');
+          descCard?.style.setProperty('border-color', 'var(--color-success)');
+          
+          updateProgress();
+        } else {
+          // Wrong match - visual feedback
+          const card = document.querySelector(`.card[data-id="${descriptionId}"]`);
+          if (card) {
+            card.style.borderColor = 'var(--color-error)';
+            setTimeout(() => {
+              card.style.borderColor = '';
+            }, 500);
+          }
+        }
+      }
+
+      // Update progress bar and counter
+      function updateProgress() {
+        const matchedCount = Object.keys(matches).length;
+        const percentage = (matchedCount / 10) * 100;
+        
+        progressFill.style.width = `${percentage}%`;
+        matchCount.textContent = `${matchedCount}/10`;
+      }
+
+      // Check answers button
+      function checkAnswers() {
+        const matchedCount = Object.keys(matches).length;
+        
+        if (matchedCount < 10) {
+          // Show which ones are correct/incorrect
+          Object.entries(correctAnswers).forEach(([concept, desc]) => {
+            const conceptCard = document.querySelector(`.card[data-id="${concept}"]`);
+            const descCard = document.querySelector(`.card[data-id="${desc}"]`);
+            
+            if (matches[concept] === desc) {
+              conceptCard?.classList.add('matched');
+              descCard?.classList.add('matched');
+            }
+          });
+          updateProgress();
+          
+          if (matchedCount === 10) {
+            setTimeout(showFeedback, 300);
+          }
+        } else {
+          showFeedback();
+        }
+      }
+
+      // Show feedback modal
+      function showFeedback() {
+        feedbackModal.classList.add('active');
+      }
+
+      // Reset activity
+      function resetActivity() {
+        matches = {};
+        selectedConcept = null;
+        
+        document.querySelectorAll('.card').forEach(card => {
+          card.classList.remove('matched', 'selected');
+          card.style.borderColor = '';
+        });
+        
+        updateProgress();
+      }
+
+      // Tooltip on hover
+      function handleHover(e) {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        
+        const text = card.querySelector('span:last-child')?.textContent;
+        if (text && text.length > 50) {
+          tooltip.textContent = text;
+          tooltip.classList.add('active');
+          
+          const rect = card.getBoundingClientRect();
+          const containerRect = document.getElementById('resource-container').getBoundingClientRect();
+          
+          tooltip.style.left = `${rect.right - containerRect.left + 10}px`;
+          tooltip.style.top = `${rect.top - containerRect.top + 10}px`;
+        }
+      }
+
+      function hideTooltip() {
+        tooltip.classList.remove('active');
+      }
+
+      // Initialize on load
+      document.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
+</body>
+</html>

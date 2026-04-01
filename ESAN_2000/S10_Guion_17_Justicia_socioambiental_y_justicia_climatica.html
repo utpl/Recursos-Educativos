@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justicia socioambiental y justicia climática</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1b5e20;
+            --secondary: #0277bd;
+            --accent: #fbc02d;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --white: #ffffff;
+            --line-color: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* Contenedor Canvas 800px */
+        #game-container {
+            width: 800px;
+            height: 750px;
+            background: var(--white);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid #e2e8f0;
+        }
+
+        header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 15px 25px;
+        }
+
+        header h1 { font-size: 1.4rem; margin-bottom: 5px; }
+        
+        .instruction {
+            background: #e0f2f1;
+            padding: 12px 25px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            border-bottom: 2px solid #b2dfdb;
+        }
+
+        /* Área de Juego */
+        .game-canvas {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            position: relative;
+            gap: 100px;
+        }
+
+        #svg-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+            width: 45%;
+        }
+
+        .item {
+            padding: 10px 15px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            min-height: 50px;
+            position: relative;
+        }
+
+        .item:hover { background: #e2e8f0; border-color: var(--secondary); }
+        .item.selected { background: #d0e7ff; border-color: var(--secondary); box-shadow: 0 0 8px rgba(2, 119, 189, 0.3); }
+        .item.matched { background: #dcfce7; border-color: #22c55e; cursor: default; }
+
+        /* Puntos de conexión */
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: var(--line-color);
+            border-radius: 50% !important;
+            position: absolute;
+        }
+        .dot-right { right: -36px; }
+        .dot-left { left: -36px; }
+
+        /* Modal de Feedback */
+        .modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .modal h2 { color: var(--primary); font-size: 2rem; margin-bottom: 20px; }
+        .modal p { line-height: 1.6; color: #475569; margin-bottom: 30px; font-size: 1rem; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        footer {
+            padding: 10px 25px;
+            background: #f8fafc;
+            font-size: 0.75rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <h1>Justicia socioambiental y justicia climática [cite: 186]</h1>
+    </header>
+
+    <div class="instruction">
+        <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.2rem;">info</span>
+        <strong>Instrucción:</strong> Analice los conceptos, factores y dimensiones de la justicia socioambiental y climática. Luego, relacione cada elemento con la descripción que mejor represente su significado, considerando su vínculo con la equidad, el poder y la distribución de impactos ambientales[cite: 187].
+    </div>
+
+    <main class="game-canvas" id="canvas">
+        <svg id="svg-lines"></svg>
+        
+        <div class="column" id="col-left">
+            <div class="item" data-id="1" onclick="selectItem(this, 'left')">Justicia socioambiental <div class="dot dot-right"></div></div>
+            <div class="item" data-id="2" onclick="selectItem(this, 'left')">Justicia climática <div class="dot dot-right"></div></div>
+            <div class="item" data-id="3" onclick="selectItem(this, 'left')">Exclusión por los ingresos <div class="dot dot-right"></div></div>
+            <div class="item" data-id="4" onclick="selectItem(this, 'left')">Vulnerabilidad, susceptibilidad y riesgo <div class="dot dot-right"></div></div>
+            <div class="item" data-id="5" onclick="selectItem(this, 'left')">Sustentabilidad <div class="dot dot-right"></div></div>
+            <div class="item" data-id="6" onclick="selectItem(this, 'left')">Justicia como distribución <div class="dot dot-right"></div></div>
+            <div class="item" data-id="7" onclick="selectItem(this, 'left')">Justicia como reconocimiento <div class="dot dot-right"></div></div>
+            <div class="item" data-id="8" onclick="selectItem(this, 'left')">Justicia como participación <div class="dot dot-right"></div></div>
+            <div class="item" data-id="9" onclick="selectItem(this, 'left')">Justicia como capacidades <div class="dot dot-right"></div></div>
+        </div>
+
+        <div class="column" id="col-right">
+            <div class="item" data-match="2" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>A. Enfoque que analiza cómo el cambio climático afecta de manera desigual a países con menor responsabilidad histórica en las emisiones.</div>
+            <div class="item" data-match="8" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>B. Dimensión que enfatiza la necesidad de que los actores participen activamente en la toma de decisiones ambientales.</div>
+            <div class="item" data-match="1" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>C. Perspectiva que examina la relación entre desigualdad social y acceso diferenciado a recursos y riesgos ambientales.</div>
+            <div class="item" data-match="9" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>D. Enfoque que plantea que las comunidades deben contar con condiciones reales para desarrollarse y sostener su vida colectiva.</div>
+            <div class="item" data-match="4" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>E. Factor que señala que ciertos grupos sociales enfrentan mayores riesgos debido a condiciones estructurales previas.</div>
+            <div class="item" data-match="6" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>F. Dimensión centrada en la distribución desigual de los impactos ambientales y los beneficios de los recursos.</div>
+            <div class="item" data-match="5" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>G. Factor que promueve el uso responsable de los recursos considerando sus efectos a largo plazo.</div>
+            <div class="item" data-match="7" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>H. Dimensión que cuestiona la invisibilización de actores y las causas estructurales de la desigualdad ambiental.</div>
+            <div class="item" data-match="3" onclick="selectItem(this, 'right')"><div class="dot dot-left"></div>I. Factor que relaciona la desigualdad económica con la exposición a daños ambientales.</div>
+        </div>
+    </main>
+
+    <div class="modal" id="feedback-modal">
+        <span class="material-symbols-outlined" style="font-size: 5rem; color: var(--accent); margin-bottom: 20px;">workspace_premium</span>
+        <h2>¡Excelente trabajo! [cite: 187]</h2>
+        <p>Las relaciones establecidas evidencian una comprensión adecuada de la justicia socioambiental y climática como enfoques que integran dimensiones sociales, ambientales y políticas. A través de este ejercicio se reconoce que la desigualdad ambiental no solo depende de factores naturales, sino también de condiciones económicas, estructuras de poder y niveles de participación en la toma de decisiones[cite: 187].</p>
+        <button class="btn" onclick="location.reload()">REINICIAR JUEGO <span class="material-symbols-outlined">refresh</span></button>
+    </div>
+
+    <footer>
+        Basado en contenidos de Ecología Política - ESAN_2000 [cite: 186]
+    </footer>
+</div>
+
+<script>
+    let selectedLeft = null;
+    let selectedRight = null;
+    let matchesCount = 0;
+    const totalMatches = 9;
+
+    function selectItem(element, side) {
+        if (element.classList.contains('matched')) return;
+
+        // Limpiar selección previa en el mismo lado
+        const siblings = element.parentElement.querySelectorAll('.item');
+        siblings.forEach(s => s.classList.remove('selected'));
+
+        element.classList.add('selected');
+
+        if (side === 'left') {
+            selectedLeft = element;
+        } else {
+            selectedRight = element;
+        }
+
+        checkMatch();
+    }
+
+    function checkMatch() {
+        if (selectedLeft && selectedRight) {
+            const leftId = selectedLeft.getAttribute('data-id');
+            const rightMatch = selectedRight.getAttribute('data-match');
+
+            if (leftId === rightMatch) {
+                // Éxito
+                createLine(selectedLeft, selectedRight);
+                selectedLeft.classList.remove('selected');
+                selectedRight.classList.remove('selected');
+                selectedLeft.classList.add('matched');
+                selectedRight.classList.add('matched');
+                
+                selectedLeft = null;
+                selectedRight = null;
+                matchesCount++;
+
+                if (matchesCount === totalMatches) {
+                    setTimeout(() => {
+                        document.getElementById('feedback-modal').style.display = 'flex';
+                    }, 500);
+                }
+            } else {
+                // Error - reset visual
+                const l = selectedLeft;
+                const r = selectedRight;
+                setTimeout(() => {
+                    l.classList.remove('selected');
+                    r.classList.remove('selected');
+                }, 300);
+                selectedLeft = null;
+                selectedRight = null;
+            }
+        }
+    }
+
+    function createLine(elLeft, elRight) {
+        const svg = document.getElementById('svg-lines');
+        const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+        const dotLeft = elLeft.querySelector('.dot').getBoundingClientRect();
+        const dotRight = elRight.querySelector('.dot').getBoundingClientRect();
+
+        const x1 = dotLeft.left - canvasRect.left + 6;
+        const y1 = dotLeft.top - canvasRect.top + 6;
+        const x2 = dotRight.left - canvasRect.left + 6;
+        const y2 = dotRight.top - canvasRect.top + 6;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#22c55e');
+        line.setAttribute('stroke-width', '3');
+        line.setAttribute('stroke-linecap', 'round');
+        
+        svg.appendChild(line);
+    }
+
+    // Reposicionar líneas si se redimensiona (aunque el ancho es fijo)
+    window.addEventListener('resize', () => {
+        // En un recurso de ancho fijo no suele ser necesario, pero por seguridad:
+        // document.getElementById('svg-lines').innerHTML = '';
+        // Re-dibujar lógica aquí si fuera fluido
+    });
+</script>
+
+</body>
+</html>

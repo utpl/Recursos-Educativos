@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caso de estudio: Crisis ecológica global</title>
+    
+    <!-- Fuentes e Iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Teko:wght@500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+
+    <style>
+        :root {
+            /* Paleta de Colores - Modo Claro, Futurista y de Alto Contraste */
+            --bg-color: #F0F2F5;
+            --surface-color: #FFFFFF;
+            --primary-color: #00695C; /* Teal oscuro */
+            --accent-color: #FF6F00; /* Ambar para acción */
+            --text-main: #212121;
+            --text-secondary: #546E7A;
+            --border-color: #CFD8DC;
+            --correct-color: #2E7D32;
+            --incorrect-color: #C62828;
+            
+            /* Dimensiones */
+            --container-width: 800px;
+            --container-max-height: 800px;
+            --container-min-height: 500px;
+            
+            /* Espaciado */
+            --gap-md: 16px;
+            --gap-lg: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #e0e0e0; /* Fondo externo para resaltar el contenedor */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        #app-container {
+            width: var(--container-width);
+            min-height: var(--container-min-height);
+            max-height: var(--container-max-height);
+            background-color: var(--bg-color);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            /* Sin padding en el contenedor principal */
+            padding: 0;
+        }
+
+        /* HEADER */
+        header {
+            background-color: var(--surface-color);
+            border-bottom: 4px solid var(--primary-color);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Teko', sans-serif;
+            font-size: 28px;
+            margin: 0;
+            text-transform: uppercase;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .header-actions button {
+            background: var(--bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 16px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            font-size: 12pt;
+            transition: all 0.3s ease;
+        }
+
+        .header-actions button:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        /* PROGRESS BAR (Geometric) */
+        .progress-container {
+            height: 4px;
+            background: var(--border-color);
+            width: 100%;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* MAIN CONTENT AREA */
+        main {
+            flex: 1;
+            padding: 24px; /* Padding interno controlado */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Evitar scroll en el main */
+        }
+
+        /* QUESTION AREA */
+        .question-wrapper {
+            margin-bottom: 24px;
+            flex-shrink: 0;
+        }
+
+        .question-badge {
+            background: var(--text-main);
+            color: #fff;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 8px;
+            clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+        }
+
+        .question-text {
+            font-size: 16pt;
+            color: var(--text-main);
+            line-height: 1.4;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* CARDS GRID */
+        .cards-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+            align-items: stretch;
+            min-height: 300px;
+        }
+
+        /* FLIP CARD STYLES */
+        .card-scene {
+            perspective: 1000px;
+            height: 100%;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            /* Esquinas cortadas estilo futurista */
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 20px), 
+                calc(100% - 20px) 100%, 
+                0 100%
+            );
+            background-color: var(--surface-color);
+            text-align: center;
+        }
+
+        .card-face-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Estilos específicos para tarjeta trasera (Feedback) */
+        .card-face-back.correct {
+            background-color: #E8F5E9;
+            border-color: var(--correct-color);
+        }
+        
+        .card-face-back.correct .feedback-icon {
+            color: var(--correct-color);
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .card-face-back.incorrect {
+            background-color: #FFEBEE;
+            border-color: var(--incorrect-color);
+        }
+
+        .card-face-back.incorrect .feedback-icon {
+            color: var(--incorrect-color);
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .card-content-icon {
+            font-size: 40px;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+
+        .option-label {
+            font-weight: bold;
+            font-size: 14pt;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .option-text {
+            font-size: 13pt;
+            color: var(--text-main);
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            font-size: 14pt;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .feedback-body {
+            font-size: 12pt;
+            line-height: 1.4;
+        }
+
+        /* CONTROLS AREA */
+        .controls {
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            height: 40px;
+        }
+
+        .btn-next {
+            background-color: var(--text-main);
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            font-size: 14pt;
+            cursor: pointer;
+            display: none; /* Oculto inicialmente */
+            align-items: center;
+            gap: 8px;
+            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+        }
+
+        .btn-next:hover {
+            background-color: var(--accent-color);
+        }
+
+        /* MODAL / OVERLAY */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--surface-color);
+            width: 100%;
+            max-width: 700px;
+            max-height: 90%;
+            overflow-y: auto; /* Scroll permitido dentro del modal */
+            padding: 32px;
+            position: relative;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .modal-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .modal-body p {
+            font-size: 14pt;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 16px;
+        }
+
+        .modal-body strong {
+            color: var(--primary-color);
+        }
+
+        /* FINAL FEEDBACK STYLES (Inside Modal or Main) */
+        .final-feedback-box {
+            background: #E0F2F1;
+            border-left: 6px solid var(--primary-color);
+            padding: 24px;
+        }
+        
+        .final-list {
+            margin-top: 16px;
+            padding-left: 20px;
+        }
+        
+        .final-list li {
+            margin-bottom: 8px;
+            font-size: 13pt;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            #app-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                max-height: none;
+                overflow-y: auto;
+            }
+            .cards-container {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+            .card-scene {
+                min-height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- PROGRESS BAR -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- HEADER -->
+        <header>
+            <h1>Crisis ecológica global, límites planetarios y desigualdad estructural</h1>
+            <div class="header-actions">
+                <button onclick="openModal('modal-context')">
+                    <span class="material-symbols-outlined">info</span>
+                    Contexto
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN INTERACTION AREA -->
+        <main id="game-area">
+            <!-- El contenido dinámico se inyectará aquí -->
+        </main>
+    </div>
+
+    <!-- MODAL: CONTEXTO -->
+    <div id="modal-context" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-context')">&times;</button>
+            <h2 class="modal-title">Contexto del Caso</h2>
+            <div class="modal-body">
+                <p>En los últimos años, un país del Sur global ha experimentado un incremento significativo en la explotación de recursos naturales debido a la expansión de actividades extractivas orientadas al mercado internacional. Estas actividades han contribuido al crecimiento económico nacional; sin embargo, también han generado deforestación, contaminación de fuentes hídricas y pérdida de biodiversidad.</p>
+                <p>Al mismo tiempo, comunidades locales, especialmente rurales e indígenas, han sido las más afectadas por estos impactos ambientales, enfrentando escasez de agua, pérdida de medios de subsistencia y afectaciones a su salud. Mientras tanto, los principales beneficios económicos se concentran en sectores empresariales y mercados internacionales.</p>
+                <p>Informes recientes advierten que estas dinámicas contribuyen al traspaso de varios límites planetarios, particularmente en cambio climático, uso del suelo e integridad de la biosfera. Además, organizaciones sociales cuestionan que este modelo reproduce desigualdades estructurales tanto a nivel nacional como global.</p>
+                <p>Usted forma parte de un equipo de análisis en políticas ambientales encargado de evaluar este caso desde la ecología política.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FINAL FEEDBACK (Reutilizable para el resultado final) -->
+    <div id="modal-final" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-final')">&times;</button>
+            <h2 class="modal-title">Análisis Finalizado</h2>
+            <div class="modal-body">
+                <div class="final-feedback-box">
+                    <p><strong>¡Felicitaciones!</strong> El análisis realizado evidencia una comprensión crítica de la crisis ecológica global como un fenómeno complejo que trasciende lo ambiental. A través de este caso, se reconoce que:</p>
+                    <ul class="final-list">
+                        <li>La crisis ecológica no es homogénea, sino que responde a relaciones de poder y modelos económicos específicos.</li>
+                        <li>Los límites planetarios permiten identificar los umbrales críticos que están siendo superados.</li>
+                        <li>Los impactos ambientales se distribuyen de manera desigual, afectando principalmente a poblaciones vulnerables.</li>
+                    </ul>
+                    <p style="margin-top: 16px;">En conjunto, estos elementos permiten comprender que la crisis ecológica es también una crisis social, económica y política que exige transformaciones estructurales.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATOS DEL CASO DE ESTUDIO
+        const questionsData = [
+            {
+                id: 1,
+                text: "Considerando que el deterioro ambiental está vinculado a un modelo económico basado en la explotación intensiva de recursos, ¿qué enfoque explica mejor el origen de la crisis ecológica en este caso?",
+                options: [
+                    {
+                        label: "Opción A",
+                        text: "El Antropoceno, porque toda la humanidad contribuye de igual manera a la crisis ambiental.",
+                        icon: "public",
+                        isCorrect: false,
+                        feedbackTitle: "Opción limitada",
+                        feedbackText: "Esta opción es limitada, ya que atribuye la crisis a toda la humanidad sin considerar las diferencias estructurales de responsabilidad y poder."
+                    },
+                    {
+                        label: "Opción B",
+                        text: "El Capitaloceno, porque la crisis se origina en las dinámicas del sistema económico y las relaciones de poder.",
+                        icon: "domain",
+                        isCorrect: true,
+                        feedbackTitle: "Opción correcta",
+                        feedbackText: "Esta opción es correcta porque el caso evidencia que no todos los actores contribuyen de igual manera a la crisis, sino que esta responde a un modelo económico que concentra beneficios y distribuye desigualdades."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                text: "Si las comunidades locales son las más afectadas por los impactos ambientales, mientras que los beneficios se concentran en otros actores, ¿qué característica de la crisis ecológica se evidencia?",
+                options: [
+                    {
+                        label: "Opción A",
+                        text: "Una manifestación de desigualdad estructural con impactos y responsabilidades diferenciadas.",
+                        icon: "balance",
+                        isCorrect: true,
+                        feedbackTitle: "Opción correcta",
+                        feedbackText: "Esta opción es correcta porque el caso refleja que los impactos ambientales y los beneficios económicos se distribuyen de manera desigual, afectando principalmente a poblaciones vulnerables."
+                    },
+                    {
+                        label: "Opción B",
+                        text: "Una crisis ambiental homogénea que afecta por igual a toda la población.",
+                        icon: "groups",
+                        isCorrect: false,
+                        feedbackTitle: "Interpretación incorrecta",
+                        feedbackText: "Esta interpretación es incorrecta, ya que ignora las diferencias sociales, económicas y territoriales presentes en la crisis ecológica."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                text: "Considerando el traspaso de límites como la pérdida de biodiversidad y el cambio en el uso del suelo, ¿qué implica este escenario según el enfoque de límites planetarios?",
+                options: [
+                    {
+                        label: "Opción A",
+                        text: "Que los cambios ambientales son reversibles mediante el progreso tecnológico.",
+                        icon: "settings_suggest",
+                        isCorrect: false,
+                        feedbackTitle: "Visión reduccionista",
+                        feedbackText: "Esta visión es reduccionista, ya que asume que la tecnología puede resolver problemas que son estructurales y sistémicos."
+                    },
+                    {
+                        label: "Opción B",
+                        text: "Que se están superando umbrales críticos que pueden llevar a un estado planetario inestable.",
+                        icon: "warning",
+                        isCorrect: true,
+                        feedbackTitle: "Opción correcta",
+                        feedbackText: "Esta opción es correcta porque el modelo de límites planetarios advierte que el traspaso de ciertos umbrales puede generar condiciones irreversibles y riesgos para la vida en el planeta."
+                    }
+                ]
+            }
+        ];
+
+        // ESTADO DE LA APLICACIÓN
+        let currentQuestionIndex = 0;
+        let hasAnswered = false;
+
+        // REFERENCIAS DOM
+        const gameArea = document.getElementById('game-area');
+        const progressBar = document.getElementById('progress-bar');
+
+        // INICIALIZACIÓN
+        function init() {
+            renderQuestion();
+            updateProgress();
+        }
+
+        // RENDERIZAR PREGUNTA
+        function renderQuestion() {
+            hasAnswered = false;
+            const data = questionsData[currentQuestionIndex];
+            
+            // Actualizar barra de progreso
+            updateProgress();
+
+            // Crear HTML
+            gameArea.innerHTML = `
+                <div class="question-wrapper">
+                    <span class="question-badge">PREGUNTA ${data.id} DE ${questionsData.length}</span>
+                    <h2 class="question-text">${data.text}</h2>
+                </div>
+                
+                <div class="cards-container">
+                    ${data.options.map((opt, index) => createCardHTML(opt, index)).join('')}
+                </div>
+
+                <div class="controls">
+                    <button id="btn-next" class="btn-next" onclick="nextQuestion()">
+                        Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+            `;
+
+            // Añadir event listeners a las cartas
+            document.querySelectorAll('.card-scene').forEach((scene, idx) => {
+                scene.addEventListener('click', () => handleCardClick(idx, data.options[idx]));
+            });
+        }
+
+        function createCardHTML(option, index) {
+            return `
+                <div class="card-scene">
+                    <div class="card" id="card-${index}">
+                        <!-- FRENTE -->
+                        <div class="card-face card-face-front">
+                            <span class="material-symbols-outlined card-content-icon">${option.icon}</span>
+                            <span class="option-label">${option.label}</span>
+                            <p class="option-text">${option.text}</p>
+                        </div>
+                        <!-- REVERSO -->
+                        <div class="card-face card-face-back ${option.isCorrect ? 'correct' : 'incorrect'}">
+                            <span class="material-symbols-outlined feedback-icon">
+                                ${option.isCorrect ? 'check_circle' : 'cancel'}
+                            </span>
+                            <span class="feedback-title" style="color: ${option.isCorrect ? 'var(--correct-color)' : 'var(--incorrect-color)'}">
+                                ${option.feedbackTitle}
+                            </span>
+                            <p class="feedback-body">${option.feedbackText}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // MANEJO DE CLICK
+        function handleCardClick(index, optionData) {
+            if (hasAnswered) return; // Evitar múltiples clicks
+            
+            hasAnswered = true;
+            
+            // Voltear la carta seleccionada
+            const selectedCard = document.getElementById(`card-${index}`);
+            selectedCard.classList.add('is-flipped');
+
+            // Si es la última pregunta, cambiar texto del botón
+            const btnNext = document.getElementById('btn-next');
+            btnNext.style.display = 'flex';
+            
+            if (currentQuestionIndex === questionsData.length - 1) {
+                btnNext.innerHTML = `Finalizar <span class="material-symbols-outlined">done_all</span>`;
+                btnNext.onclick = showFinalFeedback;
+            }
+        }
+
+        // SIGUIENTE PREGUNTA
+        function nextQuestion() {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+
+        // ACTUALIZAR PROGRESO
+        function updateProgress() {
+            const percentage = ((currentQuestionIndex) / questionsData.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        // MOSTRAR FEEDBACK FINAL
+        function showFinalFeedback() {
+            progressBar.style.width = '100%';
+            openModal('modal-final');
+        }
+
+        // FUNCIONES MODAL
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Cerrar modal al hacer clic fuera del contenido
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.style.display = "none";
+            }
+        }
+
+        // ARRANCAR
+        init();
+
+    </script>
+</body>
+</html>
