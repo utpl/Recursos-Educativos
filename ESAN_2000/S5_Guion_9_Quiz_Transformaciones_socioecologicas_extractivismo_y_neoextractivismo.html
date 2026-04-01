@@ -2,172 +2,348 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz: Transformaciones socioecológicas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Quiz: Transformaciones socioecológicas | Extractivismo y Neoextractivismo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --secondary: #2980b9;
-            --wrong: #e74c3c;
-            --bg: #f8fafc;
-            --white: #ffffff;
-            --text: #1e293b;
-        }
-
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #e8f0f5 0%, #d4e2ec 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        /* Contenedor Canvas */
+        /* Contenedor principal Canvas */
         #quiz-app {
             width: 800px;
             height: 600px;
-            background: var(--white);
+            background: #ffffff;
             position: relative;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        
+            overflow: hidden;
         }
 
+        /* Header moderno */
         header {
-            background: var(--primary);
-            color: var(--white);
-            padding: 20px 30px;
+            background: linear-gradient(135deg, #1a3c34 0%, #2c5a4a 100%);
+            color: white;
+            padding: 20px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         header h1 {
-            font-size: 1.2rem;
-            max-width: 70%;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            max-width: 65%;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .progress-container {
             text-align: right;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 40px;
+        }
+
+        .progress-stats {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 4px;
         }
 
         .progress-bar {
-            width: 150px;
-            height: 8px;
-            background: rgba(255,255,255,0.2);
-            margin-top: 5px;
+            width: 140px;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         #progress-fill {
             height: 100%;
-            background: var(--accent);
+            background: #ffb347;
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
         }
 
         /* Pantallas */
         .screen {
             flex: 1;
             display: none;
-            padding: 40px;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
+            padding: 32px 40px;
+            animation: fadeIn 0.4s ease;
         }
 
         .screen.active {
             display: flex;
         }
 
-        /* Pantalla Inicio */
-        .intro-icon { font-size: 80px; color: var(--secondary); margin-bottom: 20px; }
-        .intro-text { margin-bottom: 30px; line-height: 1.6; color: #64748b; font-size: 0.95rem; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pantalla Inicio mejorada */
+        .intro-icon {
+            font-size: 80px;
+            background: linear-gradient(135deg, #1a3c34, #2c5a4a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 24px;
+        }
+
+        .intro-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1a3c34;
+            margin-bottom: 16px;
+        }
+
+        .intro-text {
+            text-align: center;
+            line-height: 1.6;
+            color: #475569;
+            font-size: 0.95rem;
+            max-width: 90%;
+            margin-bottom: 32px;
+        }
+
+        /* Botón primario */
+        .primary-btn {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+            padding: 14px 36px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+        }
 
         /* Pantalla Pregunta */
-        .question-box { width: 100%; }
-        .question-text { font-size: 1.3rem; font-weight: 600; margin-bottom: 30px; color: var(--primary); }
-        
+        .question-box {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .question-counter {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #27ae60;
+            background: #e8f5e9;
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+
+        .question-text {
+            font-size: 1.35rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: #1e293b;
+            margin-bottom: 32px;
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 24px;
+            border-left: 5px solid #27ae60;
+        }
+
         .options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            width: 100%;
+            margin-top: 8px;
         }
 
         .option-btn {
-            padding: 20px;
+            padding: 18px 24px;
             border: 2px solid #e2e8f0;
-            background: var(--white);
+            background: white;
+            border-radius: 60px;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
-            transition: all 0.2s;
+            transition: all 0.25s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            color: #334155;
         }
 
-        .option-btn:hover { border-color: var(--secondary); background: #f1f5f9; }
+        .option-btn:hover:not(:disabled) {
+            border-color: #27ae60;
+            background: #f0fdf4;
+            transform: scale(1.02);
+        }
 
-        /* Feedback Modal (Capa interna) */
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Feedback Layer Moderno */
         #feedback-layer {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(8px);
             display: none;
-            z-index: 100;
-            padding: 50px;
+            z-index: 200;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
+            padding: 40px;
+            animation: slideUp 0.3s ease;
         }
 
-        .feedback-icon { font-size: 60px; margin-bottom: 20px; }
-        .feedback-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 15px; }
-        .feedback-msg { font-size: 1.1rem; line-height: 1.5; color: #475569; margin-bottom: 30px; }
-
-        /* Botones Generales */
-        .primary-btn {
-            background: var(--secondary);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: opacity 0.2s;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .primary-btn:hover { opacity: 0.9; }
+        .feedback-card {
+            background: white;
+            border-radius: 48px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e2e8f0;
+        }
 
-        /* Pantalla Final */
+        .feedback-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+        }
+
+        .feedback-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .feedback-msg {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #475569;
+            margin-bottom: 28px;
+        }
+
+        /* Pantalla Final Premium */
+        #screen-result {
+            background: linear-gradient(135deg, #fef9e6, #fff5e0);
+        }
+
         .final-card {
-            background: #f0fdf4;
-            padding: 30px;
-            border: 2px solid var(--accent);
-            max-width: 90%;
+            background: white;
+            border-radius: 48px;
+            padding: 10px;
+            text-align: center;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ffd966;
         }
 
-        .emoji-big { font-size: 50px; display: block; margin-bottom: 15px; }
+        .final-emoji {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .final-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #1a3c34;
+            margin-bottom: 20px;
+        }
+
+        .final-insight {
+            background: #f0fdf4;
+            padding: 12px;
+            border-radius: 28px;
+            margin: 20px 0;
+            border-left: 4px solid #27ae60;
+            text-align: left;
+        }
+
+        .final-quote {
+            font-weight: 600;
+            color: #27ae60;
+            margin-top: 16px;
+            font-size: 0.8rem;
+        }
+
+        .restart-btn {
+            background: #ffb347;
+            margin-top: 12px;
+            box-shadow: 0 4px 12px rgba(255, 179, 71, 0.3);
+        }
+
+        .restart-btn:hover {
+            background: #ff9f1a;
+        }
 
         footer {
-            padding: 15px 30px;
-            background: #f1f5f9;
-            font-size: 0.8rem;
-            color: #64748b;
+            padding: 12px 28px;
+            background: #f8fafc;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-align: center;
             border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        /* Estado de respuesta */
+        .option-answered {
+            pointer-events: none;
         }
     </style>
 </head>
@@ -175,172 +351,316 @@
 
 <div id="quiz-app">
     <header>
-        <h1>Quiz: Transformaciones socioecológicas, extractivismo y neoextractivismo </h1>
+        <h1>
+            <span class="material-symbols-outlined" style="font-size: 28px;">psychology</span>
+            Transformaciones socioecológicas, extractivismo y neoextractivismo
+        </h1>
         <div class="progress-container">
-            <span id="question-num">0/10</span>
+            <div class="progress-stats" id="question-num">0/10</div>
             <div class="progress-bar"><div id="progress-fill"></div></div>
         </div>
     </header>
 
+    <!-- Pantalla de Inicio -->
     <div id="screen-intro" class="screen active">
-        <span class="material-symbols-outlined intro-icon">quiz</span>
+        <span class="material-symbols-outlined intro-icon">eco</span>
+        <h2 class="intro-title">🌿 Quiz de Ecología Política</h2>
         <p class="intro-text">
-            Analice cada enunciado y determine si es verdadero o falso. [cite: 15]<br>
-            Considere los conceptos de transformaciones socioecológicas, extractivismo y neoextractivismo, así como sus implicaciones en términos de poder, territorio y desigualdad. [cite: 15]
+            Analice cada enunciado y determine si es <strong>Verdadero o Falso</strong>.<br>
+            Considere los conceptos de transformaciones socioecológicas, extractivismo y neoextractivismo,<br>
+            así como sus implicaciones en términos de poder, territorio y desigualdad.
         </p>
-        <button class="primary-btn" onclick="startQuiz()">
+        <button class="primary-btn" id="startBtn">
             COMENZAR QUIZ <span class="material-symbols-outlined">play_arrow</span>
         </button>
     </div>
 
+    <!-- Pantalla de Preguntas -->
     <div id="screen-quiz" class="screen">
         <div class="question-box">
+            <div class="question-header">
+                <span class="question-counter" id="q-counter">Pregunta 1</span>
+                <span style="font-size: 0.8rem; color: #64748b;" id="q-status">📝 Responde</span>
+            </div>
             <p id="question-text" class="question-text"></p>
             <div class="options-grid">
-                <button class="option-btn" onclick="checkAnswer('Verdadero')">
+                <button class="option-btn" id="trueBtn" onclick="checkAnswer('Verdadero')">
                     <span class="material-symbols-outlined">check_circle</span> VERDADERO
                 </button>
-                <button class="option-btn" onclick="checkAnswer('Falso')">
+                <button class="option-btn" id="falseBtn" onclick="checkAnswer('Falso')">
                     <span class="material-symbols-outlined">cancel</span> FALSO
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Feedback Layer (Mejorado) -->
     <div id="feedback-layer">
-        <span id="f-icon" class="material-symbols-outlined feedback-icon"></span>
-        <h2 id="f-title" class="feedback-title"></h2>
-        <p id="f-msg" class="feedback-msg"></p>
-        <button class="primary-btn" onclick="nextQuestion()">
-            CONTINUAR <span class="material-symbols-outlined">arrow_forward</span>
-        </button>
+        <div class="feedback-card">
+            <span id="f-icon" class="material-symbols-outlined feedback-icon"></span>
+            <h2 id="f-title" class="feedback-title"></h2>
+            <p id="f-msg" class="feedback-msg"></p>
+            <button class="primary-btn" id="nextBtn">
+                SIGUIENTE PREGUNTA <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+        </div>
     </div>
 
+    <!-- Pantalla de Resultados Finales -->
     <div id="screen-result" class="screen">
         <div class="final-card">
-            <span class="emoji-big">🎉 ¡Excelente trabajo! [cite: 15]</span>
-            <p class="feedback-msg">
-                Las transformaciones socioecológicas revelan que el extractivismo no es solo una forma de usar la naturaleza, sino una manera de ejercer poder, producir desigualdad y decidir quién gana y quién pierde en los territorios. [cite: 15]
+            <span class="final-emoji">🏆✨</span>
+            <h2 class="final-title">¡Excelente trabajo!</h2>
+            <div class="final-insight">
+                <span class="material-symbols-outlined" style="color: #27ae60; vertical-align: middle;">lightbulb</span>
+                <strong>Reflexión crítica</strong>
+                <p style="margin-top: 10px; line-height: 1.5;">
+                    Las transformaciones socioecológicas revelan que el extractivismo no es solo una forma de usar la naturaleza, sino una manera de ejercer poder, producir desigualdad y decidir quién gana y quién pierde en los territorios.
+                </p>
+            </div>
+            <p style="font-weight: 600; color: #1a3c34; margin: 20px 0;">
+                🌎 "Toda ecología es política: implica decisiones, conflictos y alternativas para construir futuros justos"
             </p>
-            <p style="font-weight: 800; color: var(--accent);">¡Felicidades! Estamos listas y listos para continuar con nuestro aprendizaje. [cite: 15]</p>
+            <p style="color: #27ae60; font-weight: 700;">¡Felicidades! Estamos listas y listos para continuar con nuestro aprendizaje.</p>
+            <button class="primary-btn restart-btn" id="restartBtn">
+                <span class="material-symbols-outlined">refresh</span> REINICIAR QUIZ
+            </button>
         </div>
-        <button class="primary-btn" style="margin-top:20px" onclick="location.reload()">
-            REINICIAR <span class="material-symbols-outlined">refresh</span>
-        </button>
     </div>
 
     <footer>
-        Elaboración propia basada en contenidos de Ecología Política. 
+        Elaboración propia basada en contenidos de Ecología Política · Análisis crítico del extractivismo y neoextractivismo
     </footer>
 </div>
 
 <script>
+    // Base de preguntas mejorada con feedback más detallado
     const questions = [
         {
-            q: "Las transformaciones socioecológicas hacen referencia únicamente a cambios en los ecosistemas naturales. ",
-            a: "Falso",
-            ok: "Correcta: Las transformaciones socioecológicas implican cambios simultáneos en la sociedad y en la naturaleza, mediados por decisiones políticas, económicas y culturales. ",
-            no: "Incorrecta: Limitar el concepto a lo ambiental desconoce la dimensión social y política del análisis. "
+            text: "Las transformaciones socioecológicas hacen referencia únicamente a cambios en los ecosistemas naturales.",
+            correct: "Falso",
+            feedback: "Las transformaciones socioecológicas implican cambios simultáneos en la sociedad y en la naturaleza, mediados por decisiones políticas, económicas y culturales. Limitar el concepto a lo ambiental desconoce la dimensión social y política del análisis."
         },
         {
-            q: "Desde la ecología política, las transformaciones socioecológicas están vinculadas a modelos históricos de desarrollo y acumulación. ",
-            a: "Verdadero",
-            ok: "Correcta: Los modelos de desarrollo definen cómo se accede, usa y controla la naturaleza, produciendo transformaciones territoriales desiguales. ",
-            no: "Incorrecta: La ecología política justamente analiza estas conexiones estructurales. "
+            text: "Desde la ecología política, las transformaciones socioecológicas están vinculadas a modelos históricos de desarrollo y acumulación.",
+            correct: "Verdadero",
+            feedback: "Los modelos de desarrollo definen cómo se accede, usa y controla la naturaleza, produciendo transformaciones territoriales desiguales. La ecología política analiza estas conexiones estructurales."
         },
         {
-            q: "El extractivismo se caracteriza por la extracción intensiva de grandes volúmenes de recursos naturales destinados principalmente a la exportación. ",
-            a: "Verdadero",
-            ok: "Correcta: Esta orientación exportadora es una característica central del extractivismo clásico en América Latina. ",
-            no: "Incorrecta: El extractivismo no se orienta prioritariamente al consumo local. "
+            text: "El extractivismo se caracteriza por la extracción intensiva de grandes volúmenes de recursos naturales destinados principalmente a la exportación.",
+            correct: "Verdadero",
+            feedback: "Esta orientación exportadora es una característica central del extractivismo clásico en América Latina, donde los recursos se extraen para mercados globales."
         },
         {
-            q: "El extractivismo puede analizarse como una actividad puramente económica, sin implicaciones políticas. ",
-            a: "Falso",
-            ok: "Correcta: Desde la ecología política, el extractivismo es un proyecto político-económico sostenido por decisiones estatales y relaciones de poder. ",
-            no: "Incorrecta: Ignorar su dimensión política impide comprender los conflictos que genera. "
+            text: "El extractivismo puede analizarse como una actividad puramente económica, sin implicaciones políticas.",
+            correct: "Falso",
+            feedback: "Desde la ecología política, el extractivismo es un proyecto político-económico sostenido por decisiones estatales, relaciones de poder y conflictos territoriales."
         },
         {
-            q: "El neoextractivismo se diferencia del extractivismo clásico por una mayor presencia del Estado en la gestión y redistribución de rentas. ",
-            a: "Verdadero",
-            ok: "Correcta: El neoextractivismo refuerza el rol estatal, sin abandonar la lógica extractiva. ",
-            no: "Incorrecta: La diferencia no radica en abandonar la extracción, sino en cómo se gestiona. "
+            text: "El neoextractivismo se diferencia del extractivismo clásico por una mayor presencia del Estado en la gestión y redistribución de rentas.",
+            correct: "Verdadero",
+            feedback: "El neoextractivismo refuerza el rol estatal en la captura y redistribución de rentas extractivas, aunque no abandona la lógica extractiva."
         },
         {
-            q: "El neoextractivismo supone necesariamente una superación de los conflictos territoriales y sociales asociados al extractivismo. ",
-            a: "Falso",
-            ok: "Correcta: A pesar del discurso redistributivo, persisten conflictos, dependencia externa y desigualdades estructurales. ",
-            no: "Incorrecta: La mayor intervención estatal no elimina automáticamente los impactos. "
+            text: "El neoextractivismo supone necesariamente una superación de los conflictos territoriales y sociales asociados al extractivismo.",
+            correct: "Falso",
+            feedback: "A pesar del discurso redistributivo, persisten conflictos, dependencia externa, desigualdades estructurales y afectaciones socioambientales."
         },
         {
-            q: "Las transformaciones socioecológicas derivadas del extractivismo afectan de manera desigual a distintos grupos sociales y territorios. ",
-            a: "Verdadero",
-            ok: "Correcta: La ecología política enfatiza la existencia de ganadores y perdedores en los procesos extractivos. ",
-            no: "Incorrecta: Los impactos no se distribuyen de forma homogénea. "
+            text: "Las transformaciones socioecológicas derivadas del extractivismo afectan de manera desigual a distintos grupos sociales y territorios.",
+            correct: "Verdadero",
+            feedback: "La ecología política enfatiza la existencia de ganadores y perdedores en los procesos extractivos; los impactos no se distribuyen de forma homogénea."
         },
         {
-            q: "El extractivismo y el neoextractivismo refuerzan relaciones de dependencia de los países del Sur Global con el mercado internacional. ",
-            a: "Verdadero",
-            ok: "Correcta: Ambos modelos profundizan la inserción dependiente en la economía global. ",
-            no: "Incorrecta: La dependencia externa es un elemento estructural del análisis. "
+            text: "El extractivismo y el neoextractivismo refuerzan relaciones de dependencia de los países del Sur Global con el mercado internacional.",
+            correct: "Verdadero",
+            feedback: "Ambos modelos profundizan la inserción dependiente en la economía global, generando vulnerabilidad frente a precios internacionales."
         },
         {
-            q: "Desde la ecología política, el territorio es entendido como un espacio político atravesado por disputas de poder. ",
-            a: "Verdadero",
-            ok: "Correcta: El territorio no es solo geográfico, sino social, simbólico y político. ",
-            no: "Incorrecta: Reducirlo a lo físico invisibiliza el conflicto socioambiental. "
+            text: "Desde la ecología política, el territorio es entendido como un espacio político atravesado por disputas de poder.",
+            correct: "Verdadero",
+            feedback: "El territorio no es solo geográfico, sino social, simbólico y político; es escenario de conflictos por el control de recursos y toma de decisiones."
         },
         {
-            q: "El análisis del extractivismo permite comprender conflictos socioambientales, resistencias territoriales y disputas por la toma de decisiones. ",
-            a: "Verdadero",
-            ok: "Correcta: Este enfoque conecta economía, poder, territorio y conflicto. ",
-            no: "Incorrecta: El extractivismo no puede analizarse de forma neutral o aislada. "
+            text: "El análisis del extractivismo permite comprender conflictos socioambientales, resistencias territoriales y disputas por la toma de decisiones.",
+            correct: "Verdadero",
+            feedback: "Este enfoque conecta economía, poder, territorio y conflicto, permitiendo entender las luchas por alternativas al modelo extractivo."
         }
     ];
 
-    let currentQ = 0;
+    let currentIndex = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let answered = false;
 
-    function startQuiz() {
-        document.getElementById('screen-intro').classList.remove('active');
-        document.getElementById('screen-quiz').classList.add('active');
-        showQuestion();
-    }
+    // Elementos DOM
+    const introScreen = document.getElementById('screen-intro');
+    const quizScreen = document.getElementById('screen-quiz');
+    const resultScreen = document.getElementById('screen-result');
+    const feedbackLayer = document.getElementById('feedback-layer');
+    const questionText = document.getElementById('question-text');
+    const qCounter = document.getElementById('q-counter');
+    const qStatus = document.getElementById('q-status');
+    const trueBtn = document.getElementById('trueBtn');
+    const falseBtn = document.getElementById('falseBtn');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
 
-    function showQuestion() {
-        const q = questions[currentQ];
-        document.getElementById('question-text').innerText = q.q;
-        document.getElementById('question-num').innerText = `${currentQ + 1}/${questions.length}`;
-        document.getElementById('progress-fill').style.width = `${((currentQ + 1) / questions.length) * 100}%`;
-    }
-
-    function checkAnswer(val) {
-        const q = questions[currentQ];
-        const isCorrect = val === q.a;
-        const feedback = document.getElementById('feedback-layer');
+    // Actualizar barra de progreso
+    function updateProgress() {
+        const answeredCount = userAnswers.filter(a => a !== null).length;
+        const percent = (answeredCount / questions.length) * 100;
+        document.getElementById('progress-fill').style.width = `${percent}%`;
+        document.getElementById('question-num').innerText = `${answeredCount}/${questions.length}`;
         
-        document.getElementById('f-icon').innerText = isCorrect ? 'task_alt' : 'error';
-        document.getElementById('f-icon').style.color = isCorrect ? 'var(--accent)' : 'var(--wrong)';
-        document.getElementById('f-title').innerText = isCorrect ? '¡CORRECTO!' : 'INCORRECTO';
-        document.getElementById('f-msg').innerText = isCorrect ? q.ok : q.no;
-        
-        feedback.style.display = 'flex';
-    }
-
-    function nextQuestion() {
-        document.getElementById('feedback-layer').style.display = 'none';
-        currentQ++;
-        if (currentQ < questions.length) {
-            showQuestion();
-        } else {
-            showResult();
+        // Actualizar contador en quiz
+        if (quizScreen.classList.contains('active')) {
+            qCounter.innerText = `Pregunta ${currentIndex + 1} de ${questions.length}`;
         }
     }
 
-    function showResult() {
-        document.getElementById('screen-quiz').classList.remove('active');
-        document.getElementById('screen-result').classList.add('active');
+    // Mostrar pregunta actual
+    function showQuestion() {
+        const q = questions[currentIndex];
+        questionText.innerText = q.text;
+        qCounter.innerText = `Pregunta ${currentIndex + 1} de ${questions.length}`;
+        
+        // Resetear estado de respuesta
+        answered = false;
+        trueBtn.disabled = false;
+        falseBtn.disabled = false;
+        trueBtn.style.opacity = '1';
+        falseBtn.style.opacity = '1';
+        qStatus.innerText = '📝 Responde';
+        qStatus.style.color = '#64748b';
+        
+        // Si ya había respondido antes (por navegación no debería pasar, pero seguro)
+        if (userAnswers[currentIndex] !== null) {
+            // Si ya respondió, no permitir responder de nuevo
+            trueBtn.disabled = true;
+            falseBtn.disabled = true;
+            qStatus.innerText = '✅ Ya respondida';
+            qStatus.style.color = '#27ae60';
+        }
+        
+        updateProgress();
     }
-</script>
 
+    // Verificar respuesta
+    function checkAnswer(selected) {
+        if (answered) return;
+        if (userAnswers[currentIndex] !== null) return;
+        
+        answered = true;
+        const q = questions[currentIndex];
+        const isCorrect = (selected === q.correct);
+        
+        // Guardar respuesta
+        userAnswers[currentIndex] = selected;
+        
+        // Deshabilitar botones
+        trueBtn.disabled = true;
+        falseBtn.disabled = true;
+        
+        // Mostrar feedback personalizado
+        const feedbackIcon = document.getElementById('f-icon');
+        const feedbackTitle = document.getElementById('f-title');
+        const feedbackMsg = document.getElementById('f-msg');
+        
+        if (isCorrect) {
+            feedbackIcon.innerText = 'check_circle';
+            feedbackIcon.style.color = '#27ae60';
+            feedbackTitle.innerText = '✓ ¡Correcto!';
+            feedbackTitle.style.color = '#27ae60';
+            feedbackMsg.innerText = q.feedback;
+            qStatus.innerText = '✓ Correcto';
+            qStatus.style.color = '#27ae60';
+        } else {
+            feedbackIcon.innerText = 'error';
+            feedbackIcon.style.color = '#e74c3c';
+            feedbackTitle.innerText = '✗ Incorrecto';
+            feedbackTitle.style.color = '#e74c3c';
+            feedbackMsg.innerText = q.feedback;
+            qStatus.innerText = '✗ Incorrecto';
+            qStatus.style.color = '#e74c3c';
+        }
+        
+        // Mostrar feedback layer
+        feedbackLayer.style.display = 'flex';
+        updateProgress();
+    }
+
+    // Siguiente pregunta o finalizar
+    function nextQuestionHandler() {
+        feedbackLayer.style.display = 'none';
+        
+        if (currentIndex + 1 < questions.length) {
+            currentIndex++;
+            showQuestion();
+        } else {
+            // Verificar si todas fueron respondidas (deberían estarlo)
+            if (userAnswers.every(a => a !== null)) {
+                showResult();
+            } else {
+                // Si falta alguna, ir a la primera sin responder
+                const firstUnanswered = userAnswers.findIndex(a => a === null);
+                if (firstUnanswered !== -1) {
+                    currentIndex = firstUnanswered;
+                    showQuestion();
+                } else {
+                    showResult();
+                }
+            }
+        }
+    }
+
+    // Mostrar pantalla de resultados
+    function showResult() {
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+
+    // Iniciar quiz
+    function startQuizHandler() {
+        // Resetear todo
+        currentIndex = 0;
+        userAnswers = new Array(questions.length).fill(null);
+        answered = false;
+        updateProgress();
+        
+        introScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        showQuestion();
+    }
+
+    // Reiniciar completamente
+    function restartQuizHandler() {
+        currentIndex = 0;
+        userAnswers = new Array(questions.length).fill(null);
+        answered = false;
+        updateProgress();
+        
+        resultScreen.classList.remove('active');
+        introScreen.classList.add('active');
+        
+        // Resetear feedback layer
+        feedbackLayer.style.display = 'none';
+    }
+
+    // Event listeners
+    startBtn.addEventListener('click', startQuizHandler);
+    nextBtn.addEventListener('click', nextQuestionHandler);
+    restartBtn.addEventListener('click', restartQuizHandler);
+    
+    // Cerrar feedback si se hace clic fuera (opcional)
+    feedbackLayer.addEventListener('click', (e) => {
+        if (e.target === feedbackLayer) {
+            feedbackLayer.style.display = 'none';
+        }
+    });
+    
+    // Inicializar progreso
+    updateProgress();
+</script>
 </body>
 </html>
