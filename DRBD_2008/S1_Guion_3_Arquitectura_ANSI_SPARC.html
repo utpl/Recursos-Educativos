@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitectura ANSI-SPARC</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+  :root {
+    --ext-color:   #0277BD;
+    --ext-light:   #E1F5FE;
+    --ext-mid:     #B3E5FC;
+    --con-color:   #6A1B9A;
+    --con-light:   #F3E5F5;
+    --con-mid:     #CE93D8;
+    --int-color:   #2E7D32;
+    --int-light:   #E8F5E9;
+    --int-mid:     #A5D6A7;
+    --map-color:   #F57C00;
+    --neutral:     #37474F;
+    --neutral-mid: #546E7A;
+    --bg:          #F0F4FA;
+    --card:        #FFFFFF;
+    --border:      #CFD8DC;
+    --text:        #1A237E;
+    --text-body:   #263238;
+    --header-grad: linear-gradient(135deg,#0D47A1 0%,#1565C0 55%,#1976D2 100%);
+    --font:        'Inter', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-body);
+    font-size: 13px;
+    line-height: 1.5;
+    width: 800px;
+    max-width: 800px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--header-grad);
+    padding: 14px 20px 12px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .header::before {
+    content:''; position:absolute; right:-18px; top:-22px;
+    width:120px; height:120px; background:rgba(255,255,255,.06); transform:rotate(45deg);
+  }
+  .header::after {
+    content:''; position:absolute; right:60px; bottom:-30px;
+    width:75px; height:75px; background:rgba(255,255,255,.04); transform:rotate(30deg);
+  }
+  .header-icon {
+    background:rgba(255,255,255,.15); width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .header-icon .material-symbols-outlined { color:#fff; font-size:26px; }
+  .header-text { flex:1; }
+  .header-title { color:#fff; font-size:15px; font-weight:700; letter-spacing:.02em; line-height:1.2; }
+  .header-sub   { color:rgba(255,255,255,.75); font-size:11px; margin-top:2px; }
+  .badge {
+    background:#F57C00; color:#fff; font-size:10px; font-weight:700;
+    padding:3px 9px; letter-spacing:.05em; text-transform:uppercase; flex-shrink:0;
+  }
+
+  /* ── INSTRUCTION BAR ── */
+  .inst-bar {
+    background:#E8EAF6; border-left:4px solid #1565C0;
+    padding:8px 16px; display:flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--text); font-weight:500;
+  }
+  .inst-bar .material-symbols-outlined { font-size:18px; color:#1565C0; flex-shrink:0; }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    height: 680px;
+    overflow: hidden;
+  }
+
+  /* ── LEFT: ARCHITECTURE DIAGRAM ── */
+  .diagram-panel {
+    padding: 16px 12px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+  }
+
+  /* Title block */
+  .arch-title-block {
+    background: var(--header-grad);
+    color: #fff;
+    width: 100%;
+    padding: 10px 16px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .arch-title-block .main-label {
+    font-size: 14px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .arch-title-block .sub-label {
+    font-size: 11px; opacity: .85; margin-top: 2px;
+  }
+
+  /* Layer button */
+  .layer-btn {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all .2s;
+    position: relative;
+    font-family: var(--font);
+  }
+  .layer-btn .layer-icon {
+    width: 38px; height: 38px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .layer-btn .layer-texts { flex: 1; }
+  .layer-btn .layer-name {
+    font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .layer-btn .layer-desc {
+    font-size: 11px; margin-top: 2px; font-weight: 400;
+  }
+  .layer-btn .layer-arrow {
+    font-size: 18px; flex-shrink: 0; transition: transform .2s;
+  }
+  .layer-btn .material-symbols-outlined.layer-arrow { font-size: 20px; }
+
+  /* External */
+  .layer-ext {
+    background: var(--ext-light);
+    border-color: var(--ext-color);
+    color: var(--ext-color);
+  }
+  .layer-ext .layer-icon { background: var(--ext-color); color: #fff; }
+  .layer-ext:hover, .layer-ext.active {
+    background: var(--ext-color); color: #fff;
+    box-shadow: 0 3px 12px rgba(2,119,189,.3);
+  }
+  .layer-ext:hover .layer-icon, .layer-ext.active .layer-icon { background: rgba(255,255,255,.2); }
+  .layer-ext:hover .layer-desc, .layer-ext.active .layer-desc { color: rgba(255,255,255,.85); }
+
+  /* Conceptual */
+  .layer-con {
+    background: var(--con-light);
+    border-color: var(--con-color);
+    color: var(--con-color);
+  }
+  .layer-con .layer-icon { background: var(--con-color); color: #fff; }
+  .layer-con:hover, .layer-con.active {
+    background: var(--con-color); color: #fff;
+    box-shadow: 0 3px 12px rgba(106,27,154,.3);
+  }
+  .layer-con:hover .layer-icon, .layer-con.active .layer-icon { background: rgba(255,255,255,.2); }
+  .layer-con:hover .layer-desc, .layer-con.active .layer-desc { color: rgba(255,255,255,.85); }
+
+  /* Internal */
+  .layer-int {
+    background: var(--int-light);
+    border-color: var(--int-color);
+    color: var(--int-color);
+  }
+  .layer-int .layer-icon { background: var(--int-color); color: #fff; }
+  .layer-int:hover, .layer-int.active {
+    background: var(--int-color); color: #fff;
+    box-shadow: 0 3px 12px rgba(46,125,50,.3);
+  }
+  .layer-int:hover .layer-icon, .layer-int.active .layer-icon { background: rgba(255,255,255,.2); }
+  .layer-int:hover .layer-desc, .layer-int.active .layer-desc { color: rgba(255,255,255,.85); }
+
+  /* Mapping connector */
+  .map-connector {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 16px;
+    color: var(--map-color);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .map-line {
+    flex: 1; height: 2px;
+    background: repeating-linear-gradient(90deg, var(--map-color) 0, var(--map-color) 6px, transparent 6px, transparent 12px);
+  }
+  .map-arrows { font-size: 16px; flex-shrink: 0; }
+
+  /* Storage bar */
+  .storage-bar {
+    width: 100%;
+    background: #37474F;
+    color: #fff;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    margin-top: 4px;
+  }
+  .storage-bar .material-symbols-outlined { font-size: 18px; }
+
+  /* Reference */
+  .ref-label {
+    width: 100%;
+    padding: 6px 16px;
+    font-size: 10px;
+    color: var(--neutral-mid);
+    font-style: italic;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* ── RIGHT: DETAIL PANEL ── */
+  .detail-panel {
+    background: var(--card);
+    border-left: 2px solid var(--border);
+    height: 680px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-header {
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .detail-header .dh-badge {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; padding: 2px 8px; margin-bottom: 6px; display: inline-block;
+  }
+  .dh-ext { background: var(--ext-light); color: var(--ext-color); border: 1px solid var(--ext-mid); }
+  .dh-con { background: var(--con-light); color: var(--con-color); border: 1px solid var(--con-mid); }
+  .dh-int { background: var(--int-light); color: var(--int-color); border: 1px solid var(--int-mid); }
+
+  .detail-header .dh-icon {
+    font-size: 28px; display: block; margin-bottom: 4px;
+  }
+  .detail-header .dh-title {
+    font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; line-height: 1.2;
+  }
+  .detail-header .dh-subtitle {
+    font-size: 11px; color: var(--neutral-mid); margin-top: 3px; line-height: 1.4;
+  }
+
+  .detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px 14px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .detail-body::-webkit-scrollbar { width: 4px; }
+  .detail-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .key-points-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--neutral-mid); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .key-points-label .material-symbols-outlined { font-size: 14px; }
+
+  .point-item {
+    display: flex; gap: 9px; align-items: flex-start;
+    padding: 9px 10px; margin-bottom: 7px;
+    border: 1px solid var(--border); background: #FAFBFC;
+    font-size: 12px; line-height: 1.5;
+  }
+  .point-item .pi-dot {
+    width: 20px; height: 20px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 10px; font-weight: 800; margin-top: 1px;
+  }
+  .pi-ext .pi-dot { background: var(--ext-color); }
+  .pi-con .pi-dot { background: var(--con-color); }
+  .pi-int .pi-dot { background: var(--int-color); }
+
+  .concept-box {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-left: 3px solid;
+    background: #F8F9FD;
+    font-size: 11px; line-height: 1.6;
+  }
+  .concept-box .cb-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;
+  }
+  .concept-box .cb-label .material-symbols-outlined { font-size: 13px; }
+  .concept-box .cb-text { color: var(--text-body); font-style: italic; }
+  .cb-ext { border-color: var(--ext-color); }
+  .cb-ext .cb-label { color: var(--ext-color); }
+  .cb-con { border-color: var(--con-color); }
+  .cb-con .cb-label { color: var(--con-color); }
+  .cb-int { border-color: var(--int-color); }
+  .cb-int .cb-label { color: var(--int-color); }
+
+  /* Empty state */
+  .empty-state {
+    height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--neutral-mid); text-align: center; padding: 20px;
+    gap: 10px;
+  }
+  .empty-state .material-symbols-outlined { font-size: 42px; color: #B0BEC5; }
+  .empty-state .es-title { font-size: 13px; font-weight: 700; color: var(--neutral); }
+  .empty-state .es-sub   { font-size: 11px; line-height: 1.5; }
+
+  /* nav dots */
+  .nav-dots {
+    display: flex; justify-content: center; gap: 8px;
+    padding: 8px 0 4px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .nav-dot {
+    width: 10px; height: 10px;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .nav-dot.d-ext.active { background: var(--ext-color); border-color: var(--ext-color); }
+  .nav-dot.d-con.active { background: var(--con-color); border-color: var(--con-color); }
+  .nav-dot.d-int.active { background: var(--int-color); border-color: var(--int-color); }
+  .nav-dot:hover { transform: scale(1.3); }
+
+  /* prev/next btns */
+  .nav-btns {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 14px 8px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    padding: 5px 10px; font-size: 11px; font-weight: 700;
+    border: 1.5px solid var(--border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; gap: 4px;
+    color: var(--neutral-mid); transition: all .18s; min-height: 32px;
+    text-transform: uppercase; letter-spacing: .03em;
+  }
+  .nav-btn:hover { border-color: var(--neutral); color: var(--neutral); }
+  .nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .nav-btn .material-symbols-outlined { font-size: 15px; }
+  .nav-counter { font-size: 11px; font-weight: 700; color: var(--neutral-mid); }
+
+  @media (max-width:700px) {
+    body { width:100%; }
+    .main { grid-template-columns:1fr; height:auto; }
+    .detail-panel { height:auto; border-left:none; border-top:2px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-icon"><span class="material-symbols-outlined">layers</span></div>
+  <div class="header-text">
+    <div class="header-title">Arquitectura ANSI-SPARC</div>
+    <div class="header-sub">Fundamentos de Base de Datos</div>
+  </div>
+  <span class="badge">🗂 Infografía</span>
+</header>
+
+<!-- INSTRUCTION BAR -->
+<div class="inst-bar">
+  <span class="material-symbols-outlined">touch_app</span>
+  Haga clic en los temas para visualizar la información.
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT DIAGRAM -->
+  <div class="diagram-panel">
+
+    <div class="arch-title-block">
+      <div class="main-label">Arquitectura ANSI-SPARC</div>
+      <div class="sub-label">Este modelo establece tres niveles de abstracción que separan la forma en que los datos se perciben, se estructuran y se almacenan.</div>
+    </div>
+
+    <!-- EXTERNAL -->
+    <button class="layer-btn layer-ext" id="btn-ext" onclick="showLayer('ext')">
+      <div class="layer-icon"><span class="material-symbols-outlined">person</span></div>
+      <div class="layer-texts">
+        <div class="layer-name">Nivel Externo (Vistas)</div>
+        <div class="layer-desc">Interfaz con el usuario final</div>
+      </div>
+      <span class="material-symbols-outlined layer-arrow">chevron_right</span>
+    </button>
+
+    <!-- MAPPING 1 -->
+    <div class="map-connector">
+      <div class="map-line"></div>
+      <span class="map-arrows">⇅</span>
+      <span>Mapeo Externo / Conceptual</span>
+      <div class="map-line"></div>
+    </div>
+
+    <!-- CONCEPTUAL -->
+    <button class="layer-btn layer-con" id="btn-con" onclick="showLayer('con')">
+      <div class="layer-icon"><span class="material-symbols-outlined">hub</span></div>
+      <div class="layer-texts">
+        <div class="layer-name">Nivel Conceptual</div>
+        <div class="layer-desc">Visión comunitaria de la base de datos</div>
+      </div>
+      <span class="material-symbols-outlined layer-arrow">chevron_right</span>
+    </button>
+
+    <!-- MAPPING 2 -->
+    <div class="map-connector">
+      <div class="map-line"></div>
+      <span class="map-arrows">⇅</span>
+      <span>Mapeo Conceptual / Interno</span>
+      <div class="map-line"></div>
+    </div>
+
+    <!-- INTERNAL -->
+    <button class="layer-btn layer-int" id="btn-int" onclick="showLayer('int')">
+      <div class="layer-icon"><span class="material-symbols-outlined">hard_drive</span></div>
+      <div class="layer-texts">
+        <div class="layer-name">Nivel Interno (Físico)</div>
+        <div class="layer-desc">Almacenamiento físico de datos</div>
+      </div>
+      <span class="material-symbols-outlined layer-arrow">chevron_right</span>
+    </button>
+
+    <!-- STORAGE -->
+    <div class="storage-bar" style="margin-top:8px;">
+      <span class="material-symbols-outlined">database</span>
+      Almacenamiento Físico de Datos
+    </div>
+
+    <!-- REFERENCE -->
+    <div class="ref-label">Elaboración propia.</div>
+
+  </div><!-- /diagram-panel -->
+
+  <!-- RIGHT DETAIL PANEL -->
+  <div class="detail-panel" id="detailPanel">
+
+    <div id="detailContent" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <span class="material-symbols-outlined">touch_app</span>
+        <div class="es-title">Selecciona un nivel</div>
+        <div class="es-sub">Haz clic en cualquiera de los tres niveles de la arquitectura para ver su descripción detallada.</div>
+      </div>
+    </div>
+
+    <!-- Nav controls -->
+    <div class="nav-dots" id="navDots">
+      <div class="nav-dot d-ext" onclick="showLayer('ext')" title="Nivel Externo"></div>
+      <div class="nav-dot d-con" onclick="showLayer('con')" title="Nivel Conceptual"></div>
+      <div class="nav-dot d-int" onclick="showLayer('int')" title="Nivel Interno"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>
+        <span class="material-symbols-outlined">arrow_back</span> Anterior
+      </button>
+      <span class="nav-counter" id="navCounter">— / 3</span>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)" disabled>
+        Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+
+  </div><!-- /detail-panel -->
+
+</div><!-- /main -->
+
+<script>
+const LAYERS = ['ext', 'con', 'int'];
+let current = null;
+
+const DATA = {
+  ext: {
+    badge: 'Nivel 1',
+    badgeClass: 'dh-ext',
+    icon: '👤',
+    title: 'Nivel Externo (Vistas)',
+    subtitle: 'Es la interfaz con el usuario final. Define cómo los usuarios ven los datos.',
+    pointClass: 'pi-ext',
+    points: [
+      'Múltiples vistas personalizadas según el rol (ej. Estudiante vs. Rector).',
+      'Oculta partes de la base de datos por seguridad y simplicidad.',
+      'Los usuarios solo ven lo que necesitan para su trabajo.'
+    ],
+    conceptIcon: 'swap_horiz',
+    conceptTitle: 'Independencia Lógica',
+    conceptText: 'Permite cambiar el esquema conceptual sin afectar a los usuarios.',
+    cbClass: 'cb-ext'
+  },
+  con: {
+    badge: 'Nivel 2',
+    badgeClass: 'dh-con',
+    icon: '🔗',
+    title: 'Nivel Conceptual',
+    subtitle: 'La visión comunitaria de la base de datos. Describe qué datos se almacenan y sus relaciones.',
+    pointClass: 'pi-con',
+    points: [
+      'Esquema único para toda la organización.',
+      'Define entidades, atributos, relaciones y restricciones.',
+      'Independiente del software o hardware específico.'
+    ],
+    conceptIcon: 'swap_horiz',
+    conceptTitle: 'Independencia Lógica',
+    conceptText: 'Permite cambiar el esquema conceptual sin afectar a los usuarios.',
+    cbClass: 'cb-con'
+  },
+  int: {
+    badge: 'Nivel 3',
+    badgeClass: 'dh-int',
+    icon: '💾',
+    title: 'Nivel Interno (Físico)',
+    subtitle: 'Describe cómo se almacenan físicamente los datos en el sistema.',
+    pointClass: 'pi-int',
+    points: [
+      'Define estructuras de archivos, índices y métodos de acceso.',
+      'Optimización del rendimiento y espacio en disco.',
+      'Gestión de bloques de datos y punteros.'
+    ],
+    conceptIcon: 'storage',
+    conceptTitle: 'Independencia Física',
+    conceptText: 'Permite cambiar el almacenamiento físico sin afectar el esquema conceptual.',
+    cbClass: 'cb-int'
+  }
+};
+
+function showLayer(key) {
+  current = key;
+  const d = DATA[key];
+
+  // Update layer buttons
+  LAYERS.forEach(k => {
+    const btn = document.getElementById('btn-' + k);
+    btn.classList.toggle('active', k === key);
+  });
+
+  // Update nav dots
+  document.querySelectorAll('.nav-dot').forEach(dot => {
+    dot.classList.remove('active');
+    if (dot.classList.contains('d-' + key)) dot.classList.add('active');
+  });
+
+  // Build detail content
+  const pointsHtml = d.points.map((p, i) => `
+    <div class="point-item ${d.pointClass}">
+      <div class="pi-dot">${i+1}</div>
+      <div>${p}</div>
+    </div>`).join('');
+
+  const html = `
+    <div class="detail-header">
+      <span class="dh-badge ${d.badgeClass}">${d.badge}</span>
+      <div class="dh-icon">${d.icon}</div>
+      <div class="dh-title">${d.title}</div>
+      <div class="dh-subtitle">${d.subtitle}</div>
+    </div>
+    <div class="detail-body">
+      <div class="key-points-label">
+        <span class="material-symbols-outlined">checklist</span>
+        Puntos clave
+      </div>
+      ${pointsHtml}
+      <div class="concept-box ${d.cbClass}">
+        <div class="cb-label">
+          <span class="material-symbols-outlined">${d.conceptIcon}</span>
+          Concepto relacionado
+        </div>
+        <div class="cb-text"><strong>${d.conceptTitle}:</strong> ${d.conceptText}</div>
+      </div>
+    </div>`;
+
+  const container = document.getElementById('detailContent');
+  container.innerHTML = html;
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.flex = '1';
+  container.style.overflow = 'hidden';
+
+  updateNav();
+}
+
+function navigate(dir) {
+  const idx = LAYERS.indexOf(current);
+  const next = idx + dir;
+  if (next >= 0 && next < LAYERS.length) showLayer(LAYERS[next]);
+}
+
+function updateNav() {
+  const idx = LAYERS.indexOf(current);
+  document.getElementById('prevBtn').disabled = idx <= 0;
+  document.getElementById('nextBtn').disabled = idx >= LAYERS.length - 1;
+  document.getElementById('navCounter').textContent = `${idx + 1} / ${LAYERS.length}`;
+}
+</script>
+</body>
+</html>

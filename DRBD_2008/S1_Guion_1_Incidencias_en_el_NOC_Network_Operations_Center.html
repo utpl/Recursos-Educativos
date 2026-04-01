@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Incidencias en el NOC</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1565C0;
+    --primary-light: #1976D2;
+    --accent: #F57C00;
+    --accent-light: #FF9800;
+    --success: #2E7D32;
+    --success-bg: #E8F5E9;
+    --error: #C62828;
+    --error-bg: #FFEBEE;
+    --neutral: #37474F;
+    --neutral-light: #546E7A;
+    --bg: #F4F7FB;
+    --card: #FFFFFF;
+    --border: #CFD8DC;
+    --text: #1A237E;
+    --text-body: #263238;
+    --tag-bg: #E3F2FD;
+    --tag-border: #90CAF9;
+    --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+    --drop-hover: #E3F2FD;
+    --drop-border: #42A5F5;
+    --font: 'Inter', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-body);
+    font-size: 13px;
+    line-height: 1.5;
+    width: 800px;
+    max-width: 800px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--header-bg);
+    padding: 14px 20px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    right: -20px; top: -20px;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,0.06);
+    transform: rotate(45deg);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    right: 60px; bottom: -30px;
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.04);
+    transform: rotate(30deg);
+  }
+  .header-icon {
+    background: rgba(255,255,255,0.15);
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .header-icon .material-symbols-outlined { color: #fff; font-size: 26px; }
+  .header-text { flex: 1; }
+  .header-title {
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  .header-sub {
+    color: rgba(255,255,255,0.75);
+    font-size: 11px;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  /* ── INSTRUCTIONS BAR ── */
+  .instructions {
+    background: #E8EAF6;
+    border-left: 4px solid var(--primary);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .instructions .material-symbols-outlined { font-size: 18px; color: var(--primary); flex-shrink: 0; }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: 0;
+    height: 650px;
+    overflow: hidden;
+  }
+
+  /* ── SCENARIOS PANEL ── */
+  .scenarios-panel {
+    padding: 12px 12px 12px 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 650px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scenarios-panel::-webkit-scrollbar { width: 4px; }
+  .scenarios-panel::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .panel-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--neutral-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .panel-label .material-symbols-outlined { font-size: 14px; }
+
+  /* ── SCENARIO CARD ── */
+  .scenario-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    padding: 10px 10px 8px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .scenario-card:hover { box-shadow: 0 2px 8px rgba(21,101,192,0.12); }
+
+  .scenario-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 6px;
+  }
+  .scenario-num {
+    background: var(--primary);
+    color: #fff;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .scenario-time {
+    background: #FFF3E0;
+    border: 1px solid #FFCC80;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    letter-spacing: 0.03em;
+  }
+
+  .scenario-text {
+    font-size: 12px;
+    color: var(--text-body);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  /* ── DROP ZONE ── */
+  .drop-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .drop-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--neutral-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .drop-zone {
+    flex: 1;
+    min-height: 34px;
+    border: 2px dashed var(--border);
+    background: #FAFBFC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #90A4AE;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 4px 8px;
+    position: relative;
+  }
+  .drop-zone.drag-over {
+    border-color: var(--drop-border);
+    background: var(--drop-hover);
+    color: var(--primary);
+  }
+  .drop-zone.filled {
+    border-style: solid;
+    border-color: var(--primary-light);
+    background: var(--tag-bg);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 11px;
+    justify-content: space-between;
+    padding: 4px 8px;
+  }
+  .drop-zone.correct {
+    border-color: var(--success);
+    background: var(--success-bg);
+    color: var(--success);
+    font-weight: 700;
+  }
+  .drop-zone.incorrect {
+    border-color: var(--error);
+    background: var(--error-bg);
+    color: var(--error);
+    font-weight: 700;
+  }
+  .drop-zone .remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--neutral-light);
+    font-size: 14px;
+    display: flex; align-items: center;
+    padding: 0 2px;
+    min-width: 20px; min-height: 20px;
+  }
+  .drop-zone .remove-btn:hover { color: var(--error); }
+  .drop-zone .status-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* ── TAGS PANEL ── */
+  .tags-panel {
+    background: #F8F9FD;
+    border-left: 2px solid var(--border);
+    padding: 12px 10px;
+    height: 650px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .tags-panel::-webkit-scrollbar { width: 4px; }
+  .tags-panel::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .tag {
+    background: var(--card);
+    border: 1.5px solid var(--tag-border);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 7px 8px;
+    margin-bottom: 7px;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 44px;
+  }
+  .tag:hover {
+    background: var(--tag-bg);
+    border-color: var(--primary);
+    box-shadow: 0 2px 6px rgba(21,101,192,0.15);
+    transform: translateY(-1px);
+  }
+  .tag.dragging { opacity: 0.4; cursor: grabbing; }
+  .tag.used { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+  .tag .material-symbols-outlined { font-size: 14px; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    background: var(--card);
+    border-top: 2px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.04em;
+    min-height: 38px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #0D47A1; }
+  .btn-primary:disabled { background: #B0BEC5; cursor: not-allowed; }
+  .btn-reset {
+    background: transparent;
+    color: var(--neutral-light);
+    border: 1.5px solid var(--border);
+  }
+  .btn-reset:hover { border-color: var(--neutral-light); color: var(--neutral); }
+  .btn .material-symbols-outlined { font-size: 16px; }
+
+  .score-display {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--neutral);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .score-num { font-size: 22px; color: var(--primary); font-weight: 800; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(13,71,161,0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #fff;
+    width: 520px;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    position: relative;
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-header {
+    background: var(--header-bg);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .modal-header-icon .material-symbols-outlined { color: #fff; font-size: 24px; }
+  .modal-title { color: #fff; font-size: 15px; font-weight: 700; flex: 1; }
+  .modal-close {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.25); }
+  .modal-body { padding: 18px; }
+
+  .feedback-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+  .feedback-row.ok { border-left: 4px solid var(--success); background: var(--success-bg); }
+  .feedback-row.fail { border-left: 4px solid var(--error); background: var(--error-bg); }
+
+  .fb-num {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .ok .fb-num { background: var(--success); color: #fff; }
+  .fail .fb-num { background: var(--error); color: #fff; }
+
+  .fb-content { flex: 1; }
+  .fb-answer {
+    font-size: 11px; font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .ok .fb-answer { color: var(--success); }
+  .fail .fb-answer { color: var(--error); }
+  .fb-text { font-size: 11px; color: var(--text-body); line-height: 1.5; }
+  .fb-correction { font-size: 11px; color: var(--neutral-light); margin-top: 3px; }
+  .fb-correction strong { color: var(--primary); }
+
+  .final-msg {
+    background: linear-gradient(135deg, #E3F2FD, #F1F8E9);
+    border: 2px solid #90CAF9;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .final-msg .material-symbols-outlined { color: var(--primary); font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+  .final-msg-text { font-size: 12px; color: var(--text-body); line-height: 1.6; }
+  .final-score-big {
+    text-align: center;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .final-score-label { text-align: center; font-size: 11px; color: var(--neutral-light); margin-bottom: 14px; }
+
+  @media (max-width: 700px) {
+    body { width: 100%; }
+    .main { grid-template-columns: 1fr; height: auto; }
+    .scenarios-panel { height: auto; overflow-y: visible; }
+    .tags-panel { height: auto; border-left: none; border-top: 2px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; }
+    .tag { flex: 0 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-icon">
+    <span class="material-symbols-outlined">lan</span>
+  </div>
+  <div class="header-text">
+    <div class="header-title">Incidencias en el NOC — Network Operations Center</div>
+    <div class="header-sub">Funciones del Sistema Gestor de Base de Datos (SGBD)</div>
+  </div>
+  <span class="badge">⚡ Arrastrar y soltar</span>
+</header>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions">
+  <span class="material-symbols-outlined">info</span>
+  Arrastra cada función y colócala en el espacio que complete correctamente el enunciado; cada concepto se utiliza una sola vez para identificar la función del SGBD descrita.
+</div>
+
+<!-- MAIN GRID -->
+<div class="main">
+
+  <!-- SCENARIOS -->
+  <div class="scenarios-panel" id="scenariosPanel">
+    <div class="panel-label">
+      <span class="material-symbols-outlined">terminal</span>
+      Incidencias del turno nocturno
+    </div>
+
+    <!-- SCENARIO 1 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div class="scenario-num">1</div>
+        <span class="scenario-time">🕑 02:00 AM</span>
+      </div>
+      <p class="scenario-text">El ingeniero de turno requiere registrar una nueva métrica de latencia, por lo que ejecuta un comando para añadir una nueva columna llamada <strong>Latencia_ms</strong> en la tabla de monitoreo.</p>
+      <div class="drop-row">
+        <span class="drop-label">Función:</span>
+        <div class="drop-zone" id="drop-1" data-id="1"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)" onclick="handleDropClick(event)">
+          <span class="placeholder-text">Arrastra aquí…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 2 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div class="scenario-num">2</div>
+        <span class="scenario-time">🕒 03:15 AM</span>
+      </div>
+      <p class="scenario-text">Dos analistas intentaron actualizar exactamente el mismo registro de <strong>Estado de Puerto</strong> de un router al mismo tiempo. El sistema puso en fila una solicitud y procesó la otra primero, evitando que la información se corrompiera.</p>
+      <div class="drop-row">
+        <span class="drop-label">Función:</span>
+        <div class="drop-zone" id="drop-2" data-id="2"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)" onclick="handleDropClick(event)">
+          <span class="placeholder-text">Arrastra aquí…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 3 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div class="scenario-num">3</div>
+        <span class="scenario-time">🕓 04:30 AM</span>
+      </div>
+      <p class="scenario-text">Hubo un fallo en el servidor principal que provocó un reinicio forzado. Al volver a encender, el sistema demoró en el reinicio, tiempo en el cual deshizo las transacciones a medias, permitiendo que los datos quedaran íntegros.</p>
+      <div class="drop-row">
+        <span class="drop-label">Función:</span>
+        <div class="drop-zone" id="drop-3" data-id="3"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)" onclick="handleDropClick(event)">
+          <span class="placeholder-text">Arrastra aquí…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 4 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div class="scenario-num">4</div>
+        <span class="scenario-time">🕔 05:00 AM</span>
+      </div>
+      <p class="scenario-text">Un pasante intenta visualizar las contraseñas encriptadas de los administradores de red, pero el sistema le muestra un mensaje de <strong>Permiso Denegado</strong>.</p>
+      <div class="drop-row">
+        <span class="drop-label">Función:</span>
+        <div class="drop-zone" id="drop-4" data-id="4"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)" onclick="handleDropClick(event)">
+          <span class="placeholder-text">Arrastra aquí…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 5 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div class="scenario-num">5</div>
+        <span class="scenario-time">🕕 06:00 AM</span>
+      </div>
+      <p class="scenario-text">El sistema rechazó la inserción de un registro de falla porque el código del equipo enviado por el sensor no existía en el inventario principal.</p>
+      <div class="drop-row">
+        <span class="drop-label">Función:</span>
+        <div class="drop-zone" id="drop-5" data-id="5"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)" onclick="handleDropClick(event)">
+          <span class="placeholder-text">Arrastra aquí…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 6 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div class="scenario-num">6</div>
+        <span class="scenario-time">🌅 Fin de turno</span>
+      </div>
+      <p class="scenario-text">Antes de finalizar el turno, el ingeniero extrajo un reporte con todos los incidentes resueltos durante la noche, utilizando una sentencia <strong>SELECT</strong>.</p>
+      <div class="drop-row">
+        <span class="drop-label">Función:</span>
+        <div class="drop-zone" id="drop-6" data-id="6"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)" onclick="handleDropClick(event)">
+          <span class="placeholder-text">Arrastra aquí…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 7 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div class="scenario-num">7</div>
+        <span class="scenario-time">📋 Documentación</span>
+      </div>
+      <p class="scenario-text">Para dejar documentado el cambio de las 02:00 AM, el ingeniero consultó el repositorio del sistema para confirmar que la nueva columna <strong>Latencia_ms</strong> quedó registrada como un tipo de dato numérico (INT).</p>
+      <div class="drop-row">
+        <span class="drop-label">Función:</span>
+        <div class="drop-zone" id="drop-7" data-id="7"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)" onclick="handleDropClick(event)">
+          <span class="placeholder-text">Arrastra aquí…</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scenarios-panel -->
+
+  <!-- TAGS PANEL -->
+  <div class="tags-panel" id="tagsPanel">
+    <div class="panel-label" style="margin-bottom:10px;">
+      <span class="material-symbols-outlined">category</span>
+      Funciones del SGBD
+    </div>
+    <!-- Tags will be injected by JS (shuffled) -->
+  </div>
+
+</div><!-- /main -->
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="btn btn-primary" id="checkBtn" onclick="checkAnswers()" disabled>
+    <span class="material-symbols-outlined">check_circle</span>
+    Verificar
+  </button>
+  <button class="btn btn-reset" onclick="resetAll()">
+    <span class="material-symbols-outlined">refresh</span>
+    Reiniciar
+  </button>
+  <div class="score-display" id="scoreDisplay" style="display:none;">
+    <span class="material-symbols-outlined" style="color:var(--primary);font-size:20px;">stars</span>
+    <span class="score-num" id="scoreNum">0</span>
+    <span>/7 correctas</span>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-header-icon"><span class="material-symbols-outlined">analytics</span></div>
+      <span class="modal-title">Retroalimentación</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+  // ── DATA ──
+  const answers = {
+    1: { label: 'Definición de Datos — DDL',        icon: 'schema' },
+    2: { label: 'Control de Concurrencia',          icon: 'sync_alt' },
+    3: { label: 'Recuperación ante Fallos',         icon: 'restore' },
+    4: { label: 'Control de Acceso',                icon: 'lock' },
+    5: { label: 'Mantenimiento de la Integridad',   icon: 'verified' },
+    6: { label: 'Manipulación de Datos — DML / Read', icon: 'manage_search' },
+    7: { label: 'Gestión del Diccionario de Datos', icon: 'menu_book' },
+  };
+
+  const feedback = {
+    1: 'La adición de columnas o modificación de estructuras forma parte del lenguaje de definición de datos, encargado de crear y alterar objetos dentro de la base de datos.',
+    2: 'La gestión de accesos simultáneos evita conflictos entre transacciones concurrentes, garantizando consistencia mediante bloqueos o colas de ejecución.',
+    3: 'Los mecanismos de recuperación restauran el estado consistente tras fallos, deshaciendo operaciones incompletas y preservando la integridad de la información.',
+    4: 'Los sistemas de permisos restringen acciones según privilegios asignados, impidiendo accesos no autorizados a datos sensibles.',
+    5: 'Las reglas de integridad aseguran coherencia entre tablas, evitando referencias inválidas o datos inconsistentes.',
+    6: 'La consulta de datos mediante SELECT corresponde a operaciones de lectura dentro del lenguaje de manipulación de datos.',
+    7: 'El diccionario de datos almacena información sobre estructuras, tipos y definiciones, permitiendo verificar características de los objetos del sistema.',
+  };
+
+  const finalFeedback = '¡Felicitaciones! Se consolidó la identificación de funciones esenciales del SGBD, reconociendo cómo cada mecanismo contribuye a la seguridad, consistencia, disponibilidad y correcta gestión estructural y operativa de la base de datos.';
+
+  // State
+  let placements = {}; // dropId -> tagLabel
+  let draggedTag = null;
+
+  // ── SHUFFLE ──
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ── RENDER TAGS ──
+  function renderTags() {
+    const panel = document.getElementById('tagsPanel');
+    const label = panel.querySelector('.panel-label');
+    // Clear old tags
+    [...panel.querySelectorAll('.tag')].forEach(t => t.remove());
+
+    const ids = shuffle(Object.keys(answers).map(Number));
+    ids.forEach(id => {
+      const a = answers[id];
+      const used = Object.values(placements).includes(a.label);
+      const tag = document.createElement('div');
+      tag.className = 'tag' + (used ? ' used' : '');
+      tag.draggable = !used;
+      tag.dataset.label = a.label;
+      tag.id = 'tag-' + id;
+      tag.innerHTML = `<span class="material-symbols-outlined">${a.icon}</span>${a.label}`;
+      tag.addEventListener('dragstart', handleDragStart);
+      tag.addEventListener('dragend', handleDragEnd);
+      panel.appendChild(tag);
+    });
+    updateCheckBtn();
+  }
+
+  // ── DRAG EVENTS ──
+  function handleDragStart(e) {
+    draggedTag = e.currentTarget.dataset.label;
+    e.currentTarget.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggedTag);
+  }
+  function handleDragEnd(e) {
+    e.currentTarget.classList.remove('dragging');
+    draggedTag = null;
+  }
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+    e.dataTransfer.dropEffect = 'move';
+  }
+  function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    const zone = e.currentTarget;
+    zone.classList.remove('drag-over');
+    const label = e.dataTransfer.getData('text/plain') || draggedTag;
+    if (!label) return;
+    placeTag(zone, label);
+  }
+  function handleDropClick(e) {
+    // For touch-like interaction: clicking a filled zone removes the tag
+    const zone = e.currentTarget;
+    if (zone.classList.contains('filled')) {
+      const id = zone.dataset.id;
+      delete placements[id];
+      renderZone(zone, null);
+      renderTags();
+    }
+  }
+
+  // ── PLACE TAG ──
+  function placeTag(zone, label) {
+    const id = zone.dataset.id;
+    // If zone already filled, return old tag
+    if (placements[id]) {
+      // no-op, allow swap
+    }
+    // Remove label from any other zone
+    Object.keys(placements).forEach(k => {
+      if (placements[k] === label) delete placements[k];
+    });
+    placements[id] = label;
+    renderZone(zone, label);
+    renderTags();
+  }
+
+  function renderZone(zone, label) {
+    zone.classList.remove('filled', 'drag-over', 'correct', 'incorrect');
+    if (label) {
+      const id = zone.dataset.id;
+      const icon = Object.values(answers).find(a => a.label === label)?.icon || 'label';
+      zone.innerHTML = `
+        <span class="material-symbols-outlined" style="font-size:14px;flex-shrink:0;">${icon}</span>
+        <span style="flex:1;text-align:left;">${label}</span>
+        <button class="remove-btn" onclick="removeFromZone('${id}')" title="Quitar">
+          <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+        </button>`;
+      zone.classList.add('filled');
+    } else {
+      zone.innerHTML = '<span class="placeholder-text">Arrastra aquí…</span>';
+    }
+  }
+
+  function removeFromZone(id) {
+    delete placements[id];
+    const zone = document.getElementById('drop-' + id);
+    renderZone(zone, null);
+    renderTags();
+  }
+
+  function updateCheckBtn() {
+    const count = Object.keys(placements).length;
+    document.getElementById('checkBtn').disabled = count < 7;
+  }
+
+  // ── CHECK ANSWERS ──
+  function checkAnswers() {
+    let score = 0;
+    let html = '';
+
+    // Final score block
+    for (let id = 1; id <= 7; id++) {
+      const zone = document.getElementById('drop-' + id);
+      const placed = placements[id];
+      const correct = answers[id].label;
+      const isOk = placed === correct;
+      if (isOk) score++;
+
+      // Update zone visually
+      zone.classList.remove('correct', 'incorrect');
+      // keep filled
+      if (isOk) {
+        zone.classList.add('correct');
+        // Add ✓ icon
+        const statusSpan = zone.querySelector('.status-icon');
+        if (!statusSpan) {
+          const sp = document.createElement('span');
+          sp.className = 'material-symbols-outlined status-icon';
+          sp.style.color = 'var(--success)';
+          sp.textContent = 'check_circle';
+          zone.appendChild(sp);
+        }
+      } else {
+        zone.classList.add('incorrect');
+      }
+
+      html += `<div class="feedback-row ${isOk ? 'ok' : 'fail'}">
+        <div class="fb-num">${id}</div>
+        <div class="fb-content">
+          <div class="fb-answer">${isOk ? '✓ Correcto' : '✗ Incorrecto'}</div>
+          ${!isOk ? `<div class="fb-correction">Respuesta correcta: <strong>${correct}</strong></div>` : ''}
+          <div class="fb-text">${feedback[id]}</div>
+        </div>
+      </div>`;
+    }
+
+    document.getElementById('scoreNum').textContent = score;
+    document.getElementById('scoreDisplay').style.display = 'flex';
+
+    const finalHtml = `
+      <div class="final-score-big">${score}/7</div>
+      <div class="final-score-label">respuestas correctas</div>
+      <div class="final-msg">
+        <span class="material-symbols-outlined">emoji_events</span>
+        <div class="final-msg-text">${finalFeedback}</div>
+      </div>
+      ${html}
+      <button class="btn btn-reset" style="margin-top:10px;width:100%;justify-content:center;" onclick="resetAll();closeModal();">
+        <span class="material-symbols-outlined">refresh</span> Intentar de nuevo
+      </button>`;
+
+    document.getElementById('modalBody').innerHTML = finalHtml;
+    document.getElementById('modalOverlay').classList.add('active');
+  }
+
+  // ── RESET ──
+  function resetAll() {
+    placements = {};
+    for (let id = 1; id <= 7; id++) {
+      const zone = document.getElementById('drop-' + id);
+      zone.classList.remove('filled', 'correct', 'incorrect');
+      zone.innerHTML = '<span class="placeholder-text">Arrastra aquí…</span>';
+    }
+    document.getElementById('scoreDisplay').style.display = 'none';
+    renderTags();
+  }
+
+  // ── MODAL ──
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+  function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+  // ── INIT ──
+  renderTags();
+</script>
+</body>
+</html>

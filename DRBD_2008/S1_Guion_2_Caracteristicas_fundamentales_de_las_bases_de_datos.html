@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Características fundamentales de las bases de datos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+  :root {
+    --primary:       #0D47A1;
+    --primary-mid:   #1565C0;
+    --primary-light: #1976D2;
+    --accent:        #E65100;
+    --accent-light:  #FF6D00;
+    --success:       #1B5E20;
+    --success-bg:    #E8F5E9;
+    --success-bd:    #66BB6A;
+    --error:         #B71C1C;
+    --error-bg:      #FFEBEE;
+    --error-bd:      #EF9A9A;
+    --neutral:       #37474F;
+    --neutral-mid:   #546E7A;
+    --bg:            #F0F4FA;
+    --card:          #FFFFFF;
+    --border:        #CFD8DC;
+    --text:          #1A237E;
+    --text-body:     #263238;
+    --chip-bg:       #E3F2FD;
+    --chip-bd:       #90CAF9;
+    --match-bg:      #EDE7F6;
+    --match-bd:      #B39DDB;
+    --match-sel:     #7E57C2;
+    --header-grad:   linear-gradient(135deg,#0D47A1 0%,#1565C0 55%,#1976D2 100%);
+    --font:          'Inter', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-body);
+    font-size: 13px;
+    line-height: 1.55;
+    width: 800px;
+    max-width: 800px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--header-grad);
+    padding: 14px 20px 12px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .header::before {
+    content:''; position:absolute; right:-18px; top:-22px;
+    width:110px; height:110px;
+    background:rgba(255,255,255,0.06); transform:rotate(45deg);
+  }
+  .header::after {
+    content:''; position:absolute; right:55px; bottom:-28px;
+    width:70px; height:70px;
+    background:rgba(255,255,255,0.04); transform:rotate(30deg);
+  }
+  .header-icon {
+    background:rgba(255,255,255,0.15);
+    width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .header-icon .material-symbols-outlined { color:#fff; font-size:26px; }
+  .header-text { flex:1; }
+  .header-title { color:#fff; font-size:15px; font-weight:700; letter-spacing:.02em; line-height:1.2; }
+  .header-sub   { color:rgba(255,255,255,.75); font-size:11px; margin-top:2px; }
+  .badge {
+    background:var(--accent); color:#fff;
+    font-size:10px; font-weight:700;
+    padding:3px 9px; letter-spacing:.05em; text-transform:uppercase; flex-shrink:0;
+  }
+
+  /* ── INSTRUCTIONS BAR ── */
+  .inst-bar {
+    background:#E8EAF6; border-left:4px solid var(--primary);
+    padding:8px 16px; display:flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--text); font-weight:500;
+  }
+  .inst-bar .material-symbols-outlined { font-size:18px; color:var(--primary); flex-shrink:0; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    background:#fff; padding:8px 16px; display:flex; align-items:center; gap:10px;
+    border-bottom:1px solid var(--border);
+  }
+  .progress-track {
+    flex:1; height:6px; background:#E0E0E0; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; background:var(--primary-light);
+    transition: width .4s ease;
+    width:0%;
+  }
+  .progress-label { font-size:11px; font-weight:700; color:var(--neutral-mid); white-space:nowrap; }
+
+  /* ── QUIZ BODY ── */
+  .quiz-body {
+    padding:14px 16px 0;
+    min-height:520px;
+    max-height:640px;
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:var(--border) transparent;
+  }
+  .quiz-body::-webkit-scrollbar { width:4px; }
+  .quiz-body::-webkit-scrollbar-thumb { background:var(--border); }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background:var(--card); border:1px solid var(--border);
+    margin-bottom:12px; padding:14px 14px 12px;
+    transition:box-shadow .2s;
+    position:relative;
+  }
+  .q-card.answered { pointer-events:none; }
+  .q-card:hover { box-shadow:0 2px 8px rgba(21,101,192,.1); }
+
+  .q-head {
+    display:flex; align-items:flex-start; gap:10px; margin-bottom:10px;
+  }
+  .q-num {
+    background:var(--primary); color:#fff;
+    width:26px; height:26px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:800;
+  }
+  .q-type-badge {
+    font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    padding:2px 7px; flex-shrink:0; margin-top:4px;
+  }
+  .badge-tf   { background:#FFF8E1; color:#F57F17; border:1px solid #FFE082; }
+  .badge-mc   { background:var(--chip-bg); color:var(--primary); border:1px solid var(--chip-bd); }
+  .badge-fill { background:#E8F5E9; color:#2E7D32; border:1px solid #A5D6A7; }
+  .badge-match{ background:var(--match-bg); color:#4527A0; border:1px solid var(--match-bd); }
+
+  .q-text { font-size:13px; font-weight:600; color:var(--text); line-height:1.5; flex:1; }
+
+  /* ── TRUE / FALSE ── */
+  .tf-row { display:flex; gap:10px; }
+  .tf-btn {
+    flex:1; padding:10px 0; border:2px solid var(--border);
+    background:#FAFBFC; font-size:12px; font-weight:700;
+    cursor:pointer; transition:all .18s;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    color:var(--neutral); min-height:44px;
+  }
+  .tf-btn .material-symbols-outlined { font-size:18px; }
+  .tf-btn:hover { border-color:var(--primary-light); background:var(--chip-bg); color:var(--primary); }
+  .tf-btn.selected-correct { border-color:var(--success-bd); background:var(--success-bg); color:var(--success); }
+  .tf-btn.selected-wrong   { border-color:var(--error-bd); background:var(--error-bg); color:var(--error); }
+  .tf-btn.reveal-correct   { border-color:var(--success-bd); background:var(--success-bg); color:var(--success); }
+
+  /* ── MULTIPLE CHOICE ── */
+  .mc-option {
+    display:flex; align-items:flex-start; gap:9px;
+    padding:9px 10px; margin-bottom:6px;
+    border:1.5px solid var(--border); background:#FAFBFC;
+    cursor:pointer; transition:all .18s; min-height:44px;
+  }
+  .mc-option:hover { border-color:var(--primary-light); background:var(--chip-bg); }
+  .mc-option .opt-letter {
+    width:22px; height:22px; flex-shrink:0;
+    background:var(--border); color:var(--neutral);
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:800; margin-top:1px;
+  }
+  .mc-option .opt-text { font-size:12px; color:var(--text-body); line-height:1.5; }
+  .mc-option.selected-correct { border-color:var(--success-bd); background:var(--success-bg); }
+  .mc-option.selected-correct .opt-letter { background:var(--success-bd); color:#fff; }
+  .mc-option.selected-wrong   { border-color:var(--error-bd); background:var(--error-bg); }
+  .mc-option.selected-wrong   .opt-letter { background:var(--error-bd); color:#fff; }
+  .mc-option.reveal-correct   { border-color:var(--success-bd); background:var(--success-bg); }
+  .mc-option.reveal-correct   .opt-letter { background:var(--success-bd); color:#fff; }
+
+  /* ── FILL IN THE BLANK ── */
+  .fill-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .fill-prefix, .fill-suffix { font-size:13px; color:var(--text-body); }
+  .fill-input {
+    border:2px solid var(--border); background:#FAFBFC;
+    padding:6px 10px; font-size:13px; font-family:var(--font);
+    color:var(--text-body); outline:none; width:140px;
+    transition:border-color .2s;
+  }
+  .fill-input:focus { border-color:var(--primary-light); background:var(--chip-bg); }
+  .fill-input.correct-input { border-color:var(--success-bd); background:var(--success-bg); color:var(--success); font-weight:700; }
+  .fill-input.wrong-input   { border-color:var(--error-bd); background:var(--error-bg); color:var(--error); font-weight:700; }
+  .fill-check-btn {
+    padding:7px 14px; background:var(--primary); color:#fff;
+    border:none; font-size:11px; font-weight:700; cursor:pointer;
+    letter-spacing:.04em; text-transform:uppercase; min-height:36px;
+    transition:background .2s; display:flex; align-items:center; gap:5px;
+  }
+  .fill-check-btn:hover { background:var(--primary-mid); }
+  .fill-check-btn .material-symbols-outlined { font-size:15px; }
+
+  /* ── MATCHING ── */
+  .match-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  }
+  .match-col-label {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--neutral-mid); margin-bottom:5px;
+    display:flex; align-items:center; gap:4px;
+  }
+  .match-col-label .material-symbols-outlined { font-size:13px; }
+  .match-item {
+    background:#FAFBFC; border:1.5px solid var(--border);
+    padding:8px 10px; font-size:11px; cursor:pointer;
+    transition:all .18s; min-height:44px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .match-item .item-key {
+    background:var(--match-bd); color:#fff;
+    width:20px; height:20px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:800;
+  }
+  .match-item .item-text { line-height:1.4; }
+  .match-item.selectable:hover { border-color:var(--match-sel); background:var(--match-bg); }
+  .match-item.selected { border-color:var(--match-sel); background:var(--match-bg); box-shadow:0 0 0 2px rgba(126,87,194,.3); }
+  .match-item.matched-correct { border-color:var(--success-bd); background:var(--success-bg); }
+  .match-item.matched-wrong   { border-color:var(--error-bd); background:var(--error-bg); }
+  .match-hint { font-size:11px; color:var(--neutral-mid); margin-top:6px; font-style:italic; }
+
+  /* ── FEEDBACK INLINE ── */
+  .q-feedback {
+    margin-top:9px; padding:8px 10px;
+    font-size:11px; line-height:1.55;
+    display:flex; align-items:flex-start; gap:7px;
+    display:none;
+  }
+  .q-feedback.show { display:flex; }
+  .q-feedback.fb-ok   { background:var(--success-bg); border-left:3px solid var(--success-bd); color:var(--success); }
+  .q-feedback.fb-fail { background:var(--error-bg); border-left:3px solid var(--error-bd); color:var(--error); }
+  .q-feedback .material-symbols-outlined { font-size:17px; flex-shrink:0; margin-top:1px; }
+  .q-feedback .fb-body { flex:1; }
+  .q-feedback .fb-title { font-weight:700; }
+  .q-feedback .fb-detail { color:var(--text-body); margin-top:2px; font-weight:400; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    background:var(--card); border-top:2px solid var(--border);
+    padding:10px 16px; display:flex; align-items:center; gap:10px;
+  }
+  .btn {
+    padding:8px 18px; font-size:12px; font-weight:700; border:none;
+    cursor:pointer; display:flex; align-items:center; gap:6px;
+    letter-spacing:.04em; min-height:38px; transition:all .2s;
+    text-transform:uppercase;
+  }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-primary:hover { background:#0A3880; }
+  .btn-primary:disabled { background:#B0BEC5; cursor:not-allowed; }
+  .btn-reset { background:transparent; color:var(--neutral-mid); border:1.5px solid var(--border); }
+  .btn-reset:hover { border-color:var(--neutral-mid); color:var(--neutral); }
+  .btn .material-symbols-outlined { font-size:16px; }
+  .score-wrap { margin-left:auto; display:flex; align-items:center; gap:6px; }
+  .score-num { font-size:24px; font-weight:800; color:var(--primary); }
+  .score-lbl { font-size:12px; color:var(--neutral-mid); font-weight:600; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(13,71,161,.5); z-index:1000;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal {
+    background:#fff; width:480px; max-width:95vw;
+    max-height:88vh; overflow-y:auto;
+    box-shadow:0 8px 32px rgba(0,0,0,.18);
+    animation:mIn .25s ease;
+  }
+  @keyframes mIn {
+    from { opacity:0; transform:scale(.95) translateY(8px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+  .modal-header {
+    background:var(--header-grad); padding:14px 18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .modal-header .material-symbols-outlined { color:#fff; font-size:24px; }
+  .modal-title { color:#fff; font-size:15px; font-weight:700; flex:1; }
+  .modal-close {
+    background:rgba(255,255,255,.15); border:none; color:#fff;
+    width:32px; height:32px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    transition:background .2s;
+  }
+  .modal-close:hover { background:rgba(255,255,255,.28); }
+  .modal-body { padding:20px 18px; }
+  .final-score-big { text-align:center; font-size:48px; font-weight:800; color:var(--primary); line-height:1; }
+  .final-score-sub { text-align:center; font-size:11px; color:var(--neutral-mid); margin-bottom:14px; margin-top:2px; }
+  .final-msg {
+    background:linear-gradient(135deg,#E3F2FD,#F1F8E9);
+    border:2px solid #90CAF9; padding:13px 15px;
+    display:flex; gap:10px; align-items:flex-start; margin-bottom:18px;
+  }
+  .final-msg .material-symbols-outlined { color:var(--primary); font-size:28px; flex-shrink:0; margin-top:2px; }
+  .final-msg-text { font-size:12px; color:var(--text-body); line-height:1.65; }
+  .final-list { list-style:none; }
+  .final-list li {
+    display:flex; gap:9px; align-items:flex-start;
+    padding:8px 10px; margin-bottom:7px;
+    border:1px solid var(--border); font-size:11px; line-height:1.5;
+  }
+  .final-list li.ok   { border-left:4px solid var(--success-bd); background:var(--success-bg); }
+  .final-list li.fail { border-left:4px solid var(--error-bd); background:var(--error-bg); }
+  .final-list .li-num {
+    width:24px; height:24px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; color:#fff;
+  }
+  .ok .li-num   { background:var(--success-bd); }
+  .fail .li-num { background:var(--error-bd); }
+  .li-body { flex:1; }
+  .li-status { font-weight:700; margin-bottom:2px; }
+  .ok .li-status   { color:var(--success); }
+  .fail .li-status { color:var(--error); }
+  .li-correct { color:var(--neutral-mid); }
+  .li-correct strong { color:var(--primary); }
+
+  @media (max-width:700px) {
+    body { width:100%; }
+    .match-grid { grid-template-columns:1fr; }
+    .quiz-body { max-height:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-icon"><span class="material-symbols-outlined">storage</span></div>
+  <div class="header-text">
+    <div class="header-title">Características fundamentales de las bases de datos</div>
+    <div class="header-sub">Fundamentos de Base de Datos</div>
+  </div>
+  <span class="badge">📝 Quiz</span>
+</header>
+
+<!-- INSTRUCTIONS -->
+<div class="inst-bar">
+  <span class="material-symbols-outlined">info</span>
+  Revise con atención cada enunciado y elija la opción correcta.
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <span class="material-symbols-outlined" style="font-size:16px;color:var(--primary-light);">quiz</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-label" id="progressLabel">0 / 5 respondidas</span>
+</div>
+
+<!-- QUIZ BODY -->
+<div class="quiz-body" id="quizBody">
+
+  <!-- P1: Verdadero / Falso -->
+  <div class="q-card" id="card-1">
+    <div class="q-head">
+      <div class="q-num">1</div>
+      <span class="q-type-badge badge-tf">Verdadero / Falso</span>
+      <div class="q-text">Los datos compartidos permiten que varios usuarios accedan simultáneamente a la misma información actualizada.</div>
+    </div>
+    <div class="tf-row">
+      <button class="tf-btn" data-q="1" data-val="V" onclick="answerTF(1,'V')">
+        <span class="material-symbols-outlined">check_circle</span> Verdadero
+      </button>
+      <button class="tf-btn" data-q="1" data-val="F" onclick="answerTF(1,'F')">
+        <span class="material-symbols-outlined">cancel</span> Falso
+      </button>
+    </div>
+    <div class="q-feedback" id="fb-1"></div>
+  </div>
+
+  <!-- P2: Opción múltiple -->
+  <div class="q-card" id="card-2">
+    <div class="q-head">
+      <div class="q-num">2</div>
+      <span class="q-type-badge badge-mc">Opción múltiple</span>
+      <div class="q-text">¿Qué objetivo principal persigue la integración de datos en un SGBD?</div>
+    </div>
+    <div id="opts-2"></div>
+    <div class="q-feedback" id="fb-2"></div>
+  </div>
+
+  <!-- P3: Completar espacio -->
+  <div class="q-card" id="card-3">
+    <div class="q-head">
+      <div class="q-num">3</div>
+      <span class="q-type-badge badge-fill">Completar</span>
+      <div class="q-text">Complete el enunciado:</div>
+    </div>
+    <div class="fill-row">
+      <span class="fill-prefix">La</span>
+      <input class="fill-input" id="fill-3" type="text" placeholder="tu respuesta…" autocomplete="off" onkeydown="if(event.key==='Enter')checkFill()">
+      <span class="fill-suffix">de datos se refiere a la precisión, consistencia y confiabilidad de la información almacenada.</span>
+    </div>
+    <div style="margin-top:8px;">
+      <button class="fill-check-btn" onclick="checkFill()">
+        <span class="material-symbols-outlined">check</span> Confirmar
+      </button>
+    </div>
+    <div class="q-feedback" id="fb-3"></div>
+  </div>
+
+  <!-- P4: Relacionar -->
+  <div class="q-card" id="card-4">
+    <div class="q-head">
+      <div class="q-num">4</div>
+      <span class="q-type-badge badge-match">Relacionar</span>
+      <div class="q-text">Relacione cada característica con su descripción correspondiente. Selecciona un elemento de la Columna A y luego uno de la Columna B.</div>
+    </div>
+    <div class="match-grid">
+      <div>
+        <div class="match-col-label"><span class="material-symbols-outlined">list_alt</span>Columna A</div>
+        <div class="match-item selectable" id="ma-A" data-side="A" data-key="A" onclick="selectMatch(this)">
+          <span class="item-key">A</span><span class="item-text">Datos compartidos</span>
+        </div>
+        <div class="match-item selectable" id="ma-B" data-side="A" data-key="B" onclick="selectMatch(this)">
+          <span class="item-key">B</span><span class="item-text">Integración de datos</span>
+        </div>
+        <div class="match-item selectable" id="ma-C" data-side="A" data-key="C" onclick="selectMatch(this)">
+          <span class="item-key">C</span><span class="item-text">Seguridad de datos</span>
+        </div>
+      </div>
+      <div>
+        <div class="match-col-label"><span class="material-symbols-outlined">description</span>Columna B</div>
+        <div class="match-item selectable" id="mb-1" data-side="B" data-key="1" onclick="selectMatch(this)">
+          <span class="item-key">1</span><span class="item-text">Controla accesos a información sensible</span>
+        </div>
+        <div class="match-item selectable" id="mb-2" data-side="B" data-key="2" onclick="selectMatch(this)">
+          <span class="item-key">2</span><span class="item-text">Permite uso simultáneo por múltiples usuarios</span>
+        </div>
+        <div class="match-item selectable" id="mb-3" data-side="B" data-key="3" onclick="selectMatch(this)">
+          <span class="item-key">3</span><span class="item-text">Minimiza duplicaciones innecesarias</span>
+        </div>
+      </div>
+    </div>
+    <p class="match-hint" id="match-hint">Selecciona primero una opción de la Columna A, luego una de la Columna B para hacer un par.</p>
+    <div class="q-feedback" id="fb-4"></div>
+  </div>
+
+  <!-- P5: Verdadero / Falso -->
+  <div class="q-card" id="card-5">
+    <div class="q-head">
+      <div class="q-num">5</div>
+      <span class="q-type-badge badge-tf">Verdadero / Falso</span>
+      <div class="q-text">La seguridad de datos permite que cualquier usuario acceda libremente a toda la información almacenada.</div>
+    </div>
+    <div class="tf-row">
+      <button class="tf-btn" data-q="5" data-val="V" onclick="answerTF(5,'V')">
+        <span class="material-symbols-outlined">check_circle</span> Verdadero
+      </button>
+      <button class="tf-btn" data-q="5" data-val="F" onclick="answerTF(5,'F')">
+        <span class="material-symbols-outlined">cancel</span> Falso
+      </button>
+    </div>
+    <div class="q-feedback" id="fb-5"></div>
+  </div>
+
+</div><!-- /quiz-body -->
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="btn btn-primary" id="submitBtn" onclick="submitAll()" disabled>
+    <span class="material-symbols-outlined">send</span> Ver resultados
+  </button>
+  <button class="btn btn-reset" onclick="resetAll()">
+    <span class="material-symbols-outlined">refresh</span> Reiniciar
+  </button>
+  <div class="score-wrap" id="scoreWrap" style="display:none;">
+    <span class="material-symbols-outlined" style="color:var(--primary);font-size:20px;">stars</span>
+    <span class="score-num" id="scoreNum">0</span>
+    <span class="score-lbl">/5 correctas</span>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="material-symbols-outlined">analytics</span>
+      <span class="modal-title">Resultados del Quiz</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA
+══════════════════════════════════════════ */
+const CORRECT = {
+  1: 'V',
+  2: 'b',
+  3: 'integridad',
+  4: { A:'2', B:'3', C:'1' }, // A→2, B→3, C→1
+  5: 'F'
+};
+
+const FEEDBACK_TEXT = {
+  1: { ok: 'Correcto. Los datos compartidos permiten el acceso simultáneo de múltiples usuarios a la misma información actualizada.', fail: 'Incorrecto. Esta afirmación es verdadera: los datos compartidos sí permiten el acceso simultáneo.' },
+  2: { ok: 'Correcto. La integración de datos busca reducir redundancias, centralizando la información para evitar duplicaciones innecesarias.', fail: 'Incorrecto. La respuesta correcta es b) Reducir redundancias innecesarias. La integración centraliza datos para eliminar duplicaciones.' },
+  3: { ok: 'Correcto. La integridad de datos garantiza precisión, consistencia y confiabilidad de la información.', fail: 'Incorrecto. La palabra correcta es "integridad". Se refiere a la precisión, consistencia y confiabilidad de los datos.' },
+  4: { ok: 'Correcto. A→Permite uso simultáneo (2); B→Minimiza duplicaciones (3); C→Controla accesos (1).', fail: 'Revisa: A) Datos compartidos → 2) Permite uso simultáneo; B) Integración → 3) Minimiza duplicaciones; C) Seguridad → 1) Controla accesos.' },
+  5: { ok: 'Correcto. Esta afirmación es falsa. La seguridad de datos precisamente restringe el acceso, no lo permite libremente.', fail: 'Incorrecto. La afirmación es falsa: la seguridad de datos restringe el acceso según permisos, no lo permite a todos libremente.' }
+};
+
+const MC_OPTIONS = [
+  { key:'a', text:'Facilitar copias independientes por departamento' },
+  { key:'b', text:'Reducir redundancias innecesarias' },
+  { key:'c', text:'Aumentar el volumen de almacenamiento' }
+];
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let state = { 1:null, 2:null, 3:null, 4:{}, 5:null };
+let submitted = false;
+
+// Match state
+let matchSelA = null; // selected key from col A
+let matchPairs = {}; // A-key → B-key (confirmed pairs)
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+function init() {
+  // Render MC options (shuffled)
+  const opts = shuffle([...MC_OPTIONS]);
+  const container = document.getElementById('opts-2');
+  container.innerHTML = '';
+  opts.forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'mc-option';
+    div.dataset.val = o.key;
+    div.innerHTML = `<div class="opt-letter">${o.key.toUpperCase()}</div><div class="opt-text">${o.text}</div>`;
+    div.onclick = () => answerMC(o.key, div);
+    container.appendChild(div);
+  });
+}
+
+function shuffle(arr) {
+  for (let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* ══════════════════════════════════════════
+   TRUE / FALSE
+══════════════════════════════════════════ */
+function answerTF(q, val) {
+  if (state[q] !== null) return;
+  state[q] = val;
+  const btns = document.querySelectorAll(`[data-q="${q}"]`);
+  const isOk = val === CORRECT[q];
+  btns.forEach(b => {
+    if (b.dataset.val === val) b.classList.add(isOk ? 'selected-correct' : 'selected-wrong');
+    if (!isOk && b.dataset.val === CORRECT[q]) b.classList.add('reveal-correct');
+  });
+  showFeedback(q, isOk);
+  updateProgress();
+}
+
+/* ══════════════════════════════════════════
+   MULTIPLE CHOICE
+══════════════════════════════════════════ */
+function answerMC(val, el) {
+  if (state[2] !== null) return;
+  state[2] = val;
+  const isOk = val === CORRECT[2];
+  const all = document.querySelectorAll('#opts-2 .mc-option');
+  all.forEach(opt => {
+    if (opt.dataset.val === val) opt.classList.add(isOk ? 'selected-correct' : 'selected-wrong');
+    if (!isOk && opt.dataset.val === CORRECT[2]) opt.classList.add('reveal-correct');
+    opt.style.pointerEvents = 'none';
+  });
+  showFeedback(2, isOk);
+  updateProgress();
+}
+
+/* ══════════════════════════════════════════
+   FILL IN THE BLANK
+══════════════════════════════════════════ */
+function checkFill() {
+  if (state[3] !== null) return;
+  const inp = document.getElementById('fill-3');
+  const val = inp.value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const correct = CORRECT[3].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const isOk = val === correct;
+  state[3] = inp.value;
+  inp.classList.add(isOk ? 'correct-input' : 'wrong-input');
+  inp.disabled = true;
+  document.querySelector('.fill-check-btn').disabled = true;
+  if (!isOk) inp.value = inp.value + ' → ' + CORRECT[3];
+  showFeedback(3, isOk);
+  updateProgress();
+}
+
+/* ══════════════════════════════════════════
+   MATCHING
+══════════════════════════════════════════ */
+function selectMatch(el) {
+  if (submitted) return;
+  const side = el.dataset.side;
+  const key  = el.dataset.key;
+
+  // Already matched
+  if (el.classList.contains('matched-correct') || el.classList.contains('matched-wrong')) return;
+
+  if (side === 'A') {
+    // Deselect previous A
+    document.querySelectorAll('[data-side="A"]').forEach(x => x.classList.remove('selected'));
+    el.classList.add('selected');
+    matchSelA = key;
+    document.getElementById('match-hint').textContent = `"${el.querySelector('.item-text').textContent}" seleccionado. Ahora elige su par en la Columna B.`;
+  } else {
+    // side B — need an A selected
+    if (!matchSelA) {
+      document.getElementById('match-hint').textContent = 'Primero selecciona una opción de la Columna A.';
+      return;
+    }
+    // Record pair
+    matchPairs[matchSelA] = key;
+    state[4][matchSelA] = key;
+
+    // Visual: mark both items as paired (pending submit for correct/wrong)
+    document.getElementById('ma-' + matchSelA).classList.remove('selected');
+    document.getElementById('ma-' + matchSelA).style.opacity = '0.7';
+    el.style.opacity = '0.7';
+
+    matchSelA = null;
+
+    const done = Object.keys(matchPairs).length === 3;
+    if (done) {
+      // Evaluate
+      const corr = CORRECT[4];
+      let allOk = true;
+      ['A','B','C'].forEach(k => {
+        const elA = document.getElementById('ma-' + k);
+        const elB = document.getElementById('mb-' + matchPairs[k]);
+        const ok  = matchPairs[k] === corr[k];
+        if (!ok) allOk = false;
+        elA.classList.add(ok ? 'matched-correct' : 'matched-wrong');
+        elA.style.opacity = '1';
+        if (elB) { elB.classList.add(ok ? 'matched-correct' : 'matched-wrong'); elB.style.opacity = '1'; }
+      });
+      document.getElementById('match-hint').textContent = allOk ? '¡Todas las relaciones son correctas!' : 'Algunas relaciones no son correctas. Revisa la retroalimentación.';
+      showFeedback(4, allOk);
+      state[4] = matchPairs;
+      // disable all
+      document.querySelectorAll('#card-4 .match-item').forEach(x => x.style.pointerEvents = 'none');
+      updateProgress();
+    } else {
+      const remaining = 3 - Object.keys(matchPairs).length;
+      document.getElementById('match-hint').textContent = `Par registrado. Faltan ${remaining} relación(es).`;
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   FEEDBACK
+══════════════════════════════════════════ */
+function showFeedback(q, isOk) {
+  const fb = document.getElementById('fb-' + q);
+  const icon = isOk ? 'check_circle' : 'error';
+  const title = isOk ? '¡Correcto!' : 'Incorrecto';
+  const cls   = isOk ? 'fb-ok' : 'fb-fail';
+  fb.className = `q-feedback show ${cls}`;
+  fb.innerHTML = `<span class="material-symbols-outlined">${icon}</span>
+    <div class="fb-body">
+      <div class="fb-title">${title}</div>
+      <div class="fb-detail">${FEEDBACK_TEXT[q][isOk?'ok':'fail']}</div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════
+   PROGRESS / SUBMIT
+══════════════════════════════════════════ */
+function countAnswered() {
+  let n = 0;
+  if (state[1] !== null) n++;
+  if (state[2] !== null) n++;
+  if (state[3] !== null) n++;
+  if (Object.keys(state[4]).length === 3) n++;
+  if (state[5] !== null) n++;
+  return n;
+}
+
+function updateProgress() {
+  const n = countAnswered();
+  document.getElementById('progressFill').style.width = (n/5*100) + '%';
+  document.getElementById('progressLabel').textContent = `${n} / 5 respondidas`;
+  document.getElementById('submitBtn').disabled = n < 5;
+}
+
+function calcScore() {
+  let s = 0;
+  if (state[1] === CORRECT[1]) s++;
+  if (state[2] === CORRECT[2]) s++;
+  const fillVal = (state[3]||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const fillCor = CORRECT[3].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (fillVal === fillCor) s++;
+  const corr4 = CORRECT[4];
+  if (matchPairs['A']===corr4['A'] && matchPairs['B']===corr4['B'] && matchPairs['C']===corr4['C']) s++;
+  if (state[5] === CORRECT[5]) s++;
+  return s;
+}
+
+function submitAll() {
+  const score = calcScore();
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreWrap').style.display = 'flex';
+  submitted = true;
+
+  const results = [
+    { q:1, ok: state[1]===CORRECT[1], correct:'Verdadero' },
+    { q:2, ok: state[2]===CORRECT[2], correct:'b) Reducir redundancias innecesarias' },
+    { q:3, ok: (state[3]||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'') === CORRECT[3].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''), correct:'"integridad"' },
+    { q:4, ok: matchPairs['A']===CORRECT[4]['A'] && matchPairs['B']===CORRECT[4]['B'] && matchPairs['C']===CORRECT[4]['C'], correct:'A→2, B→3, C→1' },
+    { q:5, ok: state[5]===CORRECT[5], correct:'Falso' },
+  ];
+
+  let listHtml = results.map(r => `
+    <li class="${r.ok?'ok':'fail'}">
+      <div class="li-num">${r.q}</div>
+      <div class="li-body">
+        <div class="li-status">${r.ok ? '✓ Correcto' : '✗ Incorrecto'}</div>
+        ${!r.ok ? `<div class="li-correct">Respuesta correcta: <strong>${r.correct}</strong></div>` : ''}
+      </div>
+    </li>`).join('');
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="final-score-big">${score}/5</div>
+    <div class="final-score-sub">respuestas correctas</div>
+    <div class="final-msg">
+      <span class="material-symbols-outlined">emoji_events</span>
+      <div class="final-msg-text">¡Enhorabuena! Las características esenciales de las bases de datos garantizan gestión eficiente, coherencia informacional y acceso controlado en entornos multiusuario.</div>
+    </div>
+    <ul class="final-list">${listHtml}</ul>
+    <button class="btn btn-reset" style="margin-top:10px;width:100%;justify-content:center;" onclick="resetAll();closeModal();">
+      <span class="material-symbols-outlined">refresh</span> Intentar de nuevo
+    </button>`;
+
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+/* ══════════════════════════════════════════
+   RESET
+══════════════════════════════════════════ */
+function resetAll() {
+  state = { 1:null, 2:null, 3:null, 4:{}, 5:null };
+  submitted = false;
+  matchSelA = null;
+  matchPairs = {};
+
+  // TF
+  [1,5].forEach(q => {
+    document.querySelectorAll(`[data-q="${q}"]`).forEach(b => {
+      b.classList.remove('selected-correct','selected-wrong','reveal-correct');
+      b.disabled = false;
+    });
+    const fb = document.getElementById('fb-' + q);
+    fb.className = 'q-feedback'; fb.innerHTML = '';
+    document.getElementById('card-'+q).classList.remove('answered');
+  });
+
+  // MC
+  document.querySelectorAll('#opts-2 .mc-option').forEach(o => {
+    o.classList.remove('selected-correct','selected-wrong','reveal-correct');
+    o.style.pointerEvents = 'auto';
+  });
+  document.getElementById('fb-2').className = 'q-feedback'; document.getElementById('fb-2').innerHTML = '';
+
+  // Fill
+  const inp = document.getElementById('fill-3');
+  inp.value = ''; inp.className = 'fill-input'; inp.disabled = false;
+  document.querySelector('.fill-check-btn').disabled = false;
+  document.getElementById('fb-3').className = 'q-feedback'; document.getElementById('fb-3').innerHTML = '';
+
+  // Match
+  document.querySelectorAll('#card-4 .match-item').forEach(x => {
+    x.classList.remove('selected','matched-correct','matched-wrong');
+    x.style.pointerEvents = 'auto'; x.style.opacity = '1';
+  });
+  document.getElementById('match-hint').textContent = 'Selecciona primero una opción de la Columna A, luego una de la Columna B para hacer un par.';
+  document.getElementById('fb-4').className = 'q-feedback'; document.getElementById('fb-4').innerHTML = '';
+
+  document.getElementById('scoreWrap').style.display = 'none';
+  updateProgress();
+  init();
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+/* ── START ── */
+init();
+updateProgress();
+</script>
+</body>
+</html>
