@@ -2,198 +2,202 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Acceso y Subconsultas SQL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SQL | Control de Acceso y Subconsultas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #1565C0;
-            --primary-light: #1976D2;
-            --accent: #F57C00;
-            --accent-light: #FF9800;
-            --success: #2E7D32;
-            --success-bg: #E8F5E9;
-            --error: #C62828;
-            --error-bg: #FFEBEE;
-            --neutral: #37474F;
-            --neutral-light: #546E7A;
-            --bg: #F4F7FB;
-            --card: #FFFFFF;
-            --border: #CFD8DC;
-            --text: #1A237E;
-            --text-body: #263238;
-            --tag-bg: #E3F2FD;
-            --tag-border: #90CAF9;
-            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-            --drop-hover: #E3F2FD;
-            --drop-border: #42A5F5;
-            --font: 'Inter', sans-serif;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
+        :root {
+            --primary: #1E4A3B;
+            --primary-dark: #0A2F2A;
+            --primary-light: #2C6E4F;
+            --accent: #E67E22;
+            --accent-light: #F39C12;
+            --accent-soft: #FEF3E7;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #2C3E50;
+            --neutral-light: #5D6E7E;
+            --bg: #F8FAFE;
+            --card: #FFFFFF;
+            --border: #E9EDF2;
+            --text-body: #1E2F3E;
+            --font: 'Inter', sans-serif;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.08);
         }
 
+        body {
+            font-family: var(--font);
+            background: linear-gradient(145deg, #F5F7FC 0%, #EDF2F9 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        /* Contenedor principal: 800px x 800px ESTRICTO */
         .container {
             width: 800px;
-            min-height: 500px;
-            max-height: 800px;
+            height: 800px;
             background: var(--card);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
         }
 
+        /* Scroll interno controlado */
+        .scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .scroll-area::-webkit-scrollbar {
+            width: 5px;
+        }
+        .scroll-area::-webkit-scrollbar-track {
+            background: var(--border);
+        }
+        .scroll-area::-webkit-scrollbar-thumb {
+            background: var(--primary);
+        }
+
+        /* Header con gradiente vibrante */
         .header {
-            background: var(--header-bg);
-            padding: 20px 30px;
+            background: linear-gradient(115deg, #0A2F2A 0%, #1E4A3B 45%, #2C5F8A 100%);
+            padding: 18px 28px;
+            flex-shrink: 0;
             position: relative;
-            overflow: hidden;
         }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255,255,255,0.05);
-            transform: rotate(45deg);
-        }
-
         .header::after {
             content: '';
             position: absolute;
-            bottom: -30%;
-            left: -5%;
-            width: 200px;
-            height: 200px;
-            background: rgba(255,255,255,0.03);
-            transform: rotate(30deg);
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-light);
+            opacity: 0.6;
         }
 
         .header-content {
+            display: flex;
+            align-items: center;
+            gap: 14px;
             position: relative;
             z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 15px;
         }
-
         .header-icon {
-            width: 50px;
-            height: 50px;
-            background: rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
+            font-size: 36px;
         }
-
         .header-text h1 {
             color: white;
             font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 5px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
         }
-
         .header-text p {
-            color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.85);
             font-size: 12px;
+            margin-top: 4px;
         }
 
+        /* Contenido principal */
         .main-content {
-            padding: 25px 30px;
+            padding: 20px 24px;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        .progress-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
+        /* Barra de progreso mejorada */
+        .progress-section {
+            flex-shrink: 0;
         }
-
-        .progress-bar {
-            flex: 1;
-            height: 8px;
+        .progress-bar-container {
             background: var(--border);
+            height: 6px;
+            border-radius: 0px;
             overflow: hidden;
         }
-
         .progress-fill {
+            background: var(--accent);
             height: 100%;
-            background: var(--primary);
+            width: 0%;
             transition: width 0.3s ease;
         }
-
-        .progress-text {
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
             font-size: 12px;
-            color: var(--neutral);
-            font-weight: 600;
+            color: var(--neutral-light);
+            font-weight: 500;
         }
 
+        /* Tarjeta de caso (contexto) */
         .case-card {
-            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-            padding: 20px;
-            border-left: 4px solid var(--primary);
+            background: linear-gradient(135deg, #E8F0FE 0%, #DFE9FB 100%);
+            border-left: 4px solid var(--accent);
+            padding: 18px 20px;
+            flex-shrink: 0;
         }
-
         .case-header {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 12px;
         }
-
         .case-icon {
             font-size: 24px;
         }
-
         .case-title {
             font-size: 14px;
             font-weight: 700;
-            color: var(--text);
+            color: var(--primary);
         }
-
         .case-text {
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.55;
             color: var(--text-body);
+        }
+
+        /* Contenedor de preguntas */
+        .quiz-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         .question-container {
             display: none;
+            flex-direction: column;
+            height: 100%;
+            animation: fadeIn 0.3s ease-out;
         }
-
         .question-container.active {
-            display: block;
+            display: flex;
         }
 
-        .question-header {
+        /* Indicador de pregunta actual */
+        .question-indicator {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
-
-        .question-number {
+        .question-badge {
             background: var(--primary);
             color: white;
             width: 32px;
@@ -204,631 +208,539 @@
             font-weight: 700;
             font-size: 14px;
         }
-
         .question-text {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
-            color: var(--text);
+            color: var(--primary-dark);
+            line-height: 1.4;
             flex: 1;
         }
 
+        /* Opciones en grid */
         .options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 16px;
             margin-bottom: 20px;
         }
-
         .option-card {
             background: var(--card);
-            border: 2px solid var(--border);
-            padding: 20px;
+            border: 1.5px solid var(--border);
+            padding: 18px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
             position: relative;
         }
-
         .option-card:hover {
-            border-color: var(--primary-light);
-            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.15);
+            border-color: var(--accent);
             transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
         }
-
         .option-card.selected {
             border-color: var(--primary);
-            background: var(--tag-bg);
+            background: var(--accent-soft);
         }
-
-        .option-card.correct {
-            border-color: var(--success);
-            background: var(--success-bg);
-        }
-
-        .option-card.incorrect {
-            border-color: var(--error);
-            background: var(--error-bg);
-        }
-
         .option-label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 8px;
+            color: var(--accent);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 10px;
         }
-
         .option-text {
             font-size: 13px;
             line-height: 1.5;
             color: var(--text-body);
         }
-
-        .option-icon {
+        .option-check {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 20px;
+            top: 12px;
+            right: 12px;
+            font-size: 18px;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.2s;
         }
-
-        .option-card.selected .option-icon {
+        .option-card.selected .option-check {
             opacity: 1;
         }
 
+        /* Feedback */
         .feedback-card {
-            display: none;
             background: var(--card);
-            border: 2px solid var(--border);
-            margin-top: 15px;
-            position: relative;
+            border: 1px solid var(--border);
+            margin-top: 16px;
+            display: none;
+            animation: slideUp 0.25s ease-out;
         }
-
         .feedback-card.show {
             display: block;
-            animation: slideIn 0.4s ease;
         }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         .feedback-header {
-            background: var(--primary);
-            color: white;
-            padding: 12px 20px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         .feedback-header.correct {
-            background: var(--success);
+            background: var(--success-bg);
+            border-left: 4px solid var(--success);
         }
-
         .feedback-header.incorrect {
-            background: var(--error);
+            background: var(--error-bg);
+            border-left: 4px solid var(--error);
         }
-
         .feedback-title {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
         }
-
+        .feedback-header.correct .feedback-title { color: var(--success); }
+        .feedback-header.incorrect .feedback-title { color: var(--error); }
         .feedback-body {
-            padding: 20px;
+            padding: 16px;
         }
-
         .feedback-text {
             font-size: 13px;
-            line-height: 1.7;
+            line-height: 1.55;
             color: var(--text-body);
         }
 
-        .feedback-stamp {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border: 3px solid var(--success);
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            transform: rotate(-15deg);
-            opacity: 0.6;
-        }
-
-        .feedback-stamp.incorrect {
-            border-color: var(--error);
-            color: var(--error);
-        }
-
-        .navigation {
+        /* Botones de navegación */
+        .nav-buttons {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
+            gap: 16px;
+            margin-top: auto;
+            padding-top: 16px;
         }
-
         .nav-btn {
-            padding: 12px 24px;
-            font-size: 13px;
-            font-weight: 600;
+            flex: 1;
             border: none;
+            padding: 12px 20px;
+            font-weight: 700;
+            font-size: 13px;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            transition: all 0.3s;
+            transition: all 0.2s;
+        }
+        .nav-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+        .nav-btn.primary:hover:not(:disabled) {
+            background: var(--primary-light);
+            transform: scale(0.98);
+        }
+        .nav-btn.secondary {
             background: var(--neutral-light);
             color: white;
         }
-
-        .nav-btn:hover:not(:disabled) {
+        .nav-btn.secondary:hover:not(:disabled) {
             background: var(--neutral);
         }
-
         .nav-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .nav-btn.primary {
-            background: var(--primary);
-        }
-
-        .nav-btn.primary:hover:not(:disabled) {
-            background: var(--primary-light);
-        }
-
+        /* Pantalla final */
         .final-screen {
             display: none;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px;
+            animation: fadeIn 0.4s ease-out;
         }
-
-        .final-screen.show {
-            display: block;
+        .final-screen.active {
+            display: flex;
         }
-
         .final-icon {
-            font-size: 64px;
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+        .final-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--success);
+            margin-bottom: 16px;
+        }
+        .final-summary {
+            background: var(--bg);
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+        }
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
             margin-bottom: 20px;
         }
-
-        .final-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 15px;
-        }
-
-        .final-text {
-            font-size: 14px;
-            line-height: 1.7;
-            color: var(--text-body);
-            max-width: 600px;
-            margin: 0 auto 30px;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .summary-item {
-            background: var(--bg);
-            padding: 15px;
+        .stat-item {
             text-align: center;
         }
-
-        .summary-number {
-            font-size: 28px;
-            font-weight: 700;
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
             color: var(--primary);
         }
-
-        .summary-label {
+        .stat-label {
             font-size: 11px;
-            color: var(--neutral);
-            margin-top: 5px;
+            color: var(--neutral-light);
+            margin-top: 4px;
+        }
+        .final-feedback {
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-body);
+        }
+        .final-feedback ul {
+            margin: 12px 0 12px 20px;
+        }
+        .final-feedback li {
+            margin-bottom: 8px;
+        }
+        .restart-btn {
+            background: var(--neutral-light);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            margin-top: 16px;
+        }
+        .restart-btn:hover {
+            background: var(--neutral);
+            transform: scale(0.98);
         }
 
-        .geo-decoration {
-            position: absolute;
-            opacity: 0.08;
-            pointer-events: none;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .geo-1 {
-            top: 100px;
-            right: 30px;
-            width: 80px;
-            height: 80px;
-            border: 3px solid var(--primary);
-            transform: rotate(45deg);
-        }
-
-        .geo-2 {
-            bottom: 100px;
-            left: 30px;
-            width: 50px;
-            height: 50px;
-            background: var(--accent);
-            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-        }
-
-        @media (max-width: 600px) {
+        @media (max-width: 850px) {
             .container {
                 width: 100%;
-                max-height: none;
+                height: 100vh;
             }
-            
-            .main-content {
-                padding: 15px;
-            }
-            
             .options-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .summary-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .navigation {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .nav-btn {
-                width: 100%;
-                justify-content: center;
+            .main-content {
+                padding: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="geo-decoration geo-1"></div>
-        <div class="geo-decoration geo-2"></div>
-
-        <header class="header">
-            <div class="header-content">
-                <div class="header-icon">🔐</div>
-                <div class="header-text">
-                    <h1>Control de Acceso y Subconsultas SQL</h1>
-                    <p>Caso de Estudio Interactivo | Fundamentos de Base de Datos</p>
-                </div>
+<div class="container">
+    <div class="header">
+        <div class="header-content">
+            <div class="header-icon">🔐</div>
+            <div class="header-text">
+                <h1>Control de Acceso y Subconsultas SQL</h1>
+                <p>📚 Caso práctico · Fundamentos de Base de Datos</p>
             </div>
-        </header>
+        </div>
+    </div>
 
+    <div class="scroll-area">
         <div class="main-content">
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            <!-- Barra de progreso -->
+            <div class="progress-section">
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="progressFill"></div>
                 </div>
-                <span class="progress-text" id="progressText">Pregunta 1 de 3</span>
+                <div class="progress-stats">
+                    <span>📊 Progreso</span>
+                    <span id="progressText">Pregunta 1 de 3</span>
+                </div>
             </div>
 
-            <div class="case-card" id="caseStudy">
+            <!-- Tarjeta de caso (contexto principal) -->
+            <div class="case-card" id="caseCard">
                 <div class="case-header">
                     <span class="case-icon">📋</span>
                     <span class="case-title">Caso de Estudio</span>
                 </div>
                 <p class="case-text">
-                    En una empresa de comercio electrónico se administra una base de datos que contiene información de clientes, pedidos y pagos. El equipo de tecnología debe asignar permisos diferenciados a usuarios del área financiera y atención al cliente, asegurando que cada perfil acceda únicamente a la información necesaria. Paralelamente, se requiere generar reportes que identifiquen clientes con compras superiores al promedio general y analizar comportamientos específicos mediante consultas anidadas. Una configuración incorrecta podría exponer datos sensibles o generar reportes inexactos. Es necesario decidir cómo aplicar correctamente los permisos y consultas para garantizar seguridad y precisión en los resultados.
+                    En una empresa de comercio electrónico se administra una base de datos con información de clientes, pedidos y pagos. 
+                    El equipo de tecnología debe asignar permisos diferenciados a usuarios del área financiera y atención al cliente, 
+                    asegurando que cada perfil acceda únicamente a la información necesaria. Paralelamente, se requiere generar reportes 
+                    que identifiquen clientes con compras superiores al promedio general mediante consultas anidadas.
                 </p>
             </div>
 
-            <div class="question-container active" data-question="1">
-                <div class="question-header">
-                    <div class="question-number">1</div>
-                    <div class="question-text">¿Qué acción es más adecuada para permitir que el personal de atención consulte pedidos sin modificar información?</div>
-                </div>
-                
-                <div class="options-grid">
-                    <div class="option-card" data-option="A" data-correct="true">
-                        <div class="option-label">Opción A</div>
-                        <div class="option-text">Otorgar permisos SELECT mediante GRANT sobre las tablas correspondientes.</div>
-                        <span class="option-icon material-symbols-outlined">check_circle</span>
-                    </div>
-                    <div class="option-card" data-option="B" data-correct="false">
-                        <div class="option-label">Opción B</div>
-                        <div class="option-text">Otorgar todos los privilegios para asegurar acceso completo a los datos.</div>
-                        <span class="option-icon material-symbols-outlined">cancel</span>
-                    </div>
-                </div>
-
-                <div class="feedback-card" id="feedback1">
-                    <div class="feedback-header" id="feedbackHeader1">
-                        <span class="material-symbols-outlined">lightbulb</span>
-                        <span class="feedback-title">Retroalimentación</span>
-                    </div>
-                    <div class="feedback-body">
-                        <p class="feedback-text" id="feedbackText1"></p>
-                        <div class="feedback-stamp" id="feedbackStamp1">VERIFICADO</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="question-container" data-question="2">
-                <div class="question-header">
-                    <div class="question-number">2</div>
-                    <div class="question-text">¿Qué acción corresponde cuando se requiere retirar permisos de modificación a un usuario del área financiera?</div>
-                </div>
-                
-                <div class="options-grid">
-                    <div class="option-card" data-option="A" data-correct="true">
-                        <div class="option-label">Opción A</div>
-                        <div class="option-text">Utilizar REVOKE para eliminar los privilegios previamente otorgados.</div>
-                        <span class="option-icon material-symbols-outlined">check_circle</span>
-                    </div>
-                    <div class="option-card" data-option="B" data-correct="false">
-                        <div class="option-label">Opción B</div>
-                        <div class="option-text">Mantener los permisos y supervisar manualmente su uso.</div>
-                        <span class="option-icon material-symbols-outlined">cancel</span>
-                    </div>
-                </div>
-
-                <div class="feedback-card" id="feedback2">
-                    <div class="feedback-header" id="feedbackHeader2">
-                        <span class="material-symbols-outlined">lightbulb</span>
-                        <span class="feedback-title">Retroalimentación</span>
-                    </div>
-                    <div class="feedback-body">
-                        <p class="feedback-text" id="feedbackText2"></p>
-                        <div class="feedback-stamp" id="feedbackStamp2">VERIFICADO</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="question-container" data-question="3">
-                <div class="question-header">
-                    <div class="question-number">3</div>
-                    <div class="question-text">¿Qué enfoque permite identificar clientes cuyas compras superan el promedio general?</div>
-                </div>
-                
-                <div class="options-grid">
-                    <div class="option-card" data-option="A" data-correct="true">
-                        <div class="option-label">Opción A</div>
-                        <div class="option-text">Utilizar una subconsulta que calcule el promedio y lo compare con cada registro.</div>
-                        <span class="option-icon material-symbols-outlined">check_circle</span>
-                    </div>
-                    <div class="option-card" data-option="B" data-correct="false">
-                        <div class="option-label">Opción B</div>
-                        <div class="option-text">Realizar consultas independientes sin relación entre resultados.</div>
-                        <span class="option-icon material-symbols-outlined">cancel</span>
-                    </div>
-                </div>
-
-                <div class="feedback-card" id="feedback3">
-                    <div class="feedback-header" id="feedbackHeader3">
-                        <span class="material-symbols-outlined">lightbulb</span>
-                        <span class="feedback-title">Retroalimentación</span>
-                    </div>
-                    <div class="feedback-body">
-                        <p class="feedback-text" id="feedbackText3"></p>
-                        <div class="feedback-stamp" id="feedbackStamp3">VERIFICADO</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="final-screen" id="finalScreen">
-                <div class="final-icon">🎉</div>
-                <h2 class="final-title">¡Actividad Completada!</h2>
-                <p class="final-text">
-                    La correcta gestión de accesos y uso de subconsultas garantiza seguridad y precisión en los datos. 
-                    <br><br>
-                    • GRANT permite asignar permisos específicos según roles.<br>
-                    • REVOKE elimina privilegios para mantener control de acceso.<br>
-                    • Las subconsultas facilitan análisis comparativos dentro de consultas.<br><br>
-                    El dominio de estos elementos optimiza la gestión y análisis de información.
-                </p>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <div class="summary-number" id="correctCount">0</div>
-                        <div class="summary-label">Correctas</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-number" id="totalQuestions">3</div>
-                        <div class="summary-label">Total</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-number" id="scorePercent">0%</div>
-                        <div class="summary-label">Puntuación</div>
-                    </div>
-                </div>
-                <button class="nav-btn primary" onclick="restartActivity()">
-                    <span class="material-symbols-outlined">refresh</span>
-                    Reiniciar Actividad
-                </button>
-            </div>
-
-            <div class="navigation" id="navigation">
-                <button class="nav-btn" id="prevBtn" onclick="prevQuestion()" disabled>
-                    <span class="material-symbols-outlined">arrow_back</span>
-                    Anterior
-                </button>
-                <button class="nav-btn primary" id="nextBtn" onclick="nextQuestion()" disabled>
-                    Siguiente
-                    <span class="material-symbols-outlined">arrow_forward</span>
-                </button>
+            <!-- Área de preguntas dinámica -->
+            <div class="quiz-area" id="quizArea">
+                <!-- JS inyecta preguntas aquí -->
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        let currentQuestion = 1;
-        const totalQuestions = 3;
-        let answers = {};
-        let answered = {};
-
-        const feedbackData = {
-            1: {
-                A: "Es la opción más adecuada, ya que limita el acceso a consulta, evitando modificaciones no autorizadas y protegiendo la integridad de los datos.",
-                B: "Es funcional, pero excesiva, ya que concede permisos innecesarios que pueden comprometer la seguridad de la información."
-            },
-            2: {
-                A: "Es la opción más adecuada, ya que permite retirar de forma explícita los permisos, garantizando un control efectivo del acceso.",
-                B: "Es una alternativa viable en control operativo, pero no elimina el riesgo de accesos indebidos al mantener los privilegios activos."
-            },
-            3: {
-                A: "Es la opción más adecuada, ya que permite comparar cada registro con un valor calculado dinámicamente dentro de la misma consulta.",
-                B: "Es una opción limitada, ya que no permite integrar resultados ni realizar comparaciones directas dentro de una misma consulta."
-            }
-        };
-
-        updateProgress();
-        shuffleOptions();
-
-        function shuffleOptions() {
-            document.querySelectorAll('.question-container').forEach(container => {
-                const optionsGrid = container.querySelector('.options-grid');
-                const options = Array.from(optionsGrid.children);
-                for (let i = options.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    optionsGrid.appendChild(options[j]);
-                }
-            });
+<script>
+    // Definición de preguntas
+    const questions = [
+        {
+            id: 1,
+            text: "¿Qué acción es más adecuada para permitir que el personal de atención consulte pedidos sin modificar información?",
+            options: [
+                { text: "Otorgar permisos SELECT mediante GRANT sobre las tablas correspondientes.", isCorrect: true, feedback: "✅ GRANT SELECT es la opción más adecuada, ya que limita el acceso a solo consulta, evitando modificaciones no autorizadas y protegiendo la integridad de los datos." },
+                { text: "Otorgar todos los privilegios para asegurar acceso completo a los datos.", isCorrect: false, feedback: "⚠️ Otorgar todos los privilegios es excesivo y compromete la seguridad, ya que concede permisos innecesarios de modificación." }
+            ]
+        },
+        {
+            id: 2,
+            text: "¿Qué acción corresponde cuando se requiere retirar permisos de modificación a un usuario del área financiera?",
+            options: [
+                { text: "Utilizar REVOKE para eliminar los privilegios previamente otorgados.", isCorrect: true, feedback: "✅ REVOKE es la opción más adecuada, ya que permite retirar de forma explícita los permisos, garantizando un control efectivo del acceso." },
+                { text: "Mantener los permisos y supervisar manualmente su uso.", isCorrect: false, feedback: "⚠️ Mantener permisos activos no elimina el riesgo de accesos indebidos; es mejor revocarlos explícitamente." }
+            ]
+        },
+        {
+            id: 3,
+            text: "¿Qué enfoque permite identificar clientes cuyas compras superan el promedio general?",
+            options: [
+                { text: "Utilizar una subconsulta que calcule el promedio y lo compare con cada registro.", isCorrect: true, feedback: "✅ La subconsulta es la opción más adecuada, ya que permite comparar cada registro con un valor calculado dinámicamente dentro de la misma consulta." },
+                { text: "Realizar consultas independientes sin relación entre resultados.", isCorrect: false, feedback: "⚠️ Consultas independientes no permiten integrar resultados ni realizar comparaciones directas dentro de una misma consulta." }
+            ]
         }
+    ];
 
-        document.querySelectorAll('.option-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const questionNum = this.closest('.question-container').getAttribute('data-question');
-                const option = this.getAttribute('data-option');
-                const isCorrect = this.getAttribute('data-correct') === 'true';
-                
-                this.closest('.options-grid').querySelectorAll('.option-card').forEach(c => {
-                    c.classList.remove('selected', 'correct', 'incorrect');
-                });
-                
-                this.classList.add('selected');
-                showFeedback(questionNum, option, isCorrect);
-                answers[questionNum] = isCorrect;
-                answered[questionNum] = true;
-                document.getElementById('nextBtn').disabled = false;
+    let currentIndex = 0;
+    let userAnswers = [null, null, null];
+    let quizActive = true;
+
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const quizArea = document.getElementById('quizArea');
+    const caseCard = document.getElementById('caseCard');
+
+    // Renderizar pregunta actual
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        const hasAnswer = userAnswers[currentIndex] !== null;
+        const selectedIdx = userAnswers[currentIndex];
+
+        const optionsHtml = q.options.map((opt, idx) => {
+            const isSelected = selectedIdx === idx;
+            const letter = String.fromCharCode(65 + idx);
+            return `
+                <div class="option-card ${isSelected ? 'selected' : ''}" data-opt-index="${idx}">
+                    <div class="option-label">Opción ${letter}</div>
+                    <div class="option-text">${opt.text}</div>
+                    <div class="option-check">✅</div>
+                </div>
+            `;
+        }).join('');
+
+        const feedbackHtml = hasAnswer ? `
+            <div class="feedback-card show">
+                <div class="feedback-header ${q.options[selectedIdx].isCorrect ? 'correct' : 'incorrect'}">
+                    <span>${q.options[selectedIdx].isCorrect ? '✅' : '⚠️'}</span>
+                    <span class="feedback-title">${q.options[selectedIdx].isCorrect ? 'Correcto' : 'Revisa esta opción'}</span>
+                </div>
+                <div class="feedback-body">
+                    <p class="feedback-text">${q.options[selectedIdx].feedback}</p>
+                </div>
+            </div>
+        ` : '<div class="feedback-card"></div>';
+
+        const isFirst = currentIndex === 0;
+        const isLast = currentIndex === questions.length - 1;
+
+        quizArea.innerHTML = `
+            <div class="question-container active">
+                <div class="question-indicator">
+                    <div class="question-badge">${q.id}</div>
+                    <div class="question-text">${q.text}</div>
+                </div>
+                <div class="options-grid" id="optionsGrid">
+                    ${optionsHtml}
+                </div>
+                ${feedbackHtml}
+                <div class="nav-buttons">
+                    <button class="nav-btn secondary" id="prevBtn" ${isFirst ? 'disabled' : ''}>
+                        ← Anterior
+                    </button>
+                    <button class="nav-btn primary" id="nextBtn" ${!hasAnswer ? 'disabled' : ''}>
+                        ${isLast ? '✅ Finalizar' : 'Siguiente →'}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Event listeners para opciones
+        document.querySelectorAll('.option-card').forEach(opt => {
+            opt.addEventListener('click', () => {
+                if (!quizActive) return;
+                const optIndex = parseInt(opt.dataset.optIndex);
+                selectOption(currentIndex, optIndex);
             });
         });
 
-        function showFeedback(questionNum, option, isCorrect) {
-            const feedbackCard = document.getElementById(`feedback${questionNum}`);
-            const feedbackHeader = document.getElementById(`feedbackHeader${questionNum}`);
-            const feedbackText = document.getElementById(`feedbackText${questionNum}`);
-            const feedbackStamp = document.getElementById(`feedbackStamp${questionNum}`);
-            
-            feedbackCard.classList.add('show');
-            feedbackText.textContent = feedbackData[questionNum][option];
-            
-            if (isCorrect) {
-                feedbackHeader.classList.add('correct');
-                feedbackHeader.classList.remove('incorrect');
-                feedbackStamp.classList.remove('incorrect');
-                feedbackStamp.textContent = 'CORRECTO';
-            } else {
-                feedbackHeader.classList.add('incorrect');
-                feedbackHeader.classList.remove('correct');
-                feedbackStamp.classList.add('incorrect');
-                feedbackStamp.textContent = 'REVISAR';
-            }
-        }
-
-        function updateProgress() {
-            const percent = ((currentQuestion - 1) / totalQuestions) * 100;
-            document.getElementById('progressFill').style.width = percent + '%';
-            document.getElementById('progressText').textContent = `Pregunta ${currentQuestion} de ${totalQuestions}`;
-        }
-
-        function nextQuestion() {
-            if (currentQuestion < totalQuestions) {
-                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.remove('active');
-                currentQuestion++;
-                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.add('active');
+        // Event listeners para botones
+        document.getElementById('prevBtn')?.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
                 updateProgress();
-                document.getElementById('prevBtn').disabled = false;
-                
-                if (answered[currentQuestion]) {
-                    document.getElementById('nextBtn').disabled = false;
-                } else {
-                    document.getElementById('nextBtn').disabled = true;
-                }
-                
-                if (currentQuestion === totalQuestions) {
-                    document.getElementById('nextBtn').innerHTML = 'Finalizar <span class="material-symbols-outlined">check</span>';
-                }
+            }
+        });
+
+        document.getElementById('nextBtn')?.addEventListener('click', () => {
+            if (userAnswers[currentIndex] === null) return;
+            
+            if (currentIndex === questions.length - 1) {
+                finishQuiz();
             } else {
-                showFinalScreen();
-            }
-        }
-
-        function prevQuestion() {
-            if (currentQuestion > 1) {
-                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.remove('active');
-                currentQuestion--;
-                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.add('active');
+                currentIndex++;
+                renderQuestion();
                 updateProgress();
-                document.getElementById('nextBtn').disabled = false;
-                document.getElementById('nextBtn').innerHTML = 'Siguiente <span class="material-symbols-outlined">arrow_forward</span>';
-                
-                if (currentQuestion === 1) {
-                    document.getElementById('prevBtn').disabled = true;
-                }
+            }
+        });
+    }
+
+    function selectOption(qIndex, optIndex) {
+        if (!quizActive) return;
+        userAnswers[qIndex] = optIndex;
+        renderQuestion();
+        updateProgress();
+    }
+
+    function updateProgress() {
+        const answeredCount = userAnswers.filter(a => a !== null).length;
+        const percent = (answeredCount / questions.length) * 100;
+        progressFill.style.width = `${percent}%`;
+        progressText.innerText = `Pregunta ${currentIndex + 1} de ${questions.length} | ${answeredCount}/3 respondidas`;
+    }
+
+    function finishQuiz() {
+        quizActive = false;
+        
+        // Calcular puntuación
+        let correctCount = 0;
+        questions.forEach((q, idx) => {
+            const answerIdx = userAnswers[idx];
+            if (answerIdx !== null && q.options[answerIdx].isCorrect) {
+                correctCount++;
+            }
+        });
+        
+        const percent = Math.round((correctCount / questions.length) * 100);
+        
+        // Generar feedback final
+        let feedbackHtml = `
+            <div class="final-summary">
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">${correctCount}</div>
+                        <div class="stat-label">Correctas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${questions.length}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${percent}%</div>
+                        <div class="stat-label">Puntuación</div>
+                    </div>
+                </div>
+                <div class="final-feedback">
+                    <p><strong>📊 Resumen de conceptos clave:</strong></p>
+                    <ul>
+                        <li><strong>GRANT</strong> → Asigna permisos específicos según roles 🔐</li>
+                        <li><strong>REVOKE</strong> → Elimina privilegios para mantener control de acceso 🚫</li>
+                        <li><strong>Subconsultas</strong> → Facilitan análisis comparativos dentro de consultas 📊</li>
+                    </ul>
+        `;
+        
+        if (correctCount === 3) {
+            feedbackHtml += `<p style="margin-top: 12px; color: var(--success); font-weight: 600;">🎉 ¡Excelente! Dominas los conceptos de control de acceso y subconsultas en SQL.</p>`;
+        } else if (correctCount >= 2) {
+            feedbackHtml += `<p style="margin-top: 12px; color: var(--accent); font-weight: 500;">👍 ¡Muy bien! Repasa los conceptos donde tuviste errores para perfeccionar tu conocimiento.</p>`;
+        } else {
+            feedbackHtml += `<p style="margin-top: 12px; color: var(--neutral-light); font-weight: 500;">📚 Te recomendamos repasar GRANT, REVOKE y el uso de subconsultas para mejorar tus habilidades.</p>`;
+        }
+        
+        feedbackHtml += `</div></div>`;
+        
+        // Ocultar caso y mostrar pantalla final
+        caseCard.style.display = 'none';
+        quizArea.innerHTML = `
+            <div class="final-screen active">
+                <div class="final-icon">🏆</div>
+                <h2 class="final-title">¡Actividad Completada!</h2>
+                ${feedbackHtml}
+                <button class="restart-btn" id="restartBtn">
+                    🔄 Reiniciar actividad
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('restartBtn')?.addEventListener('click', restartQuiz);
+    }
+
+    function restartQuiz() {
+        currentIndex = 0;
+        userAnswers = [null, null, null];
+        quizActive = true;
+        
+        caseCard.style.display = 'block';
+        renderQuestion();
+        updateProgress();
+    }
+
+    // Soporte para teclado
+    document.addEventListener('keydown', (e) => {
+        if (!quizActive || !document.querySelector('.question-container.active')) return;
+        
+        const key = e.key.toLowerCase();
+        const optionMap = { '1': 0, '2': 1, 'a': 0, 'b': 1 };
+        
+        if (optionMap[key] !== undefined && userAnswers[currentIndex] === null) {
+            const optIndex = optionMap[key];
+            const options = document.querySelectorAll('.option-card');
+            if (options[optIndex]) {
+                e.preventDefault();
+                selectOption(currentIndex, optIndex);
             }
         }
-
-        function showFinalScreen() {
-            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
-            document.getElementById('caseStudy').style.display = 'none';
-            document.getElementById('navigation').style.display = 'none';
-            document.querySelector('.progress-container').style.display = 'none';
-            
-            let correct = 0;
-            for (let i = 1; i <= totalQuestions; i++) {
-                if (answers[i]) correct++;
+        
+        if (e.key === 'ArrowRight' && userAnswers[currentIndex] !== null) {
+            if (currentIndex === questions.length - 1) {
+                finishQuiz();
+            } else if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+                updateProgress();
             }
-            
-            document.getElementById('correctCount').textContent = correct;
-            document.getElementById('scorePercent').textContent = Math.round((correct / totalQuestions) * 100) + '%';
-            document.getElementById('finalScreen').classList.add('show');
         }
-
-        function restartActivity() {
-            currentQuestion = 1;
-            answers = {};
-            answered = {};
-            
-            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
-            document.querySelector('.question-container[data-question="1"]').classList.add('active');
-            
-            document.querySelectorAll('.option-card').forEach(c => {
-                c.classList.remove('selected', 'correct', 'incorrect');
-            });
-            
-            document.querySelectorAll('.feedback-card').forEach(f => f.classList.remove('show'));
-            
-            document.getElementById('caseStudy').style.display = 'block';
-            document.getElementById('navigation').style.display = 'flex';
-            document.querySelector('.progress-container').style.display = 'flex';
-            document.getElementById('finalScreen').classList.remove('show');
-            
-            document.getElementById('prevBtn').disabled = true;
-            document.getElementById('nextBtn').disabled = true;
-            document.getElementById('nextBtn').innerHTML = 'Siguiente <span class="material-symbols-outlined">arrow_forward</span>';
-            
+        
+        if (e.key === 'ArrowLeft' && currentIndex > 0) {
+            currentIndex--;
+            renderQuestion();
             updateProgress();
-            shuffleOptions();
         }
-    </script>
+    });
+
+    // Inicializar
+    renderQuestion();
+    updateProgress();
+</script>
 </body>
 </html>
