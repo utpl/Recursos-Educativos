@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitectura Interna de un SGBD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font);
+            background-color: var(--bg);
+            color: var(--text-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* CONTENEDOR PRINCIPAL - SIN BORDER RADIUS */
+        #main-container {
+            width: 800px;
+            height: 800px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background: var(--header-bg);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .instruction {
+            background: var(--accent);
+            color: white;
+            padding: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* DIAGRAMA VISUAL */
+        .infographic-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: radial-gradient(circle at center, #ffffff 0%, #f0f4f8 100%);
+        }
+
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .component-btn {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 15px; /* Permitido en elementos internos */
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .component-btn:hover {
+            transform: translateY(-5px);
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 8px 20px rgba(21, 101, 192, 0.3);
+        }
+
+        .component-btn span.material-symbols-outlined {
+            font-size: 2.5rem;
+        }
+
+        .component-btn h3 {
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .users-node {
+            grid-column: span 2;
+            background: var(--neutral);
+            border-color: var(--neutral);
+            color: white;
+            cursor: default;
+        }
+
+        /* MODAL */
+        #modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 35, 126, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            width: 80%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 20px; /* Permitido en elementos internos */
+            position: relative;
+            text-align: center;
+            animation: modalIn 0.4s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .modal p {
+            line-height: 1.6;
+            color: var(--text-body);
+            font-size: 1.05rem;
+        }
+
+        .close-btn {
+            margin-top: 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .close-btn:hover {
+            background: var(--accent-light);
+        }
+
+        footer {
+            padding: 15px 25px;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--neutral-light);
+        }
+
+        .apa-ref { font-style: italic; max-width: 70%; }
+
+        @media (max-width: 600px) {
+            #main-container { width: 100%; height: auto; min-height: 800px; }
+            .architecture-grid { grid-template-columns: 1fr; }
+            .users-node { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-container">
+    <header>
+        <h1>Arquitectura Interna de un SGBD</h1>
+        <p>Esquema de niveles de abstracción según el estándar ANSI-SPARC y los componentes principales del flujo de datos. </p>
+    </header>
+
+    <div class="instruction">
+        <span class="material-symbols-outlined">touch_app</span>
+        Haga clic en los temas para visualizar la información
+    </div>
+
+    <main class="infographic-area">
+        <div class="architecture-grid">
+            <div class="component-btn users-node">
+                <span class="material-symbols-outlined">groups</span>
+                <h3>USUARIOS Y APLICACIONES </h3>
+            </div>
+
+            <button class="component-btn" onclick="openModal('security')">
+                <span class="material-symbols-outlined">verified_user</span>
+                <h3>Gestor de Seguridad </h3>
+            </button>
+
+            <button class="component-btn" onclick="openModal('query')">
+                <span class="material-symbols-outlined">terminal</span>
+                <h3>Procesador de Consultas </h3>
+            </button>
+
+            <button class="component-btn" onclick="openModal('transaction')">
+                <span class="material-symbols-outlined">sync_alt</span>
+                <h3>Gestor de Transacciones </h3>
+            </button>
+
+            <button class="component-btn" onclick="openModal('catalog')">
+                <span class="material-symbols-outlined">menu_book</span>
+                <h3>Catálogo del Sistema </h3>
+            </button>
+
+            <button class="component-btn" onclick="openModal('storage')" style="grid-column: span 2;">
+                <span class="material-symbols-outlined">database</span>
+                <h3>Motor de Almacenamiento </h3>
+            </button>
+        </div>
+    </main>
+
+    <div id="modal-overlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2 id="modal-title"></h2>
+            <p id="modal-desc"></p>
+            <button class="close-btn" onclick="closeModal()">ENTENDIDO</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="apa-ref">
+            Referencia: Morocho Yunga, J. C. (2026). Arquitectura Interna de un SGBD. Fundamentos de Base de Datos. 
+        </div>
+        <div style="font-weight: 800;">SEMANA 13</div>
+    </footer>
+</div>
+
+<script>
+    const info = {
+        security: {
+            title: "Gestor de Seguridad",
+            icon: "verified_user",
+            desc: "Controla el acceso de usuarios, autenticación y permisos para garantizar que solo personal autorizado acceda a los privilegios correspondientes. "
+        },
+        query: {
+            title: "Procesador de Consultas",
+            icon: "terminal",
+            desc: "Analiza, optimiza y ejecuta sentencias SQL para obtener resultados eficientes, transformando el código del usuario en un plan de ejecución. "
+        },
+        transaction: {
+            title: "Gestor de Transacciones",
+            icon: "sync_alt",
+            desc: "Garantiza las propiedades ACID (Atomicidad, Consistencia, Aislamiento y Durabilidad) y maneja la concurrencia de datos para evitar conflictos. "
+        },
+        catalog: {
+            title: "Catálogo del Sistema",
+            icon: "menu_book",
+            desc: "Almacena metadatos sobre la estructura, tablas e índices. Es el Diccionario de datos que permite al SGBD conocer su propia organización. "
+        },
+        storage: {
+            title: "Motor de Almacenamiento",
+            icon: "database",
+            desc: "Capa física encargada de la lectura/escritura de datos en disco, gestión de buffers y administración de archivos de registro. "
+        }
+    };
+
+    function openModal(key) {
+        const data = info[key];
+        document.getElementById('modal-title').innerHTML = `<span class="material-symbols-outlined">${data.icon}</span> ${data.title}`;
+        document.getElementById('modal-desc').innerText = data.desc;
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

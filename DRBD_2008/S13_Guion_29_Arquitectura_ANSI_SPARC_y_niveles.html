@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitectura ANSI/SPARC y niveles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --tag-bg: #E3F2FD;
+            --tag-border: #90CAF9;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text-body);
+            width: 800px;
+            min-height: 600px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: var(--header-bg);
+            color: white;
+            padding: 22px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .main-container {
+            padding: 20px;
+            height: calc(100% - 118px);
+            display: flex;
+            gap: 20px;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: 100%;
+        }
+
+        .title {
+            color: var(--primary);
+            font-size: 19px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instruction {
+            background: var(--tag-bg);
+            border: 2px solid var(--tag-border);
+            padding: 16px 20px;
+            font-size: 15.5px;
+            line-height: 1.5;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .item {
+            background: white;
+            border: 3px solid var(--accent);
+            padding: 14px 18px;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(245,124,0,0.15);
+        }
+
+        .item:hover {
+            border-color: var(--accent-light);
+            transform: translateX(6px);
+        }
+
+        .item .emoji {
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .targets-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .target {
+            background: white;
+            border: 3px dashed var(--border);
+            padding: 18px 20px;
+            min-height: 82px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .target:hover {
+            border-color: var(--accent);
+            background: var(--drop-hover);
+        }
+
+        .target.matched {
+            border-style: solid;
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .target .label {
+            font-weight: 600;
+            color: var(--neutral);
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            height: 8px;
+            background: linear-gradient(to right, var(--accent), var(--primary));
+            margin-top: 12px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 92%;
+            max-width: 440px;
+            padding: 32px 28px;
+            text-align: center;
+            border: 5px solid var(--success);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                width: 100%;
+                max-height: none;
+                overflow-y: auto;
+            }
+            .main-container {
+                flex-direction: column;
+                padding: 16px;
+                height: auto;
+                gap: 16px;
+            }
+            .right-panel {
+                width: 100%;
+            }
+            .item, .target {
+                padding: 14px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏗️ Arquitectura ANSI/SPARC y niveles</h1>
+    </div>
+
+    <div class="main-container">
+
+        <!-- Panel Izquierdo: Elementos arrastrables -->
+        <div class="left-panel">
+            <div class="card">
+                <div class="title">
+                    <span style="font-size:28px;">🔗</span> Niveles y Conceptos
+                </div>
+                <div class="instruction">
+                    Arrastra cada concepto hacia su descripción correcta.
+                </div>
+                <div class="items-container" id="items-container"></div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Descripciones (targets) -->
+        <div class="right-panel">
+            <div class="card">
+                <div class="title">
+                    <span style="font-size:28px;">📋</span> Descripciones
+                </div>
+                <div class="targets-container" id="targets-container"></div>
+            </div>
+
+            <button onclick="resetActivity()">🔄 Reiniciar actividad</button>
+        </div>
+
+    </div>
+
+    <!-- Modal de retroalimentación -->
+    <div class="modal" id="feedback-modal">
+        <div class="modal-content">
+            <span style="font-size:52px; display:block; margin-bottom:16px;" id="modal-emoji">🏆</span>
+            <h2 id="modal-title">¡Muy bien!</h2>
+            <p id="modal-text" style="font-size:16px; line-height:1.7; margin:20px 0;"></p>
+            <button onclick="closeModal()" style="width:100%;">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        const concepts = [
+            { id: 1, term: "Nivel externo", emoji: "👥", sentence: "Capa donde los usuarios acceden a vistas personalizadas de los datos según sus necesidades" },
+            { id: 2, term: "Nivel conceptual", emoji: "📐", sentence: "Describe la estructura lógica global de la base de datos sin considerar almacenamiento físico" },
+            { id: 3, term: "Nivel interno", emoji: "💾", sentence: "Define cómo se almacenan físicamente los datos mediante archivos, índices y estructuras" },
+            { id: 4, term: "Independencia lógica", emoji: "🔄", sentence: "Permite modificar el esquema conceptual sin afectar vistas ni aplicaciones" },
+            { id: 5, term: "Independencia física", emoji: "🛠️", sentence: "Permite modificar el almacenamiento sin alterar el esquema conceptual" },
+            { id: 6, term: "Vista", emoji: "👁️", sentence: "Representa una tabla virtual basada en consultas sobre tablas base" },
+            { id: 7, term: "Esquema conceptual", emoji: "🌐", sentence: "Representa la organización lógica completa independiente del hardware" },
+            { id: 8, term: "Esquema interno", emoji: "🔧", sentence: "Representa la organización física de los datos en el sistema" }
+        ];
+
+        const feedbacks = {
+            1: "El nivel externo permite interacción directa con el usuario mediante vistas adaptadas, facilitando acceso controlado a la información.",
+            2: "El nivel conceptual define la estructura lógica global, integrando entidades y relaciones sin depender de aspectos físicos.",
+            3: "El nivel interno se encarga del almacenamiento físico, optimizando acceso y organización de los datos en el sistema.",
+            4: "La independencia lógica permite cambios en el modelo sin afectar aplicaciones, manteniendo estabilidad en el acceso a datos.",
+            5: "La independencia física facilita optimizar almacenamiento sin modificar la lógica del sistema ni las consultas existentes.",
+            6: "La vista permite presentar datos de forma filtrada o resumida sin almacenar información adicional, mejorando seguridad y simplicidad.",
+            7: "El esquema conceptual organiza los datos a nivel lógico, sirviendo como base para el diseño estructural del sistema.",
+            8: "El esquema interno define detalles técnicos del almacenamiento, siendo fundamental para el rendimiento del sistema."
+        };
+
+        let draggedItem = null;
+        let matches = {};
+        let isCompleted = false;
+
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
+        }
+
+        function createItems() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            const shuffled = shuffle(concepts);
+            
+            shuffled.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.draggable = true;
+                div.dataset.id = item.id;
+                div.innerHTML = `<span class="emoji">${item.emoji}</span><span>${item.term}</span>`;
+                
+                div.addEventListener('dragstart', (e) => {
+                    draggedItem = div;
+                    setTimeout(() => div.style.opacity = '0.4', 10);
+                });
+                
+                div.addEventListener('dragend', () => {
+                    div.style.opacity = '1';
+                    draggedItem = null;
+                });
+                
+                container.appendChild(div);
+            });
+        }
+
+        function createTargets() {
+            const container = document.getElementById('targets-container');
+            container.innerHTML = '';
+            
+            concepts.forEach(item => {
+                const target = document.createElement('div');
+                target.className = 'target';
+                target.dataset.id = item.id;
+                target.innerHTML = `
+                    <span class="label">${item.term}</span>
+                    <span style="color:#546E7A; flex:1;">${item.sentence}</span>
+                `;
+                
+                target.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    target.style.borderColor = 'var(--accent)';
+                });
+                
+                target.addEventListener('dragleave', () => {
+                    if (!target.classList.contains('matched')) target.style.borderColor = '';
+                });
+                
+                target.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (draggedItem && parseInt(draggedItem.dataset.id) === parseInt(target.dataset.id)) {
+                        handleCorrectDrop(draggedItem, target);
+                    } else if (draggedItem) {
+                        showError();
+                    }
+                });
+                
+                container.appendChild(target);
+            });
+        }
+
+        function handleCorrectDrop(item, target) {
+            target.classList.add('matched');
+            item.style.opacity = '0.35';
+            item.style.pointerEvents = 'none';
+            matches[item.dataset.id] = true;
+
+            const progress = Math.round((Object.keys(matches).length / concepts.length) * 100);
+            let progressBar = document.querySelector('.progress');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.className = 'progress';
+                document.querySelector('.right-panel').appendChild(progressBar);
+            }
+            progressBar.style.width = `${progress}%`;
+
+            if (Object.keys(matches).length === concepts.length && !isCompleted) {
+                isCompleted = true;
+                setTimeout(showFinalFeedback, 600);
+            }
+        }
+
+        function showError() {
+            const modal = document.getElementById('feedback-modal');
+            document.getElementById('modal-emoji').textContent = '❌';
+            document.getElementById('modal-title').textContent = '¡Inténtalo de nuevo!';
+            document.getElementById('modal-title').style.color = 'var(--error)';
+            document.getElementById('modal-text').innerHTML = 'El concepto no corresponde con esta descripción.<br><br>Revisa los niveles y conceptos de la arquitectura ANSI/SPARC.';
+            modal.style.display = 'flex';
+        }
+
+        function showFinalFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            document.getElementById('modal-emoji').textContent = '🎉';
+            document.getElementById('modal-title').textContent = '¡Muy bien!';
+            document.getElementById('modal-title').style.color = 'var(--success)';
+            document.getElementById('modal-text').innerHTML = 
+                '¡Has completado correctamente la actividad!<br><br>' +
+                'La arquitectura ANSI/SPARC organiza los datos en niveles independientes, permitiendo flexibilidad, mantenimiento eficiente y separación entre lógica y almacenamiento físico.';
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+        }
+
+        function resetActivity() {
+            if (confirm('¿Deseas reiniciar la actividad?')) {
+                matches = {};
+                isCompleted = false;
+                createItems();
+                createTargets();
+                closeModal();
+                const progress = document.querySelector('.progress');
+                if (progress) progress.style.width = '0%';
+            }
+        }
+
+        // Inicializar
+        window.onload = () => {
+            createItems();
+            createTargets();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estructura de Áreas Funcionales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --tag-bg: #E3F2FD;
+            --tag-border: #90CAF9;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text-body);
+            width: 800px;
+            min-height: 600px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: var(--header-bg);
+            color: white;
+            padding: 22px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .main-container {
+            padding: 20px;
+            height: calc(100% - 118px);
+            display: flex;
+            gap: 20px;
+        }
+
+        .diagram-container {
+            flex: 1;
+            background: var(--card);
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            height: 620px;
+        }
+
+        /* Nodo Central */
+        .central-node {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 190px;
+            height: 190px;
+            background: linear-gradient(135deg, #1565C0, #1976D2);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 12px 35px rgba(21, 101, 192, 0.45);
+            z-index: 20;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 20px;
+            line-height: 1.25;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .central-node:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        /* Satélites - con posiciones corregidas y más visibles */
+        .satellite {
+            position: absolute;
+            width: 138px;
+            height: 138px;
+            background: white;
+            border: 4px solid;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14.5px;
+            font-weight: 500;
+            padding: 12px 10px;
+            line-height: 1.3;
+            z-index: 10;
+        }
+
+        .satellite:hover {
+            transform: scale(1.12);
+            box-shadow: 0 15px 40px rgba(245, 124, 0, 0.35);
+        }
+
+        /* Posiciones corregidas y distribuidas */
+        .satellite1 { border-color: #FF9800; top: 12%; left: 8%; }
+        .satellite2 { border-color: #2E7D32; top: 12%; right: 8%; }
+        .satellite3 { border-color: #1565C0; top: 42%; left: 4%; }
+        .satellite4 { border-color: #F57C00; top: 42%; right: 4%; }
+        .satellite5 { border-color: #1976D2; bottom: 18%; left: 14%; }
+        .satellite6 { border-color: #C62828; bottom: 18%; right: 14%; }
+
+        /* Líneas de conexión más gruesas y visibles */
+        .connection {
+            position: absolute;
+            height: 4px;
+            background: linear-gradient(to right, #1565C0, #FF9800);
+            z-index: 5;
+            opacity: 0.9;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tag-bg);
+            border: 2px solid var(--tag-border);
+            padding: 12px 24px;
+            font-size: 15px;
+            color: var(--text);
+            text-align: center;
+            z-index: 30;
+            border-radius: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 460px;
+            max-width: 92%;
+            border: 5px solid var(--primary);
+            padding: 32px 28px;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            font-size: 23px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .modal-body {
+            line-height: 1.75;
+            font-size: 15.8px;
+            color: var(--text-body);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #546E7A;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            bottom: 26px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            z-index: 40;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 13px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+        }
+
+        .reference {
+            position: absolute;
+            bottom: 18px;
+            left: 28px;
+            font-size: 12.8px;
+            color: var(--neutral-light);
+        }
+
+        @media (max-width: 600px) {
+            body { width: 100%; max-height: none; overflow-y: auto; }
+            .diagram-container { height: 560px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🌐 Estructura de Áreas Funcionales</h1>
+        <p>Operador de Telecomunicaciones</p>
+    </div>
+
+    <div class="main-container">
+
+        <div class="diagram-container" id="diagram">
+
+            <!-- Nodo Central -->
+            <div class="central-node" onclick="showCentral()">
+                <span style="font-size:48px; margin-bottom:8px;">🏢</span>
+                ÁREAS FUNCIONALES<br>TELECOMUNICACIONES
+            </div>
+
+            <!-- Satélites (ahora más visibles) -->
+            <div class="satellite satellite1" onclick="showModal(0)">
+                👥<br><strong>Gestión de Clientes</strong>
+            </div>
+            <div class="satellite satellite2" onclick="showModal(1)">
+                📡<br><strong>Inventario de Red</strong>
+            </div>
+            <div class="satellite satellite3" onclick="showModal(2)">
+                📦<br><strong>Provisión de Servicios</strong>
+            </div>
+            <div class="satellite satellite4" onclick="showModal(3)">
+                📊<br><strong>Registro de Tráfico</strong>
+            </div>
+            <div class="satellite satellite5" onclick="showModal(4)">
+                💰<br><strong>Facturación y Cobranza</strong>
+            </div>
+            <div class="satellite satellite6" onclick="showModal(5)">
+                ⚠️<br><strong>Gestión de Incidencias</strong>
+            </div>
+
+            <!-- Líneas de conexión (más gruesas y visibles) -->
+            <div class="connection" style="top:34%; left:27%; width:152px; transform:rotate(-42deg);"></div>
+            <div class="connection" style="top:34%; right:27%; width:152px; transform:rotate(42deg);"></div>
+            <div class="connection" style="top:49%; left:19%; width:178px; transform:rotate(-15deg);"></div>
+            <div class="connection" style="top:49%; right:19%; width:178px; transform:rotate(15deg);"></div>
+            <div class="connection" style="bottom:31%; left:26%; width:158px; transform:rotate(38deg);"></div>
+            <div class="connection" style="bottom:31%; right:26%; width:158px; transform:rotate(-38deg);"></div>
+
+            <div class="instruction">
+                👆 Haga clic en los círculos para visualizar la información
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="info-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">✕</span>
+            <div class="modal-header" id="modal-title"></div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Botones de navegación -->
+    <div class="nav-buttons">
+        <button onclick="prevTopic()">← Anterior</button>
+        <button onclick="nextTopic()">Siguiente →</button>
+    </div>
+
+    <!-- Referencia APA 7 -->
+    <div class="reference">
+        Elaboración propia. (2026). Estructura de áreas funcionales. Fundamentos de Base de Datos, DRBD_2008.
+    </div>
+
+    <script>
+        const topics = [
+            { title: "👥 Gestión de Clientes", content: "Datos personales, contratos, historial de servicio, segmentación." },
+            { title: "📡 Inventario de Red", content: "Nodos, enlaces, antenas, torres, equipos activos y pasivos." },
+            { title: "📦 Provisión de Servicios", content: "Planes, paquetes, servicios de valor agregado, líneas." },
+            { title: "📊 Registro de Tráfico", content: "CDR, registros de datos de sesión, consumo de datos." },
+            { title: "💰 Facturación y Cobranza", content: "Cargos, pagos, saldos, mora." },
+            { title: "⚠️ Gestión de Incidencias", content: "Tickets de soporte, escalamientos, tiempos de resolución." }
+        ];
+
+        let currentIndex = 0;
+
+        function showModal(index) {
+            currentIndex = index;
+            const topic = topics[index];
+            document.getElementById('modal-title').innerHTML = topic.title;
+            document.getElementById('modal-body').innerHTML = `<p>${topic.content}</p>`;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function showCentral() {
+            document.getElementById('modal-title').innerHTML = `🏢 Áreas Funcionales en Telecomunicaciones`;
+            document.getElementById('modal-body').innerHTML = `
+                <p>A continuación se presentan las principales áreas funcionales de un operador de telecomunicaciones y sus componentes esenciales.</p>
+            `;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('info-modal').style.display = 'none';
+        }
+
+        function nextTopic() {
+            currentIndex = (currentIndex + 1) % topics.length;
+            showModal(currentIndex);
+        }
+
+        function prevTopic() {
+            currentIndex = (currentIndex - 1 + topics.length) % topics.length;
+            showModal(currentIndex);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") closeModal();
+        });
+
+        // Inicializar
+        window.onload = () => {
+            console.log("Infografía cargada correctamente");
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecosistema NoSQL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --tag-bg: #E3F2FD;
+            --tag-border: #90CAF9;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text-body);
+            width: 800px;
+            min-height: 600px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: var(--header-bg);
+            color: white;
+            padding: 22px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .main-container {
+            padding: 20px;
+            height: calc(100% - 118px);
+            display: flex;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--card);
+            border: 2px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .content-area {
+            flex: 1;
+            background: var(--card);
+            border: 2px solid var(--primary);
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .menu-title {
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .menu-item {
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            background: white;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .menu-item:hover {
+            border-color: var(--accent);
+            transform: translateX(8px);
+            background: var(--drop-hover);
+        }
+
+        .menu-item.active {
+            background: var(--tag-bg);
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .page {
+            display: none;
+            height: 100%;
+            padding: 28px;
+            overflow-y: auto;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page h2 {
+            color: var(--primary);
+            font-size: 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .intro {
+            line-height: 1.75;
+            font-size: 15.8px;
+            margin-bottom: 24px;
+        }
+
+        pre {
+            background: #F4F7FB;
+            padding: 16px;
+            border-radius: 0;
+            font-size: 13.5px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+            font-size: 14.5px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 26px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+        }
+
+        .instruction {
+            background: var(--tag-bg);
+            border: 2px solid var(--tag-border);
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .reference {
+            position: absolute;
+            bottom: 18px;
+            left: 28px;
+            right: 28px;
+            font-size: 12.5px;
+            color: var(--neutral-light);
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                width: 100%;
+                max-height: none;
+                overflow-y: auto;
+            }
+            .main-container {
+                flex-direction: column;
+                padding: 16px;
+                height: auto;
+            }
+            .sidebar {
+                width: 100%;
+                max-height: 260px;
+            }
+            .content-area {
+                height: 520px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🌐 Ecosistema NoSQL</h1>
+    </div>
+
+    <div class="main-container">
+
+        <!-- Sidebar menú (títulos en celeste) -->
+        <div class="sidebar">
+            <div class="menu-title">📌 Modelos del Ecosistema NoSQL</div>
+            
+            <div onclick="showPage(0)" class="menu-item active" id="menu-0">
+                <span style="font-size:24px;">🏠</span> Introducción
+            </div>
+            <div onclick="showPage(1)" class="menu-item" id="menu-1">
+                <span style="font-size:24px;">📄</span> Documental
+            </div>
+            <div onclick="showPage(2)" class="menu-item" id="menu-2">
+                <span style="font-size:24px;">🔑</span> Clave-Valor
+            </div>
+            <div onclick="showPage(3)" class="menu-item" id="menu-3">
+                <span style="font-size:24px;">📊</span> Columnas Anchas
+            </div>
+            <div onclick="showPage(4)" class="menu-item" id="menu-4">
+                <span style="font-size:24px;">🔗</span> Grafos
+            </div>
+        </div>
+
+        <!-- Área de contenido -->
+        <div class="content-area">
+
+            <div class="instruction">
+                👆 Haga clic en los temas para visualizar la información
+            </div>
+
+            <!-- Página 0: Introducción -->
+            <div class="page active" id="page-0">
+                <h2><span style="font-size:32px;">🌐</span> Ecosistema NoSQL</h2>
+                <p class="intro">
+                    Los modelos NoSQL ofrecen distintas estructuras de almacenamiento adaptadas a necesidades específicas 
+                    de flexibilidad, velocidad y escalabilidad en entornos de datos complejos. A continuación, se presentan 
+                    sus principales características, ejemplos y aplicaciones en redes.
+                </p>
+            </div>
+
+            <!-- Página 1: Documental -->
+            <div class="page" id="page-1">
+                <h2><span style="font-size:32px;">📄</span> DOCUMENTAL</h2>
+                <p><strong>Flexibilidad Total (JSON/BSON)</strong></p>
+                <p>Imagina un archivo donde guardas la configuración de un Router. Si mañana el fabricante añade un nuevo parámetro, simplemente lo sumas al documento sin romper nada.</p>
+                <pre>{
+  "dispositivo_id": "RT-204",
+  "modelo": "Cisco v3",
+  "interfaces": [
+    { "name": "eth0", "ip": "10.0.0.1" },
+    { "name": "wlan0", "status": "up" }
+  ]
+}</pre>
+                <p><strong>Ejemplos de Software</strong></p>
+                <ul>
+                    <li>• MongoDB</li>
+                    <li>• CouchDB</li>
+                </ul>
+                <p><strong>Tip de Redes</strong></p>
+                <p>Úsala para configuraciones de dispositivos <strong>Multi-Vendor</strong> donde cada uno tiene campos distintos.</p>
+            </div>
+
+            <!-- Página 2: Clave-Valor -->
+            <div class="page" id="page-2">
+                <h2><span style="font-size:32px;">🔑</span> CLAVE-VALOR</h2>
+                <p><strong>Velocidad Extrema (O(1))</strong></p>
+                <p>Es el modelo más sencillo y rápido. Es como un diccionario: das una palabra (clave) y recibes una definición (valor). Ideal para datos que se consultan millones de veces.</p>
+                <pre>session_88 → { user: 'admin', login: '14:02' }
+session_89 → { user: 'guest', login: '14:05' }</pre>
+                <p><strong>Ejemplos de Software</strong></p>
+                <ul>
+                    <li>• Redis</li>
+                    <li>• DynamoDB</li>
+                </ul>
+                <p><strong>Tip de Redes</strong></p>
+                <p>La mejor para Auditorías de Tráfico (Netflow) que guardan petabytes de datos temporales.</p>
+            </div>
+
+            <!-- Página 3: Columnas Anchas -->
+            <div class="page" id="page-3">
+                <h2><span style="font-size:32px;">📊</span> COLUMNAS ANCHAS</h2>
+                <p><strong>Escalabilidad Masiva (Big Data)</strong></p>
+                <p>En lugar de leer toda una fila, lee solo la columna que necesitas. Si tienes un billón de logs de red y solo quieres las IPs de origen, este modelo es imbatible.</p>
+                <table>
+                    <thead>
+                        <tr><th>Familia: Tráfico de Red</th><th>IP_Origen</th><th>Protocolo</th><th>Bytes</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td></td><td>192.168.1.1</td><td>TCP</td><td>450</td></tr>
+                        <tr><td></td><td>10.0.5.20</td><td>UDP</td><td>1200</td></tr>
+                    </tbody>
+                </table>
+                <p><strong>Ejemplos de Software</strong></p>
+                <ul>
+                    <li>• Cassandra</li>
+                    <li>• HBase</li>
+                </ul>
+                <p><strong>Tip de Redes</strong></p>
+                <p>La mejor para Auditorías de Tráfico (Netflow) que guardan petabytes de datos temporales.</p>
+            </div>
+
+            <!-- Página 4: Grafos -->
+            <div class="page" id="page-4">
+                <h2><span style="font-size:32px;">🔗</span> GRAFOS</h2>
+                <p><strong>Relaciones Complejas</strong></p>
+                <p>Aquí lo importante no es el dato en sí, sino cómo se conecta con otros. Ideal para mapear quién está conectado a qué switch y detectar dónde falló la red.</p>
+                <p><strong>Ejemplos de Software</strong></p>
+                <ul>
+                    <li>• Neo4j</li>
+                    <li>• Neptune</li>
+                </ul>
+                <p><strong>Tip de Redes</strong></p>
+                <p>Indispensable para calcular la <strong>'ruta más corta'</strong> (OSPF) o detectar bucles en la topología.</p>
+            </div>
+
+            <!-- Botones de navegación -->
+            <div class="nav-buttons">
+                <button onclick="prevPage()">← Anterior</button>
+                <button onclick="nextPage()">Siguiente →</button>
+            </div>
+
+            <!-- Referencia APA 7 -->
+            <div class="reference">
+                Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7a ed.). Pearson.
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        const totalPages = 5;
+
+        function showPage(pageIndex) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(`page-${pageIndex}`).classList.add('active');
+
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`menu-${pageIndex}`).classList.add('active');
+
+            currentPage = pageIndex;
+        }
+
+        function nextPage() {
+            let next = currentPage + 1;
+            if (next >= totalPages) next = 0;
+            showPage(next);
+        }
+
+        function prevPage() {
+            let prev = currentPage - 1;
+            if (prev < 0) prev = totalPages - 1;
+            showPage(prev);
+        }
+
+        // Inicializar
+        window.onload = () => {
+            showPage(0);
+        };
+    </script>
+</body>
+</html>

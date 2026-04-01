@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tipos y uso de bases NoSQL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --tag-bg: #E3F2FD;
+            --tag-border: #90CAF9;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --drop-hover: #E3F2FD;
+            --drop-border: #42A5F5;
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text-body);
+            width: 800px;
+            min-height: 600px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: var(--header-bg);
+            color: white;
+            padding: 22px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .main-container {
+            padding: 20px;
+            height: calc(100% - 118px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .case-card {
+            background: var(--card);
+            border: 3px solid var(--accent);
+            padding: 26px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .case-card::before {
+            content: "🗄️";
+            position: absolute;
+            top: -22px;
+            right: 32px;
+            font-size: 52px;
+            opacity: 0.12;
+        }
+
+        .question-container {
+            background: var(--card);
+            border: 2px solid var(--primary);
+            padding: 24px;
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .question-container.active {
+            display: flex;
+        }
+
+        .question-header {
+            margin-bottom: 22px;
+            font-size: 17.5px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.45;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: auto;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 18px 22px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 15.5px;
+            line-height: 1.45;
+            position: relative;
+            border-radius: 0;
+        }
+
+        .option:hover {
+            border-color: var(--accent);
+            transform: translateX(6px);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #E3F2FD;
+        }
+
+        .feedback-card {
+            display: none;
+            background: var(--card);
+            border: 3px solid var(--success);
+            padding: 26px;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(46, 125, 50, 0.15);
+            position: relative;
+        }
+
+        .feedback-card::before {
+            content: "💡";
+            position: absolute;
+            top: -22px;
+            left: 32px;
+            font-size: 44px;
+        }
+
+        .feedback-correct {
+            border-color: var(--success);
+        }
+
+        .feedback-incorrect {
+            border-color: var(--error);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 140px;
+            border-radius: 0;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+        }
+
+        button:disabled {
+            background: #90A4AE;
+            cursor: not-allowed;
+        }
+
+        .reset-btn {
+            background: var(--neutral-light);
+            padding: 10px 24px;
+            font-size: 14px;
+            border-radius: 0;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .step {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--border);
+            color: var(--neutral);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Responsive móvil */
+        @media (max-width: 600px) {
+            body {
+                width: 100%;
+                max-height: none;
+                overflow-y: auto;
+            }
+            
+            .main-container {
+                padding: 16px;
+                height: auto;
+            }
+            
+            .case-card, .question-container {
+                padding: 20px;
+            }
+            
+            .option {
+                padding: 16px 18px;
+            }
+            
+            button {
+                padding: 12px 20px;
+                min-width: 120px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🌐 Tipos y uso de bases NoSQL</h1>
+        <p>Fundamentos de Base de Datos • Caso Práctico</p>
+    </div>
+
+    <div class="main-container">
+
+        <!-- Caso de estudio -->
+        <div class="case-card" id="case-screen">
+            <h2 style="color:var(--primary); margin-bottom:20px; font-size:21px;">📋 Caso de Estudio</h2>
+            <p style="line-height:1.65; font-size:15.5px;">
+                Una institución educativa gestiona información académica con estructuras variables, consultas frecuentes y relaciones entre entidades. 
+                El equipo evalúa migrar de un modelo relacional a NoSQL para mejorar rendimiento, escalabilidad y flexibilidad. 
+                Se consideran alternativas como documentos, clave-valor, columnas y grafos, además del uso de MongoDB para operaciones básicas de inserción, consulta, actualización y eliminación. 
+                También se analizan ventajas como alta disponibilidad y desventajas como consistencia eventual y limitaciones en JOIN. 
+                El desafío consiste en seleccionar modelos adecuados según necesidades específicas de datos y consultas. 
+                Se requiere tomar decisiones fundamentadas para optimizar el sistema.
+            </p>
+            <div style="text-align:center; margin-top:32px;">
+                <button onclick="startQuiz()">Comenzar el caso práctico →</button>
+            </div>
+        </div>
+
+        <!-- Contenedor de preguntas -->
+        <div id="quiz-container" style="display:none;">
+
+            <!-- Pregunta 1 -->
+            <div class="question-container active" id="q1">
+                <div class="step-indicator">
+                    <div class="step active">1</div>
+                    <div class="step">2</div>
+                    <div class="step">3</div>
+                </div>
+                
+                <div class="question-header">
+                    <strong>Pregunta 1:</strong> ¿Qué modelo NoSQL resulta más adecuado para almacenar información académica con estructuras variables y anidadas?
+                </div>
+                
+                <div class="options" id="options-q1"></div>
+
+                <div class="feedback-card" id="feedback-q1"></div>
+
+                <div class="nav-buttons">
+                    <button onclick="prevQuestion()" id="btn-prev1" style="visibility:hidden;">← Anterior</button>
+                    <button onclick="nextQuestion()" id="btn-next1" disabled>Siguiente →</button>
+                </div>
+            </div>
+
+            <!-- Pregunta 2 -->
+            <div class="question-container" id="q2">
+                <div class="step-indicator">
+                    <div class="step completed">1</div>
+                    <div class="step active">2</div>
+                    <div class="step">3</div>
+                </div>
+                
+                <div class="question-header">
+                    <strong>Pregunta 2:</strong> ¿Qué enfoque es más pertinente para gestionar relaciones complejas entre estudiantes, cursos y profesores?
+                </div>
+                
+                <div class="options" id="options-q2"></div>
+
+                <div class="feedback-card" id="feedback-q2"></div>
+
+                <div class="nav-buttons">
+                    <button onclick="prevQuestion()">← Anterior</button>
+                    <button onclick="nextQuestion()" id="btn-next2" disabled>Siguiente →</button>
+                </div>
+            </div>
+
+            <!-- Pregunta 3 -->
+            <div class="question-container" id="q3">
+                <div class="step-indicator">
+                    <div class="step completed">1</div>
+                    <div class="step completed">2</div>
+                    <div class="step active">3</div>
+                </div>
+                
+                <div class="question-header">
+                    <strong>Pregunta 3:</strong> ¿Qué decisión es más adecuada al implementar MongoDB para consultas específicas y filtradas?
+                </div>
+                
+                <div class="options" id="options-q3"></div>
+
+                <div class="feedback-card" id="feedback-q3"></div>
+
+                <div class="nav-buttons">
+                    <button onclick="prevQuestion()">← Anterior</button>
+                    <button onclick="finishQuiz()" id="btn-finish" disabled>Finalizar</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pantalla final -->
+        <div class="question-container" id="final-screen" style="display:none; text-align:center;">
+            <div style="font-size:68px; margin:20px 0;">🚀</div>
+            <h2 style="color:var(--success); margin-bottom:18px;">¡Caso completado exitosamente!</h2>
+            <div id="final-feedback" style="background:#E8F5E9; border:3px solid var(--success); padding:28px; text-align:left; line-height:1.75; font-size:15.5px;"></div>
+            <button onclick="restartQuiz()" class="reset-btn" style="margin-top:20px;">🔄 Reiniciar caso práctico</button>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                text: "¿Qué modelo NoSQL resulta más adecuado para almacenar información académica con estructuras variables y anidadas?",
+                options: [
+                    { 
+                        text: "Utilizar bases de datos de documentos que permiten estructuras flexibles y datos anidados.", 
+                        isCorrect: true, 
+                        feedback: "Es la mejor elección porque admite estructuras jerárquicas y flexibles, alineándose con datos académicos complejos descritos en el caso." 
+                    },
+                    { 
+                        text: "Emplear bases clave-valor para almacenar datos como pares simples sin estructura compleja.", 
+                        isCorrect: false, 
+                        feedback: "Es válida para accesos rápidos, pero limita la representación de estructuras complejas, reduciendo su pertinencia en este contexto." 
+                    }
+                ]
+            },
+            {
+                id: 2,
+                text: "¿Qué enfoque es más pertinente para gestionar relaciones complejas entre estudiantes, cursos y profesores?",
+                options: [
+                    { 
+                        text: "Implementar bases de datos de grafos que modelan relaciones mediante nodos y aristas.", 
+                        isCorrect: true, 
+                        feedback: "Es la mejor alternativa porque permite representar y consultar relaciones complejas de forma directa, coherente con el escenario planteado." 
+                    },
+                    { 
+                        text: "Utilizar bases de datos de columnas optimizadas para consultas sobre grandes volúmenes.", 
+                        isCorrect: false, 
+                        feedback: "Es adecuada para análisis de datos masivos, pero no prioriza relaciones complejas entre entidades." 
+                    }
+                ]
+            },
+            {
+                id: 3,
+                text: "¿Qué decisión es más adecuada al implementar MongoDB para consultas específicas y filtradas?",
+                options: [
+                    { 
+                        text: "Aplicar consultas con filtros, proyecciones y ordenamiento según condiciones requeridas.", 
+                        isCorrect: true, 
+                        feedback: "Es la opción más eficiente, ya que optimiza el acceso a datos relevantes mediante consultas específicas propias del sistema." 
+                    },
+                    { 
+                        text: "Recuperar todos los documentos sin filtros y procesarlos posteriormente.", 
+                        isCorrect: false, 
+                        feedback: "Es funcional, pero ineficiente al procesar información innecesaria, afectando el rendimiento." 
+                    }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+        let shuffledOptions = [];
+
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
+        }
+
+        function loadQuestion(qIndex) {
+            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+            const currentQ = document.getElementById(`q${qIndex + 1}`);
+            if (currentQ) currentQ.classList.add('active');
+
+            const q = questions[qIndex];
+            shuffledOptions[qIndex] = shuffle(q.options);
+
+            const optionsContainer = document.getElementById(`options-q${qIndex + 1}`);
+            optionsContainer.innerHTML = '';
+
+            shuffledOptions[qIndex].forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.textContent = opt.text;
+                div.dataset.index = idx;
+                div.onclick = () => selectOption(qIndex, idx);
+                optionsContainer.appendChild(div);
+            });
+
+            const feedbackEl = document.getElementById(`feedback-q${qIndex + 1}`);
+            feedbackEl.style.display = 'none';
+            feedbackEl.innerHTML = '';
+
+            updateNavigationButtons();
+        }
+
+        function selectOption(qIndex, optIndex) {
+            answers[qIndex] = optIndex;
+
+            const selectedOpt = shuffledOptions[qIndex][optIndex];
+            const isCorrect = selectedOpt.isCorrect;
+
+            const options = document.querySelectorAll(`#options-q${qIndex + 1} .option`);
+            options.forEach((opt, i) => {
+                if (i === optIndex) opt.classList.add('selected');
+                opt.style.pointerEvents = 'none';
+            });
+
+            const feedbackEl = document.getElementById(`feedback-q${qIndex + 1}`);
+            feedbackEl.style.display = 'block';
+            feedbackEl.className = `feedback-card ${isCorrect ? 'feedback-correct' : 'feedback-incorrect'}`;
+            
+            feedbackEl.innerHTML = `
+                <strong style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}; font-size:17px;">
+                    ${isCorrect ? '✅ ¡Correcto!' : '⚠️ Revisemos esta opción'}
+                </strong>
+                <p style="margin-top:16px; line-height:1.65;">${selectedOpt.feedback}</p>
+            `;
+
+            const nextBtn = document.getElementById(qIndex === 2 ? 'btn-finish' : `btn-next${qIndex + 1}`);
+            if (nextBtn) nextBtn.disabled = false;
+
+            updateNavigationButtons();
+        }
+
+        function updateNavigationButtons() {
+            const finishBtn = document.getElementById('btn-finish');
+            if (finishBtn) finishBtn.disabled = Object.keys(answers).length < 3;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < 2) {
+                currentQuestion++;
+                loadQuestion(currentQuestion);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion(currentQuestion);
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById('case-screen').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            currentQuestion = 0;
+            answers = {};
+            loadQuestion(0);
+        }
+
+        function finishQuiz() {
+            document.querySelectorAll('.question-container').forEach(q => q.style.display = 'none');
+            const finalScreen = document.getElementById('final-screen');
+            finalScreen.style.display = 'flex';
+
+            const correctCount = Object.keys(answers).filter(key => {
+                const qIdx = parseInt(key);
+                return shuffledOptions[qIdx][answers[key]].isCorrect;
+            }).length;
+
+            document.getElementById('final-feedback').innerHTML = `
+                <p><strong>La selección adecuada de modelos NoSQL depende del tipo de datos y consultas requeridas.</strong></p>
+                <ul style="margin:20px 0 0 20px; line-height:1.85;">
+                    <li><strong>Documentos</strong> → para estructuras flexibles</li>
+                    <li><strong>Grafos</strong> → para relaciones complejas</li>
+                    <li><strong>Consultas eficientes</strong> → en MongoDB</li>
+                </ul>
+                <p style="margin-top:24px; color:var(--success); font-weight:600;">
+                    ¡Has completado el caso con ${correctCount} de 3 respuestas correctas!
+                </p>
+                <p style="margin-top:12px;">Se fortalece la comprensión del uso estratégico de NoSQL en contextos reales.</p>
+            `;
+        }
+
+        function restartQuiz() {
+            document.getElementById('final-screen').style.display = 'none';
+            document.getElementById('case-screen').style.display = 'block';
+            document.getElementById('quiz-container').style.display = 'none';
+            answers = {};
+        }
+
+        // Inicialización
+        window.onload = () => {
+            // El caso se muestra primero
+        };
+    </script>
+</body>
+</html>

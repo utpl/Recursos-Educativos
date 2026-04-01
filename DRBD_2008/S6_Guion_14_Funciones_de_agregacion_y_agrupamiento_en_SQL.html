@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Funciones de agregación y agrupamiento en SQL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1565C0;
+      --primary-light: #1976D2;
+      --accent: #F57C00;
+      --accent-light: #FF9800;
+      --success: #2E7D32;
+      --success-bg: #E8F5E9;
+      --error: #C62828;
+      --error-bg: #FFEBEE;
+      --neutral: #37474F;
+      --neutral-light: #546E7A;
+      --bg: #F4F7FB;
+      --card: #FFFFFF;
+      --border: #CFD8DC;
+      --text: #1A237E;
+      --text-body: #263238;
+      --tag-bg: #E3F2FD;
+      --tag-border: #90CAF9;
+      --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+      --drop-hover: #E3F2FD;
+      --drop-border: #42A5F5;
+      --font: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-body);
+      font-size: 12pt;
+      line-height: 1.4;
+      width: 800px;
+      min-height: 500px;
+      max-height: 800px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .resource-container {
+      width: 800px;
+      height: 800px;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+    }
+
+    header {
+      background: var(--header-bg);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    header .material-symbols-outlined {
+      font-size: 28px;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+    }
+
+    .intro {
+      padding: 12px 20px;
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .instruction {
+      text-align: center;
+      padding: 8px 16px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin: 8px 20px;
+      flex-shrink: 0;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 10px;
+      padding: 10px 20px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: var(--primary-light);
+      background: var(--drop-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.15);
+    }
+
+    .card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+
+    .card-title {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .card-preview {
+      font-size: 0.75rem;
+      color: var(--neutral-light);
+      line-height: 1.2;
+    }
+
+    .card.count { border-top: 4px solid var(--success); }
+    .card.sum { border-top: 4px solid var(--accent); }
+    .card.avg { border-top: 4px solid var(--primary); }
+    .card.minmax { border-top: 4px solid var(--neutral); }
+    .card.groupby { border-top: 4px solid var(--accent-light); }
+    .card.where { border-top: 4px solid var(--error); }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(26, 35, 126, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card);
+      width: 100%;
+      max-width: 720px;
+      max-height: 680px;
+      overflow-y: auto;
+      border: 3px solid var(--primary);
+      position: relative;
+      animation: modalSlide 0.3s ease;
+    }
+
+    @keyframes modalSlide {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      background: var(--header-bg);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.2;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+    }
+
+    .modal-close:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-list {
+      list-style: none;
+    }
+
+    .modal-list li {
+      padding: 8px 0;
+      padding-left: 28px;
+      position: relative;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.95rem;
+    }
+
+    .modal-list li:last-child {
+      border-bottom: none;
+    }
+
+    .modal-list li::before {
+      content: "•";
+      position: absolute;
+      left: 8px;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .comparison-box {
+      padding: 14px;
+      border: 2px solid var(--border);
+      background: var(--card);
+    }
+
+    .comparison-box.where {
+      border-top: 4px solid var(--primary);
+      background: var(--tag-bg);
+    }
+
+    .comparison-box.having {
+      border-top: 4px solid var(--accent);
+      background: var(--success-bg);
+    }
+
+    .comparison-title {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer {
+      padding: 10px 20px;
+      background: var(--card);
+      border-top: 2px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--neutral-light);
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px 20px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--primary-light);
+    }
+
+    .nav-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    .imagen {
+      display: block;
+      max-width: 100%;
+      margin: 12px auto;
+      border: 2px solid var(--border);
+    }
+
+    .imagen-caption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--neutral-light);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    .syntax-box {
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      padding: 12px;
+      text-align: center;
+      margin: 12px 0;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      body, .resource-container {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
+      }
+      .modal {
+        max-height: 90vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="resource-container">
+    <header>
+      <span class="material-symbols-outlined">functions</span>
+      <h1>FUNCIONES DE AGREGACIÓN Y AGRUPAMIENTO EN SQL</h1>
+    </header>
+
+    <div class="intro">
+      Estas funciones permiten resumir grandes volúmenes de datos mediante cálculos específicos, mientras que el agrupamiento organiza la información para su análisis; a continuación, se presentan sus componentes clave y su aplicación en consultas SQL.
+    </div>
+
+    <div class="instruction">
+      Haga clic en los temas para visualizar la información
+    </div>
+
+    <main class="dashboard-grid">
+      <article class="card count" data-modal="modal-count" tabindex="0" role="button" aria-label="COUNT(): Función de conteo">
+        <span class="card-icon material-symbols-outlined">format_list_numbered</span>
+        <h3 class="card-title">COUNT()</h3>
+        <p class="card-preview">Cuenta filas o valores no nulos</p>
+      </article>
+
+      <article class="card sum" data-modal="modal-sum" tabindex="0" role="button" aria-label="SUM(): Función de suma">
+        <span class="card-icon material-symbols-outlined">calculate</span>
+        <h3 class="card-title">SUM()</h3>
+        <p class="card-preview">Calcula la suma de columna numérica</p>
+      </article>
+
+      <article class="card avg" data-modal="modal-avg" tabindex="0" role="button" aria-label="AVG(): Función de promedio">
+        <span class="card-icon material-symbols-outlined">analytics</span>
+        <h3 class="card-title">AVG()</h3>
+        <p class="card-preview">Calcula el promedio de valores</p>
+      </article>
+
+      <article class="card minmax" data-modal="modal-minmax" tabindex="0" role="button" aria-label="MIN()/MAX(): Valores extremos">
+        <span class="card-icon material-symbols-outlined">swap_vert</span>
+        <h3 class="card-title">MIN() / MAX()</h3>
+        <p class="card-preview">Identifican valor mínimo y máximo</p>
+      </article>
+
+      <article class="card groupby" data-modal="modal-groupby" tabindex="0" role="button" aria-label="GROUP BY: Agrupamiento de datos">
+        <span class="card-icon material-symbols-outlined">group_work</span>
+        <h3 class="card-title">GROUP BY</h3>
+        <p class="card-preview">Agrupa filas con valores comunes</p>
+      </article>
+
+      <article class="card where" data-modal="modal-where" tabindex="0" role="button" aria-label="WHERE vs HAVING: Comparación de filtros">
+        <span class="card-icon material-symbols-outlined">filter_alt</span>
+        <h3 class="card-title">WHERE vs HAVING</h3>
+        <p class="card-preview">Filtros antes y después del agrupamiento</p>
+      </article>
+    </main>
+
+    <nav class="nav-buttons">
+      <button class="nav-btn" id="btn-prev" disabled>
+        <span class="material-symbols-outlined">arrow_back</span> Anterior
+      </button>
+      <button class="nav-btn" id="btn-next">
+        Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </nav>
+
+    <footer class="footer">
+      Referencia: Elaboración propia.
+    </footer>
+  </div>
+
+  <!-- Modal COUNT -->
+  <div class="modal-overlay" id="modal-count" role="dialog" aria-modal="true" aria-labelledby="title-count">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-count">
+          <span class="material-symbols-outlined">format_list_numbered</span> COUNT()
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Cuenta filas o valores no nulos.</li>
+          <li>Con DISTINCT cuenta valores únicos.</li>
+        </ul>
+        <div class="syntax-box">SELECT COUNT(columna) FROM tabla;</div>
+        <figure class="imagen" aria-label="Diagrama de función COUNT">
+          <div style="background:var(--success-bg); padding:16px; text-align:center; border:1px solid var(--success);">
+            <span class="material-symbols-outlined" style="font-size:2.5rem; color:var(--success);">task_alt</span>
+            <p style="margin-top:8px; font-weight:600; font-size:0.9rem;">COUNT(*) → Todas las filas<br>COUNT(col) → Sin NULL<br>COUNT(DISTINCT col) → Únicos</p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 1<br>
+            Variantes de COUNT()<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal SUM -->
+  <div class="modal-overlay" id="modal-sum" role="dialog" aria-modal="true" aria-labelledby="title-sum">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-sum">
+          <span class="material-symbols-outlined">calculate</span> SUM()
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Calcula la suma de una columna numérica.</li>
+          <li>Ignora valores NULL.</li>
+        </ul>
+        <div class="syntax-box">SELECT SUM(ventas) FROM pedidos;</div>
+        <figure class="imagen" aria-label="Diagrama de función SUM">
+          <div style="background:var(--tag-bg); padding:16px; text-align:center; border:1px solid var(--tag-border);">
+            <span class="material-symbols-outlined" style="font-size:2.5rem; color:var(--accent);">add_circle</span>
+            <p style="margin-top:8px; font-weight:600; font-size:0.9rem;">SUM() opera solo en numéricos<br>NULL no afecta el resultado</p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 2<br>
+            Comportamiento de SUM()<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal AVG -->
+  <div class="modal-overlay" id="modal-avg" role="dialog" aria-modal="true" aria-labelledby="title-avg">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-avg">
+          <span class="material-symbols-outlined">analytics</span> AVG()
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Calcula el promedio de valores numéricos.</li>
+          <li>Se combina con GROUP BY para análisis por grupos.</li>
+        </ul>
+        <div class="syntax-box">SELECT AVG(precio), categoria FROM productos GROUP BY categoria;</div>
+        <figure class="imagen" aria-label="Diagrama de función AVG">
+          <div style="background:var(--success-bg); padding:16px; text-align:center; border:1px solid var(--success);">
+            <span class="material-symbols-outlined" style="font-size:2.5rem; color:var(--primary);">trending_up</span>
+            <p style="margin-top:8px; font-weight:600; font-size:0.9rem;">AVG() = SUM() / COUNT()<br>Ideal para métricas por grupo</p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 3<br>
+            Aplicación de AVG()<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal MIN/MAX -->
+  <div class="modal-overlay" id="modal-minmax" role="dialog" aria-modal="true" aria-labelledby="title-minmax">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-minmax">
+          <span class="material-symbols-outlined">swap_vert</span> MIN() / MAX()
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Identifican el valor mínimo y máximo.</li>
+          <li>Aplicables a datos numéricos, fechas o texto.</li>
+        </ul>
+        <div class="syntax-box">SELECT MIN(fecha), MAX(fecha) FROM eventos;</div>
+        <figure class="imagen" aria-label="Diagrama de funciones MIN/MAX">
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <div style="flex:1; background:var(--tag-bg); padding:12px; border:1px solid var(--tag-border); text-align:center;">
+              <span class="material-symbols-outlined" style="color:var(--primary); font-size:1.8rem;">arrow_downward</span>
+              <p style="font-weight:600; margin-top:6px; font-size:0.9rem;">MIN()<br><small>Valor más bajo</small></p>
+            </div>
+            <div style="flex:1; background:var(--tag-bg); padding:12px; border:1px solid var(--tag-border); text-align:center;">
+              <span class="material-symbols-outlined" style="color:var(--accent); font-size:1.8rem;">arrow_upward</span>
+              <p style="font-weight:600; margin-top:6px; font-size:0.9rem;">MAX()<br><small>Valor más alto</small></p>
+            </div>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 4<br>
+            Funciones de extremo<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal GROUP BY -->
+  <div class="modal-overlay" id="modal-groupby" role="dialog" aria-modal="true" aria-labelledby="title-groupby">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-groupby">
+          <span class="material-symbols-outlined">group_work</span> GROUP BY (Agrupamiento)
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Agrupa filas con valores comunes.</li>
+          <li>Permite aplicar funciones de agregación por grupo.</li>
+          <li>Las columnas sin agregación deben incluirse en GROUP BY.</li>
+        </ul>
+        <div class="syntax-box">SELECT categoria, COUNT(*) FROM productos GROUP BY categoria;</div>
+        <figure class="imagen" aria-label="Diagrama de GROUP BY">
+          <div style="background:var(--tag-bg); padding:16px; text-align:center; border:1px solid var(--tag-border);">
+            <span class="material-symbols-outlined" style="font-size:2.5rem; color:var(--neutral);">view_list</span>
+            <p style="margin-top:8px; font-weight:600; font-size:0.9rem;">1. Filas → Grupos por valor común<br>2. Función agregada por grupo<br>3. SELECT solo con GROUP BY o agregadas</p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 5<br>
+            Reglas de GROUP BY<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal WHERE vs HAVING -->
+  <div class="modal-overlay" id="modal-where" role="dialog" aria-modal="true" aria-labelledby="title-where">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-where">
+          <span class="material-symbols-outlined">filter_alt</span> WHERE vs HAVING
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="comparison-grid">
+          <div class="comparison-box where">
+            <div class="comparison-title">
+              <span class="material-symbols-outlined">filter_list</span> WHERE
+            </div>
+            <ul class="modal-list" style="font-size:0.9rem;">
+              <li>Filtra filas antes del agrupamiento.</li>
+            </ul>
+            <div class="syntax-box" style="font-size:0.8rem;">WHERE precio > 100</div>
+          </div>
+          <div class="comparison-box having">
+            <div class="comparison-title">
+              <span class="material-symbols-outlined">group</span> HAVING
+            </div>
+            <ul class="modal-list" style="font-size:0.9rem;">
+              <li>Filtra grupos después del agrupamiento.</li>
+              <li>Permite condiciones sobre funciones de agregación.</li>
+            </ul>
+            <div class="syntax-box" style="font-size:0.8rem;">HAVING COUNT(*) > 5</div>
+          </div>
+        </div>
+        <figure class="imagen" aria-label="Diagrama comparativo WHERE vs HAVING">
+          <div style="background:var(--bg); padding:12px; border:1px solid var(--border); margin-top:12px;">
+            <p style="font-weight:600; text-align:center; color:var(--text);">
+              <span style="color:var(--primary);">WHERE</span> → Filtra → <span style="color:var(--accent);">GROUP BY</span> → <span style="color:var(--error);">HAVING</span> → Resultado
+            </p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 6<br>
+            Orden de ejecución en consultas<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.card');
+      const modals = document.querySelectorAll('.modal-overlay');
+      const closeButtons = document.querySelectorAll('.modal-close');
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const modalOrder = ['modal-count', 'modal-sum', 'modal-avg', 'modal-minmax', 'modal-groupby', 'modal-where'];
+      let currentModalIndex = -1;
+
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          currentModalIndex = modalOrder.indexOf(modalId);
+          updateNavButtons();
+        }
+      }
+
+      function closeModal(modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        currentModalIndex = -1;
+        updateNavButtons();
+      }
+
+      function updateNavButtons() {
+        if (currentModalIndex === -1) {
+          btnPrev.disabled = true;
+          btnNext.disabled = true;
+          return;
+        }
+        btnPrev.disabled = currentModalIndex === 0;
+        btnNext.disabled = currentModalIndex === modalOrder.length - 1;
+      }
+
+      cards.forEach(card => {
+        const openHandler = () => {
+          const modalId = card.getAttribute('data-modal');
+          openModal(modalId);
+        };
+        card.addEventListener('click', openHandler);
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openHandler();
+          }
+        });
+      });
+
+      closeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const modal = this.closest('.modal-overlay');
+          closeModal(modal);
+        });
+      });
+
+      modals.forEach(modal => {
+        modal.addEventListener('click', function(e) {
+          if (e.target === this) {
+            closeModal(this);
+          }
+        });
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          modals.forEach(modal => {
+            if (modal.classList.contains('active')) {
+              closeModal(modal);
+            }
+          });
+        }
+      });
+
+      btnPrev.addEventListener('click', function() {
+        if (currentModalIndex > 0) {
+          const currentModal = document.getElementById(modalOrder[currentModalIndex]);
+          closeModal(currentModal);
+          openModal(modalOrder[currentModalIndex - 1]);
+        }
+      });
+
+      btnNext.addEventListener('click', function() {
+        if (currentModalIndex < modalOrder.length - 1) {
+          const currentModal = document.getElementById(modalOrder[currentModalIndex]);
+          closeModal(currentModal);
+          openModal(modalOrder[currentModalIndex + 1]);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

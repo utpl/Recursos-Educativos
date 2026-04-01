@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modelo Entidad Relación ER</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1565C0;
+      --primary-light: #1976D2;
+      --accent: #F57C00;
+      --accent-light: #FF9800;
+      --success: #2E7D32;
+      --success-bg: #E8F5E9;
+      --error: #C62828;
+      --error-bg: #FFEBEE;
+      --neutral: #37474F;
+      --neutral-light: #546E7A;
+      --bg: #F4F7FB;
+      --card: #FFFFFF;
+      --border: #CFD8DC;
+      --text: #1A237E;
+      --text-body: #263238;
+      --tag-bg: #E3F2FD;
+      --tag-border: #90CAF9;
+      --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+      --drop-hover: #E3F2FD;
+      --drop-border: #42A5F5;
+      --font: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-body);
+      font-size: 12pt;
+      line-height: 1.4;
+      width: 800px;
+      min-height: 500px;
+      max-height: 800px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .resource-container {
+      width: 800px;
+      height: 800px;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+    }
+
+    header {
+      background: var(--header-bg);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    header .material-symbols-outlined {
+      font-size: 28px;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+    }
+
+    .intro {
+      padding: 12px 20px;
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.95rem;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .instruction {
+      text-align: center;
+      padding: 8px 16px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin: 8px 20px;
+      flex-shrink: 0;
+    }
+
+    .quiz-container {
+      padding: 10px 20px;
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .question-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      padding: 16px;
+      margin-bottom: 12px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .question-card.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .question-number {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 4px 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+
+    .question-text {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .options-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 44px;
+    }
+
+    .option-item:hover {
+      border-color: var(--primary-light);
+      background: var(--drop-hover);
+    }
+
+    .option-item.selected {
+      border-color: var(--primary);
+      background: var(--tag-bg);
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.2);
+    }
+
+    .option-item.correct {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .option-item.incorrect {
+      border-color: var(--error);
+      background: var(--error-bg);
+    }
+
+    .option-radio {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      min-width: 20px;
+    }
+
+    .option-label {
+      flex: 1;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .fill-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      font-family: var(--font);
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+
+    .fill-input:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.2);
+    }
+
+    .matching-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .matching-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .matching-item {
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .matching-item:hover {
+      border-color: var(--primary-light);
+      background: var(--drop-hover);
+    }
+
+    .matching-item.selected {
+      border-color: var(--accent);
+      background: var(--tag-bg);
+      font-weight: 600;
+    }
+
+    .matching-item.matched {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .matching-pair {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px;
+      background: var(--success-bg);
+      border: 1px solid var(--success);
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background: var(--card);
+      border-top: 2px solid var(--border);
+      flex-shrink: 0;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--primary-light);
+    }
+
+    .nav-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    .nav-btn.submit {
+      background: var(--success);
+    }
+
+    .nav-btn.submit:hover {
+      background: #388E3C;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      margin: 0 20px;
+      flex-shrink: 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 20%;
+      transition: width 0.3s ease;
+    }
+
+    .footer {
+      padding: 10px 20px;
+      background: var(--card);
+      border-top: 2px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--neutral-light);
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .result-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(26, 35, 126, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .result-overlay.active {
+      display: flex;
+    }
+
+    .result-modal {
+      background: var(--card);
+      width: 100%;
+      max-width: 600px;
+      border: 3px solid var(--success);
+      animation: modalSlide 0.3s ease;
+    }
+
+    @keyframes modalSlide {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .result-header {
+      background: var(--header-bg);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-header .material-symbols-outlined {
+      font-size: 2rem;
+    }
+
+    .result-title {
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .result-body {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .result-score {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--success);
+      margin: 10px 0;
+    }
+
+    .result-message {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin: 16px 0;
+      line-height: 1.4;
+    }
+
+    .result-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 44px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .result-btn:hover {
+      background: var(--primary-light);
+    }
+
+    .imagen {
+      display: block;
+      max-width: 100%;
+      margin: 12px auto;
+      border: 2px solid var(--border);
+    }
+
+    .imagen-caption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--neutral-light);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+      body, .resource-container {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .matching-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-buttons {
+        flex-wrap: wrap;
+      }
+      .nav-btn {
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="resource-container">
+    <header>
+      <span class="material-symbols-outlined">account_tree</span>
+      <h1>MODELO ENTIDAD RELACIÓN ER</h1>
+    </header>
+
+    <div class="intro">
+      Evalúe sus conocimientos sobre la estructura del modelo Entidad-Relación y su aplicación en la representación conceptual de datos.
+    </div>
+
+    <div class="instruction">
+      Revise con atención cada enunciado y elija la opción correcta.
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <main class="quiz-container">
+      <!-- Pregunta 1: Verdadero/Falso -->
+      <article class="question-card active" data-question="1" data-type="boolean" data-correct="true">
+        <span class="question-number">Pregunta 1</span>
+        <p class="question-text">¿Una entidad débil depende de una entidad fuerte para existir?</p>
+        <ul class="options-list">
+          <li class="option-item">
+            <input type="radio" name="q1" id="q1-false" value="false" class="option-radio">
+            <label for="q1-false" class="option-label">Falso</label>
+          </li>
+          <li class="option-item">
+            <input type="radio" name="q1" id="q1-true" value="true" class="option-radio">
+            <label for="q1-true" class="option-label">Verdadero</label>
+          </li>
+        </ul>
+      </article>
+
+      <!-- Pregunta 2: Opción múltiple (shuffled) -->
+      <article class="question-card" data-question="2" data-type="multiple" data-correct="0">
+        <span class="question-number">Pregunta 2</span>
+        <p class="question-text">¿Cuál es la función principal de una clave primaria en una entidad?</p>
+        <ul class="options-list" id="options-q2">
+          <!-- Options will be shuffled by JS -->
+        </ul>
+      </article>
+
+      <!-- Pregunta 3: Completar -->
+      <article class="question-card" data-question="3" data-type="fill" data-correct="cardinalidad">
+        <span class="question-number">Pregunta 3</span>
+        <p class="question-text">Complete el enunciado: Una relación _____ define cuántas instancias de una entidad se asocian con otra.</p>
+        <input type="text" class="fill-input" id="q3-input" placeholder="Escriba su respuesta...">
+      </article>
+
+      <!-- Pregunta 4: Opción múltiple (shuffled) -->
+      <article class="question-card" data-question="4" data-type="multiple" data-correct="2">
+        <span class="question-number">Pregunta 4</span>
+        <p class="question-text">¿Qué relación describe que un cliente puede contratar varios planes y un plan varios clientes?</p>
+        <ul class="options-list" id="options-q4">
+          <!-- Options will be shuffled by JS -->
+        </ul>
+      </article>
+
+      <!-- Pregunta 5: Relacionar columnas -->
+      <article class="question-card" data-question="5" data-type="matching" data-correct='{"C":"1","A":"2","B":"3"}'>
+        <span class="question-number">Pregunta 5</span>
+        <p class="question-text">Relacione los tipos de atributos con su característica principal:</p>
+        <div class="matching-grid">
+          <div class="matching-column" id="col-terms">
+            <div class="matching-item" data-value="A">A) Simple</div>
+            <div class="matching-item" data-value="B">B) Compuesto</div>
+            <div class="matching-item" data-value="C">C) Derivado</div>
+          </div>
+          <div class="matching-column" id="col-definitions">
+            <div class="matching-item" data-value="1">1) Se calcula a partir de otros atributos</div>
+            <div class="matching-item" data-value="2">2) No se divide en partes</div>
+            <div class="matching-item" data-value="3">3) Se descompone en subpartes</div>
+          </div>
+        </div>
+        <div id="matching-pairs"></div>
+      </article>
+    </main>
+
+    <nav class="nav-buttons">
+      <button class="nav-btn" id="btn-prev" disabled>
+        <span class="material-symbols-outlined">arrow_back</span> Anterior
+      </button>
+      <button class="nav-btn" id="btn-next">
+        Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+      <button class="nav-btn submit" id="btn-submit" style="display:none;">
+        <span class="material-symbols-outlined">check_circle</span> Enviar
+      </button>
+    </nav>
+
+    <footer class="footer">
+      Referencia: Elaboración propia.
+    </footer>
+  </div>
+
+  <!-- Result Modal -->
+  <div class="result-overlay" id="resultOverlay" role="dialog" aria-modal="true">
+    <div class="result-modal">
+      <div class="result-header">
+        <span class="material-symbols-outlined">celebration</span>
+        <h2 class="result-title">¡Resultado del Quiz!</h2>
+      </div>
+      <div class="result-body">
+        <div class="result-score" id="resultScore">0/5</div>
+        <p class="result-message" id="resultMessage">
+          ¡Muy bien! Reconoce la estructura del modelo ER y su aplicación en la representación conceptual de datos en sistemas de telecomunicaciones.
+        </p>
+        <button class="result-btn" id="btn-restart">
+          <span class="material-symbols-outlined">refresh</span> Intentar de nuevo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Question data with shuffled options
+      const q2Options = [
+        { text: 'Identificar de forma única cada entidad', correct: true },
+        { text: 'Almacenar múltiples valores', correct: false },
+        { text: 'Describir atributos derivados', correct: false }
+      ].sort(() => Math.random() - 0.5);
+
+      const q4Options = [
+        { text: 'Uno a uno', correct: false },
+        { text: 'Uno a muchos', correct: false },
+        { text: 'Muchos a muchos', correct: true }
+      ].sort(() => Math.random() - 0.5);
+
+      // Render shuffled options for Q2
+      const q2List = document.getElementById('options-q2');
+      q2Options.forEach((opt, idx) => {
+        const li = document.createElement('li');
+        li.className = 'option-item';
+        li.innerHTML = `
+          <input type="radio" name="q2" id="q2-opt${idx}" value="${idx}" class="option-radio" ${opt.correct ? 'data-correct="true"' : ''}>
+          <label for="q2-opt${idx}" class="option-label">${String.fromCharCode(97+idx)}) ${opt.text}</label>
+        `;
+        q2List.appendChild(li);
+      });
+
+      // Render shuffled options for Q4
+      const q4List = document.getElementById('options-q4');
+      q4Options.forEach((opt, idx) => {
+        const li = document.createElement('li');
+        li.className = 'option-item';
+        li.innerHTML = `
+          <input type="radio" name="q4" id="q4-opt${idx}" value="${idx}" class="option-radio" ${opt.correct ? 'data-correct="true"' : ''}>
+          <label for="q4-opt${idx}" class="option-label">${String.fromCharCode(97+idx)}) ${opt.text}</label>
+        `;
+        q4List.appendChild(li);
+      });
+
+      // Quiz state
+      const questions = document.querySelectorAll('.question-card');
+      let currentQuestion = 0;
+      const answers = {};
+      let matchingSelection = { term: null, definition: null };
+      let matchingPairs = {};
+
+      // DOM Elements
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const btnSubmit = document.getElementById('btn-submit');
+      const progressFill = document.getElementById('progressFill');
+      const resultOverlay = document.getElementById('resultOverlay');
+      const resultScore = document.getElementById('resultScore');
+      const resultMessage = document.getElementById('resultMessage');
+      const btnRestart = document.getElementById('btn-restart');
+
+      // Update progress bar
+      function updateProgress() {
+        progressFill.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+      }
+
+      // Show question
+      function showQuestion(index) {
+        questions.forEach((q, i) => {
+          q.classList.toggle('active', i === index);
+        });
+        
+        // Update buttons
+        btnPrev.disabled = index === 0;
+        
+        if (index === questions.length - 1) {
+          btnNext.style.display = 'none';
+          btnSubmit.style.display = 'flex';
+        } else {
+          btnNext.style.display = 'flex';
+          btnSubmit.style.display = 'none';
+        }
+        
+        updateProgress();
+      }
+
+      // Option selection handler
+      document.querySelectorAll('.option-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const radio = this.querySelector('.option-radio');
+          if (radio) {
+            radio.checked = true;
+            this.classList.add('selected');
+            this.parentElement.querySelectorAll('.option-item').forEach(i => {
+              if (i !== this) i.classList.remove('selected');
+            });
+            const qNum = this.closest('.question-card').dataset.question;
+            answers[qNum] = radio.value;
+          }
+        });
+      });
+
+      // Fill input handler
+      document.getElementById('q3-input').addEventListener('input', function() {
+        answers['3'] = this.value.trim().toLowerCase();
+      });
+
+      // Matching logic for Q5
+      const matchingItems = document.querySelectorAll('.matching-item');
+      matchingItems.forEach(item => {
+        item.addEventListener('click', function() {
+          const value = this.dataset.value;
+          const isTerm = this.parentElement.id === 'col-terms';
+          
+          if (isTerm) {
+            // Select term
+            document.querySelectorAll('#col-terms .matching-item').forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            matchingSelection.term = value;
+          } else {
+            // Select definition
+            document.querySelectorAll('#col-definitions .matching-item').forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            matchingSelection.definition = value;
+          }
+          
+          // If both selected, create pair
+          if (matchingSelection.term && matchingSelection.definition) {
+            const pairsContainer = document.getElementById('matching-pairs');
+            const pair = document.createElement('div');
+            pair.className = 'matching-pair';
+            pair.innerHTML = `<strong>${matchingSelection.term}</strong> ↔ <strong>${matchingSelection.definition}</strong>`;
+            pairsContainer.appendChild(pair);
+            
+            // Store answer
+            if (!answers['5']) answers['5'] = {};
+            answers['5'][matchingSelection.term] = matchingSelection.definition;
+            
+            // Clear selections
+            matchingItems.forEach(i => i.classList.remove('selected'));
+            matchingSelection = { term: null, definition: null };
+          }
+        });
+      });
+
+      // Navigation
+      btnPrev.addEventListener('click', () => {
+        if (currentQuestion > 0) {
+          currentQuestion--;
+          showQuestion(currentQuestion);
+        }
+      });
+
+      btnNext.addEventListener('click', () => {
+        if (currentQuestion < questions.length - 1) {
+          currentQuestion++;
+          showQuestion(currentQuestion);
+        }
+      });
+
+      // Submit and evaluate
+      btnSubmit.addEventListener('click', function() {
+        let score = 0;
+        
+        // Q1: Boolean
+        if (answers['1'] === 'true') score++;
+        
+        // Q2: Multiple choice
+        const q2Selected = document.querySelector('input[name="q2"]:checked');
+        if (q2Selected && q2Selected.dataset.correct === 'true') score++;
+        
+        // Q3: Fill in blank
+        if (answers['3'] && answers['3'].includes('cardinalidad')) score++;
+        
+        // Q4: Multiple choice
+        const q4Selected = document.querySelector('input[name="q4"]:checked');
+        if (q4Selected && q4Selected.dataset.correct === 'true') score++;
+        
+        // Q5: Matching
+        const q5Correct = {"C":"1","A":"2","B":"3"};
+        if (answers['5']) {
+          let matches = 0;
+          for (let key in q5Correct) {
+            if (answers['5'][key] === q5Correct[key]) matches++;
+          }
+          if (matches === 3) score++;
+        }
+        
+        // Show results
+        resultScore.textContent = `${score}/5`;
+        resultOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+
+      // Restart quiz
+      btnRestart.addEventListener('click', function() {
+        // Reset state
+        currentQuestion = 0;
+        Object.keys(answers).forEach(key => delete answers[key]);
+        matchingPairs = {};
+        matchingSelection = { term: null, definition: null };
+        
+        // Reset UI
+        document.querySelectorAll('.option-item').forEach(i => {
+          i.classList.remove('selected', 'correct', 'incorrect');
+          const radio = i.querySelector('.option-radio');
+          if (radio) radio.checked = false;
+        });
+        document.getElementById('q3-input').value = '';
+        document.getElementById('matching-pairs').innerHTML = '';
+        document.querySelectorAll('.matching-item').forEach(i => i.classList.remove('selected', 'matched'));
+        
+        // Show first question
+        showQuestion(0);
+        resultOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+
+      // Close result on overlay click
+      resultOverlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+          resultOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', function(e) {
+        if (resultOverlay.classList.contains('active') && e.key === 'Escape') {
+          resultOverlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+
+      // Initialize
+      updateProgress();
+    });
+  </script>
+</body>
+</html>

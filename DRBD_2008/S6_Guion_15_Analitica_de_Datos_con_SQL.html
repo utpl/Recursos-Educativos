@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analítica de Datos con SQL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --tag-bg: #E3F2FD;
+            --tag-border: #90CAF9;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font);
+            background-color: var(--bg);
+            color: var(--text-body);
+            overflow: hidden;
+        }
+
+        /* Contenedor Principal - SIN BORDER RADIUS */
+        #main-resource {
+            width: 800px;
+            height: 800px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--header-bg);
+            color: white;
+            padding: 15px 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 8px; /* Permitido en elementos internos */
+            margin-top: 10px;
+            font-size: 0.85rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Área de Juego */
+        .game-canvas {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 150px;
+            padding: 40px;
+            align-items: center;
+        }
+
+        #line-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 6;
+        }
+
+        .node {
+            background: var(--card);
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 12px; /* Permitido en elementos internos */
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            min-height: 50px;
+        }
+
+        .node:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .node.selected {
+            background: var(--tag-bg);
+            border-color: var(--primary);
+            color: var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        .node.matched {
+            background: var(--success-bg);
+            border-color: var(--success);
+            color: var(--success);
+            cursor: default;
+            transform: none;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: var(--border);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .left .dot { right: -6px; }
+        .right .dot { left: -6px; }
+
+        .node.selected .dot { background: var(--primary); }
+        .node.matched .dot { background: var(--success); }
+
+        /* Modal */
+        #feedback-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 35, 126, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card);
+            width: 85%;
+            max-height: 80%;
+            padding: 30px;
+            border-radius: 20px; /* Permitido en elementos internos */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            color: var(--primary);
+            border-bottom: 2px solid var(--tag-bg);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .info-box h4 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .footer-tools {
+            padding: 15px 25px;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-light); transform: scale(1.05); }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(21, 101, 192, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(21, 101, 192, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(21, 101, 192, 0); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-resource">
+    <header>
+        <h1><span class="material-symbols-outlined">analytics</span> Analítica de Datos con SQL [cite: 16]</h1>
+        <div class="instructions">
+            Unir con líneas cada problema planteado con la operación SQL que lo resuelve, diferenciando funciones de agregación y operaciones de conjuntos en consultas. [cite: 19]
+        </div>
+    </header>
+
+    <main class="game-canvas" id="game-canvas">
+        <svg id="line-svg"></svg>
+        
+        <div class="column left" id="col-problems">
+            </div>
+
+        <div class="column right" id="col-solutions">
+            </div>
+    </main>
+
+    <footer class="footer-tools">
+        <div style="font-size: 0.8rem; color: var(--neutral-light);">
+            <span id="progress-text">Progreso: 0/7</span>
+        </div>
+        <button class="btn btn-primary" onclick="checkCompletion()">
+            REVISAR RESULTADOS <span class="material-symbols-outlined">task_alt</span>
+        </button>
+    </footer>
+
+    <div id="feedback-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="material-symbols-outlined">insights</span>
+                <h2>Retroalimentación Final [cite: 21]</h2>
+            </div>
+            
+            <div class="info-box">
+                <h4><span class="material-symbols-outlined">functions</span> Funciones de Agregación [cite: 22]</h4>
+                <ul style="font-size: 0.9rem; list-style: none; padding-left: 5px;">
+                    <li>• Trabajan sobre un conjunto de valores y devuelven un solo valor. [cite: 23]</li>
+                    <li>• Ignoran los valores NULL (excepto COUNT(*)). [cite: 23]</li>
+                    <li>• Se usan frecuentemente con la cláusula GROUP BY. [cite: 23]</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h4><span class="material-symbols-outlined">Layers</span> Operaciones de Conjuntos [cite: 24]</h4>
+                <ul style="font-size: 0.9rem; list-style: none; padding-left: 5px;">
+                    <li>• Combinan los resultados de dos o más consultas SELECT. [cite: 25]</li>
+                    <li>• Las consultas deben tener el mismo número y tipo de columnas. [cite: 25]</li>
+                    <li>• Ayudan a comparar listas de datos de diferentes tablas. [cite: 25]</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-primary" style="float: right;" onclick="closeModal()">FINALIZAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const data = [
+        { q: "¿Cuántos usuarios hay en total?", a: "COUNT()" },
+        { q: "¿Cuál es el total de salarios pagados?", a: "SUM()" },
+        { q: "¿Cuál es el promedio de edad?", a: "AVG()" },
+        { q: "¿Cuál es el salario más alto?", a: "MAX()" },
+        { q: "Combinar listas de clientes y empleados sin duplicados.", a: "UNION" },
+        { q: "Encontrar usuarios que son clientes Y proveedores.", a: "INTERSECT" },
+        { q: "Usuarios que están en la lista A pero NO en la B.", a: "EXCEPT" }
+    ];
+
+    let selectedLeft = null;
+    let matches = 0;
+    const canvas = document.getElementById('game-canvas');
+    const svg = document.getElementById('line-svg');
+
+    function init() {
+        const problems = [...data].sort(() => Math.random() - 0.5);
+        const solutions = [...data].sort(() => Math.random() - 0.5);
+
+        const colProb = document.getElementById('col-problems');
+        const colSol = document.getElementById('col-solutions');
+
+        problems.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'node';
+            div.innerHTML = `<span>${item.q}</span><div class="dot"></div>`;
+            div.dataset.value = item.a;
+            div.onclick = () => selectLeft(div);
+            colProb.appendChild(div);
+        });
+
+        solutions.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'node';
+            div.innerHTML = `<div class="dot"></div><span>${item.a}</span>`;
+            div.dataset.value = item.a;
+            div.onclick = () => selectRight(div);
+            colSol.appendChild(div);
+        });
+    }
+
+    function selectLeft(el) {
+        if (el.classList.contains('matched')) return;
+        document.querySelectorAll('.left .node').forEach(n => n.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedLeft = el;
+    }
+
+    function selectRight(el) {
+        if (!selectedLeft || el.classList.contains('matched')) return;
+        
+        if (selectedLeft.dataset.value === el.dataset.value) {
+            el.classList.add('matched');
+            selectedLeft.classList.add('matched');
+            selectedLeft.classList.remove('selected');
+            drawLine(selectedLeft, el);
+            selectedLeft = null;
+            matches++;
+            document.getElementById('progress-text').innerText = `Progreso: ${matches}/7`;
+        } else {
+            el.style.borderColor = 'var(--error)';
+            setTimeout(() => el.style.borderColor = 'var(--border)', 500);
+        }
+    }
+
+    function drawLine(el1, el2) {
+        const rect1 = el1.getBoundingClientRect();
+        const rect2 = el2.getBoundingClientRect();
+        const containerRect = canvas.getBoundingClientRect();
+
+        const x1 = rect1.right - containerRect.left;
+        const y1 = rect1.top + rect1.height / 2 - containerRect.top;
+        const x2 = rect2.left - containerRect.left;
+        const y2 = rect2.top + rect2.height / 2 - containerRect.top;
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("stroke", "var(--success)");
+        line.setAttribute("stroke-width", "3");
+        line.setAttribute("stroke-dasharray", "5,5");
+        svg.appendChild(line);
+    }
+
+    function checkCompletion() {
+        if (matches === 7) {
+            document.getElementById('feedback-modal').style.display = 'flex';
+        } else {
+            alert("Por favor, completa todas las uniones antes de revisar.");
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('feedback-modal').style.display = 'none';
+    }
+
+    init();
+</script>
+</body>
+</html>

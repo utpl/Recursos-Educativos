@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo Entidad Relación ER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --tag-bg: #E3F2FD;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --font: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            width: 800px;
+            min-height: 500px;
+            max-height: 800px;
+            background: var(--card);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: var(--header-bg);
+            padding: 20px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.05);
+            transform: rotate(45deg);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .header-text h1 {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-text p {
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+        }
+
+        .main-content {
+            padding: 25px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--neutral);
+            font-weight: 600;
+        }
+
+        .instructions-card {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            padding: 15px 20px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .instructions-icon { font-size: 24px; }
+
+        .instructions-text {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .instructions-text strong { color: var(--primary); }
+
+        .question-container { display: none; }
+
+        .question-container.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .question-badge {
+            background: var(--primary);
+            color: white;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .question-type-icon { font-size: 20px; }
+
+        .question-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        .tf-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tf-card {
+            flex: 1;
+            max-width: 200px;
+            background: var(--card);
+            border: 2px solid var(--border);
+            padding: 25px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .tf-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(21, 101, 192, 0.15);
+        }
+
+        .tf-card.selected {
+            border-color: var(--primary);
+            background: var(--tag-bg);
+        }
+
+        .tf-card.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .tf-card.incorrect {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+
+        .tf-icon { font-size: 40px; margin-bottom: 10px; }
+
+        .tf-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-body);
+        }
+
+        .mc-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .mc-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .mc-card:hover {
+            border-color: var(--primary-light);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.1);
+        }
+
+        .mc-card.selected {
+            border-color: var(--primary);
+            background: var(--tag-bg);
+        }
+
+        .mc-card.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .mc-card.incorrect {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+
+        .mc-letter {
+            background: var(--neutral-light);
+            color: white;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .mc-card.selected .mc-letter,
+        .mc-card.correct .mc-letter { background: var(--primary); }
+
+        .mc-text {
+            font-size: 13px;
+            color: var(--text-body);
+            flex: 1;
+        }
+
+        .fill-container {
+            background: var(--bg);
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .fill-text {
+            font-size: 15px;
+            color: var(--text-body);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .fill-blank {
+            display: inline-block;
+            min-width: 150px;
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+            padding: 0 10px;
+        }
+
+        .fill-input {
+            padding: 12px 20px;
+            font-size: 14px;
+            border: 2px solid var(--border);
+            width: 250px;
+            text-align: center;
+            font-family: var(--font);
+            transition: border-color 0.3s;
+        }
+
+        .fill-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .fill-input.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .fill-input.incorrect {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+
+        .matching-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .matching-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .matching-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .matching-item {
+            background: var(--card);
+            border: 2px solid var(--border);
+            padding: 12px 15px;
+            font-size: 13px;
+            color: var(--text-body);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .matching-letter {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .matching-number {
+            background: var(--accent);
+            color: white;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .matching-select {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid var(--border);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .matching-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .matching-select.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .matching-select.incorrect {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+
+        .feedback-box {
+            display: none;
+            padding: 15px 20px;
+            margin-top: 15px;
+            animation: slideIn 0.4s ease;
+        }
+
+        .feedback-box.show {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback-box.correct {
+            background: var(--success-bg);
+            border-left: 4px solid var(--success);
+        }
+
+        .feedback-box.incorrect {
+            background: var(--error-bg);
+            border-left: 4px solid var(--error);
+        }
+
+        .feedback-icon { font-size: 20px; }
+
+        .feedback-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-body);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            background: var(--neutral-light);
+            color: white;
+        }
+
+        .nav-btn:hover:not(:disabled) { background: var(--neutral); }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-btn.primary { background: var(--primary); }
+
+        .nav-btn.primary:hover:not(:disabled) { background: var(--primary-light); }
+
+        .final-screen {
+            display: none;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .final-screen.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .final-icon { font-size: 64px; margin-bottom: 20px; }
+
+        .final-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+
+        .final-message {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-body);
+            max-width: 600px;
+            margin: 0 auto 25px;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .score-item {
+            background: var(--bg);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: var(--neutral);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .geo-decoration {
+            position: absolute;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        .geo-1 {
+            top: 100px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--primary);
+            transform: rotate(45deg);
+        }
+
+        .geo-2 {
+            bottom: 100px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 100%;
+                max-height: none;
+            }
+
+            .main-content { padding: 15px; }
+
+            .tf-options {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .tf-card {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .matching-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .score-grid { grid-template-columns: 1fr; }
+
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="geo-decoration geo-1"></div>
+        <div class="geo-decoration geo-2"></div>
+
+        <header class="header">
+            <div class="header-content">
+                <div class="header-icon">🗂️</div>
+                <div class="header-text">
+                    <h1>Modelo Entidad Relación ER</h1>
+                    <p>📚 Quiz Interactivo | Fundamentos de Base de Datos</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <span class="progress-text" id="progressText">📊 Pregunta 1 de 5</span>
+            </div>
+
+            <div class="instructions-card">
+                <span class="instructions-icon">📋</span>
+                <p class="instructions-text">
+                    <strong>🎯 Instrucciones:</strong> Revise con atención cada enunciado y elija la opción correcta.
+                </p>
+            </div>
+
+            <!-- Pregunta 1: Verdadero/Falso -->
+            <div class="question-container active" data-question="1" data-type="tf">
+                <div class="question-header">
+                    <div class="question-badge">1</div>
+                    <span class="question-type-icon">⚖️</span>
+                    <div class="question-text">¿Una entidad débil depende de una entidad fuerte para existir?</div>
+                </div>
+
+                <div class="tf-options">
+                    <div class="tf-card" data-answer="true" data-correct="true">
+                        <div class="tf-icon">✅</div>
+                        <div class="tf-label">Verdadero</div>
+                    </div>
+                    <div class="tf-card" data-answer="false" data-correct="false">
+                        <div class="tf-icon">❌</div>
+                        <div class="tf-label">Falso</div>
+                    </div>
+                </div>
+
+                <div class="feedback-box" id="feedback1">
+                    <span class="feedback-icon"></span>
+                    <p class="feedback-text"></p>
+                </div>
+            </div>
+
+            <!-- Pregunta 2: Opción múltiple -->
+            <div class="question-container" data-question="2" data-type="mc">
+                <div class="question-header">
+                    <div class="question-badge">2</div>
+                    <span class="question-type-icon">🔑</span>
+                    <div class="question-text">¿Cuál es la función principal de una clave primaria en una entidad?</div>
+                </div>
+
+                <div class="mc-options" id="options2">
+                    <div class="mc-card" data-answer="a" data-correct="true">
+                        <div class="mc-letter">a</div>
+                        <div class="mc-text">🆔 Identificar de forma única cada entidad</div>
+                    </div>
+                    <div class="mc-card" data-answer="b" data-correct="false">
+                        <div class="mc-letter">b</div>
+                        <div class="mc-text">📦 Almacenar múltiples valores</div>
+                    </div>
+                    <div class="mc-card" data-answer="c" data-correct="false">
+                        <div class="mc-letter">c</div>
+                        <div class="mc-text">📝 Describir atributos derivados</div>
+                    </div>
+                </div>
+
+                <div class="feedback-box" id="feedback2">
+                    <span class="feedback-icon"></span>
+                    <p class="feedback-text"></p>
+                </div>
+            </div>
+
+            <!-- Pregunta 3: Completar -->
+            <div class="question-container" data-question="3" data-type="fill">
+                <div class="question-header">
+                    <div class="question-badge">3</div>
+                    <span class="question-type-icon">✏️</span>
+                    <div class="question-text">Complete el enunciado:</div>
+                </div>
+
+                <div class="fill-container">
+                    <p class="fill-text">
+                        Una relación <span class="fill-blank" id="blank3">________</span> define cuántas instancias de una entidad se asocian con otra.
+                    </p>
+                    <input type="text" class="fill-input" id="input3" placeholder="✍️ Escriba su respuesta...">
+                </div>
+
+                <div class="feedback-box" id="feedback3">
+                    <span class="feedback-icon"></span>
+                    <p class="feedback-text"></p>
+                </div>
+            </div>
+
+            <!-- Pregunta 4: Opción múltiple -->
+            <div class="question-container" data-question="4" data-type="mc">
+                <div class="question-header">
+                    <div class="question-badge">4</div>
+                    <span class="question-type-icon">🔗</span>
+                    <div class="question-text">¿Qué relación describe que un cliente puede contratar varios planes y un plan varios clientes?</div>
+                </div>
+
+                <div class="mc-options" id="options4">
+                    <div class="mc-card" data-answer="a" data-correct="false">
+                        <div class="mc-letter">a</div>
+                        <div class="mc-text">1️⃣ Uno a uno</div>
+                    </div>
+                    <div class="mc-card" data-answer="b" data-correct="false">
+                        <div class="mc-letter">b</div>
+                        <div class="mc-text">➡️ Uno a muchos</div>
+                    </div>
+                    <div class="mc-card" data-answer="c" data-correct="true">
+                        <div class="mc-letter">c</div>
+                        <div class="mc-text">🔄 Muchos a muchos</div>
+                    </div>
+                </div>
+
+                <div class="feedback-box" id="feedback4">
+                    <span class="feedback-icon"></span>
+                    <p class="feedback-text"></p>
+                </div>
+            </div>
+
+            <!-- Pregunta 5: Relacionar -->
+            <div class="question-container" data-question="5" data-type="matching">
+                <div class="question-header">
+                    <div class="question-badge">5</div>
+                    <span class="question-type-icon">🧩</span>
+                    <div class="question-text">Relacione los tipos de atributos con su característica principal:</div>
+                </div>
+
+                <div class="matching-container">
+                    <div class="matching-column">
+                        <div class="matching-title">📦 Tipos de Atributos</div>
+                        <div class="matching-item">
+                            <span class="matching-letter">A</span>
+                            <span>Simple</span>
+                        </div>
+                        <div class="matching-item">
+                            <span class="matching-letter">B</span>
+                            <span>Compuesto</span>
+                        </div>
+                        <div class="matching-item">
+                            <span class="matching-letter">C</span>
+                            <span>Derivado</span>
+                        </div>
+                    </div>
+
+                    <div class="matching-column">
+                        <div class="matching-title">📝 Características</div>
+                        <div class="matching-item">
+                            <span class="matching-number">1</span>
+                            <span>Se calcula a partir de otros atributos</span>
+                            <select class="matching-select" data-correct="C">
+                                <option value="">-</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                        </div>
+                        <div class="matching-item">
+                            <span class="matching-number">2</span>
+                            <span>No se divide en partes</span>
+                            <select class="matching-select" data-correct="A">
+                                <option value="">-</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                        </div>
+                        <div class="matching-item">
+                            <span class="matching-number">3</span>
+                            <span>Se descompone en subpartes</span>
+                            <select class="matching-select" data-correct="B">
+                                <option value="">-</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback-box" id="feedback5">
+                    <span class="feedback-icon"></span>
+                    <p class="feedback-text"></p>
+                </div>
+            </div>
+
+            <!-- Pantalla Final -->
+            <div class="final-screen" id="finalScreen">
+                <div class="final-icon">🎓</div>
+                <h2 class="final-title">🎉 ¡Quiz Completado!</h2>
+                <p class="final-message">
+                    🌟 ¡Muy bien! Reconoce la estructura del modelo ER y su aplicación en la representación conceptual de datos en sistemas de telecomunicaciones.
+                </p>
+                <div class="score-grid">
+                    <div class="score-item">
+                        <div class="score-value" id="correctCount">0</div>
+                        <div class="score-label">✅ Correctas</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="totalQuestions">5</div>
+                        <div class="score-label">📊 Total</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="scorePercent">0%</div>
+                        <div class="score-label">🏆 Puntuación</div>
+                    </div>
+                </div>
+                <button class="nav-btn primary" onclick="restartQuiz()">
+                    🔄 Reiniciar Quiz
+                </button>
+            </div>
+
+            <!-- Navegación -->
+            <div class="navigation" id="navigation">
+                <button class="nav-btn" id="prevBtn" onclick="prevQuestion()" disabled>
+                    ⬅️ Anterior
+                </button>
+                <button class="nav-btn primary" id="nextBtn" onclick="nextQuestion()" disabled>
+                    Siguiente ➡️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 5;
+        let answers = {};
+        let answered = {};
+
+        updateProgress();
+        shuffleOptions();
+
+        function shuffleOptions() {
+            document.querySelectorAll('.mc-options').forEach(container => {
+                const options = Array.from(container.children);
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    container.appendChild(options[j]);
+                }
+            });
+
+            document.querySelectorAll('.tf-options').forEach(container => {
+                const options = Array.from(container.children);
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    container.appendChild(options[j]);
+                }
+            });
+        }
+
+        document.querySelectorAll('.tf-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const questionNum = this.closest('.question-container').getAttribute('data-question');
+                const isCorrect = this.getAttribute('data-correct') === 'true';
+
+                this.closest('.tf-options').querySelectorAll('.tf-card').forEach(c => {
+                    c.classList.remove('selected', 'correct', 'incorrect');
+                });
+
+                this.classList.add('selected');
+
+                if (isCorrect) {
+                    this.classList.add('correct');
+                    showFeedback(questionNum, true, '✅ ¡Correcto! Una entidad débil no puede existir sin su entidad fuerte correspondiente.');
+                } else {
+                    this.classList.add('incorrect');
+                    showFeedback(questionNum, false, '❌ Incorrecto. Una entidad débil depende de una entidad fuerte para existir, ya que no tiene clave primaria propia.');
+                }
+
+                answers[questionNum] = isCorrect;
+                answered[questionNum] = true;
+                document.getElementById('nextBtn').disabled = false;
+            });
+        });
+
+        document.querySelectorAll('.mc-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const questionNum = this.closest('.question-container').getAttribute('data-question');
+                const isCorrect = this.getAttribute('data-correct') === 'true';
+                const answer = this.getAttribute('data-answer');
+
+                this.closest('.mc-options').querySelectorAll('.mc-card').forEach(c => {
+                    c.classList.remove('selected', 'correct', 'incorrect');
+                });
+
+                this.classList.add('selected');
+
+                let feedbackText = '';
+                if (questionNum === '2') {
+                    if (isCorrect) {
+                        feedbackText = '✅ ¡Correcto! La clave primaria identifica de forma única cada instancia de una entidad.';
+                    } else if (answer === 'b') {
+                        feedbackText = '❌ Incorrecto. Almacenar múltiples valores corresponde a atributos multivaluados, no a la función de la clave primaria.';
+                    } else {
+                        feedbackText = '❌ Incorrecto. Describir atributos derivados no es función de la clave primaria.';
+                    }
+                } else if (questionNum === '4') {
+                    if (isCorrect) {
+                        feedbackText = '✅ ¡Correcto! La relación muchos a muchos permite que múltiples clientes contraten múltiples planes.';
+                    } else if (answer === 'a') {
+                        feedbackText = '❌ Incorrecto. Uno a uno implicaría que un cliente solo puede tener un plan y viceversa.';
+                    } else {
+                        feedbackText = '❌ Incorrecto. Uno a muchos limitaría a un solo cliente tener múltiples planes, pero no al revés.';
+                    }
+                }
+
+                if (isCorrect) {
+                    this.classList.add('correct');
+                } else {
+                    this.classList.add('incorrect');
+                }
+
+                showFeedback(questionNum, isCorrect, feedbackText);
+                answers[questionNum] = isCorrect;
+                answered[questionNum] = true;
+                document.getElementById('nextBtn').disabled = false;
+            });
+        });
+
+        document.getElementById('input3').addEventListener('input', function() {
+            const value = this.value.trim().toLowerCase();
+            const questionNum = '3';
+
+            if (value === 'cardinalidad') {
+                this.classList.remove('incorrect');
+                this.classList.add('correct');
+                document.getElementById('blank3').textContent = 'cardinalidad';
+                showFeedback(questionNum, true, '✅ ¡Correcto! La cardinalidad define cuántas instancias de una entidad se relacionan con otra.');
+                answers[questionNum] = true;
+                answered[questionNum] = true;
+                document.getElementById('nextBtn').disabled = false;
+            } else if (value.length > 5) {
+                this.classList.remove('correct');
+                this.classList.add('incorrect');
+                document.getElementById('blank3').textContent = '________';
+                showFeedback(questionNum, false, '❌ Incorrecto. La respuesta correcta es "cardinalidad". Intente de nuevo.');
+                answers[questionNum] = false;
+                answered[questionNum] = true;
+                document.getElementById('nextBtn').disabled = false;
+            }
+        });
+
+        document.querySelectorAll('.matching-select').forEach(select => {
+            select.addEventListener('change', function() {
+                checkMatching();
+            });
+        });
+
+        function checkMatching() {
+            const selects = document.querySelectorAll('.matching-select');
+            let allAnswered = true;
+            let allCorrect = true;
+
+            selects.forEach(select => {
+                if (select.value === '') {
+                    allAnswered = false;
+                } else if (select.value !== select.getAttribute('data-correct')) {
+                    allCorrect = false;
+                }
+            });
+
+            if (allAnswered) {
+                selects.forEach(select => {
+                    select.classList.remove('correct', 'incorrect');
+                    if (select.value === select.getAttribute('data-correct')) {
+                        select.classList.add('correct');
+                    } else {
+                        select.classList.add('incorrect');
+                    }
+                });
+
+                if (allCorrect) {
+                    showFeedback('5', true, '✅ ¡Correcto! 1-C (Derivado), 2-A (Simple), 3-B (Compuesto).');
+                } else {
+                    showFeedback('5', false, '❌ Algunas respuestas son incorrectas. La respuesta correcta es: 1-C, 2-A, 3-B.');
+                }
+
+                answers['5'] = allCorrect;
+                answered['5'] = true;
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function showFeedback(questionNum, isCorrect, text) {
+            const feedbackBox = document.getElementById(`feedback${questionNum}`);
+            const feedbackIcon = feedbackBox.querySelector('.feedback-icon');
+            const feedbackText = feedbackBox.querySelector('.feedback-text');
+
+            feedbackBox.classList.remove('correct', 'incorrect');
+            feedbackBox.classList.add(isCorrect ? 'correct' : 'incorrect', 'show');
+            feedbackIcon.textContent = isCorrect ? '✅' : '❌';
+            feedbackText.textContent = text;
+        }
+
+        function updateProgress() {
+            const percent = ((currentQuestion - 1) / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = `📊 Pregunta ${currentQuestion} de ${totalQuestions}`;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.remove('active');
+                currentQuestion++;
+                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.add('active');
+                updateProgress();
+                document.getElementById('prevBtn').disabled = false;
+
+                if (answered[currentQuestion]) {
+                    document.getElementById('nextBtn').disabled = false;
+                } else {
+                    document.getElementById('nextBtn').disabled = true;
+                }
+
+                if (currentQuestion === totalQuestions) {
+                    document.getElementById('nextBtn').innerHTML = 'Finalizar 🏁';
+                }
+            } else {
+                showFinalScreen();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 1) {
+                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.remove('active');
+                currentQuestion--;
+                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.add('active');
+                updateProgress();
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('nextBtn').innerHTML = 'Siguiente ➡️';
+
+                if (currentQuestion === 1) {
+                    document.getElementById('prevBtn').disabled = true;
+                }
+            }
+        }
+
+        function showFinalScreen() {
+            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+            document.querySelector('.instructions-card').style.display = 'none';
+            document.querySelector('.progress-container').style.display = 'none';
+            document.getElementById('navigation').style.display = 'none';
+
+            let correct = 0;
+            for (let i = 1; i <= totalQuestions; i++) {
+                if (answers[i]) correct++;
+            }
+
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('scorePercent').textContent = Math.round((correct / totalQuestions) * 100) + '%';
+
+            document.getElementById('finalScreen').classList.add('show');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 1;
+            answers = {};
+            answered = {};
+
+            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+            document.querySelector('.question-container[data-question="1"]').classList.add('active');
+
+            document.querySelectorAll('.tf-card, .mc-card').forEach(c => {
+                c.classList.remove('selected', 'correct', 'incorrect');
+            });
+
+            document.querySelectorAll('.feedback-box').forEach(f => f.classList.remove('show', 'correct', 'incorrect'));
+
+            document.getElementById('input3').value = '';
+            document.getElementById('input3').classList.remove('correct', 'incorrect');
+            document.getElementById('blank3').textContent = '________';
+
+            document.querySelectorAll('.matching-select').forEach(s => {
+                s.value = '';
+                s.classList.remove('correct', 'incorrect');
+            });
+
+            document.querySelector('.instructions-card').style.display = 'flex';
+            document.querySelector('.progress-container').style.display = 'flex';
+            document.getElementById('navigation').style.display = 'flex';
+            document.getElementById('finalScreen').classList.remove('show');
+
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('nextBtn').innerHTML = 'Siguiente ➡️';
+
+            updateProgress();
+            shuffleOptions();
+        }
+    </script>
+</body>
+</html>
