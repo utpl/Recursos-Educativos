@@ -40,7 +40,6 @@
       flex-direction: column;
     }
     
-    /* Decoraciones */
     .deco-pattern {
       position: absolute;
       top: 0;
@@ -84,7 +83,6 @@
       box-shadow: 0 0 60px #fbbf24;
     }
     
-    /* Header */
     .header {
       padding: 20px 24px;
       text-align: center;
@@ -115,7 +113,6 @@
       font-weight: 600;
     }
     
-    /* Screens */
     .screen {
       display: none;
       flex: 1;
@@ -130,7 +127,6 @@
       display: flex;
     }
     
-    /* Pantalla Contexto */
     .context-hero {
       background: var(--card-bg);
       border: 4px solid var(--border);
@@ -247,12 +243,6 @@
       box-shadow: 0 9px 0 #92400e;
     }
     
-    .start-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 3px 0 #92400e;
-    }
-    
-    /* Slider Questions */
     .slider-container {
       flex: 1;
       display: flex;
@@ -290,6 +280,7 @@
       background: white;
       cursor: pointer;
       transition: all 0.3s;
+      border-radius: 0;
     }
     
     .slider-dot.active {
@@ -343,7 +334,6 @@
       margin-top: 10px;
     }
     
-    /* Option Cards */
     .cards-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -362,14 +352,14 @@
       box-shadow: 6px 6px 0 rgba(0,0,0,0.1);
     }
     
-    .option-card:hover {
+    .option-card:hover:not(.disabled-card) {
       transform: translate(-4px, -4px);
       box-shadow: 10px 10px 0 rgba(0,0,0,0.15);
     }
     
-    .option-card:active {
-      transform: translate(2px, 2px);
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+    .option-card.disabled-card {
+      cursor: default;
+      opacity: 0.6;
     }
     
     .option-card.a-option {
@@ -425,7 +415,6 @@
       gap: 6px;
     }
     
-    /* Modales de Retroalimentación */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -493,23 +482,11 @@
       letter-spacing: 1px;
     }
     
-    .modal-content.correct .modal-title {
-      color: #15803d;
-    }
-    
-    .modal-content.alternative .modal-title {
-      color: #a16207;
-    }
-    
     .modal-text {
       font-size: 14px;
       line-height: 1.7;
       color: var(--text);
       margin-bottom: 20px;
-    }
-    
-    .modal-text strong {
-      color: var(--text);
     }
     
     .modal-btn {
@@ -527,17 +504,6 @@
       transition: all 0.2s;
     }
     
-    .modal-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 0 #92400e;
-    }
-    
-    .modal-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #92400e;
-    }
-    
-    /* Slider Nav */
     .slider-nav {
       display: flex;
       justify-content: center;
@@ -572,20 +538,15 @@
     .slider-btn:disabled {
       opacity: 0.4;
       cursor: not-allowed;
+      transform: none;
     }
     
     .slider-btn.finish {
       background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
       border-color: #16a34a;
       color: white;
-      display: none;
     }
     
-    .slider-btn.finish.show {
-      display: flex;
-    }
-    
-    /* Pantalla Final */
     .final-hero {
       background: var(--card-bg);
       border: 4px solid var(--success);
@@ -678,11 +639,6 @@
       color: var(--text);
     }
     
-    .final-conclusion strong {
-      color: #15803d;
-    }
-    
-    /* Footer */
     .footer {
       position: absolute;
       bottom: 0;
@@ -696,23 +652,6 @@
       border-top: 3px solid var(--border);
       z-index: 10;
       font-weight: 600;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .container {
-        width: 100%;
-        height: auto;
-        min-height: 100vh;
-      }
-      
-      .context-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .cards-container {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -768,10 +707,10 @@
           <div class="slider-title">
             <span>📋</span> Preguntas de Análisis
           </div>
-          <div class="slider-dots">
-            <div class="slider-dot active" onclick="goToQuestion(1)"></div>
-            <div class="slider-dot" onclick="goToQuestion(2)"></div>
-            <div class="slider-dot" onclick="goToQuestion(3)"></div>
+          <div class="slider-dots" id="slider-dots">
+            <div class="slider-dot active" data-q="1" onclick="goToQuestion(1)"></div>
+            <div class="slider-dot" data-q="2" onclick="goToQuestion(2)"></div>
+            <div class="slider-dot" data-q="3" onclick="goToQuestion(3)"></div>
           </div>
         </div>
         
@@ -875,10 +814,10 @@
           <button class="slider-btn" id="prev-btn" onclick="changeQuestion(-1)" disabled>
             ← Anterior
           </button>
-          <button class="slider-btn" id="next-btn" onclick="changeQuestion(1)">
+          <button class="slider-btn" id="next-btn" onclick="changeQuestion(1)" disabled>
             Siguiente →
           </button>
-          <button class="slider-btn finish" id="finish-btn" onclick="showFinal()">
+          <button class="slider-btn finish" id="finish-btn" onclick="showFinal()" style="display: none;">
             <span>🏆</span> Ver Resultado Final
           </button>
         </div>
@@ -912,9 +851,8 @@
     </div>
     
     <!-- MODALES DE RETROALIMENTACIÓN -->
-    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-      <!-- Modal Pregunta 1A -->
-      <div class="modal-content alternative" id="modal-1-a" style="display: none;">
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+      <div id="modal-1-a" class="modal-content alternative" style="display: none;">
         <div class="modal-header">
           <span class="modal-icon">⚠️</span>
           <span class="modal-title">Retroalimentación alternativa</span>
@@ -922,11 +860,10 @@
         <p class="modal-text">
           Esta opción es <strong>válida, pero se limita a una dimensión técnica</strong> sin considerar la desigualdad en la legitimación del conocimiento. No identifica la relación de poder subyacente.
         </p>
-        <button class="modal-btn" onclick="closeModalBtn()">Continuar →</button>
+        <button class="modal-btn" onclick="closeModal()">Continuar →</button>
       </div>
       
-      <!-- Modal Pregunta 1B -->
-      <div class="modal-content correct" id="modal-1-b" style="display: none;">
+      <div id="modal-1-b" class="modal-content correct" style="display: none;">
         <div class="modal-header">
           <span class="modal-icon">✅</span>
           <span class="modal-title">Retroalimentación más adecuada</span>
@@ -934,11 +871,10 @@
         <p class="modal-text">
           Esta opción es <strong>más completa</strong> porque identifica una <strong>relación de poder en la validación del conocimiento</strong>, donde se impone una visión tecnocrática sobre los saberes ancestrales.
         </p>
-        <button class="modal-btn" onclick="closeModalBtn()">Continuar →</button>
+        <button class="modal-btn" onclick="closeModal()">Continuar →</button>
       </div>
       
-      <!-- Modal Pregunta 2A -->
-      <div class="modal-content alternative" id="modal-2-a" style="display: none;">
+      <div id="modal-2-a" class="modal-content alternative" style="display: none;">
         <div class="modal-header">
           <span class="modal-icon">⚠️</span>
           <span class="modal-title">Retroalimentación alternativa</span>
@@ -946,11 +882,10 @@
         <p class="modal-text">
           Esta opción es <strong>correcta, pero limitada</strong>, ya que <strong>no considera las múltiples dimensiones</strong> de la desigualdad que se intersectan en este caso.
         </p>
-        <button class="modal-btn" onclick="closeModalBtn()">Continuar →</button>
+        <button class="modal-btn" onclick="closeModal()">Continuar →</button>
       </div>
       
-      <!-- Modal Pregunta 2B -->
-      <div class="modal-content correct" id="modal-2-b" style="display: none;">
+      <div id="modal-2-b" class="modal-content correct" style="display: none;">
         <div class="modal-header">
           <span class="modal-icon">✅</span>
           <span class="modal-title">Retroalimentación más adecuada</span>
@@ -958,11 +893,10 @@
         <p class="modal-text">
           Esta opción es <strong>más adecuada</strong> porque permite analizar cómo se <strong>superponen factores como género, territorio y condiciones sociales</strong> en la generación de vulnerabilidades.
         </p>
-        <button class="modal-btn" onclick="closeModalBtn()">Continuar →</button>
+        <button class="modal-btn" onclick="closeModal()">Continuar →</button>
       </div>
       
-      <!-- Modal Pregunta 3A -->
-      <div class="modal-content correct" id="modal-3-a" style="display: none;">
+      <div id="modal-3-a" class="modal-content correct" style="display: none;">
         <div class="modal-header">
           <span class="modal-icon">✅</span>
           <span class="modal-title">Retroalimentación más adecuada</span>
@@ -970,11 +904,10 @@
         <p class="modal-text">
           Esta opción es <strong>más completa</strong> porque vincula la situación con <strong>principios fundamentales de justicia socioambiental</strong>, como la inclusión y el reconocimiento de los actores.
         </p>
-        <button class="modal-btn" onclick="closeModalBtn()">Continuar →</button>
+        <button class="modal-btn" onclick="closeModal()">Continuar →</button>
       </div>
       
-      <!-- Modal Pregunta 3B -->
-      <div class="modal-content alternative" id="modal-3-b" style="display: none;">
+      <div id="modal-3-b" class="modal-content alternative" style="display: none;">
         <div class="modal-header">
           <span class="modal-icon">⚠️</span>
           <span class="modal-title">Retroalimentación alternativa</span>
@@ -982,38 +915,43 @@
         <p class="modal-text">
           Esta opción es <strong>válida, pero se limita a una dimensión operativa</strong> sin considerar el enfoque de justicia que fundamenta la importancia de la participación.
         </p>
-        <button class="modal-btn" onclick="closeModalBtn()">Continuar →</button>
+        <button class="modal-btn" onclick="closeModal()">Continuar →</button>
       </div>
     </div>
     
     <footer class="footer">
-      📚 ESAN_2000 Ecología Política | Prof. Melania Noemí Carrión Gualán | Caso de estudio Semana 11
+      📚 ESAN_2000 Ecología Política | Caso de estudio: Conocimientos tradicionales, género e interseccionalidad
     </footer>
   </div>
   
   <script>
     let currentQuestion = 1;
     const totalQuestions = 3;
-    const answered = { 1: false, 2: false, 3: false };
+    let answered = { 1: false, 2: false, 3: false };
     
     function startQuestions() {
       document.getElementById('screen-context').classList.remove('active');
       document.getElementById('screen-questions').classList.add('active');
+      updateNavButtons();
     }
     
     function goToQuestion(q) {
+      // Solo permitir ir a preguntas que ya han sido respondidas
       if (!answered[q]) return;
       
-      document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.remove('active');
+      // Cambiar slide activo
+      document.querySelectorAll('.question-slide').forEach(slide => {
+        slide.classList.remove('active');
+      });
+      document.querySelector(`.question-slide[data-question="${q}"]`).classList.add('active');
       
+      // Actualizar dots
       document.querySelectorAll('.slider-dot').forEach((dot, index) => {
         dot.classList.remove('active');
         if (index + 1 === q) dot.classList.add('active');
       });
       
       currentQuestion = q;
-      document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.add('active');
-      
       updateNavButtons();
     }
     
@@ -1025,64 +963,104 @@
     }
     
     function updateNavButtons() {
-      document.getElementById('prev-btn').disabled = currentQuestion === 1;
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const finishBtn = document.getElementById('finish-btn');
       
-      const allAnswered = Object.values(answered).every(v => v);
+      // Botón anterior
+      prevBtn.disabled = currentQuestion === 1;
       
+      // Verificar si todas están respondidas
+      const allAnswered = Object.values(answered).every(v => v === true);
+      
+      // Botón siguiente y finalizar
       if (currentQuestion === totalQuestions) {
-        document.getElementById('next-btn').style.display = 'none';
+        nextBtn.style.display = 'none';
         if (allAnswered) {
-          document.getElementById('finish-btn').classList.add('show');
+          finishBtn.style.display = 'flex';
+        } else {
+          finishBtn.style.display = 'none';
         }
       } else {
-        document.getElementById('next-btn').style.display = answered[currentQuestion + 1] ? 'flex' : 'none';
-        document.getElementById('finish-btn').classList.remove('show');
+        nextBtn.style.display = 'flex';
+        finishBtn.style.display = 'none';
+        
+        // Habilitar siguiente solo si la siguiente pregunta ya está respondida
+        if (answered[currentQuestion + 1]) {
+          nextBtn.disabled = false;
+        } else {
+          nextBtn.disabled = true;
+        }
       }
     }
     
     function openFeedback(question, option, isCorrect) {
+      // Evitar responder dos veces
       if (answered[question]) return;
       
+      // Marcar como respondida
       answered[question] = true;
       
-      // Marcar dot
-      document.querySelectorAll('.slider-dot')[question - 1].classList.add('answered');
+      // Marcar el dot como respondido
+      const dot = document.querySelector(`.slider-dot[data-q="${question}"]`);
+      if (dot) dot.classList.add('answered');
       
-      // Deshabilitar cards
+      // Deshabilitar todas las opciones de esta pregunta
       const slide = document.querySelector(`.question-slide[data-question="${question}"]`);
-      slide.querySelectorAll('.option-card').forEach(card => {
+      const cards = slide.querySelectorAll('.option-card');
+      cards.forEach(card => {
         card.style.pointerEvents = 'none';
-        card.style.opacity = '0.5';
+        card.classList.add('disabled-card');
       });
       
-      // Resaltar seleccionada
+      // Resaltar la opción seleccionada
       const selectedCard = slide.querySelector(`.option-card.${option}-option`);
-      selectedCard.style.opacity = '1';
-      selectedCard.style.boxShadow = isCorrect 
-        ? '0 0 0 4px #22c55e, 6px 6px 0 rgba(0,0,0,0.1)'
-        : '0 0 0 4px #eab308, 6px 6px 0 rgba(0,0,0,0.1)';
+      if (selectedCard) {
+        selectedCard.style.boxShadow = isCorrect 
+          ? '0 0 0 4px #22c55e, 6px 6px 0 rgba(0,0,0,0.1)'
+          : '0 0 0 4px #eab308, 6px 6px 0 rgba(0,0,0,0.1)';
+      }
       
-      // Mostrar modal
-      document.getElementById('modal-overlay').classList.add('active');
-      document.querySelectorAll('.modal-content').forEach(m => m.style.display = 'none');
-      document.getElementById(`modal-${question}-${option}`).style.display = 'block';
+      // Mostrar modal de retroalimentación
+      const modalId = `modal-${question}-${option}`;
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = 'block';
+        document.getElementById('modal-overlay').classList.add('active');
+      }
       
+      // ACTUALIZAR NAVEGACIÓN: habilitar siguiente si existe
       updateNavButtons();
-    }
-    
-    function closeModal(e) {
-      if (e.target === document.getElementById('modal-overlay')) {
-        document.getElementById('modal-overlay').classList.remove('active');
+      
+      // Si no es la última pregunta, mostrar un mensaje de que puede continuar
+      if (question < totalQuestions) {
+        // El botón siguiente ahora debería estar habilitado porque la pregunta actual está respondida
+        // pero la siguiente aún no, así que no se habilita automáticamente para navegar
+        // El usuario debe hacer clic en el dot de la siguiente o terminar la actual y luego ir
       }
     }
     
-    function closeModalBtn() {
+    function closeModal() {
       document.getElementById('modal-overlay').classList.remove('active');
+      document.querySelectorAll('.modal-content').forEach(m => {
+        m.style.display = 'none';
+      });
+      
+      // Después de cerrar el modal, si la pregunta actual es la 1 y ya está respondida,
+      // el usuario puede hacer clic en el dot de la pregunta 2 para ir a ella
+    }
+    
+    function closeModalOutside(event) {
+      if (event.target === document.getElementById('modal-overlay')) {
+        closeModal();
+      }
     }
     
     function showFinal() {
-      document.getElementById('screen-questions').classList.remove('active');
-      document.getElementById('screen-final').classList.add('active');
+      if (Object.values(answered).every(v => v === true)) {
+        document.getElementById('screen-questions').classList.remove('active');
+        document.getElementById('screen-final').classList.add('active');
+      }
     }
   </script>
 </body>
