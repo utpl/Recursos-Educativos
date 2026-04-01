@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operaciones DML</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1565C0;
+      --primary-light: #1976D2;
+      --accent: #F57C00;
+      --accent-light: #FF9800;
+      --success: #2E7D32;
+      --success-bg: #E8F5E9;
+      --error: #C62828;
+      --error-bg: #FFEBEE;
+      --neutral: #37474F;
+      --neutral-light: #546E7A;
+      --bg: #F4F7FB;
+      --card: #FFFFFF;
+      --border: #CFD8DC;
+      --text: #1A237E;
+      --text-body: #263238;
+      --tag-bg: #E3F2FD;
+      --tag-border: #90CAF9;
+      --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+      --drop-hover: #E3F2FD;
+      --drop-border: #42A5F5;
+      --font: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-body);
+      font-size: 12pt;
+      line-height: 1.4;
+      width: 800px;
+      min-height: 500px;
+      max-height: 800px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .resource-container {
+      width: 800px;
+      height: 800px;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+    }
+
+    header {
+      background: var(--header-bg);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    header .material-symbols-outlined {
+      font-size: 28px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .intro {
+      padding: 12px 20px;
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.95rem;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .instruction {
+      text-align: center;
+      padding: 8px 16px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin: 8px 20px;
+      flex-shrink: 0;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 12px 20px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-height: 140px;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: var(--primary-light);
+      background: var(--drop-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.15);
+    }
+
+    .card-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+
+    .card-title {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .card-preview {
+      font-size: 0.8rem;
+      color: var(--neutral-light);
+      line-height: 1.3;
+    }
+
+    .card.insert { border-top: 4px solid var(--success); }
+    .card.update { border-top: 4px solid var(--accent); }
+    .card.delete { border-top: 4px solid var(--error); }
+    .card.compare { border-top: 4px solid var(--neutral); }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(26, 35, 126, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card);
+      width: 100%;
+      max-width: 720px;
+      max-height: 680px;
+      overflow-y: auto;
+      border: 3px solid var(--primary);
+      position: relative;
+      animation: modalSlide 0.3s ease;
+    }
+
+    @keyframes modalSlide {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      background: var(--header-bg);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+    }
+
+    .modal-close:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-list {
+      list-style: none;
+    }
+
+    .modal-list li {
+      padding: 10px 0;
+      padding-left: 28px;
+      position: relative;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .modal-list li:last-child {
+      border-bottom: none;
+    }
+
+    .modal-list li::before {
+      content: "•";
+      position: absolute;
+      left: 8px;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .comparison-table th {
+      background: var(--tag-bg);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .comparison-table td {
+      background: var(--card);
+    }
+
+    .footer {
+      padding: 10px 20px;
+      background: var(--card);
+      border-top: 2px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--neutral-light);
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px 20px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--primary-light);
+    }
+
+    .nav-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    .imagen {
+      display: block;
+      max-width: 100%;
+      margin: 12px auto;
+      border: 2px solid var(--border);
+    }
+
+    .imagen-caption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--neutral-light);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    @media (max-width: 820px) {
+      body, .resource-container {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .modal {
+        max-height: 90vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="resource-container">
+    <header>
+      <span class="material-symbols-outlined">database</span>
+      <h1>OPERACIONES DML</h1>
+    </header>
+
+    <div class="intro">
+      A continuación, se sintetizan las funciones clave, condiciones de uso y diferencias operativas para su correcta aplicación en bases de datos.
+    </div>
+
+    <div class="instruction">
+      Haga clic en los temas para visualizar la información
+    </div>
+
+    <main class="dashboard-grid">
+      <article class="card insert" data-modal="modal-insert" tabindex="0" role="button" aria-label="INSERT: Inserción de datos">
+        <span class="card-icon material-symbols-outlined">post_add</span>
+        <h3 class="card-title">INSERT</h3>
+        <p class="card-preview">Inserción de nuevas filas en tablas</p>
+      </article>
+
+      <article class="card update" data-modal="modal-update" tabindex="0" role="button" aria-label="UPDATE: Actualización de datos">
+        <span class="card-icon material-symbols-outlined">edit</span>
+        <h3 class="card-title">UPDATE</h3>
+        <p class="card-preview">Modificación de valores existentes</p>
+      </article>
+
+      <article class="card delete" data-modal="modal-delete" tabindex="0" role="button" aria-label="DELETE: Eliminación de datos">
+        <span class="card-icon material-symbols-outlined">delete</span>
+        <h3 class="card-title">DELETE</h3>
+        <p class="card-preview">Eliminación de filas específicas</p>
+      </article>
+
+      <article class="card compare" data-modal="modal-compare" tabindex="0" role="button" aria-label="DELETE vs TRUNCATE: Comparación">
+        <span class="card-icon material-symbols-outlined">compare_arrows</span>
+        <h3 class="card-title">DELETE vs TRUNCATE</h3>
+        <p class="card-preview">Diferencias operativas clave</p>
+      </article>
+    </main>
+
+    <nav class="nav-buttons">
+      <button class="nav-btn" id="btn-prev" disabled>
+        <span class="material-symbols-outlined">arrow_back</span> Anterior
+      </button>
+      <button class="nav-btn" id="btn-next">
+        Siguiente <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </nav>
+
+    <footer class="footer">
+      Referencia: Elaboración propia.
+    </footer>
+  </div>
+
+  <!-- Modal INSERT -->
+  <div class="modal-overlay" id="modal-insert" role="dialog" aria-modal="true" aria-labelledby="title-insert">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-insert">
+          <span class="material-symbols-outlined">post_add</span> INSERT (Inserción de datos)
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Permite agregar nuevas filas a una tabla.</li>
+          <li>Puede insertar una o múltiples filas.</li>
+          <li>Admite datos directos o provenientes de una consulta SELECT.</li>
+          <li>Puede especificar columnas o usar el orden completo de la tabla.</li>
+        </ul>
+        <figure class="imagen" aria-label="Diagrama de inserción de datos">
+          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
+            <span class="material-symbols-outlined" style="font-size:3rem; color:var(--success);">table_view</span>
+            <p style="margin-top:8px; font-weight:600;">INSERT INTO tabla (col1, col2)<br>VALUES (val1, val2);</p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 1<br>
+            Sintaxis básica de INSERT<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal UPDATE -->
+  <div class="modal-overlay" id="modal-update" role="dialog" aria-modal="true" aria-labelledby="title-update">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-update">
+          <span class="material-symbols-outlined">edit</span> UPDATE (Actualización de datos)
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Modifica valores existentes en una tabla.</li>
+          <li>Requiere cláusula WHERE para evitar cambios masivos no deseados.</li>
+          <li>Permite actualizar uno o varios registros.</li>
+          <li>Los nuevos valores pueden derivarse de cálculos u operaciones.</li>
+        </ul>
+        <figure class="imagen" aria-label="Diagrama de actualización de datos">
+          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
+            <span class="material-symbols-outlined" style="font-size:3rem; color:var(--accent);">sync_alt</span>
+            <p style="margin-top:8px; font-weight:600;">UPDATE tabla<br>SET col = nuevo_valor<br>WHERE condición;</p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 2<br>
+            Sintaxis básica de UPDATE<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal DELETE -->
+  <div class="modal-overlay" id="modal-delete" role="dialog" aria-modal="true" aria-labelledby="title-delete">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-delete">
+          <span class="material-symbols-outlined">delete</span> DELETE (Eliminación de datos)
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-list">
+          <li>Elimina filas específicas de una tabla.</li>
+          <li>Utiliza WHERE para definir qué registros eliminar.</li>
+          <li>Puede emplear subconsultas para selección avanzada.</li>
+          <li>Sin WHERE elimina todos los registros de la tabla.</li>
+        </ul>
+        <figure class="imagen" aria-label="Diagrama de eliminación de datos">
+          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
+            <span class="material-symbols-outlined" style="font-size:3rem; color:var(--error);">delete_forever</span>
+            <p style="margin-top:8px; font-weight:600;">DELETE FROM tabla<br>WHERE condición;</p>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 3<br>
+            Sintaxis básica de DELETE<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal COMPARE -->
+  <div class="modal-overlay" id="modal-compare" role="dialog" aria-modal="true" aria-labelledby="title-compare">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="title-compare">
+          <span class="material-symbols-outlined">compare_arrows</span> DELETE vs TRUNCATE
+        </h2>
+        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>DELETE</th>
+              <th>TRUNCATE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Elimina filas individualmente y permite ROLLBACK.</td>
+              <td>Elimina todos los datos rápidamente sin posibilidad de reversión.</td>
+            </tr>
+          </tbody>
+        </table>
+        <figure class="imagen" aria-label="Comparativa visual DELETE vs TRUNCATE">
+          <div style="display:flex; gap:12px; margin-top:12px;">
+            <div style="flex:1; background:var(--error-bg); padding:12px; border:1px solid var(--error); text-align:center;">
+              <span class="material-symbols-outlined" style="color:var(--error); font-size:2rem;">warning</span>
+              <p style="font-weight:600; margin-top:6px;">DELETE<br><small>Reversible</small></p>
+            </div>
+            <div style="flex:1; background:var(--neutral-light); color:white; padding:12px; border:1px solid var(--neutral); text-align:center;">
+              <span class="material-symbols-outlined" style="font-size:2rem;">bolt</span>
+              <p style="font-weight:600; margin-top:6px;">TRUNCATE<br><small>Irreversible</small></p>
+            </div>
+          </div>
+          <figcaption class="imagen-caption">
+            Figura 4<br>
+            Comparación operativa<br>
+            Nota. Adaptado de Elaboración propia.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.card');
+      const modals = document.querySelectorAll('.modal-overlay');
+      const closeButtons = document.querySelectorAll('.modal-close');
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const modalOrder = ['modal-insert', 'modal-update', 'modal-delete', 'modal-compare'];
+      let currentModalIndex = -1;
+
+      // Open modal function
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          currentModalIndex = modalOrder.indexOf(modalId);
+          updateNavButtons();
+        }
+      }
+
+      // Close modal function
+      function closeModal(modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        currentModalIndex = -1;
+        updateNavButtons();
+      }
+
+      // Update navigation buttons state
+      function updateNavButtons() {
+        if (currentModalIndex === -1) {
+          btnPrev.disabled = true;
+          btnNext.disabled = true;
+          return;
+        }
+        btnPrev.disabled = currentModalIndex === 0;
+        btnNext.disabled = currentModalIndex === modalOrder.length - 1;
+      }
+
+      // Card click handlers
+      cards.forEach(card => {
+        const openHandler = () => {
+          const modalId = card.getAttribute('data-modal');
+          openModal(modalId);
+        };
+        card.addEventListener('click', openHandler);
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openHandler();
+          }
+        });
+      });
+
+      // Close button handlers
+      closeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const modal = this.closest('.modal-overlay');
+          closeModal(modal);
+        });
+      });
+
+      // Close on overlay click
+      modals.forEach(modal => {
+        modal.addEventListener('click', function(e) {
+          if (e.target === this) {
+            closeModal(this);
+          }
+        });
+      });
+
+      // Keyboard escape to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          modals.forEach(modal => {
+            if (modal.classList.contains('active')) {
+              closeModal(modal);
+            }
+          });
+        }
+      });
+
+      // Navigation buttons
+      btnPrev.addEventListener('click', function() {
+        if (currentModalIndex > 0) {
+          // Close current
+          const currentModal = document.getElementById(modalOrder[currentModalIndex]);
+          closeModal(currentModal);
+          // Open previous
+          openModal(modalOrder[currentModalIndex - 1]);
+        }
+      });
+
+      btnNext.addEventListener('click', function() {
+        if (currentModalIndex < modalOrder.length - 1) {
+          // Close current
+          const currentModal = document.getElementById(modalOrder[currentModalIndex]);
+          closeModal(currentModal);
+          // Open next
+          openModal(modalOrder[currentModalIndex + 1]);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

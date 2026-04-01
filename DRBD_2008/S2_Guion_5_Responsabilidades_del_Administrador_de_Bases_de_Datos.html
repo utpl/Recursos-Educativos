@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsabilidades del Administrador de Bases de Datos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+  :root {
+    --c1:  #0D47A1; --c1-lt: #E3F2FD; --c1-md: #90CAF9;
+    --c2:  #1B5E20; --c2-lt: #E8F5E9; --c2-md: #A5D6A7;
+    --c3:  #4A148C; --c3-lt: #F3E5F5; --c3-md: #CE93D8;
+    --c4:  #E65100; --c4-lt: #FFF3E0; --c4-md: #FFCC80;
+    --c5:  #880E4F; --c5-lt: #FCE4EC; --c5-md: #F48FB1;
+    --c6:  #004D40; --c6-lt: #E0F2F1; --c6-md: #80CBC4;
+    --neutral:     #37474F;
+    --neutral-mid: #546E7A;
+    --bg:          #F0F4FA;
+    --card:        #FFFFFF;
+    --border:      #CFD8DC;
+    --text:        #1A237E;
+    --text-body:   #263238;
+    --header-grad: linear-gradient(135deg,#0D47A1 0%,#1565C0 55%,#1976D2 100%);
+    --font:        'Inter', sans-serif;
+  }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-body);
+    font-size: 13px;
+    line-height: 1.5;
+    width: 800px;
+    max-width: 800px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--header-grad);
+    padding: 13px 20px 11px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .header::before { content:''; position:absolute; right:-18px; top:-22px; width:120px; height:120px; background:rgba(255,255,255,.06); transform:rotate(45deg); }
+  .header::after  { content:''; position:absolute; right:60px; bottom:-30px; width:75px; height:75px; background:rgba(255,255,255,.04); transform:rotate(30deg); }
+  .h-icon { background:rgba(255,255,255,.15); width:44px; height:44px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .h-icon .material-symbols-outlined { color:#fff; font-size:26px; }
+  .h-text { flex:1; }
+  .h-title { color:#fff; font-size:15px; font-weight:700; letter-spacing:.02em; line-height:1.2; }
+  .h-sub   { color:rgba(255,255,255,.75); font-size:11px; margin-top:2px; }
+  .h-badge { background:#E65100; color:#fff; font-size:10px; font-weight:700; padding:3px 9px; letter-spacing:.05em; text-transform:uppercase; flex-shrink:0; }
+
+  /* ── INST BAR ── */
+  .inst-bar {
+    background:#E8EAF6; border-left:4px solid #1565C0;
+    padding:7px 16px; display:flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--text); font-weight:500;
+  }
+  .inst-bar .material-symbols-outlined { font-size:18px; color:#1565C0; flex-shrink:0; }
+
+  /* ── MAIN ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    height: 680px;
+    overflow: hidden;
+  }
+
+  /* ── LEFT: DASHBOARD ── */
+  .dash-panel {
+    padding: 14px 10px 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  /* Intro card */
+  .intro-card {
+    background: var(--header-grad);
+    color: #fff;
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .intro-card .material-symbols-outlined { font-size:28px; flex-shrink:0; }
+  .intro-card-text {}
+  .intro-title { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+  .intro-sub   { font-size:11px; opacity:.85; margin-top:2px; line-height:1.5; }
+
+  /* Grid of responsibility cards */
+  .resp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .resp-card {
+    border: 2.5px solid transparent;
+    padding: 12px 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+    min-height: 105px;
+  }
+  .resp-card::before {
+    content:'';
+    position:absolute; right:-12px; bottom:-12px;
+    width:52px; height:52px;
+    opacity:.12; transform:rotate(20deg);
+    background:currentColor;
+    clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+    transition:opacity .2s;
+  }
+  .resp-card:hover::before, .resp-card.active::before { opacity:.22; }
+
+  .rc-icon-row { display:flex; align-items:center; gap:8px; }
+  .rc-icon {
+    width:34px; height:34px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:19px; color:#fff;
+  }
+  .rc-num {
+    font-size:9px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; opacity:.7;
+  }
+  .rc-name {
+    font-size:12px; font-weight:800; line-height:1.25;
+    letter-spacing:.01em;
+  }
+  .rc-arrow {
+    position:absolute; right:9px; top:50%; transform:translateY(-50%);
+    font-size:18px; opacity:.45; transition:opacity .2s, right .2s;
+  }
+  .resp-card:hover .rc-arrow, .resp-card.active .rc-arrow { opacity:1; right:7px; }
+
+  /* Color variants */
+  .rc-1 { background:var(--c1-lt); border-color:var(--c1-md); color:var(--c1); }
+  .rc-1 .rc-icon { background:var(--c1); }
+  .rc-1:hover, .rc-1.active { background:var(--c1); color:#fff; border-color:var(--c1); box-shadow:0 4px 14px rgba(13,71,161,.28); }
+  .rc-1:hover .rc-icon, .rc-1.active .rc-icon { background:rgba(255,255,255,.2); }
+
+  .rc-2 { background:var(--c2-lt); border-color:var(--c2-md); color:var(--c2); }
+  .rc-2 .rc-icon { background:var(--c2); }
+  .rc-2:hover, .rc-2.active { background:var(--c2); color:#fff; border-color:var(--c2); box-shadow:0 4px 14px rgba(27,94,32,.28); }
+  .rc-2:hover .rc-icon, .rc-2.active .rc-icon { background:rgba(255,255,255,.2); }
+
+  .rc-3 { background:var(--c3-lt); border-color:var(--c3-md); color:var(--c3); }
+  .rc-3 .rc-icon { background:var(--c3); }
+  .rc-3:hover, .rc-3.active { background:var(--c3); color:#fff; border-color:var(--c3); box-shadow:0 4px 14px rgba(74,20,140,.28); }
+  .rc-3:hover .rc-icon, .rc-3.active .rc-icon { background:rgba(255,255,255,.2); }
+
+  .rc-4 { background:var(--c4-lt); border-color:var(--c4-md); color:var(--c4); }
+  .rc-4 .rc-icon { background:var(--c4); }
+  .rc-4:hover, .rc-4.active { background:var(--c4); color:#fff; border-color:var(--c4); box-shadow:0 4px 14px rgba(230,81,0,.28); }
+  .rc-4:hover .rc-icon, .rc-4.active .rc-icon { background:rgba(255,255,255,.2); }
+
+  .rc-5 { background:var(--c5-lt); border-color:var(--c5-md); color:var(--c5); }
+  .rc-5 .rc-icon { background:var(--c5); }
+  .rc-5:hover, .rc-5.active { background:var(--c5); color:#fff; border-color:var(--c5); box-shadow:0 4px 14px rgba(136,14,79,.28); }
+  .rc-5:hover .rc-icon, .rc-5.active .rc-icon { background:rgba(255,255,255,.2); }
+
+  .rc-6 { background:var(--c6-lt); border-color:var(--c6-md); color:var(--c6); }
+  .rc-6 .rc-icon { background:var(--c6); }
+  .rc-6:hover, .rc-6.active { background:var(--c6); color:#fff; border-color:var(--c6); box-shadow:0 4px 14px rgba(0,77,64,.28); }
+  .rc-6:hover .rc-icon, .rc-6.active .rc-icon { background:rgba(255,255,255,.2); }
+
+  /* Reference */
+  .ref-label { font-size:10px; color:var(--neutral-mid); font-style:italic; text-align:right; flex-shrink:0; }
+
+  /* ── RIGHT: DETAIL PANEL ── */
+  .detail-panel {
+    background: var(--card);
+    border-left: 2px solid var(--border);
+    height: 680px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Empty state */
+  .empty-state {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    color:var(--neutral-mid); text-align:center; padding:24px; gap:10px;
+  }
+  .empty-state .material-symbols-outlined { font-size:44px; color:#B0BEC5; }
+  .empty-state .es-t { font-size:13px; font-weight:700; color:var(--neutral); }
+  .empty-state .es-s { font-size:11px; line-height:1.6; }
+
+  /* Detail content */
+  .detail-content { display:none; flex-direction:column; flex:1; overflow:hidden; }
+  .detail-content.show { display:flex; }
+
+  .detail-header {
+    padding: 14px 14px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .dh-top { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .dh-icon-big {
+    width:42px; height:42px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; color:#fff;
+  }
+  .dh-badge { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.1em; padding:2px 8px; display:inline-block; margin-bottom:4px; }
+  .dh-title { font-size:14px; font-weight:800; letter-spacing:.02em; line-height:1.2; }
+  .dh-desc  { font-size:12px; color:var(--text-body); line-height:1.55; margin-top:5px; }
+
+  .detail-body {
+    flex:1; overflow-y:auto; padding:12px 14px 14px;
+    scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+  }
+  .detail-body::-webkit-scrollbar { width:4px; }
+  .detail-body::-webkit-scrollbar-thumb { background:var(--border); }
+
+  .kw-label {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.1em; color:var(--neutral-mid); margin-bottom:8px;
+    display:flex; align-items:center; gap:5px;
+  }
+  .kw-label .material-symbols-outlined { font-size:14px; }
+
+  /* Nav controls */
+  .detail-nav {
+    border-top:1px solid var(--border); flex-shrink:0;
+    padding:7px 14px; display:flex; align-items:center; gap:8px;
+  }
+  .nav-dots { display:flex; gap:5px; flex:1; }
+  .nav-dot {
+    width:8px; height:8px;
+    border:2px solid var(--border); background:transparent;
+    cursor:pointer; transition:all .18s; flex-shrink:0;
+  }
+  .nav-dot.active { transform:scale(1.4); }
+  .nav-dot.d1.active { background:var(--c1); border-color:var(--c1); }
+  .nav-dot.d2.active { background:var(--c2); border-color:var(--c2); }
+  .nav-dot.d3.active { background:var(--c3); border-color:var(--c3); }
+  .nav-dot.d4.active { background:var(--c4); border-color:var(--c4); }
+  .nav-dot.d5.active { background:var(--c5); border-color:var(--c5); }
+  .nav-dot.d6.active { background:var(--c6); border-color:var(--c6); }
+
+  .nav-btn {
+    padding:4px 9px; font-size:11px; font-weight:700;
+    border:1.5px solid var(--border); background:transparent;
+    cursor:pointer; display:flex; align-items:center; gap:3px;
+    color:var(--neutral-mid); transition:all .18s; min-height:30px;
+    font-family:var(--font);
+  }
+  .nav-btn:hover { border-color:var(--neutral); color:var(--neutral); }
+  .nav-btn:disabled { opacity:.3; cursor:not-allowed; }
+  .nav-btn .material-symbols-outlined { font-size:15px; }
+  .nav-counter { font-size:11px; font-weight:700; color:var(--neutral-mid); }
+
+  @media (max-width:700px) {
+    body { width:100%; }
+    .main { grid-template-columns:1fr; height:auto; }
+    .resp-grid { grid-template-columns:1fr; }
+    .detail-panel { height:auto; border-left:none; border-top:2px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="h-icon"><span class="material-symbols-outlined">admin_panel_settings</span></div>
+  <div class="h-text">
+    <div class="h-title">Responsabilidades del Administrador de Bases de Datos</div>
+    <div class="h-sub">Fundamentos de Base de Datos</div>
+  </div>
+  <span class="h-badge">🗂 Infografía</span>
+</header>
+
+<!-- INST BAR -->
+<div class="inst-bar">
+  <span class="material-symbols-outlined">touch_app</span>
+  Haga clic en los temas para visualizar la información.
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT DASHBOARD -->
+  <div class="dash-panel">
+
+    <!-- Intro -->
+    <div class="intro-card">
+      <span class="material-symbols-outlined">storage</span>
+      <div class="intro-card-text">
+        <div class="intro-title">Responsabilidades del Administrador de Bases de Datos</div>
+        <div class="intro-sub">El administrador de bases de datos garantiza la disponibilidad, seguridad y eficiencia del sistema mediante funciones estratégicas y operativas clave.</div>
+      </div>
+    </div>
+
+    <!-- Grid de 6 responsabilidades -->
+    <div class="resp-grid">
+
+      <div class="resp-card rc-1" id="rc-0" onclick="showDetail(0)" tabindex="0" role="button" aria-label="Diseño del Esquema">
+        <div class="rc-icon-row">
+          <div class="rc-icon"><span class="material-symbols-outlined">schema</span></div>
+          <span class="rc-num">01</span>
+        </div>
+        <div class="rc-name">Diseño del Esquema</div>
+        <span class="material-symbols-outlined rc-arrow">chevron_right</span>
+      </div>
+
+      <div class="resp-card rc-2" id="rc-1" onclick="showDetail(1)" tabindex="0" role="button" aria-label="Definición de Estructuras de Almacenamiento">
+        <div class="rc-icon-row">
+          <div class="rc-icon"><span class="material-symbols-outlined">hard_drive</span></div>
+          <span class="rc-num">02</span>
+        </div>
+        <div class="rc-name">Definición de Estructuras de Almacenamiento</div>
+        <span class="material-symbols-outlined rc-arrow">chevron_right</span>
+      </div>
+
+      <div class="resp-card rc-3" id="rc-2" onclick="showDetail(2)" tabindex="0" role="button" aria-label="Gestión de Seguridad">
+        <div class="rc-icon-row">
+          <div class="rc-icon"><span class="material-symbols-outlined">lock</span></div>
+          <span class="rc-num">03</span>
+        </div>
+        <div class="rc-name">Gestión de Seguridad</div>
+        <span class="material-symbols-outlined rc-arrow">chevron_right</span>
+      </div>
+
+      <div class="resp-card rc-4" id="rc-3" onclick="showDetail(3)" tabindex="0" role="button" aria-label="Optimización del Rendimiento">
+        <div class="rc-icon-row">
+          <div class="rc-icon"><span class="material-symbols-outlined">speed</span></div>
+          <span class="rc-num">04</span>
+        </div>
+        <div class="rc-name">Optimización del Rendimiento</div>
+        <span class="material-symbols-outlined rc-arrow">chevron_right</span>
+      </div>
+
+      <div class="resp-card rc-5" id="rc-4" onclick="showDetail(4)" tabindex="0" role="button" aria-label="Copias de Seguridad y Recuperación">
+        <div class="rc-icon-row">
+          <div class="rc-icon"><span class="material-symbols-outlined">backup</span></div>
+          <span class="rc-num">05</span>
+        </div>
+        <div class="rc-name">Copias de Seguridad y Recuperación</div>
+        <span class="material-symbols-outlined rc-arrow">chevron_right</span>
+      </div>
+
+      <div class="resp-card rc-6" id="rc-5" onclick="showDetail(5)" tabindex="0" role="button" aria-label="Mantenimiento Proactivo">
+        <div class="rc-icon-row">
+          <div class="rc-icon"><span class="material-symbols-outlined">build</span></div>
+          <span class="rc-num">06</span>
+        </div>
+        <div class="rc-name">Mantenimiento Proactivo</div>
+        <span class="material-symbols-outlined rc-arrow">chevron_right</span>
+      </div>
+
+    </div><!-- /resp-grid -->
+
+    <div class="ref-label">Elaboración propia.</div>
+
+  </div><!-- /dash-panel -->
+
+  <!-- RIGHT DETAIL PANEL -->
+  <div class="detail-panel" id="detailPanel">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState">
+      <span class="material-symbols-outlined">touch_app</span>
+      <div class="es-t">Selecciona una responsabilidad</div>
+      <div class="es-s">Haz clic en cualquiera de las seis tarjetas para ver su descripción detallada.</div>
+    </div>
+
+    <!-- Detail content (filled by JS) -->
+    <div class="detail-content" id="detailContent"></div>
+
+    <!-- Nav -->
+    <div class="detail-nav" id="detailNav" style="display:none;">
+      <div class="nav-dots" id="navDots">
+        <div class="nav-dot d1" onclick="showDetail(0)" title="01"></div>
+        <div class="nav-dot d2" onclick="showDetail(1)" title="02"></div>
+        <div class="nav-dot d3" onclick="showDetail(2)" title="03"></div>
+        <div class="nav-dot d4" onclick="showDetail(3)" title="04"></div>
+        <div class="nav-dot d5" onclick="showDetail(4)" title="05"></div>
+        <div class="nav-dot d6" onclick="showDetail(5)" title="06"></div>
+      </div>
+      <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <span class="nav-counter" id="navCounter">1/6</span>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+
+  </div><!-- /detail-panel -->
+
+</div><!-- /main -->
+
+<script>
+const ITEMS = [
+  {
+    colorVar: '--c1', iconBg: '#0D47A1', badgeBg: '#E3F2FD', badgeColor: '#0D47A1',
+    icon: 'schema',
+    badge: 'Responsabilidad 01',
+    title: 'Diseño del Esquema',
+    desc: 'Define el esquema conceptual de la base de datos, especificando las estructuras de datos, relaciones y restricciones que reflejan los requisitos de datos de la organización.',
+    bullets: []
+  },
+  {
+    colorVar: '--c2', iconBg: '#1B5E20', badgeBg: '#E8F5E9', badgeColor: '#1B5E20',
+    icon: 'hard_drive',
+    badge: 'Responsabilidad 02',
+    title: 'Definición de Estructuras de Almacenamiento',
+    desc: 'Determina cómo se organizan físicamente los datos en disco, incluyendo la especificación de métodos de acceso, índices y particiones.',
+    bullets: []
+  },
+  {
+    colorVar: '--c3', iconBg: '#4A148C', badgeBg: '#F3E5F5', badgeColor: '#4A148C',
+    icon: 'lock',
+    badge: 'Responsabilidad 03',
+    title: 'Gestión de Seguridad',
+    desc: 'Establece y mantiene los mecanismos de autenticación y autorización, define qué usuarios pueden acceder a qué datos y qué operaciones pueden realizar.',
+    bullets: []
+  },
+  {
+    colorVar: '--c4', iconBg: '#E65100', badgeBg: '#FFF3E0', badgeColor: '#E65100',
+    icon: 'speed',
+    badge: 'Responsabilidad 04',
+    title: 'Optimización del Rendimiento',
+    desc: 'Monitorea el rendimiento del sistema, identifica cuellos de botella, ajusta parámetros de configuración y reorganiza estructuras físicas cuando es necesario para mantener tiempos de respuesta aceptables.',
+    bullets: []
+  },
+  {
+    colorVar: '--c5', iconBg: '#880E4F', badgeBg: '#FCE4EC', badgeColor: '#880E4F',
+    icon: 'backup',
+    badge: 'Responsabilidad 05',
+    title: 'Copias de Seguridad y Recuperación',
+    desc: 'Implementa estrategias de respaldo periódico, verifica la integridad de las copias de seguridad y ejecuta procedimientos de recuperación cuando ocurren fallos.',
+    bullets: []
+  },
+  {
+    colorVar: '--c6', iconBg: '#004D40', badgeBg: '#E0F2F1', badgeColor: '#004D40',
+    icon: 'build',
+    badge: 'Responsabilidad 06',
+    title: 'Mantenimiento Proactivo',
+    desc: 'Realiza tareas de mantenimiento como actualización de estadísticas, reorganización de índices fragmentados, depuración de logs y aplicación de parches de seguridad.',
+    bullets: []
+  }
+];
+
+// Key action words per item for visual highlight chips
+const CHIPS = [
+  ['Esquema conceptual','Estructuras de datos','Relaciones','Restricciones','Requisitos de datos'],
+  ['Organización física','Métodos de acceso','Índices','Particiones','Almacenamiento en disco'],
+  ['Autenticación','Autorización','Control de acceso','Permisos','Mecanismos de seguridad'],
+  ['Monitoreo','Cuellos de botella','Parámetros de config.','Tiempos de respuesta','Rendimiento del sistema'],
+  ['Respaldo periódico','Integridad de copias','Recuperación ante fallos','Estrategias de backup','Continuidad operativa'],
+  ['Estadísticas','Índices fragmentados','Depuración de logs','Parches de seguridad','Mantenimiento preventivo']
+];
+
+let current = null;
+
+function showDetail(idx) {
+  current = idx;
+  const d = ITEMS[idx];
+
+  // Toggle card active states
+  for (let i = 0; i < 6; i++) {
+    const card = document.getElementById('rc-' + i);
+    card.classList.toggle('active', i === idx);
+  }
+
+  // Hide empty, show content
+  document.getElementById('emptyState').style.display = 'none';
+  const dc = document.getElementById('detailContent');
+  dc.classList.add('show');
+  document.getElementById('detailNav').style.display = 'flex';
+
+  // Nav dots
+  document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === idx);
+  });
+
+  // Build chips
+  const chipsHtml = CHIPS[idx].map(c => `
+    <span style="display:inline-flex;align-items:center;gap:4px;background:${d.badgeBg};
+      border:1px solid;border-color:${d.iconBg}40;color:${d.iconBg};
+      font-size:10px;font-weight:700;padding:3px 9px;margin:0 4px 5px 0;
+      letter-spacing:.04em;">
+      ${c}
+    </span>`).join('');
+
+  dc.innerHTML = `
+    <div class="detail-header">
+      <div class="dh-top">
+        <div class="dh-icon-big" style="background:${d.iconBg};">
+          <span class="material-symbols-outlined" style="font-size:24px;">${d.icon}</span>
+        </div>
+        <div>
+          <span class="dh-badge" style="background:${d.badgeBg};color:${d.iconBg};border:1px solid ${d.iconBg}40;">${d.badge}</span>
+          <div class="dh-title" style="color:${d.iconBg};">${d.title}</div>
+        </div>
+      </div>
+      <div class="dh-desc">${d.desc}</div>
+    </div>
+    <div class="detail-body">
+      <div class="kw-label">
+        <span class="material-symbols-outlined">label</span>
+        Conceptos clave
+      </div>
+      <div style="margin-bottom:12px;line-height:2;">${chipsHtml}</div>
+      <div style="background:#F8F9FD;border-left:3px solid ${d.iconBg};padding:10px 12px;font-size:11px;line-height:1.65;color:var(--text-body);">
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:${d.iconBg};margin-bottom:5px;display:flex;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:13px;">info</span>
+          Rol del administrador
+        </div>
+        Esta responsabilidad es parte esencial del perfil del DBA y contribuye directamente a la disponibilidad, seguridad y eficiencia operativa del sistema de bases de datos en la organización.
+      </div>
+    </div>`;
+
+  updateNav();
+}
+
+function navigate(dir) {
+  const next = current + dir;
+  if (next >= 0 && next < 6) showDetail(next);
+}
+
+function updateNav() {
+  document.getElementById('prevBtn').disabled = current <= 0;
+  document.getElementById('nextBtn').disabled = current >= 5;
+  document.getElementById('navCounter').textContent = `${current + 1}/6`;
+}
+</script>
+</body>
+</html>

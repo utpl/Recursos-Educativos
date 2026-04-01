@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creación y modificación de tablas SQL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1565C0;
+            --primary-light: #1976D2;
+            --accent: #F57C00;
+            --accent-light: #FF9800;
+            --success: #2E7D32;
+            --success-bg: #E8F5E9;
+            --error: #C62828;
+            --error-bg: #FFEBEE;
+            --neutral: #37474F;
+            --neutral-light: #546E7A;
+            --bg: #F4F7FB;
+            --card: #FFFFFF;
+            --border: #CFD8DC;
+            --text: #1A237E;
+            --text-body: #263238;
+            --tag-bg: #E3F2FD;
+            --tag-border: #90CAF9;
+            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --drop-hover: #E3F2FD;
+            --drop-border: #42A5F5;
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text-body);
+            width: 800px;
+            min-height: 600px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: var(--header-bg);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 2;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100% - 110px);
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            height: 100%;
+        }
+
+        .title-section {
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .instruction {
+            background: var(--tag-bg);
+            border: 2px solid var(--tag-border);
+            padding: 18px 22px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 14px 18px;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .item:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+            box-shadow: 0 6px 16px rgba(245, 124, 0, 0.15);
+        }
+
+        .item:active {
+            cursor: grabbing;
+        }
+
+        .item .number {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .targets-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .target {
+            background: white;
+            border: 3px dashed var(--border);
+            padding: 16px 20px;
+            min-height: 68px;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .target:hover {
+            border-color: var(--drop-border);
+            background: var(--drop-hover);
+        }
+
+        .target.matched {
+            border-style: solid;
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .target .label {
+            font-weight: 600;
+            color: var(--neutral);
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .connection-line {
+            position: absolute;
+            height: 3px;
+            background: var(--accent);
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 420px;
+            border: 4px solid var(--success);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            color: var(--success);
+            margin-bottom: 16px;
+            font-size: 24px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: var(--neutral-light);
+            position: absolute;
+            bottom: 25px;
+            right: 30px;
+            padding: 10px 24px;
+            font-size: 14px;
+        }
+
+        .progress {
+            height: 6px;
+            background: linear-gradient(to right, var(--accent), var(--primary));
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            transition: width 0.4s ease;
+        }
+
+        .emoji {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🗃️ Creación y modificación de tablas SQL</h1>
+        <p>Fundamentos de Base de Datos</p>
+        <div class="progress" id="progress" style="width: 0%"></div>
+    </div>
+
+    <div class="main-container">
+
+        <!-- Panel Izquierdo: Elementos arrastrables -->
+        <div class="left-panel">
+            <div class="title-section">
+                <strong style="color:var(--primary); font-size:18px;">📋 Comandos y conceptos</strong>
+            </div>
+            
+            <div class="instruction">
+                Arrastra cada comando o concepto desde la izquierda hacia su descripción correcta en el panel derecho.
+            </div>
+
+            <div class="card" style="flex: 1; overflow-y: auto;">
+                <div class="items-container" id="items-container">
+                    <!-- Items generados por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Descripciones (targets) -->
+        <div class="right-panel">
+            <div class="title-section">
+                <strong style="color:var(--primary); font-size:18px;">📝 Descripciones</strong>
+            </div>
+
+            <div class="card" style="flex: 1;">
+                <div class="targets-container" id="targets-container">
+                    <!-- Targets generados por JS -->
+                </div>
+            </div>
+
+            <button onclick="resetActivity()" class="reset-btn">🔄 Reiniciar actividad</button>
+        </div>
+
+    </div>
+
+    <!-- Modal de retroalimentación -->
+    <div class="modal" id="feedback-modal">
+        <div class="modal-content">
+            <span class="emoji" id="modal-emoji" style="font-size:48px; display:block; margin-bottom:16px;">🏆</span>
+            <h2 id="modal-title">¡Excelente!</h2>
+            <p id="modal-text" style="font-size:16px; line-height:1.6; margin:20px 0; color:#263238;"></p>
+            <button onclick="closeModal()">Continuar</button>
+        </div>
+    </div>
+
+    <script>
+        // Datos del recurso (fidelidad absoluta al documento)
+        const elements = [
+            { id: 1, command: "CREATE TABLE", description: "Permite definir la estructura inicial de una tabla con columnas, tipos de datos y restricciones" },
+            { id: 2, command: "ALTER TABLE", description: "Modifica la estructura de una tabla existente sin eliminar los datos almacenados" },
+            { id: 3, command: "DROP TABLE", description: "Elimina completamente una tabla junto con todos sus datos almacenados" },
+            { id: 4, command: "TRUNCATE TABLE", description: "Elimina todos los registros de una tabla manteniendo su estructura" },
+            { id: 5, command: "PRIMARY KEY", description: "Identifica de manera única cada registro dentro de una tabla" },
+            { id: 6, command: "FOREIGN KEY", description: "Establece relaciones entre tablas garantizando integridad referencial" },
+            { id: 7, command: "CHECK", description: "Define condiciones que deben cumplir los valores de una columna" }
+        ];
+
+        // Retroalimentaciones específicas
+        const feedbacks = {
+            1: "Permite crear tablas definiendo su estructura lógica, lo que materializa el diseño conceptual en almacenamiento físico.",
+            2: "Facilita cambios estructurales en tablas existentes sin pérdida de datos, lo que permite adaptabilidad del sistema.",
+            3: "Elimina completamente la tabla y su contenido, siendo una operación irreversible que requiere precaución.",
+            4: "Borra todos los registros de forma eficiente, manteniendo intacta la estructura de la tabla.",
+            5: "Garantiza unicidad e identificación de registros, evitando duplicados y valores nulos en la clave.",
+            6: "Asegura la coherencia entre tablas al exigir que los valores existan en la tabla referenciada.",
+            7: "Permite validar datos mediante reglas, reforzando la integridad a nivel de columna."
+        };
+
+        let draggedItem = null;
+        let connections = {};
+        let isCompleted = false;
+
+        // Barajar el orden de los items (requisito del documento)
+        function shuffle(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function createItems() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            
+            const shuffled = shuffle(elements);
+            
+            shuffled.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.draggable = true;
+                div.dataset.id = item.id;
+                div.innerHTML = `
+                    <span class="number">${item.id}</span>
+                    <span style="flex:1;">${item.command}</span>
+                `;
+                
+                div.addEventListener('dragstart', (e) => {
+                    draggedItem = div;
+                    e.dataTransfer.effectAllowed = 'move';
+                    setTimeout(() => div.style.opacity = '0.4', 0);
+                });
+                
+                div.addEventListener('dragend', () => {
+                    div.style.opacity = '1';
+                    draggedItem = null;
+                });
+                
+                container.appendChild(div);
+            });
+        }
+
+        function createTargets() {
+            const container = document.getElementById('targets-container');
+            container.innerHTML = '';
+            
+            // Orden fijo de descripciones (para mantener claridad)
+            elements.forEach((item, index) => {
+                const target = document.createElement('div');
+                target.className = 'target';
+                target.dataset.id = item.id;
+                
+                target.innerHTML = `
+                    <span class="label">${item.command}</span>
+                    <span style="color:#546E7A; font-size:14px; line-height:1.4;">${item.description}</span>
+                `;
+                
+                // Drag & Drop sobre targets
+                target.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    target.style.borderColor = 'var(--accent)';
+                });
+                
+                target.addEventListener('dragleave', () => {
+                    if (!target.classList.contains('matched')) {
+                        target.style.borderColor = '';
+                    }
+                });
+                
+                target.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (draggedItem && parseInt(draggedItem.dataset.id) === parseInt(target.dataset.id)) {
+                        handleCorrectMatch(draggedItem, target);
+                    } else if (draggedItem) {
+                        showErrorFeedback();
+                    }
+                });
+                
+                container.appendChild(target);
+            });
+        }
+
+        function handleCorrectMatch(item, target) {
+            target.classList.add('matched');
+            item.style.opacity = '0.3';
+            item.style.pointerEvents = 'none';
+            
+            connections[item.dataset.id] = target.dataset.id;
+            
+            // Actualizar barra de progreso
+            const matchedCount = Object.keys(connections).length;
+            const progress = Math.round((matchedCount / elements.length) * 100);
+            document.getElementById('progress').style.width = `${progress}%`;
+            
+            // Verificar si la actividad está completa
+            if (matchedCount === elements.length && !isCompleted) {
+                isCompleted = true;
+                setTimeout(showFinalFeedback, 600);
+            }
+        }
+
+        function showErrorFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            document.getElementById('modal-emoji').textContent = '❌';
+            document.getElementById('modal-title').textContent = 'Inténtalo de nuevo';
+            document.getElementById('modal-title').style.color = 'var(--error)';
+            document.getElementById('modal-text').innerHTML = 'El comando no corresponde con esta descripción.<br><br>Revisa las funciones de cada sentencia DDL y restricción.';
+            modal.style.display = 'flex';
+        }
+
+        function showFinalFeedback() {
+            const modal = document.getElementById('feedback-modal');
+            document.getElementById('modal-emoji').textContent = '🎉';
+            document.getElementById('modal-title').textContent = '¡Enhorabuena!';
+            document.getElementById('modal-title').style.color = 'var(--success)';
+            document.getElementById('modal-text').innerHTML = 
+                '¡Has emparejado correctamente todos los comandos y conceptos!<br><br>' +
+                'El dominio de los comandos DDL y restricciones permite gestionar de forma estructurada, coherente y segura las tablas en una base de datos.';
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+        }
+
+        function resetActivity() {
+            if (confirm('¿Deseas reiniciar la actividad? Se perderá el progreso actual.')) {
+                connections = {};
+                isCompleted = false;
+                document.getElementById('progress').style.width = '0%';
+                createItems();
+                createTargets();
+                closeModal();
+            }
+        }
+
+        // Inicializar la actividad
+        window.onload = function() {
+            createItems();
+            createTargets();
+        };
+    </script>
+</body>
+</html>
