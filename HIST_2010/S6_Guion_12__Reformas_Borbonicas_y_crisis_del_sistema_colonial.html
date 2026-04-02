@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reformas Borbónicas - Juego Interactivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #dbeafe;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 16px;
+            --radius-sm: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            height: 800px;
+            max-height: 90vh;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            margin: 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .instructions strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Game Area */
+        .game-area {
+            flex: 1;
+            display: flex;
+            padding: 0 20px 20px;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .column-header {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .concept-card, .description-card {
+            background: var(--surface);
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: var(--shadow);
+            line-height: 1.4;
+        }
+
+        .concept-card {
+            border-left: 4px solid var(--primary);
+        }
+
+        .description-card {
+            border-left: 4px solid var(--secondary);
+            font-size: 12px;
+        }
+
+        .concept-card:hover {
+            transform: translateX(4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+        }
+
+        .description-card:hover {
+            transform: translateX(-4px);
+            border-color: var(--secondary);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+        }
+
+        .concept-card.selected {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            border-width: 2px;
+            transform: scale(1.02);
+        }
+
+        .description-card.selected {
+            background: #d1fae5;
+            border-color: var(--secondary);
+            border-width: 2px;
+        }
+
+        .concept-card.matched, .description-card.matched {
+            background: #f0fdf4;
+            border-color: var(--secondary);
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .concept-card.incorrect {
+            animation: shake 0.5s;
+            border-color: var(--danger);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .card-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .card-letter {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        /* SVG Lines */
+        #connections-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            fill: none;
+            stroke: #cbd5e1;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            transition: all 0.3s ease;
+        }
+
+        .connection-line.active {
+            stroke: var(--primary);
+            stroke-width: 3;
+            stroke-dasharray: none;
+            filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+        }
+
+        .connection-line.correct {
+            stroke: var(--secondary);
+            stroke-dasharray: none;
+            stroke-width: 3;
+        }
+
+        /* Controls */
+        .controls {
+            padding: 20px;
+            background: #f1f5f9;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: var(--primary);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+            display: none;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .progress {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 32px;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .modal-content {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 24px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .feedback-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                height: auto;
+                max-height: none;
+                min-height: 100vh;
+                border-radius: 0;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .game-area {
+                flex-direction: column;
+                padding: 0 16px 16px;
+                gap: 24px;
+            }
+
+            .column {
+                gap: 8px;
+            }
+
+            .concept-card, .description-card {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            #connections-svg {
+                display: none;
+            }
+
+            .controls {
+                flex-direction: column;
+                padding: 16px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .modal {
+                width: 95%;
+                padding: 24px;
+                margin: 20px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .concept-card, .description-card {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .concept-card:nth-child(1) { animation-delay: 0.05s; }
+        .concept-card:nth-child(2) { animation-delay: 0.1s; }
+        .concept-card:nth-child(3) { animation-delay: 0.15s; }
+        .concept-card:nth-child(4) { animation-delay: 0.2s; }
+        .concept-card:nth-child(5) { animation-delay: 0.25s; }
+        .concept-card:nth-child(6) { animation-delay: 0.3s; }
+        .concept-card:nth-child(7) { animation-delay: 0.35s; }
+        .concept-card:nth-child(8) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header class="header">
+        <h1>📚 Reformas Borbónicas y crisis del sistema colonial</h1>
+        <div class="header-subtitle">Juego de unir con líneas • Interactivo</div>
+    </header>
+
+
+
+    <!-- Game Area -->
+    <div class="game-area">
+        <svg id="connections-svg"></svg>
+        
+        <div class="column">
+            <div class="column-header">
+                💡 Conceptos
+            </div>
+            <div id="concepts-list">
+                <!-- Concepts injected by JS -->
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="column-header">
+                📋 Descripciones
+            </div>
+            <div id="descriptions-list">
+                <!-- Descriptions injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="progress">
+            <span id="matches-count">0</span>/8 conexiones
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-secondary" onclick="resetGame()">
+                🔄 Reiniciar
+            </button>
+            <button class="btn btn-primary" onclick="checkMatches()" id="check-btn">
+                ✓ Verificar
+            </button>
+            <button class="btn btn-success" onclick="showFinalFeedback()" id="finish-btn">
+                🎓 Finalizar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Match Confirmation Modal -->
+<div class="modal-overlay" id="match-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">🔗 Confirmar conexión</div>
+        </div>
+        <div class="modal-content" id="match-modal-content">
+            <!-- Content injected by JS -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('match-modal')">Cancelar</button>
+            <button class="btn btn-primary" onclick="confirmMatch()">Confirmar conexión</button>
+        </div>
+    </div>
+</div>
+
+<!-- Final Feedback Modal -->
+<div class="modal-overlay" id="feedback-modal">
+    <div class="modal">
+        <div class="feedback-icon">✨</div>
+        <div class="modal-header">
+            <div class="modal-title" style="justify-content: center; text-align: center;">¡Excelente trabajo!</div>
+        </div>
+        <div class="modal-content">
+            Las relaciones establecidas evidencian una comprensión profunda de las Reformas Borbónicas y su impacto en el sistema colonial. A través de este ejercicio se reconoce que los cambios administrativos, económicos, militares y eclesiásticos no solo fortalecieron el control de la corona, sino que también generaron tensiones que derivaron en diversas formas de resistencia social, reflejando el inicio del debilitamiento del orden colonial.
+        </div>
+        <div class="modal-footer" style="justify-content: center;">
+            <button class="btn btn-primary" onclick="closeModal('feedback-modal')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal-overlay" id="info-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="info-modal-title">Detalle</div>
+        </div>
+        <div class="modal-content" id="info-modal-content">
+            <!-- Content injected by JS -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="closeModal('info-modal')">Entendido</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data from document
+    const concepts = [
+        { id: 1, text: "Reformas políticas-administrativas" },
+        { id: 2, text: "Reformas económicas" },
+        { id: 3, text: "Reformas eclesiásticas" },
+        { id: 4, text: "Reformas militares" },
+        { id: 5, text: "Revueltas del siglo XVIII" },
+        { id: 6, text: "Rebelión de Túpac Amaru II" },
+        { id: 7, text: "Rebelión de los estancos" },
+        { id: 8, text: "Rebelión de los Comuneros" }
+    ];
+
+    const descriptions = [
+        { id: 'A', text: "Movimiento social en el que se articularon demandas contra los abusos fiscales, el trabajo forzado y la corrupción, incorporando además un discurso de reivindicación indígena vinculado al pasado incaico" },
+        { id: 'B', text: "Conjunto de transformaciones orientadas a reorganizar la administración colonial mediante nuevas estructuras de gobierno, buscando mayor eficiencia y control directo de la corona sobre los territorios" },
+        { id: 'C', text: "Levantamiento originado en sectores urbanos que reaccionaron frente al aumento de impuestos y al control fiscal, evidenciando el descontento popular en espacios locales" },
+        { id: 'D', text: "Medidas orientadas a fortalecer la defensa del imperio mediante la organización de fuerzas armadas permanentes que aseguraran el control territorial frente a amenazas internas y externas" },
+        { id: 'E', text: "Reformas que limitaron el poder de la Iglesia dentro del sistema colonial, reduciendo privilegios, restringiendo su influencia política y expulsando a órdenes religiosas como los jesuitas" },
+        { id: 'F', text: "Proceso de transformación económica que incluyó incremento de impuestos, apertura comercial y mayor fiscalización de recursos estratégicos como la minería para aumentar los ingresos de la corona" },
+        { id: 'G', text: "Levantamiento protagonizado por diversos sectores sociales que cuestionaron el sistema de impuestos, los monopolios y la exclusión política, reflejando tensiones entre criollos y autoridades coloniales" },
+        { id: 'H', text: "Conjunto de protestas y levantamientos que evidencian el agotamiento del sistema colonial, generados como respuesta al aumento del control imperial y las desigualdades acumuladas" }
+    ];
+
+    // Correct answers mapping
+    const correctAnswers = {
+        1: 'B',
+        2: 'F',
+        3: 'E',
+        4: 'D',
+        5: 'H',
+        6: 'A',
+        7: 'C',
+        8: 'G'
+    };
+
+    // State
+    let selectedConcept = null;
+    let selectedDescription = null;
+    let matches = {};
+    let tempConnection = null;
+
+    // Initialize
+    function init() {
+        renderConcepts();
+        renderDescriptions();
+        window.addEventListener('resize', drawLines);
+    }
+
+    function renderConcepts() {
+        const container = document.getElementById('concepts-list');
+        container.innerHTML = concepts.map(c => `
+            <div class="concept-card" data-id="${c.id}" onclick="selectConcept(${c.id})">
+                <span class="card-number">${c.id}</span>
+                ${c.text}
+            </div>
+        `).join('');
+    }
+
+    function renderDescriptions() {
+        const container = document.getElementById('descriptions-list');
+        container.innerHTML = descriptions.map(d => `
+            <div class="description-card" data-id="${d.id}" onclick="selectDescription('${d.id}')">
+                <span class="card-letter">${d.id}</span>
+                ${d.text}
+            </div>
+        `).join('');
+    }
+
+    function selectConcept(id) {
+        if (matches[id]) return; // Already matched
+        
+        // Clear previous selection
+        document.querySelectorAll('.concept-card').forEach(el => {
+            if (!el.classList.contains('matched')) {
+                el.classList.remove('selected');
+            }
+        });
+        
+        selectedConcept = id;
+        const element = document.querySelector(`.concept-card[data-id="${id}"]`);
+        element.classList.add('selected');
+        
+        // Show info modal with concept
+        showInfo('Concepto', concepts.find(c => c.id === id).text);
+    }
+
+    function selectDescription(id) {
+        if (Object.values(matches).includes(id)) return; // Already matched
+        
+        if (!selectedConcept) {
+            showInfo('Selecciona un concepto', 'Primero debes seleccionar un concepto de la lista izquierda para poder conectarlo con esta descripción.');
+            return;
+        }
+        
+        selectedDescription = id;
+        const conceptText = concepts.find(c => c.id === selectedConcept).text;
+        const descText = descriptions.find(d => d.id === id).text;
+        
+        // Show confirmation modal
+        document.getElementById('match-modal-content').innerHTML = `
+            <p><strong>Concepto:</strong> ${conceptText}</p>
+            <p style="margin-top: 12px; color: var(--text-light);">↓</p>
+            <p style="margin-top: 12px;"><strong>Descripción:</strong> ${descText}</p>
+        `;
+        openModal('match-modal');
+    }
+
+    function confirmMatch() {
+        if (selectedConcept && selectedDescription) {
+            // Check if correct
+            const isCorrect = correctAnswers[selectedConcept] === selectedDescription;
+            
+            if (isCorrect) {
+                matches[selectedConcept] = selectedDescription;
+                updateCards();
+                updateProgress();
+                drawLines();
+                
+                // Check if all matched
+                if (Object.keys(matches).length === 8) {
+                    document.getElementById('check-btn').style.display = 'none';
+                    document.getElementById('finish-btn').style.display = 'inline-flex';
+                }
+            } else {
+                // Wrong match animation
+                const conceptEl = document.querySelector(`.concept-card[data-id="${selectedConcept}"]`);
+                conceptEl.classList.add('incorrect');
+                setTimeout(() => conceptEl.classList.remove('incorrect'), 500);
+            }
+        }
+        
+        closeModal('match-modal');
+        selectedConcept = null;
+        selectedDescription = null;
+        document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+    }
+
+    function updateCards() {
+        Object.entries(matches).forEach(([conceptId, descId]) => {
+            const conceptEl = document.querySelector(`.concept-card[data-id="${conceptId}"]`);
+            const descEl = document.querySelector(`.description-card[data-id="${descId}"]`);
+            conceptEl.classList.add('matched');
+            descEl.classList.add('matched');
+            conceptEl.classList.remove('selected');
+            descEl.classList.remove('selected');
+        });
+    }
+
+    function updateProgress() {
+        document.getElementById('matches-count').textContent = Object.keys(matches).length;
+    }
+
+    function drawLines() {
+        const svg = document.getElementById('connections-svg');
+        svg.innerHTML = '';
+        
+        if (window.innerWidth <= 600) return; // Don't draw lines on mobile
+        
+        const containerRect = document.querySelector('.game-area').getBoundingClientRect();
+        
+        Object.entries(matches).forEach(([conceptId, descId]) => {
+            const conceptEl = document.querySelector(`.concept-card[data-id="${conceptId}"]`);
+            const descEl = document.querySelector(`.description-card[data-id="${descId}"]`);
+            
+            if (!conceptEl || !descEl) return;
+            
+            const conceptRect = conceptEl.getBoundingClientRect();
+            const descRect = descEl.getBoundingClientRect();
+            
+            const x1 = conceptRect.right - containerRect.left;
+            const y1 = conceptRect.top + conceptRect.height / 2 - containerRect.top;
+            const x2 = descRect.left - containerRect.left;
+            const y2 = descRect.top + descRect.height / 2 - containerRect.top;
+            
+            // Create curved path
+            const midX = (x1 + x2) / 2;
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+            path.setAttribute('class', 'connection-line correct');
+            
+            svg.appendChild(path);
+        });
+    }
+
+    function checkMatches() {
+        const count = Object.keys(matches).length;
+        if (count === 8) {
+            showInfo('✓ Completado', 'Has realizado todas las conexiones. Ahora puedes finalizar el ejercicio para ver la retroalimentación.');
+            document.getElementById('check-btn').style.display = 'none';
+            document.getElementById('finish-btn').style.display = 'inline-flex';
+        } else {
+            showInfo('Progreso', `Has realizado ${count} de 8 conexiones posibles. Continúa conectando los conceptos con sus descripciones correspondientes.`);
+        }
+    }
+
+    function showFinalFeedback() {
+        openModal('feedback-modal');
+    }
+
+    function resetGame() {
+        matches = {};
+        selectedConcept = null;
+        selectedDescription = null;
+        document.getElementById('matches-count').textContent = '0';
+        document.getElementById('check-btn').style.display = 'inline-flex';
+        document.getElementById('finish-btn').style.display = 'none';
+        document.getElementById('connections-svg').innerHTML = '';
+        renderConcepts();
+        renderDescriptions();
+    }
+
+    function showInfo(title, content) {
+        document.getElementById('info-modal-title').textContent = title;
+        document.getElementById('info-modal-content').textContent = content;
+        openModal('info-modal');
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay && overlay.id !== 'feedback-modal') {
+                overlay.classList.remove('active');
+            }
+        });
+    });
+
+    // Initialize game
+    init();
+</script>
+
+</body>
+</html>
