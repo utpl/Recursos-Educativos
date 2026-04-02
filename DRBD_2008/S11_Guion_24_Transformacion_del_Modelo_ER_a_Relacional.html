@@ -1,742 +1,843 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transformación del Modelo ER a Relacional</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #1565C0;
-      --primary-light: #1976D2;
-      --accent: #F57C00;
-      --accent-light: #FF9800;
-      --success: #2E7D32;
-      --success-bg: #E8F5E9;
-      --error: #C62828;
-      --error-bg: #FFEBEE;
-      --neutral: #37474F;
-      --neutral-light: #546E7A;
-      --bg: #F4F7FB;
-      --card: #FFFFFF;
-      --border: #CFD8DC;
-      --text: #1A237E;
-      --text-body: #263238;
-      --tag-bg: #E3F2FD;
-      --tag-border: #90CAF9;
-      --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-      --drop-hover: #E3F2FD;
-      --drop-border: #42A5F5;
-      --font: 'Inter', sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformación ER → Relacional</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #F2F0EB;
+  --surface:   #FAFAF7;
+  --surface2:  #EFEDE8;
+  --white:     #FFFFFF;
+  --border:    rgba(0,0,0,0.08);
+  --border-md: rgba(0,0,0,0.14);
+  --text:      #18160F;
+  --text-sec:  #6B6760;
+  --text-muted:#A09D98;
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  --c1: #1A6B5A;  --c1b: #E8F5F2;  --c1m: rgba(26,107,90,0.18);
+  --c2: #B45309;  --c2b: #FEF3E2;  --c2m: rgba(180,83,9,0.15);
+  --c3: #1D4ED8;  --c3b: #EEF2FF;  --c3m: rgba(29,78,216,0.15);
+  --c4: #6B21A8;  --c4b: #F5F0FF;  --c4m: rgba(107,33,168,0.15);
+  --c5: #BE123C;  --c5b: #FFF1F3;  --c5m: rgba(190,18,60,0.15);
 
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text-body);
-      font-size: 12pt;
-      line-height: 1.4;
-      width: 800px;
-      min-height: 500px;
-      max-height: 800px;
-      overflow: hidden;
-      position: relative;
-    }
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.14);
+}
 
-    .resource-container {
-      width: 800px;
-      height: 800px;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg);
-      position: relative;
-    }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    header {
-      background: var(--header-bg);
-      color: white;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+}
 
-    header .material-symbols-outlined {
-      font-size: 28px;
-    }
+.wrapper {
+  width: 800px;
+  background: var(--surface);
+  border-radius: 20px;
+  border: 1px solid var(--border-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-    header h1 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      line-height: 1.2;
-    }
+/* ── HEADER ── */
+.top-header {
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  background: var(--white);
+}
+.top-header::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26,107,90,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.top-header::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 40%;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(29,78,216,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.header-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.header-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.header-title span {
+  color: var(--c3);
+}
+.header-desc {
+  font-size: 13px;
+  color: var(--text-sec);
+  line-height: 1.7;
+  max-width: 500px;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 5px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
 
-    .intro {
-      padding: 12px 20px;
-      background: var(--card);
-      border-bottom: 2px solid var(--border);
-      font-size: 0.95rem;
-      color: var(--text);
-      flex-shrink: 0;
-    }
+/* ── CARDS GRID ── */
+.cards-area {
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 18px 16px;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.22s ease, border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--card-color);
+  opacity: 0.7;
+  transition: opacity 0.2s, height 0.2s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  border-color: var(--card-color);
+}
+.card:hover::before { opacity: 1; height: 4px; }
 
-    .instruction {
-      text-align: center;
-      padding: 8px 16px;
-      background: var(--tag-bg);
-      border: 1px solid var(--tag-border);
-      color: var(--primary);
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin: 8px 20px;
-      flex-shrink: 0;
-    }
+.card.span2 { grid-column: span 2; }
 
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 10px;
-      padding: 10px 20px;
-      flex: 1;
-      overflow: hidden;
-    }
+.card-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--card-color);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-num::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--card-color);
+  opacity: 0.2;
+}
+.card-icon-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.card-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.card-arrow {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: all 0.2s;
+}
+.card:hover .card-arrow { opacity: 1; transform: translateX(0); }
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.card-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.card-tag {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--card-color);
+  border: 1px solid var(--card-color);
+  opacity: 0.85;
+}
 
-    .card {
-      background: var(--card);
-      border: 2px solid var(--border);
-      padding: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      position: relative;
-    }
+/* ── FOOTER BAR ── */
+.footer-bar {
+  padding: 12px 32px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+}
+.apa {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.nav-pills {
+  display: flex;
+  gap: 6px;
+}
+.npill {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border-md);
+  background: var(--surface2);
+  color: var(--text-sec);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.npill:hover:not(:disabled) {
+  background: var(--text);
+  color: var(--white);
+  border-color: var(--text);
+}
+.npill:disabled { opacity: 0.3; cursor: default; }
 
-    .card:hover {
-      border-color: var(--primary-light);
-      background: var(--drop-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.15);
-    }
+/* ── MODAL ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18,16,11,0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal {
+  background: var(--white);
+  border-radius: 20px;
+  width: 560px;
+  max-width: 96vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px var(--border-md);
+  transform: scale(0.93) translateY(16px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1), opacity 0.25s ease;
+  overflow: hidden;
+}
+.modal-backdrop.open .modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
 
-    .card-icon {
-      font-size: 2rem;
-      margin-bottom: 6px;
-    }
+.modal-head {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  background: var(--white);
+}
+.modal-top-stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+}
+.modal-step {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.modal-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.modal-icon {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.modal-h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
+}
+.modal-close-btn {
+  position: absolute;
+  top: 18px; right: 18px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-sec);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1;
+}
+.modal-close-btn:hover { background: var(--c5b); color: var(--c5); border-color: var(--c5); }
 
-    .card-title {
-      font-weight: 700;
-      color: var(--text);
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-      line-height: 1.2;
-    }
+.modal-body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal-body::-webkit-scrollbar { width: 4px; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
 
-    .card-preview {
-      font-size: 0.75rem;
-      color: var(--neutral-light);
-      line-height: 1.2;
-    }
+/* transform flow */
+.transform-flow {
+  display: grid;
+  grid-template-columns: 1fr 32px 1fr;
+  gap: 0;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.tf-block {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.tf-block.input { background: var(--surface2); }
+.tf-block.output { background: var(--modal-bg); border-color: var(--modal-color); }
+.tf-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  color: var(--text-muted);
+}
+.tf-block.output .tf-label { color: var(--modal-color); }
+.tf-content {
+  font-size: 12.5px;
+  color: var(--text-sec);
+  line-height: 1.6;
+}
+.tf-arrow {
+  text-align: center;
+  font-size: 18px;
+  color: var(--modal-color);
+}
 
-    .card.entity { border-top: 4px solid var(--success); }
-    .card.compound { border-top: 4px solid var(--accent); }
-    .card.one-to-one { border-top: 4px solid var(--primary); }
-    .card.one-to-many { border-top: 4px solid var(--neutral); }
-    .card.many-to-many { border-top: 4px solid var(--error); }
+/* visual card inside modal */
+.visual-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.vc-header {
+  padding: 10px 16px;
+  background: var(--modal-bg);
+  border-bottom: 1px solid var(--border);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--modal-color);
+  letter-spacing: 0.02em;
+}
+.vc-body {
+  padding: 16px;
+  background: var(--white);
+}
+.vc-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.vc-box {
+  background: var(--surface2);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  text-align: center;
+  min-width: 100px;
+}
+.vc-box-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.vc-box-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.vc-arrow {
+  font-size: 20px;
+  color: var(--modal-color);
+}
 
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(26, 35, 126, 0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-    }
+/* features list */
+.feat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.feat-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-sec);
+  line-height: 1.5;
+}
+.feat-item .fi-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.feat-item b { color: var(--text); font-weight: 500; }
 
-    .modal-overlay.active {
-      display: flex;
-    }
+/* use cases */
+.uc-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.uc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: var(--modal-bg);
+  color: var(--modal-color);
+  border: 1px solid var(--modal-color);
+  opacity: 0.9;
+}
 
-    .modal {
-      background: var(--card);
-      width: 100%;
-      max-width: 720px;
-      max-height: 680px;
-      overflow-y: auto;
-      border: 3px solid var(--primary);
-      position: relative;
-      animation: modalSlide 0.3s ease;
-    }
+.modal-foot {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+}
+.mf-counter {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.mf-nav { display: flex; gap: 8px; }
+.mf-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s;
+  border: 1px solid var(--border-md);
+}
+.mf-btn.ghost {
+  background: var(--white);
+  color: var(--text-sec);
+}
+.mf-btn.ghost:hover:not(:disabled) { background: var(--surface2); }
+.mf-btn.ghost:disabled { opacity: 0.3; cursor: default; }
+.mf-btn.solid {
+  background: var(--text);
+  color: var(--white);
+  border-color: var(--text);
+}
+.mf-btn.solid:hover:not(:disabled) { opacity: 0.85; }
+.mf-btn.solid:disabled { opacity: 0.3; cursor: default; }
 
-    @keyframes modalSlide {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+.figcaption {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: -10px;
+  margin-bottom: 14px;
+  letter-spacing: 0.01em;
+}
 
-    .modal-header {
-      background: var(--header-bg);
-      color: white;
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .modal-title {
-      font-weight: 700;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      line-height: 1.2;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.8rem;
-      cursor: pointer;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-close:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .modal-body {
-      padding: 20px;
-    }
-
-    .modal-list {
-      list-style: none;
-    }
-
-    .modal-list li {
-      padding: 8px 0;
-      padding-left: 28px;
-      position: relative;
-      border-bottom: 1px dashed var(--border);
-      font-size: 0.95rem;
-    }
-
-    .modal-list li:last-child {
-      border-bottom: none;
-    }
-
-    .modal-list li::before {
-      content: "•";
-      position: absolute;
-      left: 8px;
-      color: var(--primary);
-      font-weight: bold;
-      font-size: 1.4rem;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    .transformation-box {
-      background: var(--tag-bg);
-      border: 2px solid var(--tag-border);
-      padding: 14px;
-      margin: 12px 0;
-    }
-
-    .transformation-title {
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.95rem;
-    }
-
-    .transformation-content {
-      font-size: 0.9rem;
-      color: var(--text-body);
-      line-height: 1.4;
-    }
-
-    .arrow-down {
-      text-align: center;
-      font-size: 1.5rem;
-      color: var(--accent);
-      margin: 8px 0;
-    }
-
-    .footer {
-      padding: 10px 20px;
-      background: var(--card);
-      border-top: 2px solid var(--border);
-      font-size: 0.85rem;
-      color: var(--neutral-light);
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .nav-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      padding: 10px 20px;
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .nav-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-family: var(--font);
-      font-weight: 600;
-      cursor: pointer;
-      min-width: 44px;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background 0.2s;
-    }
-
-    .nav-btn:hover {
-      background: var(--primary-light);
-    }
-
-    .nav-btn:disabled {
-      background: var(--border);
-      cursor: not-allowed;
-    }
-
-    .imagen {
-      display: block;
-      max-width: 100%;
-      margin: 12px auto;
-      border: 2px solid var(--border);
-    }
-
-    .imagen-caption {
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--neutral-light);
-      margin-top: 6px;
-      font-style: italic;
-    }
-
-    @media (max-width: 600px) {
-      body, .resource-container {
-        width: 100%;
-        height: auto;
-        min-height: 100vh;
-        overflow-y: auto;
-      }
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-      }
-      .modal {
-        max-height: 90vh;
-      }
-      .nav-buttons {
-        flex-wrap: wrap;
-      }
-      .nav-btn {
-        flex: 1;
-        min-width: 120px;
-      }
-    }
-  </style>
+@media (max-width: 600px) {
+  body { padding: 10px; }
+  .wrapper { border-radius: 14px; }
+  .cards-area { grid-template-columns: 1fr; padding: 14px; }
+  .card.span2 { grid-column: span 1; }
+  .transform-flow { grid-template-columns: 1fr; gap: 8px; }
+  .tf-arrow { transform: rotate(90deg); }
+  .top-header { padding: 20px 18px 18px; }
+  .footer-bar { padding: 12px 18px; flex-direction: column; gap: 10px; }
+}
+</style>
 </head>
 <body>
-  <div class="resource-container">
-    <header>
-      <span class="material-symbols-outlined">schema</span>
-      <h1>TRANSFORMACIÓN DEL MODELO ER A RELACIONAL</h1>
-    </header>
 
-    <div class="intro">
-      ️ Esta hoja de ruta describe las reglas para convertir los constructos del diagrama Entidad-Relación (ER) en estructuras de tablas, garantizando la integridad referencial.
-    </div>
+<div class="wrapper">
 
-    <div class="instruction">
-      📌 Haga clic en los temas para visualizar la información
-    </div>
-
-    <main class="dashboard-grid">
-      <article class="card entity" data-modal="modal-entity" tabindex="0" role="button" aria-label="Mapeo de Entidades">
-        <span class="card-icon"></span>
-        <h3 class="card-title">1. Mapeo de Entidades</h3>
-        <p class="card-preview">Entidades regulares → Tablas con PK</p>
-      </article>
-
-      <article class="card compound" data-modal="modal-compound" tabindex="0" role="button" aria-label="Mapeo de Atributos Compuestos">
-        <span class="card-icon">🧩</span>
-        <h3 class="card-title">2. Atributos Compuestos</h3>
-        <p class="card-preview">Subpartes → Columnas planas</p>
-      </article>
-
-      <article class="card one-to-one" data-modal="modal-1to1" tabindex="0" role="button" aria-label="Relaciones Binarias 1:1">
-        <span class="card-icon">🔗</span>
-        <h3 class="card-title">3. Relaciones 1:1</h3>
-        <p class="card-preview">Clave foránea o fusión de tablas</p>
-      </article>
-
-      <article class="card one-to-many" data-modal="modal-1toN" tabindex="0" role="button" aria-label="Relaciones Binarias 1:N">
-        <span class="card-icon">📊</span>
-        <h3 class="card-title">4. Relaciones 1:N</h3>
-        <p class="card-preview">Propagación de clave al lado N</p>
-      </article>
-
-      <article class="card many-to-many" data-modal="modal-MtoN" tabindex="0" role="button" aria-label="Relaciones Binarias M:N" style="grid-column: span 2;">
-        <span class="card-icon">🌐</span>
-        <h3 class="card-title">5. Relaciones M:N</h3>
-        <p class="card-preview">Tabla intermedia con PK compuesta</p>
-      </article>
-    </main>
-
-    <nav class="nav-buttons">
-      <button class="nav-btn" id="btn-prev" disabled>
-        <span class="material-symbols-outlined">arrow_back</span> Anterior
-      </button>
-      <button class="nav-btn" id="btn-next">
-        Siguiente <span class="material-symbols-outlined">arrow_forward</span>
-      </button>
-    </nav>
-
-    <footer class="footer">
-      Referencia: Elaboración propia.
-    </footer>
+  <!-- HEADER -->
+  <div class="top-header">
+    <div class="header-eyebrow">Fundamentos de Base de Datos &nbsp;·&nbsp; DRBD_2008 &nbsp;·&nbsp; 2026</div>
+    <div class="header-title">Transformación <span>ER</span> &#x2192; Relacional</div>
+    <div class="header-desc">Reglas para convertir los constructos del diagrama Entidad-Relación en estructuras de tablas, garantizando la integridad referencial del modelo.</div>
+    <div class="header-badge">&#x1F446; Haz clic en cada tarjeta para explorar las reglas</div>
   </div>
 
-  <!-- Modal 1: Mapeo de Entidades -->
-  <div class="modal-overlay" id="modal-entity" role="dialog" aria-modal="true" aria-labelledby="title-entity">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="title-entity">
-          <span>📦</span> 1. Mapeo de Entidades
-        </h2>
-        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="transformation-box">
-          <div class="transformation-title">🎯 Entrada ER:</div>
-          <div class="transformation-content">
-            Entidades regulares y sus atributos simples.
-          </div>
-        </div>
-        
-        <div class="arrow-down">⬇️</div>
-        
-        <div class="transformation-box" style="background: var(--success-bg); border-color: var(--success);">
-          <div class="transformation-title" style="color: var(--success);">✅ Producto Relacional:</div>
-          <div class="transformation-content">
-            Tabla 'R' con atributos como columnas. Se define la PK (Primary Key).
-          </div>
-        </div>
+  <!-- CARDS -->
+  <div class="cards-area">
 
-        <figure class="imagen" aria-label="Diagrama de mapeo de entidades">
-          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
-            <div style="font-size:3rem; margin-bottom:8px;">📋</div>
-            <p style="font-weight:600; color:var(--primary);">ENTIDAD → TABLA</p>
-            <p style="font-size:0.9rem; margin-top:8px;">Atributos → Columnas<br>PK → Clave Primaria</p>
-          </div>
-          <figcaption class="imagen-caption">
-            Figura 1<br>
-            Transformación de entidad a tabla<br>
-            Nota. Adaptado de Elaboración propia.
-          </figcaption>
-        </figure>
+    <div class="card" data-topic="0" style="--card-color:var(--c1); --card-bg:var(--c1b);">
+      <div class="card-num">Regla 01</div>
+      <div class="card-icon-row">
+        <div class="card-icon">&#x1F4E6;</div>
+        <div class="card-arrow">&#x2192;</div>
       </div>
+      <div class="card-title">Mapeo de Entidades</div>
+      <div class="card-sub">Entidades regulares se convierten en tablas con PK definida</div>
+      <span class="card-tag">Entidad &#x2192; Tabla</span>
+    </div>
+
+    <div class="card" data-topic="1" style="--card-color:var(--c2); --card-bg:var(--c2b);">
+      <div class="card-num">Regla 02</div>
+      <div class="card-icon-row">
+        <div class="card-icon">&#x1F9E9;</div>
+        <div class="card-arrow">&#x2192;</div>
+      </div>
+      <div class="card-title">Atributos Compuestos</div>
+      <div class="card-sub">Subpartes se aplanan como columnas independientes en la tabla</div>
+      <span class="card-tag">Compuesto &#x2192; Columnas</span>
+    </div>
+
+    <div class="card" data-topic="2" style="--card-color:var(--c3); --card-bg:var(--c3b);">
+      <div class="card-num">Regla 03</div>
+      <div class="card-icon-row">
+        <div class="card-icon">&#x1F517;</div>
+        <div class="card-arrow">&#x2192;</div>
+      </div>
+      <div class="card-title">Relaciones 1&#x3A;1</div>
+      <div class="card-sub">Clave foránea en tabla de participación total o fusión de tablas</div>
+      <span class="card-tag">FK o fusión</span>
+    </div>
+
+    <div class="card" data-topic="3" style="--card-color:var(--c4); --card-bg:var(--c4b);">
+      <div class="card-num">Regla 04</div>
+      <div class="card-icon-row">
+        <div class="card-icon">&#x1F4CA;</div>
+        <div class="card-arrow">&#x2192;</div>
+      </div>
+      <div class="card-title">Relaciones 1&#x3A;N</div>
+      <div class="card-sub">Propagación de la clave primaria del lado 1 hacia el lado N</div>
+      <span class="card-tag">FK en lado N</span>
+    </div>
+
+    <div class="card span2" data-topic="4" style="--card-color:var(--c5); --card-bg:var(--c5b);">
+      <div class="card-num">Regla 05</div>
+      <div class="card-icon-row">
+        <div class="card-icon">&#x1F310;</div>
+        <div class="card-arrow">&#x2192;</div>
+      </div>
+      <div class="card-title">Relaciones M&#x3A;N</div>
+      <div class="card-sub">Se genera una tabla intermedia con PK compuesta por las claves de ambas entidades, más los atributos propios de la relación</div>
+      <span class="card-tag">Tabla intermedia</span>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <div class="apa">Elaboración propia. (2026). Transformación ER &#x2192; Relacional. DRBD_2008.</div>
+    <div class="nav-pills">
+      <button class="npill" id="btn-prev" disabled>&#x2190; Anterior</button>
+      <button class="npill" id="btn-next" disabled>Siguiente &#x2192;</button>
     </div>
   </div>
 
-  <!-- Modal 2: Atributos Compuestos -->
-  <div class="modal-overlay" id="modal-compound" role="dialog" aria-modal="true" aria-labelledby="title-compound">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="title-compound">
-          <span>🧩</span> 2. Mapeo de Atributos Compuestos
-        </h2>
-        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="transformation-box">
-          <div class="transformation-title">🎯 Entrada ER:</div>
-          <div class="transformation-content">
-            Atributos que se dividen en subpartes (ej: Dirección).
-          </div>
-        </div>
-        
-        <div class="arrow-down">⬇️</div>
-        
-        <div class="transformation-box" style="background: var(--success-bg); border-color: var(--success);">
-          <div class="transformation-title" style="color: var(--success);">✅ Producto Relacional:</div>
-          <div class="transformation-content">
-            Atributos planos: cada componente se convierte en una columna de la tabla.
-          </div>
-        </div>
+</div>
 
-        <figure class="imagen" aria-label="Diagrama de atributos compuestos">
-          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
-            <div style="font-size:3rem; margin-bottom:8px;">🏠</div>
-            <p style="font-weight:600; color:var(--accent);">Dirección →</p>
-            <p style="font-size:0.9rem; margin-top:8px;">Calle, Ciudad, Código Postal<br>(Columnas separadas)</p>
-          </div>
-          <figcaption class="imagen-caption">
-            Figura 2<br>
-            Descomposición de atributos compuestos<br>
-            Nota. Adaptado de Elaboración propia.
-          </figcaption>
-        </figure>
-      </div>
+<!-- MODAL BACKDROP -->
+<div class="modal-backdrop" id="backdrop">
+<div class="modal" id="modal">
+  <div class="modal-head">
+    <div class="modal-top-stripe" id="mStripe"></div>
+    <div class="modal-step" id="mStep"></div>
+    <div class="modal-icon-title">
+      <div class="modal-icon" id="mIcon"></div>
+      <div class="modal-h2" id="mTitle"></div>
+    </div>
+    <button class="modal-close-btn" id="mClose">&#x2715;</button>
+  </div>
+  <div class="modal-body" id="mBody"></div>
+  <div class="modal-foot">
+    <span class="mf-counter" id="mCounter">01 / 05</span>
+    <div class="mf-nav">
+      <button class="mf-btn ghost" id="mPrev">&#x2190; Anterior</button>
+      <button class="mf-btn solid" id="mNext">Siguiente &#x2192;</button>
     </div>
   </div>
+</div>
+</div>
 
-  <!-- Modal 3: Relaciones 1:1 -->
-  <div class="modal-overlay" id="modal-1to1" role="dialog" aria-modal="true" aria-labelledby="title-1to1">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="title-1to1">
-          <span>🔗</span> 3. Relaciones Binarias 1:1
-        </h2>
-        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+<script>
+const topics = [
+  {
+    color: 'var(--c1)', bg: 'var(--c1b)', border: 'rgba(26,107,90,0.25)',
+    icon: '&#x1F4E6;', step: 'Regla 01 &nbsp;·&nbsp; Entidades', title: 'Mapeo de Entidades',
+    inputLabel: 'Entrada ER', inputText: 'Entidades regulares y sus atributos simples definidos en el diagrama ER.',
+    outputLabel: 'Resultado Relacional', outputText: 'Una tabla <b>R</b> con una columna por atributo. Se identifica y declara la <b>clave primaria (PK)</b>.',
+    diagram: `
+      <div class="vc-box"><div class="vc-box-title">&#x1F4CB; ENTIDAD</div><div class="vc-box-sub">Nombre<br>Atributos<br>PK (subrayado)</div></div>
+      <div class="vc-arrow">&#x2192;</div>
+      <div class="vc-box"><div class="vc-box-title">&#x1F5C4; TABLA R</div><div class="vc-box-sub">Columnas<br>PK definida<br>Tipos de dato</div></div>`,
+    figcaption: 'Figura 1. Transformación de entidad ER a tabla relacional.',
+    features: [
+      { icon: '&#x1F4CD;', text: '<b>Una tabla por entidad regular</b> — cada entidad fuerte del ER genera exactamente una tabla.' },
+      { icon: '&#x1F511;', text: '<b>Atributo clave → PK</b> — el atributo subrayado en el ER se convierte en la clave primaria.' },
+      { icon: '&#x1F4CB;', text: '<b>Atributos simples → columnas</b> — cada atributo simple se mapea a una columna con su tipo de dato.' },
+    ],
+    pills: ['&#x1F465; EMPLEADO(ID, Nombre, Salario)', '&#x1F3E2; DEPARTAMENTO(CodDep, Nombre)']
+  },
+  {
+    color: 'var(--c2)', bg: 'var(--c2b)', border: 'rgba(180,83,9,0.22)',
+    icon: '&#x1F9E9;', step: 'Regla 02 &nbsp;·&nbsp; Atributos', title: 'Atributos Compuestos',
+    inputLabel: 'Entrada ER', inputText: 'Atributos que se subdividen en componentes más simples (ej. Dirección = Calle + Ciudad + CP).',
+    outputLabel: 'Resultado Relacional', outputText: 'Solo los <b>subcomponentes simples</b> se incluyen como columnas en la tabla. El atributo compuesto padre no aparece.',
+    diagram: `
+      <div class="vc-box"><div class="vc-box-title">&#x1F3E0; Dirección</div><div class="vc-box-sub">(Compuesto)</div></div>
+      <div class="vc-arrow">&#x2192;</div>
+      <div class="vc-box" style="text-align:left; min-width:130px;"><div class="vc-box-title">Columnas planas</div><div class="vc-box-sub">&#x2022; Calle<br>&#x2022; Ciudad<br>&#x2022; CódigoPostal</div></div>`,
+    figcaption: 'Figura 2. Descomposición de atributos compuestos en columnas simples.',
+    features: [
+      { icon: '&#x274C;', text: '<b>El compuesto padre se elimina</b> — no existe como columna; solo sus partes simples persisten.' },
+      { icon: '&#x2935;&#xFE0F;', text: '<b>Aplanamiento de jerarquías</b> — si hay anidamiento, se aplana hasta el nivel simple.' },
+      { icon: '&#x1F4BB;', text: '<b>Atributos multivaluados</b> — requieren una nueva tabla separada con FK hacia la entidad principal.' },
+    ],
+    pills: ['Dirección &#x2192; Calle, Ciudad, CP', 'Nombre &#x2192; PrimerNombre, Apellido']
+  },
+  {
+    color: 'var(--c3)', bg: 'var(--c3b)', border: 'rgba(29,78,216,0.22)',
+    icon: '&#x1F517;', step: 'Regla 03 &nbsp;·&nbsp; Cardinalidad', title: 'Relaciones Binarias 1&#x3A;1',
+    inputLabel: 'Entrada ER', inputText: 'Relación donde cada instancia de A se asocia con exactamente una instancia de B y viceversa.',
+    outputLabel: 'Resultado Relacional', outputText: 'Se elige la tabla con <b>participación total</b> para recibir la FK del otro. Alternativa: <b>fusionar ambas tablas</b> en una sola.',
+    diagram: `
+      <div class="vc-box"><div class="vc-box-title">&#x1F464; Empleado</div><div class="vc-box-sub">ID_Emp (PK)</div></div>
+      <div class="vc-arrow">&#x2194;</div>
+      <div class="vc-box"><div class="vc-box-title">&#x1F4BC; Oficina</div><div class="vc-box-sub">ID_Ofi (PK)<br>ID_Emp (FK) &#x2190;</div></div>`,
+    figcaption: 'Figura 3. FK propagada hacia la tabla de participación total en relación 1:1.',
+    features: [
+      { icon: '&#x1F3AF;', text: '<b>Participación total recibe la FK</b> — la entidad que siempre participa en la relación acoge la clave foránea.' },
+      { icon: '&#x1F500;', text: '<b>Opción fusión</b> — si ambas participan totalmente, se puede combinar en una sola tabla sin pérdida de información.' },
+      { icon: '&#x1F4CB;', text: '<b>Atributos de la relación</b> — se incluyen como columnas en la tabla que recibe la FK.' },
+    ],
+    pills: ['Empleado &#x2190; FK_Oficina', 'O bien: fusionar Empleado+Oficina']
+  },
+  {
+    color: 'var(--c4)', bg: 'var(--c4b)', border: 'rgba(107,33,168,0.22)',
+    icon: '&#x1F4CA;', step: 'Regla 04 &nbsp;·&nbsp; Cardinalidad', title: 'Relaciones Binarias 1&#x3A;N',
+    inputLabel: 'Entrada ER', inputText: 'Un registro del lado 1 puede relacionarse con múltiples registros del lado N.',
+    outputLabel: 'Resultado Relacional', outputText: 'La <b>PK del lado 1</b> se propaga como <b>FK en la tabla del lado N</b>. No se crea tabla adicional.',
+    diagram: `
+      <div class="vc-box"><div class="vc-box-title">&#x1F3E2; Departamento</div><div class="vc-box-sub">CodDep (PK)</div></div>
+      <div class="vc-arrow">&#x2192; 1&#x3A;N</div>
+      <div class="vc-box"><div class="vc-box-title">&#x1F465; Empleados</div><div class="vc-box-sub">ID (PK)<br>CodDep (FK) &#x2190;</div></div>`,
+    figcaption: 'Figura 4. PK del lado 1 propagada como FK hacia el lado N.',
+    features: [
+      { icon: '&#x1F4E4;', text: '<b>Propagación de clave</b> — la PK de la entidad "uno" migra como FK a la tabla "muchos".' },
+      { icon: '&#x1F4CB;', text: '<b>Atributos de la relación</b> — se añaden también en la tabla del lado N junto con la FK.' },
+      { icon: '&#x26A0;&#xFE0F;', text: '<b>Sin tabla intermedia</b> — a diferencia de M&#x3A;N, aquí no se genera nueva tabla.' },
+    ],
+    pills: ['Empleado.CodDep &#x2192; FK(Departamento)', 'Pedido.ID_Cliente &#x2192; FK(Cliente)']
+  },
+  {
+    color: 'var(--c5)', bg: 'var(--c5b)', border: 'rgba(190,18,60,0.22)',
+    icon: '&#x1F310;', step: 'Regla 05 &nbsp;·&nbsp; Cardinalidad', title: 'Relaciones Binarias M&#x3A;N',
+    inputLabel: 'Entrada ER', inputText: 'Muchos registros de A se relacionan con muchos registros de B; la relación puede tener atributos propios.',
+    outputLabel: 'Resultado Relacional', outputText: 'Se crea una <b>tabla intermedia T</b> con PK compuesta por las PKs de A y B, más los atributos de la relación.',
+    diagram: `
+      <div class="vc-box"><div class="vc-box-title">&#x1F393; Estudiante</div><div class="vc-box-sub">ID_Est (PK)</div></div>
+      <div class="vc-arrow">&#x2194; M&#x3A;N</div>
+      <div class="vc-box" style="border-color:var(--c5); background:var(--c5b);"><div class="vc-box-title">&#x1F4CB; Inscripción</div><div class="vc-box-sub">ID_Est (PK,FK)<br>ID_Cur (PK,FK)<br>Nota</div></div>
+      <div class="vc-arrow">&#x2194;</div>
+      <div class="vc-box"><div class="vc-box-title">&#x1F4DA; Curso</div><div class="vc-box-sub">ID_Cur (PK)</div></div>`,
+    figcaption: 'Figura 5. Tabla intermedia generada para resolver la relación M:N.',
+    features: [
+      { icon: '&#x1F4CB;', text: '<b>Nueva tabla intermedia</b> — obligatoria para representar la cardinalidad M&#x3A;N en el modelo relacional.' },
+      { icon: '&#x1F511;', text: '<b>PK compuesta</b> — formada por las PKs de ambas entidades participantes (PK1 + PK2).' },
+      { icon: '&#x2795;', text: '<b>Atributos propios</b> — los atributos de la relación ER se incluyen como columnas en la tabla intermedia.' },
+    ],
+    pills: ['Inscripcion(ID_Est, ID_Cur, Nota, Fecha)', 'Trabaja_En(ID_Emp, ID_Proy, Horas)']
+  }
+];
+
+let cur = -1;
+
+function openModal(idx) {
+  cur = idx;
+  const t = topics[idx];
+
+  document.getElementById('mStripe').style.background = t.color;
+  document.getElementById('mStripe').style.opacity = '1';
+  document.getElementById('mStep').style.color = t.color;
+  document.getElementById('mStep').innerHTML = t.step;
+  document.getElementById('mIcon').style.background = t.bg;
+  document.getElementById('mIcon').style.border = `1px solid ${t.border}`;
+  document.getElementById('mIcon').innerHTML = t.icon;
+  document.getElementById('mTitle').innerHTML = t.title;
+
+  document.getElementById('modal').style.setProperty('--modal-color', t.color);
+  document.getElementById('modal').style.setProperty('--modal-bg', t.bg);
+
+  const featsHtml = t.features.map(f =>
+    `<div class="feat-item"><span class="fi-icon">${f.icon}</span><span>${f.text}</span></div>`
+  ).join('');
+  const pillsHtml = t.pills.map(p => `<span class="uc-pill">${p}</span>`).join('');
+
+  document.getElementById('mBody').innerHTML = `
+    <div class="transform-flow">
+      <div class="tf-block input">
+        <div class="tf-label">${t.inputLabel}</div>
+        <div class="tf-content">${t.inputText}</div>
       </div>
-      <div class="modal-body">
-        <div class="transformation-box">
-          <div class="transformation-title">🎯 Entrada ER:</div>
-          <div class="transformation-content">
-            Vínculo de instancia única entre dos entidades.
-          </div>
-        </div>
-        
-        <div class="arrow-down">⬇️</div>
-        
-        <div class="transformation-box" style="background: var(--success-bg); border-color: var(--success);">
-          <div class="transformation-title" style="color: var(--success);">✅ Producto Relacional:</div>
-          <div class="transformation-content">
-            Estrategia de Clave Foránea (FK) en la tabla con participación total o Fusión de tablas.
-          </div>
-        </div>
-
-        <figure class="imagen" aria-label="Diagrama de relación 1:1">
-          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
-            <div style="font-size:3rem; margin-bottom:8px;">👤 ↔ 💼</div>
-            <p style="font-weight:600; color:var(--primary);">1:1 → FK o Fusión</p>
-            <p style="font-size:0.9rem; margin-top:8px;">Empleado ↔ Oficina<br>(Un empleado, una oficina)</p>
-          </div>
-          <figcaption class="imagen-caption">
-            Figura 3<br>
-            Relación uno a uno<br>
-            Nota. Adaptado de Elaboración propia.
-          </figcaption>
-        </figure>
+      <div class="tf-arrow">&#x2192;</div>
+      <div class="tf-block output">
+        <div class="tf-label">${t.outputLabel}</div>
+        <div class="tf-content">${t.outputText}</div>
       </div>
     </div>
-  </div>
-
-  <!-- Modal 4: Relaciones 1:N -->
-  <div class="modal-overlay" id="modal-1toN" role="dialog" aria-modal="true" aria-labelledby="title-1toN">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="title-1toN">
-          <span>📊</span> 4. Relaciones Binarias 1:N
-        </h2>
-        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="transformation-box">
-          <div class="transformation-title">🎯 Entrada ER:</div>
-          <div class="transformation-content">
-            Un registro de 'A' se relaciona con muchos de 'B'.
-          </div>
-        </div>
-        
-        <div class="arrow-down">⬇️</div>
-        
-        <div class="transformation-box" style="background: var(--success-bg); border-color: var(--success);">
-          <div class="transformation-title" style="color: var(--success);">✅ Producto Relacional:</div>
-          <div class="transformation-content">
-            Propagación de Clave: la PK del lado '1' se añade como FK en la tabla del lado 'N'.
-          </div>
-        </div>
-
-        <figure class="imagen" aria-label="Diagrama de relación 1:N">
-          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
-            <div style="font-size:3rem; margin-bottom:8px;">🏢 → 👥</div>
-            <p style="font-weight:600; color:var(--neutral);">1:N → FK en lado N</p>
-            <p style="font-size:0.9rem; margin-top:8px;">Departamento → Empleados<br>(PK_Dpto en tabla Empleados)</p>
-          </div>
-          <figcaption class="imagen-caption">
-            Figura 4<br>
-            Relación uno a muchos<br>
-            Nota. Adaptado de Elaboración propia.
-          </figcaption>
-        </figure>
-      </div>
+    <div class="visual-card">
+      <div class="vc-header">Representación esquemática</div>
+      <div class="vc-body"><div class="vc-diagram">${t.diagram}</div></div>
     </div>
-  </div>
+    <p class="figcaption">${t.figcaption}</p>
+    <div class="feat-list">${featsHtml}</div>
+    <div style="margin-bottom:4px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Ejemplos</div>
+    <div class="uc-row">${pillsHtml}</div>
+  `;
 
-  <!-- Modal 5: Relaciones M:N -->
-  <div class="modal-overlay" id="modal-MtoN" role="dialog" aria-modal="true" aria-labelledby="title-MtoN">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="title-MtoN">
-          <span>🌐</span> 5. Relaciones Binarias M:N
-        </h2>
-        <button class="modal-close" aria-label="Cerrar modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="transformation-box">
-          <div class="transformation-title">🎯 Entrada ER:</div>
-          <div class="transformation-content">
-            Muchos registros de 'A' con muchos de 'B'.
-          </div>
-        </div>
-        
-        <div class="arrow-down">⬇️</div>
-        
-        <div class="transformation-box" style="background: var(--success-bg); border-color: var(--success);">
-          <div class="transformation-title" style="color: var(--success);">✅ Producto Relacional:</div>
-          <div class="transformation-content">
-            Tabla Intermedia 'T': PK compuesta por las PKs de ambas tablas + atributos de la relación.
-          </div>
-        </div>
+  document.getElementById('mCounter').textContent =
+    String(idx+1).padStart(2,'0') + ' / ' + String(topics.length).padStart(2,'0');
+  document.getElementById('mPrev').disabled = idx === 0;
+  document.getElementById('mNext').disabled = idx === topics.length - 1;
 
-        <figure class="imagen" aria-label="Diagrama de relación M:N">
-          <div style="background:var(--tag-bg); padding:20px; text-align:center; border:1px solid var(--tag-border);">
-            <div style="font-size:3rem; margin-bottom:8px;">🎓 ⇄ </div>
-            <p style="font-weight:600; color:var(--error);">M:N → Tabla Intermedia</p>
-            <p style="font-size:0.9rem; margin-top:8px;">Estudiantes ⇄ Cursos<br>Tabla: Inscripciones<br>(PK: ID_Estudiante + ID_Curso)</p>
-          </div>
-          <figcaption class="imagen-caption">
-            Figura 5<br>
-            Relación muchos a muchos<br>
-            Nota. Adaptado de Elaboración propia.
-          </figcaption>
-        </figure>
-      </div>
-    </div>
-  </div>
+  updateExtNav();
+  document.getElementById('backdrop').classList.add('open');
+}
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const cards = document.querySelectorAll('.card');
-      const modals = document.querySelectorAll('.modal-overlay');
-      const closeButtons = document.querySelectorAll('.modal-close');
-      const btnPrev = document.getElementById('btn-prev');
-      const btnNext = document.getElementById('btn-next');
-      const modalOrder = ['modal-entity', 'modal-compound', 'modal-1to1', 'modal-1toN', 'modal-MtoN'];
-      let currentModalIndex = -1;
+function closeModal() {
+  document.getElementById('backdrop').classList.remove('open');
+  cur = -1;
+  updateExtNav();
+}
 
-      function openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-          modal.classList.add('active');
-          document.body.style.overflow = 'hidden';
-          currentModalIndex = modalOrder.indexOf(modalId);
-          updateNavButtons();
-        }
-      }
+function updateExtNav() {
+  document.getElementById('btn-prev').disabled = cur <= 0;
+  document.getElementById('btn-next').disabled = cur < 0 || cur >= topics.length - 1;
+}
 
-      function closeModal(modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        currentModalIndex = -1;
-        updateNavButtons();
-      }
+// Card clicks
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('click', () => openModal(parseInt(card.dataset.topic)));
+});
 
-      function updateNavButtons() {
-        if (currentModalIndex === -1) {
-          btnPrev.disabled = true;
-          btnNext.disabled = true;
-          return;
-        }
-        btnPrev.disabled = currentModalIndex === 0;
-        btnNext.disabled = currentModalIndex === modalOrder.length - 1;
-      }
-
-      cards.forEach(card => {
-        const openHandler = () => {
-          const modalId = card.getAttribute('data-modal');
-          openModal(modalId);
-        };
-        card.addEventListener('click', openHandler);
-        card.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openHandler();
-          }
-        });
-      });
-
-      closeButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-          const modal = this.closest('.modal-overlay');
-          closeModal(modal);
-        });
-      });
-
-      modals.forEach(modal => {
-        modal.addEventListener('click', function(e) {
-          if (e.target === this) {
-            closeModal(this);
-          }
-        });
-      });
-
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-          modals.forEach(modal => {
-            if (modal.classList.contains('active')) {
-              closeModal(modal);
-            }
-          });
-        }
-      });
-
-      btnPrev.addEventListener('click', function() {
-        if (currentModalIndex > 0) {
-          const currentModal = document.getElementById(modalOrder[currentModalIndex]);
-          closeModal(currentModal);
-          openModal(modalOrder[currentModalIndex - 1]);
-        }
-      });
-
-      btnNext.addEventListener('click', function() {
-        if (currentModalIndex < modalOrder.length - 1) {
-          const currentModal = document.getElementById(modalOrder[currentModalIndex]);
-          closeModal(currentModal);
-          openModal(modalOrder[currentModalIndex + 1]);
-        }
-      });
-    });
-  </script>
+document.getElementById('mClose').addEventListener('click', closeModal);
+document.getElementById('backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('backdrop')) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  const open = document.getElementById('backdrop').classList.contains('open');
+  if (!open) return;
+  if (e.key === 'ArrowLeft' && cur > 0) openModal(cur - 1);
+  if (e.key === 'ArrowRight' && cur < topics.length - 1) openModal(cur + 1);
+});
+document.getElementById('mPrev').addEventListener('click', () => { if (cur > 0) openModal(cur - 1); });
+document.getElementById('mNext').addEventListener('click', () => { if (cur < topics.length - 1) openModal(cur + 1); });
+document.getElementById('btn-prev').addEventListener('click', () => { if (cur > 0) openModal(cur - 1); });
+document.getElementById('btn-next').addEventListener('click', () => { if (cur < topics.length - 1) openModal(cur + 1); });
+</script>
 </body>
 </html>
