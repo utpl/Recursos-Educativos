@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Fundaciones Españolas en América, siglo XVI | Mapa Interactivo</title>
   <style>
     * {
@@ -12,11 +12,11 @@
     }
 
     body {
-      background: #e9e2d4;
+      background: white;
       background-image: radial-gradient(circle at 25% 40%, rgba(200,180,140,0.15) 2%, transparent 2.5%);
       background-size: 28px 28px;
       font-family: 'Segoe UI', 'Roboto', 'Georgia', serif;
-      padding: 2rem 1.5rem;
+  
       display: flex;
       justify-content: center;
       align-items: center;
@@ -25,10 +25,10 @@
 
     /* Contenedor principal estilo "pergamino" */
     .map-wrapper {
-      max-width: 1300px;
+      max-width: 800px;
       width: 100%;
       background: #fffef7;
-      border-radius: 32px;
+ 
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.05);
       overflow: hidden;
       border: 1px solid #dacaa8;
@@ -71,64 +71,103 @@
       flex-direction: column;
     }
 
-    .map-svg-container {
+    .map-image-container {
+      position: relative;
       background: #e6dfcf;
       border-radius: 28px;
       padding: 12px;
       box-shadow: inset 0 0 0 2px #fff9ed, 0 8px 24px rgba(0, 0, 0, 0.1);
+      display: inline-block;
       width: 100%;
-      display: flex;
-      justify-content: center;
+      text-align: center;
     }
 
-    svg {
+    .map-image-container img {
       max-width: 100%;
       height: auto;
       display: block;
       margin: 0 auto;
-      background: #f2ecd9;
       border-radius: 20px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      pointer-events: none; /* Para que los botones sean clickeables sin interferencia */
+    }
+
+    /* Contenedor de botones flotantes sobre la imagen */
+    .map-buttons-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* El contenedor no intercepta clicks, los botones sí */
     }
 
     /* Estilos para los botones flotantes (puntos interactivos) */
     .city-marker {
+      position: absolute;
       cursor: pointer;
+      pointer-events: auto;
+      transform: translate(-50%, -50%);
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .city-marker .marker-circle {
+      width: 36px;
+      height: 36px;
+      background: #1e88e5;
+      border: 2.5px solid #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       transition: all 0.2s ease;
     }
 
-    .city-marker circle {
-      fill: #1e6fdf;
-      stroke: #ffffff;
-      stroke-width: 2.5;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-      transition: r 0.2s, fill 0.2s;
-    }
-
-    .city-marker text {
-      fill: white;
-      font-size: 8px;
+    .city-marker .marker-year {
+      font-size: 11px;
       font-weight: bold;
+      color: white;
       font-family: 'Segoe UI', sans-serif;
-      dominant-baseline: central;
-      text-anchor: middle;
+    }
+
+    .city-marker:hover .marker-circle {
+      background: #ffb347;
+      transform: scale(1.1);
+      width: 40px;
+      height: 40px;
+    }
+
+    .city-marker:hover .marker-year {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* Tooltip sutil */
+    .city-marker::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2c2b1f;
+      color: #ffecb3;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      white-space: nowrap;
+      font-weight: 500;
+      opacity: 0;
       pointer-events: none;
-      font-weight: 700;
+      transition: opacity 0.2s;
+      margin-bottom: 8px;
+      font-family: 'Segoe UI', sans-serif;
+      z-index: 20;
     }
 
-    .city-marker:hover circle {
-      fill: #ffb347;
-      r: 18;
-    }
-
-    .city-marker:hover text {
-      font-size: 9px;
-      fill: #2d2b1f;
-    }
-
-    /* tooltip sutil (opcional) */
-    .city-marker title {
-      font-family: sans-serif;
+    .city-marker:hover::after {
+      opacity: 1;
     }
 
     /* Pie de referencias */
@@ -286,6 +325,17 @@
       .header p { font-size: 0.85rem; }
       .modal-header h3 { font-size: 1.3rem; }
       .modal-body { padding: 1rem; }
+      .city-marker .marker-circle {
+        width: 28px;
+        height: 28px;
+      }
+      .city-marker .marker-year {
+        font-size: 9px;
+      }
+      .city-marker:hover .marker-circle {
+        width: 32px;
+        height: 32px;
+      }
     }
   </style>
 </head>
@@ -297,99 +347,18 @@
   </div>
 
   <div class="map-container">
-    <div class="map-svg-container">
-      <!-- Mapa SVG de América del Sur (siluetas regionales) con puntos interactivos exactos por país -->
-      <svg viewBox="0 0 600 750" xmlns="http://www.w3.org/2000/svg">
-        <!-- Fondo sutil del mapa -->
-        <rect width="600" height="750" fill="#f2ecd9" rx="16" ry="16" />
-        
-        <!-- ============ DIBUJO DE PAÍSES (siluetas aproximadas didácticas) ============ -->
-        <!-- COLOMBIA (noroeste) -->
-        <path d="M220,130 L290,115 L325,150 L315,185 L285,210 L255,220 L220,200 L195,180 L200,150 Z" fill="#d9cfb0" stroke="#aa9f7b" stroke-width="1.2" />
-        <!-- ECUADOR -->
-        <path d="M240,225 L275,210 L300,235 L295,275 L265,290 L235,280 L225,255 Z" fill="#d9cfb0" stroke="#aa9f7b" stroke-width="1.2" />
-        <!-- PERÚ -->
-        <path d="M265,300 L300,285 L325,310 L330,380 L315,430 L285,445 L255,420 L250,365 L255,320 Z" fill="#d9cfb0" stroke="#aa9f7b" stroke-width="1.2" />
-        <!-- BOLIVIA -->
-        <path d="M310,440 L345,425 L370,450 L365,500 L335,525 L305,505 L300,465 Z" fill="#d9cfb0" stroke="#aa9f7b" stroke-width="1.2" />
-        <!-- CHILE (franja larga) -->
-        <path d="M290,530 L315,525 L325,580 L320,650 L300,690 L275,670 L270,610 L275,560 Z" fill="#d9cfb0" stroke="#aa9f7b" stroke-width="1.2" />
-        <!-- ARGENTINA -->
-        <path d="M320,490 L365,485 L400,510 L420,560 L405,640 L370,695 L325,690 L300,660 L305,600 L315,540 Z" fill="#d9cfb0" stroke="#aa9f7b" stroke-width="1.2" />
-        <!-- Guyanas / resto (solo estético) -->
-        <path d="M330,115 L375,100 L405,130 L390,170 L360,185 L330,160 Z" fill="#ccc29e" stroke="#aa9f7b" stroke-width="1" />
-        <path d="M410,135 L440,120 L460,145 L445,180 L410,195 L395,165 Z" fill="#ccc29e" stroke="#aa9f7b" stroke-width="1" />
-        <!-- Brasil referencia (silueta general) -->
-        <path d="M370,150 L430,145 L470,190 L490,270 L480,350 L460,420 L430,480 L380,510 L360,460 L360,350 L355,250 L365,190 Z" fill="#cbc29c" stroke="#aa9f7b" stroke-width="0.8" opacity="0.7" />
-        
-        <!-- ============ BOTONES INTERACTIVOS (subrayados en celeste / círculos celestes) ============ -->
-        <!-- COLOMBIA - BOTÓN Bogotá (6 de agosto 1538) -->
-        <g class="city-marker" onclick="openModal('bogota')">
-          <circle cx="255" cy="175" r="16" fill="#1e88e5" stroke="#ffffff" stroke-width="2.5" />
-          <text x="255" y="177" font-size="8" fill="white" text-anchor="middle" dominant-baseline="central" font-weight="bold">1538</text>
-          <title>Bogotá - 6 agosto 1538</title>
-        </g>
-
-        <!-- ECUADOR - BOTÓN Quito (6 diciembre 1534) -->
-        <g class="city-marker" onclick="openModal('quito')">
-          <circle cx="268" cy="250" r="16" fill="#1e88e5" stroke="#fff" stroke-width="2.5" />
-          <text x="268" y="252" font-size="8" fill="white" text-anchor="middle" dominant-baseline="central">1534</text>
-          <title>Quito - 6 diciembre 1534</title>
-        </g>
-
-        <!-- PERÚ - BOTÓN Lima (18 enero 1535) -->
-        <g class="city-marker" onclick="openModal('lima')">
-          <circle cx="295" cy="365" r="16" fill="#1e88e5" stroke="#fff" stroke-width="2.5" />
-          <text x="295" y="367" font-size="8" fill="white" text-anchor="middle" dominant-baseline="central">1535</text>
-          <title>Lima - 18 enero 1535</title>
-        </g>
-
-        <!-- BOLIVIA - BOTÓN Sucre (29 septiembre 1538) -->
-        <g class="city-marker" onclick="openModal('sucre')">
-          <circle cx="325" cy="460" r="16" fill="#1e88e5" stroke="#fff" stroke-width="2.5" />
-          <text x="325" y="462" font-size="8" fill="white" text-anchor="middle" dominant-baseline="central">1538</text>
-          <title>Sucre - 29 septiembre 1538</title>
-        </g>
-
-        <!-- CHILE - BOTÓN Santiago (12 febrero 1541) -->
-        <g class="city-marker" onclick="openModal('santiago')">
-          <circle cx="297" cy="610" r="16" fill="#1e88e5" stroke="#fff" stroke-width="2.5" />
-          <text x="297" y="612" font-size="8" fill="white" text-anchor="middle" dominant-baseline="central">1541</text>
-          <title>Santiago - 12 febrero 1541</title>
-        </g>
-
-        <!-- ARGENTINA - BOTÓN Buenos Aires (11 junio 1580) -->
-        <g class="city-marker" onclick="openModal('buenosaires')">
-          <circle cx="370" cy="630" r="16" fill="#1e88e5" stroke="#fff" stroke-width="2.5" />
-          <text x="370" y="632" font-size="8" fill="white" text-anchor="middle" dominant-baseline="central">1580</text>
-          <title>Buenos Aires - 11 junio 1580</title>
-        </g>
-
-        <!-- Etiquetas de nombre de los países (didáctico) -->
-        <text x="250" y="145" font-size="8" fill="#5c4b2e" font-weight="bold" font-family="sans-serif">Colombia</text>
-        <text x="258" y="220" font-size="8" fill="#5c4b2e" font-weight="bold">Ecuador</text>
-        <text x="295" y="320" font-size="8" fill="#5c4b2e" font-weight="bold">Perú</text>
-        <text x="340" y="440" font-size="8" fill="#5c4b2e" font-weight="bold">Bolivia</text>
-        <text x="305" y="575" font-size="8" fill="#5c4b2e" font-weight="bold">Chile</text>
-        <text x="370" y="545" font-size="8" fill="#5c4b2e" font-weight="bold">Argentina</text>
-        
-        <!-- leyenda sutil -->
-        <rect x="420" y="700" width="10" height="10" fill="#1e88e5" rx="2" />
-        <text x="436" y="709" font-size="7" fill="#3b2f1f">Fundación siglo XVI</text>
-      </svg>
+    <div class="map-image-container">
+      <!-- Imagen de fondo: mapa de Sudamérica -->
+      <img src="media/Imagen 10.png" alt="Mapa de América del Sur" id="mapaSudamerica">
+      
+      <!-- Contenedor de botones flotantes (posicionados sobre la imagen) -->
+      <div class="map-buttons-overlay" id="buttonsOverlay">
+        <!-- Los botones se generarán dinámicamente con JS para ajustar coordenadas relativas -->
+      </div>
     </div>
   </div>
 
-  <!-- Referencias (pie de página tal como indica el documento) -->
-  <div class="references-footer">
-    <h4>📚 Referencias documentales</h4>
-    <p>Burneo, R. A. (2017). <em>El damero de Pizarro. El trazo y la forja de Lima.</em> Municipalidad Metropolitana de Lima. <br>
-    Raymundo, B. A. (2000). Crónica de la fundación de Buenos Aires (1536-1580). <em>Historias de la Ciudad. Una revista de Buenos Aires, 2(6).</em> <br>
-    Biblioteca Nacional de Chile. (s/f). Fundación de Santiago. <em>Memoria Chilena.</em> <br>
-    Barnadas, J. M. (2022). <em>Charcas: Orígenes históricos de una sociedad colonial, 1535-1565</em> (2a ed.). Biblioteca del Bicentenario de Bolivia.<br>
-    Mejía Pavony, G. R. (2012). <em>La ciudad de los conquistadores: Historia de Bogotá 1536-1604.</em> Pontificia Universidad Javeriana.<br>
-    Lozano Castro, A. (1991). <em>Quito. Ciudad milenaria.</em> Abya-Yala; Centro de Investigación Urbana y Arquitectura Andina-Madrid.</p>
-  </div>
+
 </div>
 
 <!-- MODAL ESTRUCTURA (contenido histórico extraído fielmente del documento) -->
@@ -452,6 +421,48 @@
     }
   };
 
+  // Coordenadas relativas (en porcentaje) para cada botón sobre la imagen
+  // Ajusta estos valores según tu mapa (se pueden modificar fácilmente)
+  const markersPosition = {
+    bogota:    { left: 42, top: 17 },   // Colombia
+    quito:     { left: 40, top: 30 },   // Ecuador
+    lima:      { left: 42, top: 46 },   // Perú
+    sucre:     { left: 48, top: 40 },   // Bolivia
+    santiago:  { left: 44, top: 72 },   // Chile
+    buenosaires: { left: 52, top: 73 }   // Argentina
+  };
+
+  function crearBotones() {
+    const overlay = document.getElementById('buttonsOverlay');
+    overlay.innerHTML = '';
+    
+    for (const [id, coords] of Object.entries(markersPosition)) {
+      const button = document.createElement('div');
+      button.className = 'city-marker';
+      button.style.left = `${coords.left}%`;
+      button.style.top = `${coords.top}%`;
+      
+      // Tooltip personalizado
+      let tooltipText = '';
+      if (id === 'bogota') tooltipText = 'Bogotá - 1538';
+      else if (id === 'quito') tooltipText = 'Quito - 1534';
+      else if (id === 'lima') tooltipText = 'Lima - 1535';
+      else if (id === 'sucre') tooltipText = 'Sucre - 1538';
+      else if (id === 'santiago') tooltipText = 'Santiago - 1541';
+      else if (id === 'buenosaires') tooltipText = 'Buenos Aires - 1580';
+      button.setAttribute('data-tooltip', tooltipText);
+      
+      button.innerHTML = `
+        <div class="marker-circle">
+          <span class="marker-year">${tooltipText.split(' - ')[1]}</span>
+        </div>
+      `;
+      
+      button.addEventListener('click', () => openModal(id));
+      overlay.appendChild(button);
+    }
+  }
+
   function openModal(cityId) {
     const data = citiesData[cityId];
     if (!data) return;
@@ -493,6 +504,16 @@
     if (e.key === 'Escape') {
       closeModal();
     }
+  });
+
+  // Ajustar posición de botones cuando la imagen cambie de tamaño (resize)
+  window.addEventListener('load', () => {
+    crearBotones();
+  });
+  
+  window.addEventListener('resize', () => {
+    // No es necesario recrear porque usamos porcentajes, pero si se requiere recalibrar algo:
+    // Los botones ya están en % así que se adaptan automáticamente.
   });
 </script>
 </body>
