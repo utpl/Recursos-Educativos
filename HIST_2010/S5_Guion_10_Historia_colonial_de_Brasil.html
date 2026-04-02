@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Historia Colonial de Brasil – Línea de Tiempo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Lato:wght@400;700;900&display=swap');
+
+  :root {
+    --br-green:  #009c3b;
+    --br-yellow: #ffdf00;
+    --br-blue:   #003399;
+    --br-dark:   #0b1a2e;
+    --br-mid:    #1a3a5c;
+    --accent:    #f0b429;
+    --light:     #e8f4f0;
+    --paper:     #f8fbf9;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--br-dark);
+    background-image:
+      radial-gradient(ellipse at 0% 0%,   rgba(0,156,59,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(0,51,153,0.2) 0%, transparent 50%);
+    min-height: 100vh;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 20px 12px 52px;
+  }
+
+  .container {
+    width: 800px; max-width: 100%;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 0 0 3px var(--br-yellow), 0 20px 70px rgba(0,0,0,0.45);
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--br-dark);
+    padding: 32px 36px 26px;
+    position: relative; overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 85% 50%, rgba(0,156,59,0.18) 0%, transparent 55%),
+      radial-gradient(circle at 15% 80%, rgba(0,51,153,0.2) 0%, transparent 45%);
+  }
+  .header::after {
+    content: '🇧🇷';
+    position: absolute; right: 30px; top: 50%; transform: translateY(-50%);
+    font-size: 80px; opacity: 0.18; pointer-events: none;
+  }
+  .h-flag-bar {
+    display: flex; gap: 4px; margin-bottom: 14px;
+  }
+  .hfb { height: 4px; border-radius: 2px; }
+  .hfb-g { background: var(--br-green); width: 40px; }
+  .hfb-y { background: var(--br-yellow); width: 28px; }
+  .hfb-b { background: var(--br-blue); width: 20px; }
+
+  .header h1 {
+    font-family: 'Abril Fatface', serif;
+    font-size: 26px; color: #fff; line-height: 1.15; margin-bottom: 6px;
+  }
+  .header h1 span { color: var(--br-yellow); }
+  .header p { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.6; max-width: 440px; }
+
+  /* ── HINT ── */
+  .hint {
+    background: #e8f5ec; border-left: 4px solid var(--br-green);
+    padding: 13px 24px; font-size: 13px; color: #1a4a2e;
+    line-height: 1.55;
+  }
+  .hint strong { color: var(--br-green); }
+
+  /* ── TIMELINE CONTAINER ── */
+  .tl-wrap {
+    padding: 32px 24px 36px;
+    background: var(--paper);
+    position: relative;
+  }
+
+  /* central spine */
+  .tl-spine {
+    position: absolute;
+    left: 50%; top: 32px; bottom: 36px;
+    width: 4px; background: linear-gradient(180deg, var(--br-green), var(--br-yellow), var(--br-blue));
+    transform: translateX(-50%);
+    border-radius: 4px;
+  }
+
+  /* ── EVENT ROW ── */
+  .tl-row {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    align-items: center;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .tl-row:last-child { margin-bottom: 0; }
+
+  /* alternating: even rows flip */
+  .tl-row.left  .tl-content { grid-column: 1; grid-row: 1; text-align: right; padding-right: 18px; }
+  .tl-row.left  .tl-node   { grid-column: 2; grid-row: 1; }
+  .tl-row.left  .tl-empty  { grid-column: 3; grid-row: 1; }
+
+  .tl-row.right .tl-empty  { grid-column: 1; grid-row: 1; }
+  .tl-row.right .tl-node   { grid-column: 2; grid-row: 1; }
+  .tl-row.right .tl-content{ grid-column: 3; grid-row: 1; text-align: left; padding-left: 18px; }
+
+  /* ── NODE (circle) ── */
+  .tl-node {
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .node-circle {
+    width: 52px; height: 52px; border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 0 0 3px var(--br-green), 0 4px 16px rgba(0,0,0,0.18);
+    background: var(--br-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.22s, box-shadow 0.22s;
+    position: relative;
+  }
+  .node-circle:hover {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 4px var(--br-yellow), 0 8px 28px rgba(0,0,0,0.28);
+  }
+
+  /* ── CONTENT CARD ── */
+  .tl-content {
+    cursor: pointer;
+  }
+  .ev-card {
+    display: inline-block;
+    background: #fff;
+    border: 2px solid #e0ede6;
+    border-radius: 14px;
+    padding: 14px 16px;
+    max-width: 280px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    text-align: left;
+  }
+  .tl-row.left .ev-card { margin-left: auto; }
+  .ev-card:hover {
+    border-color: var(--br-green);
+    box-shadow: 0 6px 24px rgba(0,156,59,0.15);
+    transform: translateY(-3px);
+  }
+  .ev-year {
+    font-family: 'Abril Fatface', serif;
+    font-size: 18px; color: var(--br-green); margin-bottom: 4px;
+  }
+  .ev-title {
+    font-size: 13px; font-weight: 700; color: var(--br-dark);
+    line-height: 1.45;
+  }
+  .ev-cta {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 8px; font-size: 11px; font-weight: 700;
+    color: var(--br-green); text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .ev-cta::after { content: '→'; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(11,26,46,0.65);
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s; padding: 16px;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fff; border-radius: 22px;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 0 0 3px var(--br-yellow), 0 28px 80px rgba(0,0,0,0.4);
+    transform: translateY(28px) scale(0.97); opacity: 0;
+    transition: transform 0.32s ease, opacity 0.32s ease;
+    overflow: hidden;
+  }
+  .modal-overlay.active .modal { transform: translateY(0) scale(1); opacity: 1; }
+
+  .modal-top {
+    background: var(--br-dark);
+    padding: 24px 26px 20px;
+    position: relative; overflow: hidden;
+  }
+  .modal-top::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 50%, rgba(0,156,59,0.2), transparent 60%);
+  }
+  .modal-icon { font-size: 42px; margin-bottom: 10px; display: block; }
+  .modal-year {
+    font-family: 'Abril Fatface', serif;
+    font-size: 30px; color: var(--br-yellow); line-height: 1;
+  }
+  .modal-title {
+    font-size: 15px; font-weight: 900; color: #fff;
+    margin-top: 6px; line-height: 1.3;
+  }
+
+  .modal-body { padding: 22px 24px 24px; }
+  .modal-text {
+    font-size: 14px; color: #2a3a2e; line-height: 1.8;
+    background: var(--light); border-radius: 12px;
+    padding: 16px 18px; border: 1.5px solid #c6e6d4;
+  }
+  .modal-close {
+    display: block; width: 100%; margin-top: 16px;
+    padding: 13px;
+    background: var(--br-green); color: #fff;
+    border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: #007a2f; }
+
+  /* ── REFERENCES ── */
+  .refs-section {
+    background: var(--br-dark); padding: 22px 28px;
+  }
+  .refs-label {
+    font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--br-yellow); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .refs-label::after { content: ''; flex: 1; height: 1px; background: rgba(255,221,0,0.2); }
+  .ref-item {
+    font-size: 11.5px; color: rgba(255,255,255,0.55);
+    line-height: 1.7; margin-bottom: 8px;
+    padding-left: 14px; position: relative;
+  }
+  .ref-item::before { content: '◆'; position: absolute; left: 0; color: var(--br-yellow); font-size: 7px; top: 5px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: #0b1a2e; border-top: 1px solid rgba(255,221,0,0.12);
+    padding: 12px 24px; font-size: 11px; color: rgba(255,255,255,0.3); text-align: center;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    body { padding: 10px 6px 36px; }
+    .header { padding: 22px 18px 18px; }
+    .header h1 { font-size: 20px; }
+    .tl-wrap { padding: 24px 12px 28px; }
+    .tl-spine { left: 28px; }
+    .tl-row { grid-template-columns: 56px 1fr !important; }
+    .tl-row.left .tl-content,
+    .tl-row.right .tl-content {
+      grid-column: 2 !important; grid-row: 1 !important;
+      text-align: left !important; padding-left: 14px !important; padding-right: 0 !important;
+    }
+    .tl-row.left .tl-node,
+    .tl-row.right .tl-node { grid-column: 1 !important; grid-row: 1 !important; justify-content: flex-start; padding-left: 2px; }
+    .tl-row.left .tl-empty,
+    .tl-row.right .tl-empty { display: none !important; }
+    .tl-row.left .ev-card { margin-left: 0; }
+    .ev-card { max-width: 100%; }
+    .node-circle { width: 44px; height: 44px; font-size: 18px; }
+    .refs-section { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="h-flag-bar">
+      <div class="hfb hfb-g"></div>
+      <div class="hfb hfb-y"></div>
+      <div class="hfb hfb-b"></div>
+    </div>
+    <h1>Historia Colonial de <span>Brasil</span></h1>
+    <p>Explore los principales acontecimientos que marcaron la historia colonial de Brasil desde la llegada de los portugueses hasta su independencia</p>
+  </div>
+
+  <!-- HINT -->
+  <div class="hint">
+    👆 <strong>Instrucción:</strong> Haga clic en cada ítem para visualizar la información completa del evento.
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="tl-wrap">
+    <div class="tl-spine"></div>
+
+    <!-- 1500 -->
+    <div class="tl-row left" onclick="openModal(0)">
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1500</div>
+          <div class="ev-title">Llegada de Pedro Álvares Cabral</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="node-circle">⛵</div>
+      </div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <!-- 1530 -->
+    <div class="tl-row right" onclick="openModal(1)">
+      <div class="tl-empty"></div>
+      <div class="tl-node">
+        <div class="node-circle">🏘️</div>
+      </div>
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1530</div>
+          <div class="ev-title">Inicio de la colonización efectiva</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1534 -->
+    <div class="tl-row left" onclick="openModal(2)">
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1534</div>
+          <div class="ev-title">Capitanías hereditarias</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="node-circle">🗺️</div>
+      </div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <!-- Siglo XVI -->
+    <div class="tl-row right" onclick="openModal(3)">
+      <div class="tl-empty"></div>
+      <div class="tl-node">
+        <div class="node-circle">🌿</div>
+      </div>
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">Siglo XVI</div>
+          <div class="ev-title">Ciclo del azúcar</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1624–1654 -->
+    <div class="tl-row left" onclick="openModal(4)">
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1624–1654</div>
+          <div class="ev-title">Invasiones holandesas</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="node-circle">⚔️</div>
+      </div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <!-- 1693 -->
+    <div class="tl-row right" onclick="openModal(5)">
+      <div class="tl-empty"></div>
+      <div class="tl-node">
+        <div class="node-circle">⛏️</div>
+      </div>
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1693</div>
+          <div class="ev-title">Fiebre del oro en Minas Gerais</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1695 -->
+    <div class="tl-row left" onclick="openModal(6)">
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1695</div>
+          <div class="ev-title">Destrucción del Quilombo de Palmares</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="node-circle">✊</div>
+      </div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <!-- 1763 -->
+    <div class="tl-row right" onclick="openModal(7)">
+      <div class="tl-empty"></div>
+      <div class="tl-node">
+        <div class="node-circle">🏙️</div>
+      </div>
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1763</div>
+          <div class="ev-title">Río de Janeiro, nueva capital</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1789 -->
+    <div class="tl-row left" onclick="openModal(8)">
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1789</div>
+          <div class="ev-title">Inconfidencia Mineira</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="node-circle">📜</div>
+      </div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <!-- 1808 -->
+    <div class="tl-row right" onclick="openModal(9)">
+      <div class="tl-empty"></div>
+      <div class="tl-node">
+        <div class="node-circle">👑</div>
+      </div>
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1808</div>
+          <div class="ev-title">Llegada de la familia real portuguesa</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1815 -->
+    <div class="tl-row left" onclick="openModal(10)">
+      <div class="tl-content">
+        <div class="ev-card">
+          <div class="ev-year">1815</div>
+          <div class="ev-title">Brasil elevado a Reino</div>
+          <div class="ev-cta">Ver más</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="node-circle">🌐</div>
+      </div>
+      <div class="tl-empty"></div>
+    </div>
+
+    <!-- 1822 -->
+    <div class="tl-row right" onclick="openModal(11)">
+      <div class="tl-empty"></div>
+      <div class="tl-node">
+        <div class="node-circle" style="box-shadow:0 0 0 3px var(--br-yellow),0 4px 16px rgba(0,0,0,0.25);">🇧🇷</div>
+      </div>
+      <div class="tl-content">
+        <div class="ev-card" style="border-color:#ffdf00; background:#fffef0;">
+          <div class="ev-year" style="color:#b8890a;">7 sep. 1822</div>
+          <div class="ev-title">Grito de Ipiranga – Independencia</div>
+          <div class="ev-cta" style="color:#b8890a;">Ver más</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tl-wrap -->
+
+  <!-- REFERENCES -->
+  <div class="refs-section">
+    <div class="refs-label">📚 Referencias — APA 7</div>
+    <div class="ref-item">Fausto, B. (1999). <em>A concise history of Brazil</em>. Cambridge University Press.</div>
+    <div class="ref-item">Bethell, L. (Ed.). (1987). <em>Colonial Brazil</em>. Cambridge University Press.</div>
+    <div class="ref-item">Schwartz, S. B. (1985). <em>Sugar plantations in the formation of Brazilian society: Bahia, 1550–1835</em>. Cambridge University Press.</div>
+    <div class="ref-item">Boxer, C. R. (1962). <em>The golden age of Brazil, 1695–1750: Growing pains of a colonial society</em>. University of California Press.</div>
+    <div class="ref-item">Maxwell, K. (1973). <em>Conflicts and conspiracies: Brazil and Portugal, 1750–1808</em>. Cambridge University Press.</div>
+  </div>
+
+  <div class="footer">Recurso educativo | Historia Colonial de Brasil</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlay(event)">
+  <div class="modal">
+    <div class="modal-top">
+      <span class="modal-icon" id="m-icon"></span>
+      <div class="modal-year" id="m-year"></div>
+      <div class="modal-title" id="m-title"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-text" id="m-text"></div>
+      <button class="modal-close" onclick="closeModal()">Cerrar ✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const EVENTS = [
+  {
+    icon:'⛵', year:'1500',
+    title:'Llegada de Pedro Álvares Cabral a Brasil',
+    text:'Llegada de Pedro Álvares Cabral a las costas de Brasil, dando inicio a la colonización portuguesa en territorio americano.'
+  },
+  {
+    icon:'🏘️', year:'1530',
+    title:'Inicio de la colonización efectiva',
+    text:'Expedición de Martim Afonso de Sousa e inicio de la colonización efectiva con la fundación de los primeros núcleos urbanos.'
+  },
+  {
+    icon:'🗺️', year:'1534',
+    title:'Creación de las Capitanías hereditarias',
+    text:'Creación de las Capitanías hereditarias que dividen el territorio en franjas horizontales que son entregadas a nobles para su administración.'
+  },
+  {
+    icon:'🌿', year:'Siglo XVI',
+    title:'Ciclo del azúcar',
+    text:'Inicio del ciclo del azúcar en el que este producto se convierte en la principal exportación de Brasil.'
+  },
+  {
+    icon:'⚔️', year:'1624–1654',
+    title:'Invasiones holandesas',
+    text:'Invasiones holandesas en el norte del territorio brasileño.'
+  },
+  {
+    icon:'⛏️', year:'1693',
+    title:'Fiebre del oro en Minas Gerais',
+    text:'Inicia la fiebre del oro tras el descubrimiento de los primeros yacimientos en la región de Minas Gerais.'
+  },
+  {
+    icon:'✊', year:'1695',
+    title:'Destrucción del Quilombo de Palmares',
+    text:'Destrucción del Quilombo de Palmares, que se había convertido en un símbolo de resistencia de esclavos fugitivos.'
+  },
+  {
+    icon:'🏙️', year:'1763',
+    title:'Río de Janeiro, capital del Brasil colonial',
+    text:'Río de Janeiro se convierte en la capital del Brasil colonial y en uno de los puestos más importantes del continente.'
+  },
+  {
+    icon:'📜', year:'1789',
+    title:'Inconfidencia Mineira',
+    text:'Ocurre la Inconfidencia Mineira que se convierte en el primer intento de independencia.'
+  },
+  {
+    icon:'👑', year:'1808',
+    title:'Llegada de la familia real portuguesa',
+    text:'Llegada del rey Juan VI de Portugal y su familia a Brasil, huyendo de las guerras napoleónicas.'
+  },
+  {
+    icon:'🌐', year:'1815',
+    title:'Brasil elevado a la categoría de Reino',
+    text:'Brasil es elevado a la categoría de reino al convertirse en parte del "Reino Unido de Portugal, Brasil y el Algarve".'
+  },
+  {
+    icon:'🇧🇷', year:'7 de septiembre de 1822',
+    title:'Grito de Ipiranga – Independencia de Brasil',
+    text:'Grito de Ipiringa en la que el príncipe Pedro I proclama la independencia de Brasil.'
+  }
+];
+
+function openModal(i) {
+  const e = EVENTS[i];
+  document.getElementById('m-icon').textContent  = e.icon;
+  document.getElementById('m-year').textContent  = e.year;
+  document.getElementById('m-title').textContent = e.title;
+  document.getElementById('m-text').textContent  = e.text;
+  document.getElementById('modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function handleOverlay(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

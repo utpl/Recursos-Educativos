@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Los 4 Viajes de Colón a América</title>
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f6ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px 40px;
+    }
+
+    /* ── Container ── */
+    .container {
+      width: 800px;
+      max-width: 100%;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 10px 50px rgba(30,60,180,0.12);
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1a56c4 0%, #0e9de0 100%);
+      color: #fff;
+      padding: 36px 38px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '⛵';
+      position: absolute;
+      right: 30px; top: 18px;
+      font-size: 90px;
+      opacity: 0.12;
+      transform: scaleX(-1);
+      pointer-events: none;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .header-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.32);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 14px;
+      opacity: 0.88;
+      line-height: 1.55;
+      max-width: 500px;
+    }
+
+    /* ── Intro hint ── */
+    .hint-bar {
+      background: #eff6ff;
+      border-left: 4px solid #1a56c4;
+      margin: 24px 28px 0;
+      padding: 12px 18px;
+      border-radius: 0 10px 10px 0;
+      font-size: 13.5px;
+      color: #374151;
+      line-height: 1.55;
+    }
+
+    /* ── Timeline ── */
+    .timeline-section {
+      padding: 28px 28px 12px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+    /* vertical line */
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px; top: 8px; bottom: 8px;
+      width: 3px;
+      background: linear-gradient(180deg, #1a56c4, #0e9de0, #06b6d4, #6366f1);
+      border-radius: 3px;
+    }
+
+    /* ── Voyage Card ── */
+    .voyage-card {
+      position: relative;
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 20px 20px 18px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s, background 0.2s;
+    }
+    .voyage-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 6px 28px rgba(30,90,200,0.12);
+      transform: translateX(6px);
+      background: #fff;
+    }
+
+    /* dot on timeline */
+    .voyage-card::before {
+      content: '';
+      position: absolute;
+      left: -24px; top: 22px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .v1 { --accent: #1a56c4; }
+    .v2 { --accent: #0891b2; }
+    .v3 { --accent: #059669; }
+    .v4 { --accent: #7c3aed; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .card-left { flex: 1; }
+    .voyage-num {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .voyage-title {
+      font-size: 16.5px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+    }
+    .voyage-years {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+    .open-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    .open-btn:hover { opacity: 0.85; transform: scale(1.05); }
+
+    /* pills row */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .pill {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 4px 11px;
+      font-size: 12px;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pill strong { color: var(--accent); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── Grid Cards (bottom) ── */
+    .cards-section {
+      padding: 8px 28px 28px;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .mini-card {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      border-radius: 14px;
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .mini-card::after {
+      content: var(--emoji);
+      position: absolute;
+      right: 10px; bottom: -4px;
+      font-size: 40px;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .mini-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+    .mc-num { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; color: var(--txt); margin-bottom: 6px; }
+    .mc-title { font-size: 14.5px; font-weight: 800; color: var(--txt); line-height: 1.25; }
+    .mc-years { font-size: 12px; color: var(--txt); opacity: 0.7; margin-top: 3px; }
+    .mc-arrow { margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--txt); opacity: 0.6; }
+
+    .mc1 { --bg1:#dbeafe; --bg2:#bfdbfe; --txt:#1e3a8a; --emoji:'⛵'; }
+    .mc2 { --bg1:#cffafe; --bg2:#a5f3fc; --txt:#164e63; --emoji:'🏝️'; }
+    .mc3 { --bg1:#d1fae5; --bg2:#a7f3d0; --txt:#064e3b; --emoji:'🌊'; }
+    .mc4 { --bg1:#ede9fe; --bg2:#ddd6fe; --txt:#3b0764; --emoji:'🗺️'; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,30,80,0.45);
+      backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+      padding: 16px;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: #fff;
+      border-radius: 22px;
+      width: 100%; max-width: 540px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 70px rgba(20,50,180,0.22);
+      transform: translateY(28px) scale(0.97);
+      opacity: 0;
+      transition: transform 0.32s ease, opacity 0.32s ease;
+    }
+    .modal-overlay.active .modal { transform: translateY(0) scale(1); opacity: 1; }
+
+    .modal-hero {
+      padding: 28px 28px 22px;
+      background: linear-gradient(135deg, var(--m-c1), var(--m-c2));
+      border-radius: 22px 22px 0 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .modal-hero::after {
+      content: var(--m-emoji);
+      position: absolute;
+      right: 20px; top: 10px;
+      font-size: 80px;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    .modal-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .modal-hero h2 { font-size: 21px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 4px; }
+    .modal-hero p  { font-size: 13px; color: rgba(255,255,255,0.85); }
+
+    .modal-body { padding: 22px 28px 26px; }
+
+    /* info rows */
+    .info-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 13px 15px;
+      border: 1.5px solid #f3f4f6;
+    }
+    .info-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .info-content {}
+    .info-label { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9ca3af; margin-bottom: 3px; }
+    .info-text { font-size: 13.5px; color: #1f2937; line-height: 1.55; font-weight: 500; }
+
+    /* narrative */
+    .narrative-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: #6b7280; margin: 18px 0 10px;
+    }
+    .narrative {
+      font-size: 13.5px; color: #374151; line-height: 1.75;
+      background: #f9fafb; border-radius: 12px;
+      padding: 16px 18px; border: 1.5px solid #f3f4f6;
+    }
+
+    .modal-close-btn {
+      display: block; width: 100%; margin-top: 20px;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--m-c1), var(--m-c2));
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .modal-close-btn:hover { opacity: 0.88; }
+
+    /* ── Footer ── */
+    .footer {
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      padding: 13px 28px;
+      font-size: 11.5px; color: #9ca3af; text-align: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      body { padding: 10px 8px 30px; }
+      .header { padding: 22px 18px 20px; }
+      .header h1 { font-size: 19px; }
+      .hint-bar { margin: 16px 14px 0; }
+      .timeline-section { padding: 20px 14px 8px; }
+      .timeline { padding-left: 22px; }
+      .timeline::before { left: 8px; }
+      .voyage-card::before { left: -18px; }
+      .voyage-card { padding: 16px 14px; }
+      .cards-section { padding: 6px 14px 22px; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .modal-body { padding: 18px 18px 20px; }
+      .modal-hero { padding: 20px 18px 18px; }
+      .card-top { flex-direction: column; gap: 10px; }
+      .open-btn { align-self: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="header-badge">🌊 Historia · Descubrimiento</div>
+    <h1>Los 4 Viajes de Colón a América</h1>
+    <p>Explore los objetivos, rutas y principales logros de los viajes de Cristóbal Colón</p>
+  </div>
+
+  <!-- ── Hint ── -->
+  <div class="hint-bar">
+    🖱️ <strong>Cómo usar este recurso:</strong> Haga clic en cualquier tarjeta o en el botón <em>"Ver detalles"</em> para explorar la información completa de cada viaje en un panel emergente.
+  </div>
+
+  <!-- ── Timeline ── -->
+  <div class="timeline-section">
+    <div class="section-label">🗺️ Línea de tiempo — Los cuatro viajes</div>
+    <div class="timeline">
+
+      <!-- Viaje 1 -->
+      <div class="voyage-card v1" onclick="openModal(1)">
+        <div class="card-top">
+          <div class="card-left">
+            <div class="voyage-num">⛵ Primer Viaje</div>
+            <div class="voyage-title">Descubrimiento de América</div>
+            <div class="voyage-years">1492 – 1493</div>
+          </div>
+          <button class="open-btn" onclick="event.stopPropagation(); openModal(1)">Ver detalles →</button>
+        </div>
+        <div class="pills">
+          <div class="pill"><strong>Objetivo</strong> Ruta hacia Asia</div>
+          <div class="pill"><strong>Lugares</strong> Guanahani · Cuba · La Española</div>
+          <div class="pill"><strong>Naves</strong> La Niña · La Pinta · Santa María</div>
+        </div>
+      </div>
+
+      <!-- Viaje 2 -->
+      <div class="voyage-card v2" onclick="openModal(2)">
+        <div class="card-top">
+          <div class="card-left">
+            <div class="voyage-num">🏝️ Segundo Viaje</div>
+            <div class="voyage-title">Colonización y Expansión</div>
+            <div class="voyage-years">1493 – 1496</div>
+          </div>
+          <button class="open-btn" onclick="event.stopPropagation(); openModal(2)">Ver detalles →</button>
+        </div>
+        <div class="pills">
+          <div class="pill"><strong>Objetivo</strong> Colonizar el dominio español</div>
+          <div class="pill"><strong>Lugares</strong> La Isabela · Jamaica · Puerto Rico</div>
+          <div class="pill"><strong>Logro</strong> Fundación de La Isabela</div>
+        </div>
+      </div>
+
+      <!-- Viaje 3 -->
+      <div class="voyage-card v3" onclick="openModal(3)">
+        <div class="card-top">
+          <div class="card-left">
+            <div class="voyage-num">🌊 Tercer Viaje</div>
+            <div class="voyage-title">Tierra Continental</div>
+            <div class="voyage-years">1498 – 1500</div>
+          </div>
+          <button class="open-btn" onclick="event.stopPropagation(); openModal(3)">Ver detalles →</button>
+        </div>
+        <div class="pills">
+          <div class="pill"><strong>Objetivo</strong> Explorar nuevas tierras</div>
+          <div class="pill"><strong>Lugares</strong> Trinidad · Río Orinoco (Venezuela)</div>
+          <div class="pill"><strong>Logro</strong> Primer acercamiento a Sudamérica</div>
+        </div>
+      </div>
+
+      <!-- Viaje 4 -->
+      <div class="voyage-card v4" onclick="openModal(4)">
+        <div class="card-top">
+          <div class="card-left">
+            <div class="voyage-num">🗺️ Cuarto Viaje</div>
+            <div class="voyage-title">Exploración de Centroamérica</div>
+            <div class="voyage-years">1502 – 1504</div>
+          </div>
+          <button class="open-btn" onclick="event.stopPropagation(); openModal(4)">Ver detalles →</button>
+        </div>
+        <div class="pills">
+          <div class="pill"><strong>Objetivo</strong> Paso occidental hacia Asia</div>
+          <div class="pill"><strong>Lugares</strong> Honduras · Nicaragua · Panamá</div>
+          <div class="pill"><strong>Logro</strong> Exploración de Centroamérica</div>
+        </div>
+      </div>
+
+    </div><!-- /timeline -->
+  </div>
+
+  <!-- ── Mini Cards Grid ── -->
+  <div class="cards-section">
+    <div class="section-label" style="padding: 0 0 16px">📌 Acceso rápido — Seleccione un viaje</div>
+    <div class="cards-grid">
+      <div class="mini-card mc1" onclick="openModal(1)">
+        <div class="mc-num">⛵ Primer Viaje</div>
+        <div class="mc-title">Descubrimiento de América</div>
+        <div class="mc-years">1492 – 1493</div>
+        <div class="mc-arrow">Explorar →</div>
+      </div>
+      <div class="mini-card mc2" onclick="openModal(2)">
+        <div class="mc-num">🏝️ Segundo Viaje</div>
+        <div class="mc-title">Colonización y Expansión</div>
+        <div class="mc-years">1493 – 1496</div>
+        <div class="mc-arrow">Explorar →</div>
+      </div>
+      <div class="mini-card mc3" onclick="openModal(3)">
+        <div class="mc-num">🌊 Tercer Viaje</div>
+        <div class="mc-title">Tierra Continental</div>
+        <div class="mc-years">1498 – 1500</div>
+        <div class="mc-arrow">Explorar →</div>
+      </div>
+      <div class="mini-card mc4" onclick="openModal(4)">
+        <div class="mc-num">🗺️ Cuarto Viaje</div>
+        <div class="mc-title">Exploración de Centroamérica</div>
+        <div class="mc-years">1502 – 1504</div>
+        <div class="mc-arrow">Explorar →</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Recurso educativo | Los 4 Viajes de Cristóbal Colón a América</div>
+</div>
+
+<!-- ══════════════ MODAL ══════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-hero" id="modal-hero">
+      <div class="modal-badge" id="modal-badge"></div>
+      <h2 id="modal-title"></h2>
+      <p id="modal-subtitle"></p>
+    </div>
+    <div class="modal-body">
+      <div class="info-row">
+        <div class="info-icon">🎯</div>
+        <div class="info-content">
+          <div class="info-label">Objetivo</div>
+          <div class="info-text" id="m-objetivo"></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">📍</div>
+        <div class="info-content">
+          <div class="info-label">Lugares explorados</div>
+          <div class="info-text" id="m-lugares"></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🏆</div>
+        <div class="info-content">
+          <div class="info-label">Logros</div>
+          <div class="info-text" id="m-logros"></div>
+        </div>
+      </div>
+      <div class="narrative-label">📜 Descripción del viaje</div>
+      <div class="narrative" id="m-narrative"></div>
+      <button class="modal-close-btn" id="modal-close-btn" onclick="closeModal()">Cerrar ✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   DATOS DE LOS VIAJES
+════════════════════════════════════════ */
+const voyages = {
+  1: {
+    badge:    '⛵ Primer Viaje',
+    title:    'Descubrimiento de América',
+    subtitle: '1492 – 1493',
+    c1: '#1a56c4', c2: '#0e9de0',
+    emoji: "'⛵'",
+    objetivo: 'Buscar una ruta hacia Asia.',
+    lugares:  'Guanahani (San Salvador), Cuba, La Española.',
+    logros:   'Descubrimiento de América para los europeos y fundación de los primeros asentamientos españoles en el continente.',
+    narrative: 'El primer viaje de Colón partió del puerto de Palos de la Frontera el 3 de agosto de 1492 con tres naves: La Niña, La Pinta y la Santa María. Después de navegar el Atlántico por dos meses y nueve días, el 12 de octubre de 1492, arribó a la isla de Guanahani a la que llamó San Salvador, creyendo que había llegado a Asia. Tras la exploración inicial, Colón regresó en 1493 a España llevando noticias de sus hallazgos y de la riqueza potencial para los monarcas españoles. Este regreso impulsó directamente la planificación de nuevas expediciones y el establecimiento de colonias y fortificaciones en el Nuevo Mundo.'
+  },
+  2: {
+    badge:    '🏝️ Segundo Viaje',
+    title:    'Colonización y Expansión',
+    subtitle: '1493 – 1496',
+    c1: '#0891b2', c2: '#06b6d4',
+    emoji: "'🏝️'",
+    objetivo: 'Colonizar y consolidar el incipiente dominio español en América.',
+    lugares:  'La Isabela, Jamaica y Puerto Rico.',
+    logros:   'Fundación de La Isabela y expansión colonial.',
+    narrative: 'El segundo viaje de Colón fue mucho más ambicioso en escala y en propósito. Partió con una flota de varias naves con la intención de colonizar las nuevas tierras y consolidar el dominio español, fundando asentamientos como La Isabela en la isla La Española, y explorando nuevas islas. Este viaje estuvo marcado por tensiones entre colonos y autoridades, así como por dificultades logísticas que revelaron las complejidades de administrar territorios recién descubiertos.'
+  },
+  3: {
+    badge:    '🌊 Tercer Viaje',
+    title:    'Tierra Continental',
+    subtitle: '1498 – 1500',
+    c1: '#059669', c2: '#10b981',
+    emoji: "'🌊'",
+    objetivo: 'Explorar nuevas tierras.',
+    lugares:  'Trinidad y la desembocadura del río Orinoco (actual Venezuela).',
+    logros:   'Primer acercamiento a territorio sudamericano.',
+    narrative: 'Durante el tercer viaje, Colón llegó más al sur y fue la primera vez que divisó territorio continental, alcanzando la isla de Trinidad y la desembocadura del río Orinoco. Sin embargo, al regresar a La Española encontró conflictos entre colonos, descontento y denuncias sobre su administración, lo que provocó su arresto y envío encadenado a España.'
+  },
+  4: {
+    badge:    '🗺️ Cuarto Viaje',
+    title:    'Exploración de Centroamérica',
+    subtitle: '1502 – 1504',
+    c1: '#7c3aed', c2: '#6366f1',
+    emoji: "'🗺️'",
+    objetivo: 'Encontrar un paso occidental hacia Asia.',
+    lugares:  'Costas de Centroamérica desde Honduras hasta Panamá.',
+    logros:   'Exploración extensa de Centroamérica.',
+    narrative: 'En su cuarto viaje, Colón buscó encontrar un paso occidental hacia Asia, razón por la cual exploró las costas de Centroamérica hasta Panamá. Sin embargo, no tuvo éxito y perdió sus naves, por lo que enfrentó grandes dificultades antes de regresar finalmente a España en 1504. Dos años más tarde, el 20 de mayo de 1506, Cristóbal Colón moriría sin saber que había llegado a un nuevo continente.'
+  }
+};
+
+/* ════════════════════════════════════════
+   MODAL
+════════════════════════════════════════ */
+function openModal(n) {
+  const v = voyages[n];
+  // Hero gradient
+  const hero = document.getElementById('modal-hero');
+  hero.style.background = `linear-gradient(135deg, ${v.c1}, ${v.c2})`;
+  hero.style.setProperty('--m-emoji', v.emoji);
+  // Close button
+  document.getElementById('modal-close-btn').style.background = `linear-gradient(135deg, ${v.c1}, ${v.c2})`;
+  // Content
+  document.getElementById('modal-badge').textContent     = v.badge;
+  document.getElementById('modal-title').textContent     = v.title;
+  document.getElementById('modal-subtitle').textContent  = v.subtitle;
+  document.getElementById('m-objetivo').textContent      = v.objetivo;
+  document.getElementById('m-lugares').textContent       = v.lugares;
+  document.getElementById('m-logros').textContent        = v.logros;
+  document.getElementById('m-narrative').textContent     = v.narrative;
+  // Show
+  document.getElementById('modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

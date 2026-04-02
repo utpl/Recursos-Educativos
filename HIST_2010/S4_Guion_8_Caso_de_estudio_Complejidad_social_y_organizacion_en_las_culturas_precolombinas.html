@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Caso de Estudio – Culturas Precolombinas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg:       #f5f0e8;
+    --ink:      #1a1612;
+    --warm:     #8b4513;
+    --gold:     #c8922a;
+    --gold-lt:  #f5e6c8;
+    --correct:  #2d6a4f;
+    --correct-bg:#d8f3dc;
+    --partial:  #b5451b;
+    --partial-bg:#fde8d8;
+    --card-w:   340px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    background-image:
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8922a' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    min-height: 100vh;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 24px 14px 52px;
+  }
+
+  .container {
+    width: 800px; max-width: 100%;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 0 var(--gold), 0 6px 40px rgba(26,22,18,0.13);
+    overflow: hidden;
+    border: 1px solid #e8dcc8;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--ink);
+    padding: 36px 38px 30px;
+    position: relative; overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      -55deg,
+      transparent, transparent 30px,
+      rgba(200,146,42,0.04) 30px, rgba(200,146,42,0.04) 60px
+    );
+  }
+  .header-glyph {
+    position: absolute; right: 32px; top: 50%; transform: translateY(-50%);
+    font-size: 96px; opacity: 0.07; line-height: 1; pointer-events: none;
+    font-family: 'Fraunces', serif;
+  }
+  .h-tag {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .h-tag::before, .h-tag::after {
+    content: ''; height: 1px; background: var(--gold); opacity: 0.4;
+  }
+  .h-tag::before { width: 20px; }
+  .h-tag::after  { flex: 1; }
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 25px; font-weight: 900; color: #faf5ec;
+    line-height: 1.18; margin-bottom: 10px;
+  }
+  .header p { font-size: 13px; color: #a09880; line-height: 1.6; max-width: 500px; }
+
+  /* ── Context box ── */
+  .context-wrap {
+    border-bottom: 1px solid #ede5d8;
+    padding: 0;
+  }
+  .context-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; cursor: pointer;
+    background: var(--gold-lt);
+    border: none; width: 100%; text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+  .context-toggle:hover { background: #f0ddb0; }
+  .ctx-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.8px;
+    text-transform: uppercase; color: var(--warm);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ctx-arrow {
+    font-size: 13px; color: var(--warm); transition: transform 0.3s;
+    font-weight: 700;
+  }
+  .ctx-arrow.open { transform: rotate(180deg); }
+
+  .context-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s ease;
+    background: #fffdf8;
+  }
+  .context-body.open { max-height: 400px; }
+  .context-inner {
+    padding: 18px 28px 20px;
+    font-size: 13.5px; color: #4a3f32; line-height: 1.75;
+    border-top: 1px solid #ede5d8;
+  }
+  .context-inner p + p { margin-top: 10px; }
+
+  /* ── Progress ── */
+  .progress-bar-wrap {
+    padding: 16px 28px 0;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .progress-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #a09880; white-space: nowrap; }
+  .progress-track {
+    flex: 1; height: 5px; background: #ede5d8; border-radius: 10px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--gold), var(--warm));
+    border-radius: 10px; width: 0%; transition: width 0.5s ease;
+  }
+  .progress-frac { font-size: 12px; font-weight: 700; color: var(--gold); }
+
+  /* ── Questions ── */
+  .questions-wrap { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 36px; }
+
+  .q-block {}
+  .q-num-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .q-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--ink); color: var(--gold);
+    font-family: 'Fraunces', serif; font-size: 14px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .q-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--warm); background: var(--gold-lt);
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .q-text {
+    font-family: 'Fraunces', serif;
+    font-size: 15.5px; font-weight: 700; color: var(--ink);
+    line-height: 1.5; margin-bottom: 18px;
+  }
+
+  /* ── Flip Cards Pair ── */
+  .cards-pair {
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+
+  .flip-card-wrap {
+    flex: 1; min-width: 200px;
+    perspective: 1000px;
+  }
+  .flip-card {
+    position: relative;
+    width: 100%; min-height: 170px;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+  .flip-card.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute; inset: 0;
+    border-radius: 14px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex; flex-direction: column;
+    padding: 20px 18px;
+  }
+
+  /* FRONT */
+  .card-front {
+    background: #fff;
+    border: 2px solid #e0d5c4;
+    box-shadow: 0 3px 16px rgba(26,22,18,0.08);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .flip-card-wrap:hover .card-front {
+    border-color: var(--gold);
+    box-shadow: 0 6px 28px rgba(200,146,42,0.18);
+  }
+  .flip-card.flipped .flip-card-wrap:hover .card-front { border-color: #e0d5c4; }
+
+  .front-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 8px;
+  }
+  .front-text {
+    font-size: 13.5px; color: var(--ink); line-height: 1.65; flex: 1; font-weight: 500;
+  }
+  .front-hint {
+    margin-top: 14px; font-size: 11px; color: #b0a090;
+    display: flex; align-items: center; gap: 5px; font-weight: 600;
+  }
+  .front-hint::before { content: '↩'; font-size: 13px; }
+
+  /* BACK – correct */
+  .card-back {
+    transform: rotateY(180deg);
+  }
+  .card-back.is-correct {
+    background: var(--correct-bg);
+    border: 2px solid #74c69d;
+    box-shadow: 0 4px 20px rgba(45,106,79,0.14);
+  }
+  .card-back.is-partial {
+    background: var(--partial-bg);
+    border: 2px solid #e07a5f;
+    box-shadow: 0 4px 20px rgba(181,69,27,0.12);
+  }
+
+  .back-badge {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .back-badge .icon { font-size: 17px; }
+  .is-correct .back-badge { color: var(--correct); }
+  .is-partial .back-badge { color: var(--partial); }
+
+  .back-title {
+    font-family: 'Fraunces', serif;
+    font-size: 14px; font-weight: 700; margin-bottom: 8px;
+    line-height: 1.25;
+  }
+  .is-correct .back-title { color: #1b4332; }
+  .is-partial .back-title { color: #7c2d12; }
+
+  .back-text {
+    font-size: 13px; line-height: 1.65; flex: 1;
+  }
+  .is-correct .back-text { color: #2d6a4f; }
+  .is-partial .back-text { color: #9a3412; }
+
+  .back-flip-btn {
+    margin-top: 12px; font-size: 11px; font-weight: 700;
+    color: inherit; opacity: 0.55; display: flex; align-items: center; gap: 5px;
+  }
+  .back-flip-btn::before { content: '↩'; }
+
+  /* answered indicator */
+  .q-block.answered .q-num { background: var(--gold); color: var(--ink); }
+
+  /* ── Final Feedback ── */
+  .final-feedback {
+    margin: 0 28px 28px;
+    background: var(--ink);
+    border-radius: 14px;
+    padding: 24px 24px 22px;
+    display: none;
+    animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .final-feedback.visible { display: block; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .ff-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  }
+  .ff-trophy { font-size: 36px; }
+  .ff-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px; font-weight: 900; color: var(--gold); line-height: 1.2;
+  }
+  .ff-sub { font-size: 12px; color: #a09880; margin-top: 2px; }
+
+  .ff-divider { height: 1px; background: rgba(200,146,42,0.25); margin: 14px 0; }
+
+  .ff-text {
+    font-size: 13px; color: #c8bfb0; line-height: 1.75;
+  }
+  .ff-text p + p { margin-top: 8px; }
+  .ff-bullets { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; }
+  .ff-bullet {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 13px; color: #c8bfb0; line-height: 1.55;
+  }
+  .ff-bullet::before { content: '◆'; color: var(--gold); font-size: 8px; margin-top: 5px; flex-shrink: 0; }
+
+  .btn-retry {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 18px; width: 100%;
+    padding: 13px;
+    background: var(--gold); color: var(--ink);
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-retry:hover { background: #dba030; transform: scale(1.02); }
+
+  /* ── Footer ── */
+  .footer {
+    background: #f5f0e8; border-top: 1px solid #ede5d8;
+    padding: 13px 28px; font-size: 11px; color: #a09880; text-align: center;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    body { padding: 10px 8px 36px; }
+    .header { padding: 22px 18px 18px; }
+    .header h1 { font-size: 18px; }
+    .context-inner, .progress-bar-wrap { padding-left: 16px; padding-right: 16px; }
+    .questions-wrap { padding: 18px 14px 22px; gap: 28px; }
+    .cards-pair { flex-direction: column; }
+    .flip-card { min-height: 160px; }
+    .final-feedback { margin: 0 14px 22px; }
+    .context-toggle { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-glyph">∴</div>
+    <div class="h-tag">Historia · Análisis · Precolombino</div>
+    <h1>Caso de Estudio: Complejidad Social y Organización en las Culturas Precolombinas</h1>
+    <p>Analice cada escenario y seleccione la interpretación más adecuada. Las tarjetas revelarán la retroalimentación al hacer clic.</p>
+  </div>
+
+  <!-- Context -->
+  <div class="context-wrap">
+    <button class="context-toggle" onclick="toggleContext()" id="ctx-btn">
+      <span class="ctx-label">📜 Contexto del caso de estudio</span>
+      <span class="ctx-arrow" id="ctx-arrow">▼</span>
+    </button>
+    <div class="context-body" id="ctx-body">
+      <div class="context-inner">
+        <p>Un equipo académico analiza tres grandes civilizaciones de América precolombina con el fin de comprender cómo lograron desarrollar sistemas sociales complejos antes de la llegada de los españoles. En su estudio identifican que estas culturas se caracterizaron por el uso de sistemas agrícolas intensivos, la existencia de estructuras políticas jerárquicas, mecanismos de integración territorial y cosmovisiones religiosas que vinculaban el poder político con lo divino.</p>
+        <p>Asimismo, observan que algunas sociedades desarrollaron ciudades-estado con gran producción científica, otras consolidaron imperios mediante alianzas y tributos, y otras lograron administrar vastos territorios sin escritura alfabética, utilizando sistemas alternativos de registro.</p>
+        <p>A partir de estos hallazgos, el equipo debe analizar distintos escenarios para interpretar adecuadamente el funcionamiento de estas civilizaciones.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar-wrap">
+    <span class="progress-label">Progreso</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <span class="progress-frac" id="progress-frac">0 / 3</span>
+  </div>
+
+  <!-- Questions -->
+  <div class="questions-wrap">
+
+    <!-- ══ Pregunta 1 ══ -->
+    <div class="q-block" id="q1-block">
+      <div class="q-num-row">
+        <div class="q-num">1</div>
+        <span class="q-badge">🏛️ Poder y Religión</span>
+      </div>
+      <div class="q-text">En una de estas civilizaciones, el poder del gobernante se legitima a través de su vínculo con lo divino y se refuerza mediante rituales religiosos. ¿Qué interpretación resulta más adecuada?</div>
+      <div class="cards-pair">
+
+        <!-- Opción A – Correcta -->
+        <div class="flip-card-wrap">
+          <div class="flip-card" id="fc-1-A" onclick="flipCard('1','A','correct')">
+            <div class="card-face card-front">
+              <div class="front-label">Opción A</div>
+              <div class="front-text">La religión funcionaba como un sistema que legitimaba el poder político y reforzaba la organización social.</div>
+              <div class="front-hint">Clic para revelar</div>
+            </div>
+            <div class="card-face card-back is-correct">
+              <div class="back-badge"><span class="icon">✅</span>Respuesta más adecuada</div>
+              <div class="back-title">Opción A — Correcta</div>
+              <div class="back-text">Esta opción es más completa porque reconoce que la religión cumplía un rol central en la legitimación del poder político y en la organización social.</div>
+              <div class="back-flip-btn">Clic para voltear</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opción B – Parcial -->
+        <div class="flip-card-wrap">
+          <div class="flip-card" id="fc-1-B" onclick="flipCard('1','B','partial')">
+            <div class="card-face card-front">
+              <div class="front-label">Opción B</div>
+              <div class="front-text">La religión era una práctica cultural importante que formaba parte de las tradiciones de la sociedad.</div>
+              <div class="front-hint">Clic para revelar</div>
+            </div>
+            <div class="card-face card-back is-partial">
+              <div class="back-badge"><span class="icon">⚠️</span>Respuesta alternativa</div>
+              <div class="back-title">Opción B — Parcialmente correcta</div>
+              <div class="back-text">Esta opción es válida, pero se limita a una dimensión cultural sin considerar su función política.</div>
+              <div class="back-flip-btn">Clic para voltear</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ Pregunta 2 ══ -->
+    <div class="q-block" id="q2-block">
+      <div class="q-num-row">
+        <div class="q-num">2</div>
+        <span class="q-badge">📊 Administración Territorial</span>
+      </div>
+      <div class="q-text">En otra civilización, se evidencia el uso de quipus para registrar información y una red vial que conectaba extensos territorios sin el uso de escritura alfabética. ¿Qué interpretación permite comprender mejor este sistema?</div>
+      <div class="cards-pair">
+
+        <!-- Opción A – Parcial -->
+        <div class="flip-card-wrap">
+          <div class="flip-card" id="fc-2-A" onclick="flipCard('2','A','partial')">
+            <div class="card-face card-front">
+              <div class="front-label">Opción A</div>
+              <div class="front-text">Se trata de un sistema práctico que facilitaba el transporte y el registro básico de información.</div>
+              <div class="front-hint">Clic para revelar</div>
+            </div>
+            <div class="card-face card-back is-partial">
+              <div class="back-badge"><span class="icon">⚠️</span>Respuesta alternativa</div>
+              <div class="back-title">Opción A — Parcialmente correcta</div>
+              <div class="back-text">Esta opción es correcta, pero se enfoca en aspectos funcionales sin considerar su alcance político y organizativo.</div>
+              <div class="back-flip-btn">Clic para voltear</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opción B – Correcta -->
+        <div class="flip-card-wrap">
+          <div class="flip-card" id="fc-2-B" onclick="flipCard('2','B','correct')">
+            <div class="card-face card-front">
+              <div class="front-label">Opción B</div>
+              <div class="front-text">Es un sistema administrativo complejo que permitió gestionar información, integrar territorios y sostener un Estado centralizado.</div>
+              <div class="front-hint">Clic para revelar</div>
+            </div>
+            <div class="card-face card-back is-correct">
+              <div class="back-badge"><span class="icon">✅</span>Respuesta más adecuada</div>
+              <div class="back-title">Opción B — Correcta</div>
+              <div class="back-text">Esta opción es más adecuada porque reconoce la complejidad del sistema administrativo y su función en la integración territorial y el control estatal.</div>
+              <div class="back-flip-btn">Clic para voltear</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ Pregunta 3 ══ -->
+    <div class="q-block" id="q3-block">
+      <div class="q-num-row">
+        <div class="q-num">3</div>
+        <span class="q-badge">🌽 Ciudades-Estado y Ciencia</span>
+      </div>
+      <div class="q-text">En otra sociedad, se identifican ciudades-estado con intensa actividad comercial, desarrollo agrícola mediante sistemas como la milpa y avances en astronomía y matemáticas. ¿Qué interpretación resulta más adecuada?</div>
+      <div class="cards-pair">
+
+        <!-- Opción A – Parcial -->
+        <div class="flip-card-wrap">
+          <div class="flip-card" id="fc-3-A" onclick="flipCard('3','A','partial')">
+            <div class="card-face card-front">
+              <div class="front-label">Opción A</div>
+              <div class="front-text">Estas características reflejan una sociedad que logró avances importantes en agricultura, comercio y conocimiento.</div>
+              <div class="front-hint">Clic para revelar</div>
+            </div>
+            <div class="card-face card-back is-partial">
+              <div class="back-badge"><span class="icon">⚠️</span>Respuesta alternativa</div>
+              <div class="back-title">Opción A — Parcialmente correcta</div>
+              <div class="back-text">Esta opción es válida, pero se limita a describir logros sin analizar su articulación estructural.</div>
+              <div class="back-flip-btn">Clic para voltear</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opción B – Correcta -->
+        <div class="flip-card-wrap">
+          <div class="flip-card" id="fc-3-B" onclick="flipCard('3','B','correct')">
+            <div class="card-face card-front">
+              <div class="front-label">Opción B</div>
+              <div class="front-text">Estas características evidencian una civilización con procesos dinámicos de organización política, integración económica y desarrollo científico.</div>
+              <div class="front-hint">Clic para revelar</div>
+            </div>
+            <div class="card-face card-back is-correct">
+              <div class="back-badge"><span class="icon">✅</span>Respuesta más adecuada</div>
+              <div class="back-title">Opción B — Correcta</div>
+              <div class="back-text">Esta opción es más completa porque integra las dimensiones políticas, económicas y científicas como parte de un sistema complejo.</div>
+              <div class="back-flip-btn">Clic para voltear</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /questions-wrap -->
+
+  <!-- Final Feedback -->
+  <div class="final-feedback" id="final-feedback">
+    <div class="ff-head">
+      <div class="ff-trophy">🏆</div>
+      <div>
+        <div class="ff-title">¡Excelente trabajo!</div>
+        <div class="ff-sub">Retroalimentación final del caso de estudio</div>
+      </div>
+    </div>
+    <div class="ff-divider"></div>
+    <div class="ff-text">
+      <p>El análisis realizado evidencia una comprensión integral de las culturas precolombinas como sociedades altamente complejas. A través de este caso, se reconoce que:</p>
+      <div class="ff-bullets">
+        <div class="ff-bullet">la religión cumplía un papel fundamental en la legitimación del poder político,</div>
+        <div class="ff-bullet">los sistemas administrativos permitieron gestionar información y controlar amplios territorios sin escritura alfabética,</div>
+        <div class="ff-bullet">y el desarrollo agrícola, comercial y científico se integró en estructuras sociales dinámicas que garantizaron la organización y sostenimiento de estas civilizaciones.</div>
+      </div>
+      <p style="margin-top:12px;">En conjunto, estas decisiones reflejan una comprensión profunda de cómo estas culturas lograron consolidar modelos de organización avanzados antes de la llegada de los europeos.</p>
+    </div>
+    <button class="btn-retry" onclick="resetAll()">↺ Intentar nuevamente</button>
+  </div>
+
+  <div class="footer">Recurso educativo | Caso de Estudio: Culturas Precolombinas</div>
+</div>
+
+<script>
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
+// Which questions have had at least one card flipped
+const revealed = { 1: false, 2: false, 3: false };
+// Track flipped cards: 'q-opt' → true/false
+const flipped = {};
+
+/* ══════════════════════════════
+   CONTEXT TOGGLE
+══════════════════════════════ */
+function toggleContext() {
+  const body  = document.getElementById('ctx-body');
+  const arrow = document.getElementById('ctx-arrow');
+  const isOpen = body.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+
+/* ══════════════════════════════
+   FLIP CARD
+══════════════════════════════ */
+function flipCard(q, opt, type) {
+  const key = q + '-' + opt;
+  const card = document.getElementById('fc-' + key);
+
+  // Toggle flip
+  const isFlipped = flipped[key] || false;
+  flipped[key] = !isFlipped;
+  card.classList.toggle('flipped', !isFlipped);
+
+  // Mark question as having been interacted with
+  if (!revealed[q]) {
+    revealed[q] = true;
+    document.getElementById('q' + q + '-block').classList.add('answered');
+    updateProgress();
+  }
+}
+
+/* ══════════════════════════════
+   PROGRESS
+══════════════════════════════ */
+function updateProgress() {
+  const done = Object.values(revealed).filter(Boolean).length;
+  const pct  = Math.round((done / 3) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-frac').textContent = done + ' / 3';
+
+  if (done === 3) {
+    setTimeout(() => {
+      document.getElementById('final-feedback').classList.add('visible');
+      document.getElementById('final-feedback').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 600);
+  }
+}
+
+/* ══════════════════════════════
+   RESET
+══════════════════════════════ */
+function resetAll() {
+  // Reset state
+  [1,2,3].forEach(q => { revealed[q] = false; });
+  Object.keys(flipped).forEach(k => { flipped[k] = false; });
+
+  // Un-flip all cards
+  document.querySelectorAll('.flip-card').forEach(c => c.classList.remove('flipped'));
+
+  // Remove answered class
+  document.querySelectorAll('.q-block').forEach(b => b.classList.remove('answered'));
+
+  // Reset progress
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('progress-frac').textContent = '0 / 3';
+
+  // Hide feedback
+  document.getElementById('final-feedback').classList.remove('visible');
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

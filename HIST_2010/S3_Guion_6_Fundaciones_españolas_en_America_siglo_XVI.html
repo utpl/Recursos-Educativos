@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fundaciones Españolas en América – Siglo XVI</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:#e8f4fd;
+    min-height:100vh;
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:20px 12px 40px;
+  }
+  .container{
+    width:800px;max-width:100%;
+    background:#fff;
+    border-radius:24px;
+    box-shadow:0 10px 50px rgba(10,60,160,0.13);
+    overflow:hidden;
+  }
+
+  /* ── Header ── */
+  .header{
+    background:linear-gradient(135deg,#0c4a9e 0%,#0ea5e9 100%);
+    color:#fff;padding:32px 36px 28px;
+    position:relative;overflow:hidden;
+  }
+  .header::before{
+    content:'🗺️';position:absolute;right:28px;top:16px;
+    font-size:88px;opacity:0.13;pointer-events:none;
+  }
+  .header::after{
+    content:'';position:absolute;bottom:-50px;left:-50px;
+    width:180px;height:180px;background:rgba(255,255,255,0.06);border-radius:50%;
+  }
+  .hbadge{
+    display:inline-block;background:rgba(255,255,255,0.18);
+    border:1px solid rgba(255,255,255,0.32);border-radius:20px;
+    padding:4px 14px;font-size:11px;font-weight:700;
+    letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;
+  }
+  .header h1{font-size:23px;font-weight:800;line-height:1.2;margin-bottom:6px;}
+  .header p{font-size:13.5px;opacity:.88;line-height:1.5;max-width:480px;}
+
+  /* ── Hint ── */
+  .hint{
+    background:#eff6ff;border-left:4px solid #0c4a9e;
+    margin:22px 26px 0;padding:12px 16px;
+    border-radius:0 10px 10px 0;
+    font-size:13px;color:#1e3a5f;line-height:1.55;
+  }
+
+  /* ── Map area ── */
+  .map-section{padding:20px 16px 10px;display:flex;justify-content:center;}
+  #map-svg{width:100%;max-width:700px;height:auto;display:block;}
+
+  /* country paths */
+  .country{
+    fill:#c8e6f5;stroke:#4a90d9;stroke-width:1.2;
+    cursor:pointer;
+    transition:fill 0.22s,filter 0.22s;
+  }
+  .country:hover{fill:#7ec8f0;filter:drop-shadow(0 0 6px rgba(14,165,233,0.5));}
+  .country.active{fill:#0ea5e9;}
+
+  /* ── Marker buttons ── */
+  .map-btn{
+    cursor:pointer;
+  }
+  .map-btn rect{
+    fill:#0ea5e9;stroke:#0c4a9e;stroke-width:1.5;
+    rx:8;ry:8;
+    filter:drop-shadow(0 3px 6px rgba(12,74,158,0.35));
+    transition:fill 0.2s;
+  }
+  .map-btn:hover rect{fill:#0284c7;}
+  .map-btn text{
+    fill:#fff;font-family:'Segoe UI',system-ui,sans-serif;
+    font-size:11px;font-weight:700;
+    pointer-events:none;
+    text-decoration:underline;
+  }
+
+  /* pin dot */
+  .pin-dot{fill:#ef4444;stroke:#fff;stroke-width:1.5;}
+
+  /* ── Modal ── */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(10,30,90,0.45);
+    backdrop-filter:blur(5px);
+    display:flex;align-items:center;justify-content:center;
+    z-index:1000;
+    opacity:0;pointer-events:none;
+    transition:opacity 0.3s;
+    padding:16px;
+  }
+  .modal-overlay.active{opacity:1;pointer-events:all;}
+  .modal{
+    background:#fff;border-radius:22px;
+    width:100%;max-width:520px;
+    max-height:88vh;overflow-y:auto;
+    box-shadow:0 24px 70px rgba(12,74,158,0.25);
+    transform:translateY(26px) scale(0.97);opacity:0;
+    transition:transform 0.32s ease,opacity 0.32s ease;
+  }
+  .modal-overlay.active .modal{transform:translateY(0) scale(1);opacity:1;}
+
+  .modal-hero{
+    padding:26px 26px 20px;
+    border-radius:22px 22px 0 0;
+    background:linear-gradient(135deg,#0c4a9e,#0ea5e9);
+    position:relative;overflow:hidden;
+  }
+  .modal-hero::after{
+    content:attr(data-emoji);position:absolute;right:16px;top:8px;
+    font-size:72px;opacity:0.15;pointer-events:none;
+  }
+  .modal-badge{
+    display:inline-block;background:rgba(255,255,255,0.22);
+    border:1px solid rgba(255,255,255,0.38);border-radius:20px;
+    padding:3px 12px;font-size:11px;font-weight:700;letter-spacing:1px;
+    color:#fff;text-transform:uppercase;margin-bottom:10px;
+  }
+  .modal-hero h2{font-size:20px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:3px;}
+  .modal-hero .modal-date{font-size:13px;color:rgba(255,255,255,.85);font-weight:600;}
+
+  .modal-body{padding:20px 24px 24px;}
+  .info-row{
+    display:flex;gap:10px;margin-bottom:11px;
+    background:#f0f9ff;border-radius:12px;
+    padding:13px 14px;border:1.5px solid #e0f2fe;
+  }
+  .info-icon{font-size:19px;flex-shrink:0;margin-top:1px;}
+  .info-label{font-size:10px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;color:#64748b;margin-bottom:3px;}
+  .info-text{font-size:13.5px;color:#1e3a5f;line-height:1.55;font-weight:500;}
+
+  .narrative-label{
+    font-size:10.5px;font-weight:700;letter-spacing:1.2px;
+    text-transform:uppercase;color:#64748b;margin:16px 0 9px;
+  }
+  .narrative{
+    font-size:13.5px;color:#374151;line-height:1.75;
+    background:#f8fafc;border-radius:12px;
+    padding:15px 17px;border:1.5px solid #e2e8f0;
+  }
+  .modal-close-btn{
+    display:block;width:100%;margin-top:18px;
+    padding:13px;background:linear-gradient(135deg,#0c4a9e,#0ea5e9);
+    color:#fff;border:none;border-radius:12px;
+    font-size:14px;font-weight:700;cursor:pointer;
+    transition:opacity 0.2s;
+  }
+  .modal-close-btn:hover{opacity:.88;}
+
+  /* ── Legend ── */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:8px;
+    padding:8px 24px 22px;justify-content:center;
+  }
+  .leg-item{
+    display:flex;align-items:center;gap:7px;
+    background:#f0f9ff;border:1.5px solid #bae6fd;
+    border-radius:20px;padding:5px 13px;
+    font-size:12px;color:#0c4a9e;font-weight:600;
+    cursor:pointer;transition:background 0.2s,transform 0.15s;
+  }
+  .leg-item:hover{background:#bae6fd;transform:scale(1.04);}
+  .leg-dot{width:9px;height:9px;border-radius:50%;background:#ef4444;flex-shrink:0;}
+
+  /* ── Footer ── */
+  .footer{
+    background:#f8fafc;border-top:1px solid #e2e8f0;
+    padding:12px 24px;font-size:11px;color:#94a3b8;text-align:center;
+  }
+
+  @media(max-width:600px){
+    .header{padding:20px 16px 18px;}
+    .header h1{font-size:17px;}
+    .hint{margin:14px 12px 0;}
+    .map-section{padding:14px 6px 6px;}
+    .legend{padding:6px 12px 16px;}
+    .modal-body{padding:16px 16px 18px;}
+    .modal-hero{padding:18px 16px 16px;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="hbadge">🏛️ Historia · Siglo XVI</div>
+    <h1>Fundaciones Españolas en América, Siglo XVI</h1>
+    <p>Explore las principales fundaciones españolas en América y su importancia en la organización colonial</p>
+  </div>
+
+  <div class="hint">
+    🖱️ <strong>Instrucción:</strong> Haga clic en cualquier botón azul sobre el mapa o en los elementos de la leyenda inferior para conocer los detalles de cada fundación española.
+  </div>
+
+  <!-- MAP -->
+  <div class="map-section">
+  <svg id="map-svg" viewBox="0 0 520 680" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0c4a9e" flood-opacity="0.18"/>
+      </filter>
+    </defs>
+
+    <!-- Ocean background -->
+    <rect width="520" height="680" fill="#d0eaf8" rx="12"/>
+
+    <!-- ══════════════════════════════════════
+         COUNTRY SHAPES (simplified SVG paths)
+         Coordinates tuned for 520×680 viewBox
+    ══════════════════════════════════════ -->
+
+    <!-- VENEZUELA -->
+    <path class="country" id="c-venezuela" data-id="venezuela"
+      d="M165,62 L205,55 L240,58 L260,65 L265,80 L255,90 L240,85 L220,92 L200,88 L180,95 L165,88 L155,75 Z"
+      onclick="openModal('venezuela')"/>
+
+    <!-- GUYANA / SURINAME / GUYANE (grouped, not clickable) -->
+    <path class="country" style="cursor:default;fill:#ddeef8;"
+      d="M260,65 L300,58 L320,65 L315,85 L295,90 L265,80 Z"/>
+
+    <!-- COLOMBIA -->
+    <path class="country" id="c-colombia" data-id="colombia"
+      d="M130,62 L165,62 L155,75 L165,88 L155,105 L140,118 L120,115 L108,100 L105,82 L118,68 Z"
+      onclick="openModal('colombia')"/>
+
+    <!-- ECUADOR -->
+    <path class="country" id="c-ecuador" data-id="ecuador"
+      d="M108,100 L120,115 L118,128 L105,138 L90,132 L88,115 L98,103 Z"
+      onclick="openModal('ecuador')"/>
+
+    <!-- PERU -->
+    <path class="country" id="c-peru" data-id="peru"
+      d="M88,115 L90,132 L105,138 L118,128 L130,140 L135,165 L128,190 L112,205 L90,208 L72,195 L65,172 L68,148 L75,128 Z"
+      onclick="openModal('peru')"/>
+
+    <!-- BRAZIL -->
+    <path class="country" style="cursor:default;fill:#cde8f2;"
+      d="M155,105 L165,88 L180,95 L200,88 L220,92 L240,85 L255,90 L265,80 L315,85 L320,100 L340,115 L355,140 L360,170 L350,200 L345,230 L330,255 L310,270 L295,295 L275,305 L260,295 L245,270 L235,250 L215,240 L200,250 L185,255 L175,240 L165,215 L160,190 L155,165 L140,155 L135,165 L128,140 L130,140 L118,128 L130,140 L140,118 L155,105 Z"/>
+
+    <!-- BOLIVIA -->
+    <path class="country" id="c-bolivia" data-id="bolivia"
+      d="M128,190 L135,165 L140,155 L155,165 L160,190 L165,215 L155,230 L140,232 L125,218 L115,205 L112,205 Z"
+      onclick="openModal('bolivia')"/>
+
+    <!-- CHILE -->
+    <path class="country" id="c-chile" data-id="chile"
+      d="M75,128 L68,148 L65,172 L72,195 L90,208 L112,205 L115,205 L118,228 L112,255 L105,278 L100,305 L95,335 L88,365 L82,395 L78,425 L72,455 L68,480 L60,500 L50,510 L45,498 L50,470 L55,440 L58,410 L62,380 L65,350 L68,320 L70,290 L72,260 L70,235 L65,208 L60,185 L58,160 L62,138 Z"
+      onclick="openModal('chile')"/>
+
+    <!-- PARAGUAY (no city, passive) -->
+    <path class="country" style="cursor:default;fill:#cde8f2;"
+      d="M155,230 L165,215 L175,240 L185,255 L175,265 L160,262 L148,248 L140,232 Z"/>
+
+    <!-- URUGUAY (no city, passive) -->
+    <path class="country" style="cursor:default;fill:#cde8f2;"
+      d="M175,265 L185,255 L200,250 L215,255 L218,270 L208,282 L192,285 L178,278 Z"/>
+
+    <!-- ARGENTINA -->
+    <path class="country" id="c-argentina" data-id="argentina"
+      d="M118,228 L125,218 L140,232 L148,248 L160,262 L175,265 L178,278 L192,285 L200,295 L205,315 L198,340 L188,362 L175,380 L162,398 L148,415 L135,435 L122,455 L110,472 L100,488 L90,505 L82,515 L75,505 L72,488 L68,480 L72,455 L78,425 L82,395 L88,365 L95,335 L100,305 L105,278 L112,255 Z"
+      onclick="openModal('argentina')"/>
+
+    <!-- Falklands hint -->
+    <ellipse cx="175" cy="545" rx="12" ry="6" fill="#cde8f2" stroke="#4a90d9" stroke-width="1"/>
+
+    <!-- ═════════════════════════════════
+         CITY PINS
+    ═════════════════════════════════ -->
+    <!-- Bogotá (Colombia) ~128,95 -->
+    <circle class="pin-dot" cx="128" cy="96" r="5"/>
+    <!-- Quito (Ecuador) ~100,122 -->
+    <circle class="pin-dot" cx="100" cy="122" r="5"/>
+    <!-- Lima (Peru) ~82,165 -->
+    <circle class="pin-dot" cx="80" cy="165" r="5"/>
+    <!-- Sucre (Bolivia) ~145,205 -->
+    <circle class="pin-dot" cx="145" cy="206" r="5"/>
+    <!-- Santiago (Chile) ~78,310 -->
+    <circle class="pin-dot" cx="78" cy="310" r="5"/>
+    <!-- Buenos Aires (Argentina) ~195,278 -->
+    <circle class="pin-dot" cx="195" cy="278" r="5"/>
+
+    <!-- ═════════════════════════════════
+         CELESTE BUTTONS
+    ═════════════════════════════════ -->
+
+    <!-- BOGOTÁ button -->
+    <g class="map-btn" onclick="openModal('colombia')">
+      <rect x="135" y="82" width="92" height="22" rx="8" ry="8"/>
+      <text x="181" y="97" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" font-family="'Segoe UI',system-ui,sans-serif" text-decoration="underline">📍 Bogotá 1538</text>
+    </g>
+
+    <!-- QUITO button -->
+    <g class="map-btn" onclick="openModal('ecuador')">
+      <rect x="108" y="108" width="88" height="22" rx="8" ry="8"/>
+      <text x="152" y="123" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" font-family="'Segoe UI',system-ui,sans-serif" text-decoration="underline">📍 Quito 1534</text>
+    </g>
+
+    <!-- LIMA button (left side) -->
+    <g class="map-btn" onclick="openModal('peru')">
+      <rect x="22" y="155" width="84" height="22" rx="8" ry="8"/>
+      <text x="64" y="170" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" font-family="'Segoe UI',system-ui,sans-serif" text-decoration="underline">📍 Lima 1535</text>
+      <!-- connector line -->
+      <line x1="80" y1="165" x2="80" y2="166" stroke="#0c4a9e" stroke-width="1.2"/>
+    </g>
+    <line x1="80" y1="165" x2="64" y2="166" stroke="#0c4a9e" stroke-width="1" stroke-dasharray="3,2"/>
+
+    <!-- SUCRE button -->
+    <g class="map-btn" onclick="openModal('bolivia')">
+      <rect x="153" y="196" width="92" height="22" rx="8" ry="8"/>
+      <text x="199" y="211" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" font-family="'Segoe UI',system-ui,sans-serif" text-decoration="underline">📍 Sucre 1538</text>
+    </g>
+
+    <!-- SANTIAGO button (left side) -->
+    <g class="map-btn" onclick="openModal('chile')">
+      <rect x="4" y="300" width="100" height="22" rx="8" ry="8"/>
+      <text x="54" y="315" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" font-family="'Segoe UI',system-ui,sans-serif" text-decoration="underline">📍 Santiago 1541</text>
+    </g>
+    <line x1="78" y1="310" x2="54" y2="311" stroke="#0c4a9e" stroke-width="1" stroke-dasharray="3,2"/>
+
+    <!-- BUENOS AIRES button -->
+    <g class="map-btn" onclick="openModal('argentina')">
+      <rect x="200" y="266" width="118" height="22" rx="8" ry="8"/>
+      <text x="259" y="281" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" font-family="'Segoe UI',system-ui,sans-serif" text-decoration="underline">📍 Buenos Aires 1580</text>
+    </g>
+    <line x1="195" y1="278" x2="200" y2="277" stroke="#0c4a9e" stroke-width="1" stroke-dasharray="3,2"/>
+
+    <!-- Country labels (subtle) -->
+    <text x="135" y="76" text-anchor="middle" font-size="8" fill="#0c4a9e" font-weight="600" opacity=".6">COLOMBIA</text>
+    <text x="100" y="126" text-anchor="middle" font-size="7.5" fill="#0c4a9e" font-weight="600" opacity=".6">ECUADOR</text>
+    <text x="82" y="178" text-anchor="middle" font-size="8" fill="#0c4a9e" font-weight="600" opacity=".6">PERÚ</text>
+    <text x="148" y="222" text-anchor="middle" font-size="7.5" fill="#0c4a9e" font-weight="600" opacity=".6">BOLIVIA</text>
+    <text x="64" y="295" text-anchor="middle" font-size="8" fill="#0c4a9e" font-weight="600" opacity=".6">CHILE</text>
+    <text x="160" y="340" text-anchor="middle" font-size="8" fill="#0c4a9e" font-weight="600" opacity=".6">ARGENTINA</text>
+    <text x="285" y="180" text-anchor="middle" font-size="9" fill="#4a90d9" font-weight="600" opacity=".55">BRASIL</text>
+    <text x="282" y="68" text-anchor="middle" font-size="7" fill="#4a90d9" opacity=".5">VENEZUELA</text>
+
+    <!-- Ocean label -->
+    <text x="30" y="420" font-size="9" fill="#4a90d9" opacity=".5" transform="rotate(-90,30,420)">OCÉANO PACÍFICO</text>
+    <text x="390" y="250" font-size="9" fill="#4a90d9" opacity=".5" transform="rotate(90,390,250)">OCÉANO ATLÁNTICO</text>
+  </svg>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="leg-item" onclick="openModal('colombia')"><div class="leg-dot"></div>Bogotá · 1538</div>
+    <div class="leg-item" onclick="openModal('ecuador')"><div class="leg-dot"></div>Quito · 1534</div>
+    <div class="leg-item" onclick="openModal('peru')"><div class="leg-dot"></div>Lima · 1535</div>
+    <div class="leg-item" onclick="openModal('bolivia')"><div class="leg-dot"></div>Sucre · 1538</div>
+    <div class="leg-item" onclick="openModal('chile')"><div class="leg-dot"></div>Santiago · 1541</div>
+    <div class="leg-item" onclick="openModal('argentina')"><div class="leg-dot"></div>Buenos Aires · 1580</div>
+  </div>
+
+  <div class="footer">Recurso educativo | Fundaciones Españolas en América, Siglo XVI</div>
+</div>
+
+<!-- ══════════ MODAL ══════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlay(event)">
+  <div class="modal" id="modal">
+    <div class="modal-hero" id="modal-hero" data-emoji="🏛️">
+      <div class="modal-badge" id="modal-badge"></div>
+      <h2 id="modal-title"></h2>
+      <div class="modal-date" id="modal-date"></div>
+    </div>
+    <div class="modal-body">
+      <div class="info-row">
+        <div class="info-icon">🏛️</div>
+        <div>
+          <div class="info-label">Nombre original</div>
+          <div class="info-text" id="m-nombre"></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">⚔️</div>
+        <div>
+          <div class="info-label">Fundador</div>
+          <div class="info-text" id="m-fundador"></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🌍</div>
+        <div>
+          <div class="info-label">País actual</div>
+          <div class="info-text" id="m-pais"></div>
+        </div>
+      </div>
+      <div class="narrative-label">📜 Historia de la fundación</div>
+      <div class="narrative" id="m-narrative"></div>
+      <button class="modal-close-btn" onclick="closeModal()">Cerrar ✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  peru: {
+    badge:    '🌎 Perú',
+    title:    'Fundación de Lima',
+    date:     '18 de enero de 1535',
+    emoji:    '🏛️',
+    nombre:   'Ciudad de los Reyes',
+    fundador: 'Francisco Pizarro',
+    pais:     'Perú',
+    narrative: 'Realizada por el conquistador Francisco Pizarro, bajo el nombre de Ciudad de los Reyes, en un valle costeño próximo al río Rímac, en el actual Perú. Su intención fue la de establecer allí la capital de los dominios conquistados tras la caída del Imperio Inca. Así, la ciudad se convirtió en el principal centro administrativo y eclesiástico del Virreinato del Perú y en un nodo clave para el comercio transatlántico durante los siglos XVI y XVII.'
+  },
+  ecuador: {
+    badge:    '🌎 Ecuador',
+    title:    'Fundación de Quito',
+    date:     '6 de diciembre de 1534',
+    emoji:    '🏙️',
+    nombre:   'San Francisco de Quito',
+    fundador: 'Sebastián de Benalcázar',
+    pais:     'Ecuador',
+    narrative: 'La fundación de San Francisco de Quito se produjo el 6 de diciembre de 1534, cuando los conquistadores encabezados por Sebastián de Benalcázar establecieron un asentamiento español sobre las ruinas de un importante pueblo indígena que había funcionado como enclave regional incluso antes de la llegada de los incas. Quito pronto se consolidó como un centro estratégico para la colonización del norte del virreinato peruano y posteriormente de la Real Audiencia de Quito.'
+  },
+  colombia: {
+    badge:    '🌎 Colombia',
+    title:    'Fundación de Bogotá',
+    date:     '6 de agosto de 1538',
+    emoji:    '🏛️',
+    nombre:   'Santa Fe de Bogotá',
+    fundador: 'Gonzalo Jiménez de Quesada',
+    pais:     'Colombia',
+    narrative: 'La fundación de Santa Fe de Bogotá, en la actual Colombia, fue realizada por Gonzalo Jiménez de Quesada el 6 de agosto de 1538, tras la expedición que penetró desde la costa caribeña hacia la altiplanicie andina en la que sometió a los pueblos chibchas. La elección del sitio estuvo vinculada a factores geográficos favorables como la existencia de varias fuentes de agua, leña y tierra fértil para huertas y jardines, y a la aspiración de implantar el dominio español en aquellos territorios que estaban cerca a algunos pueblos de indios.'
+  },
+  bolivia: {
+    badge:    '🌎 Bolivia',
+    title:    'Fundación de Sucre',
+    date:     '29 de septiembre de 1538',
+    emoji:    '⛏️',
+    nombre:   'Villa de La Plata de la Nueva Toledo',
+    fundador: 'Pedro Anzúrez, Marqués de Campo Redondo',
+    pais:     'Bolivia',
+    narrative: 'La ciudad colonial de Chuquisaca, hoy Sucre en la actual Bolivia, fue fundada el 29 de septiembre de 1538 bajo el nombre de Villa de La Plata de la Nueva Toledo por el español Pedro Anzúrez Marqués de Campo Redondo, sobre el territorio ancestral indígena de Chuquiochata perteneciente a los Charcas. Chuquisaca pronto se convirtió en sede de la Real Audiencia de Charcas y mantenía el control administrativo y judicial sobre las minas de Potosí, transformándose en una de las ciudades coloniales más importantes y ricas del continente.'
+  },
+  chile: {
+    badge:    '🌎 Chile',
+    title:    'Fundación de Santiago',
+    date:     '12 de febrero de 1541',
+    emoji:    '🏔️',
+    nombre:   'Santiago de Chile',
+    fundador: 'Pedro de Valdivia',
+    pais:     'Chile',
+    narrative: 'Santiago de Chile fue fundada el 12 de febrero de 1541 por Pedro de Valdivia. La ubicación de la ciudad fue escogida por Valdivia al considerar que la población que habitaba el valle del río Mapocho era lo suficientemente numerosa para dar prueba de la fertilidad de la tierra; además, cerca de ahí había un cerro desde el que se podía divisar cualquier movimiento hostil en un amplio perímetro. Santiago desempeñó un papel esencial en la consolidación del control español en el Cono Sur y se convirtió con el tiempo en la capital política, económica y cultural de ese territorio.'
+  },
+  argentina: {
+    badge:    '🌎 Argentina',
+    title:    'Fundación de Buenos Aires',
+    date:     '11 de junio de 1580',
+    emoji:    '⚓',
+    nombre:   'Santísima Trinidad y Puerto de Santa María del Buen Ayre',
+    fundador: 'Juan de Garay',
+    pais:     'Argentina',
+    narrative: 'La fundación definitiva de Buenos Aires se consolidó el 11 de junio de 1580 cuando el adelantado Juan de Garay estableció oficialmente la Ciudad de la Santísima Trinidad y Puerto de Santa María del Buen Ayre, después de una primera fundación efímera en 1536 que no logró consolidarse por las adversidades del entorno y los conflictos con poblaciones indígenas. Esta segunda fundación incluyó el reparto de tierras, la elección de autoridades municipales y el trazado urbano siguiendo el modelo colonial hispánico, y marcó el inicio de un asentamiento que acabaría convirtiéndose en la capital del Virreinato del Río de la Plata en 1776.'
+  }
+};
+
+function openModal(id) {
+  const d = DATA[id]; if (!d) return;
+  document.getElementById('modal-badge').textContent    = d.badge;
+  document.getElementById('modal-title').textContent    = d.title;
+  document.getElementById('modal-date').textContent     = '📅 ' + d.date;
+  document.getElementById('modal-hero').setAttribute('data-emoji', d.emoji);
+  document.getElementById('m-nombre').textContent       = d.nombre;
+  document.getElementById('m-fundador').textContent     = d.fundador;
+  document.getElementById('m-pais').textContent         = d.pais;
+  document.getElementById('m-narrative').textContent    = d.narrative;
+  document.getElementById('modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function handleOverlay(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
