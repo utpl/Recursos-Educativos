@@ -2,984 +2,842 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔍 Operadores WHERE en SQL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🔍 Operadores WHERE en SQL · Emparejamiento Aleatorio</title>
     <style>
         :root {
-            /* 🎨 Paleta vibrante y equilibrada */
-            --primary:     #7C4DFF;  /* 💜 Púrpura creativo */
-            --primary-2:   #29B6F6;  /* 💙 Azul cian */
-            --accent:      #FF6B6B;  /* 🔴 Coral energético */
-            --accent-2:    #FFD93D;  /* 🟡 Amarillo brillante */
-            --success:     #00C853;  /* 🟢 Verde éxito */
+            --primary:     #7C4DFF;
+            --primary-2:   #29B6F6;
+            --accent:      #FF6B6B;
+            --accent-2:    #FFD93D;
+            --success:     #00C853;
             --success-bg:  #E8F5E9;
-            --warning:     #FF9800;  /* 🟠 Naranja alerta */
-            --warning-bg:  #FFF3E0;
-            --error:       #EF5350;  /* 🔴 Rojo suave */
+            --error:       #EF5350;
             --error-bg:    #FFEBEE;
-            
-            /* 📦 Base */
-            --bg:          linear-gradient(135deg, #F8F9FF 0%, #F0F4FF 50%, #E8F4FD 100%);
+            --bg:          #F0F4FF;
             --card:        #FFFFFF;
-            --card-hover:  #FAFAFF;
             --border:      #E0E0E0;
             --text:        #1A1A2E;
             --text-light:  #546E7A;
             --white:       #FFFFFF;
-            
-            /* ✨ Efectos */
             --shadow-sm:   0 2px 8px rgba(0,0,0,0.08);
             --shadow-md:   0 8px 24px rgba(0,0,0,0.12);
             --shadow-lg:   0 16px 48px rgba(0,0,0,0.18);
-            --radius:      14px;
-            --radius-sm:   10px;
-            
-            /* 🔤 Tipografía */
-            --font:        system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --radius:      20px;
+            --radius-sm:   12px;
+            --font:        system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
-        
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            font-size: 12.5px;
-            line-height: 1.55;
-            width: 800px;
-            height: 800px;
-            max-width: 800px;
-            max-height: 800px;
-            overflow: hidden;
+            background: linear-gradient(145deg, #E9EEF9 0%, #E2E8F2 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            min-height: 100vh;
+        
         }
 
-        .container {
+        /* Contenedor principal con ancho fijo pero centrado y espacio interno generoso */
+        .game-container {
+            max-width: 1100px;
             width: 100%;
-            height: 100%;
             background: var(--card);
             border-radius: var(--radius);
-            position: relative;
-            overflow: hidden;
             box-shadow: var(--shadow-lg);
-            display: flex;
-            flex-direction: column;
+            transition: all 0.2s;
+            position: relative;
+            backdrop-filter: blur(0px);
         }
 
-        /* ── 🌟 HERO HEADER ── */
+        /* ── HERO (más compacto pero elegante) ── */
         .hero {
-            background: linear-gradient(135deg, var(--primary), var(--primary-2), var(--accent));
-            padding: 12px 18px;
+            background: linear-gradient(135deg, var(--primary), #5E35B1, var(--primary-2));
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-radius: var(--radius) var(--radius) 0 0;
+            position: relative;
+            flex-wrap: wrap;
+        }
+        .hero-icon {
+            font-size: 32px;
+            background: rgba(255,255,255,0.2);
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 28px;
+            backdrop-filter: blur(2px);
+        }
+        .hero-content { flex: 1; }
+        .hero-title { color: white; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.3px; line-height: 1.2; }
+        .hero-sub { color: rgba(255,255,240,0.85); font-size: 0.75rem; margin-top: 4px; font-weight: 500; }
+        .hero-badge {
+            background: #fff;
+            color: var(--primary);
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 5px 14px;
+            border-radius: 60px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* instrucciones más limpias */
+        .instructions {
+            background: #F8FAFF;
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             gap: 12px;
-            position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -40%;
-            right: -30%;
-            width: 180px;
-            height: 180px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
-            animation: float 7s ease-in-out infinite;
-        }
-        
-        .hero::after {
-            content: '';
-            position: absolute;
-            bottom: -25%;
-            left: -15%;
-            width: 120px;
-            height: 120px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            animation: float 9s ease-in-out infinite reverse;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-12px) scale(1.08); }
-        }
-        
-        .hero-icon {
-            font-size: 26px;
-            background: rgba(255,255,255,0.25);
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            z-index: 1;
-            animation: bounce 2.5s ease infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        .hero-content { flex: 1; z-index: 1; }
-        .hero-title {
-            color: var(--white);
-            font-size: 14.5px;
-            font-weight: 800;
-            line-height: 1.3;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .hero-sub {
-            color: rgba(255,255,255,0.92);
-            font-size: 10.5px;
-            margin-top: 2px;
+        .instructions-text {
+            font-size: 0.8rem;
+            color: #2c3e66;
             font-weight: 500;
         }
-        .hero-badge {
-            background: var(--white);
-            color: var(--primary);
-            font-size: 9px;
-            font-weight: 800;
-            padding: 3px 9px;
-            border-radius: 18px;
-            white-space: nowrap;
-            z-index: 1;
-            box-shadow: var(--shadow-sm);
-            animation: pulse 2.5s ease infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.06); }
-        }
 
-        /* ── 📋 INSTRUCTIONS ── */
-        .instructions {
-            background: linear-gradient(135deg, #E8EAF6, #E3F2FD);
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-        
-        .instructions-icon { font-size: 16px; animation: bounce 3s ease infinite; }
-        
-        .instructions-text {
-            color: var(--text);
-            font-size: 11px;
-            line-height: 1.5;
-        }
-        .instructions-text strong {
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        /* ── 🎯 GAME AREA ── */
+        /* ── ÁREA PRINCIPAL: ESPACIO CENTRAL GENEROSO ── */
         .game-area {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            padding: 12px 16px;
-            display: flex;
-            flex-direction: column;
+            padding: 28px 30px;
+            background: #FFFFFF;
         }
 
-        /* Canvas for lines */
-        #connectionCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
+        /* Grid flexible con espacio central grande (gap grande) */
         .columns-wrapper {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            justify-content: space-between;
-            height: 100%;
-            gap: 16px;
+            display: grid;
+            grid-template-columns: 1fr  1fr;
+            gap: 200px;           /* mucho espacio en el centro para líneas */
+            align-items: start;
         }
 
-        /* Operators Column */
-        .operators-col {
-            width: 110px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
+        /* encabezados de columna */
         .col-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-2));
-            color: white;
-            font-size: 10px;
+            background: linear-gradient(120deg, #F1F5F9, #EFF3FC);
+            color: var(--primary);
+            font-size: 0.8rem;
             font-weight: 800;
             text-align: center;
-            padding: 6px 8px;
-            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            border-radius: 40px;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(124,77,255,0.2);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Operadores - contenedor flexible */
+        .operators-col {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .operator-card {
-            background: var(--card);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 9px 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            font-weight: 700;
+            background: white;
+            border: 2px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 12px 8px;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: 800;
+            text-align: center;
             color: var(--primary);
             cursor: pointer;
-            text-align: center;
             transition: all 0.2s ease;
-            position: relative;
             box-shadow: var(--shadow-sm);
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(2px);
         }
-        
+
         .operator-card:hover {
             border-color: var(--primary);
-            background: linear-gradient(135deg, rgba(124,77,255,0.08), rgba(41,182,246,0.08));
+            background: rgba(124,77,255,0.05);
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
-        
+
         .operator-card.selected {
             background: linear-gradient(135deg, var(--primary), var(--primary-2));
             color: white;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(124,77,255,0.3);
-            animation: pop 0.3s ease;
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(124,77,255,0.4);
         }
-        
+
         .operator-card.matched {
             background: var(--success-bg);
             border-color: var(--success);
-            color: var(--success);
+            color: #2E7D32;
         }
-        
+
         .operator-card.error {
             background: var(--error-bg);
             border-color: var(--error);
-            color: var(--error);
-            animation: shake 0.4s ease;
-        }
-        
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-3px); }
-            75% { transform: translateX(3px); }
+            color: #C62828;
+            animation: shake 0.25s ease-in-out 0s 1;
         }
 
-        /* Descriptions Column */
+        /* Descripciones: más espacio vertical, texto legible */
         .descriptions-col {
-            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        
-        .descriptions-col::-webkit-scrollbar { width: 4px; }
-        .descriptions-col::-webkit-scrollbar-thumb { 
-            background: linear-gradient(180deg, var(--primary), var(--primary-2)); 
-            border-radius: 2px; 
+            gap: 12px;
         }
 
         .description-card {
-            background: var(--card);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 8px 12px;
-            font-size: 11px;
+            background: white;
+            border: 2px solid #E9EDF2;
+            border-radius: 16px;
+            padding: 12px 16px;
+            font-size: 0.82rem;
             line-height: 1.45;
-            color: var(--text);
+            color: #1E293B;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             display: flex;
-            align-items: flex-start;
-            gap: 8px;
+            align-items: center;
+            gap: 12px;
             box-shadow: var(--shadow-sm);
+            font-weight: 500;
         }
-        
+
         .description-card:hover {
             border-color: var(--accent);
-            background: linear-gradient(135deg, rgba(255,107,107,0.08), rgba(255,217,61,0.08));
-            transform: translateX(3px);
+            background: rgba(255,107,107,0.04);
+            transform: translateX(4px);
         }
-        
+
         .description-card.selected {
             background: linear-gradient(135deg, var(--accent), var(--accent-2));
             color: white;
-            border-color: var(--accent);
+            border-color: #fff3e0;
             box-shadow: 0 0 0 3px rgba(255,107,107,0.3);
         }
-        
+
         .description-card.matched {
             background: var(--success-bg);
             border-color: var(--success);
-            border-left: 4px solid var(--success);
+            border-left: 5px solid var(--success);
         }
-        
+
         .description-card.error {
             background: var(--error-bg);
             border-color: var(--error);
-            border-left: 4px solid var(--error);
+            border-left: 5px solid var(--error);
+            animation: shake 0.25s ease;
         }
 
         .desc-num {
-            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            background: linear-gradient(145deg, #B0BEC5, #90A4AE);
             color: white;
-            width: 22px;
-            height: 22px;
+            width: 26px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 0.75rem;
             font-weight: 800;
-            border-radius: 6px;
+            border-radius: 12px;
             flex-shrink: 0;
-            margin-top: 1px;
         }
-        
+
         .description-card.selected .desc-num {
             background: white;
             color: var(--accent);
         }
 
-        /* Connection line styles */
-        .connection-line {
-            stroke: var(--border);
-            stroke-width: 2.5;
-            fill: none;
-            stroke-linecap: round;
-            transition: stroke 0.3s;
-        }
-        
-        .connection-line.temp {
-            stroke: var(--accent);
-            stroke-width: 3;
-            stroke-dasharray: 6,4;
-            animation: dash 1s linear infinite;
-        }
-        
-        .connection-line.correct {
-            stroke: var(--success);
-            stroke-width: 3;
-        }
-        
-        .connection-line.incorrect {
-            stroke: var(--error);
-            stroke-width: 3;
-            stroke-dasharray: 4,3;
-        }
-        
-        @keyframes dash {
-            to { stroke-dashoffset: -10; }
+        /* SVG fijo para líneas (sigue scroll) */
+        #connSvg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+      
         }
 
-        /* ── 📊 LEGEND ── */
+        body.drawing {
+            cursor: crosshair;
+        }
+
+        .modal-overlay.show ~ #connSvg,
+body:has(.modal-overlay.show) #connSvg {
+    display: none !important;
+}
+
+        /* Leyenda compacta */
         .legend {
             display: flex;
             justify-content: center;
-            gap: 14px;
-            padding: 6px 16px;
-            background: var(--card);
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
+            gap: 24px;
+            padding: 14px 24px;
+            border-top: 1px solid #EDF2F7;
+            background: #FAFCFE;
         }
-        
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 10px;
-            color: var(--text-light);
-            font-weight: 500;
+            gap: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #334155;
         }
-        
         .legend-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 4px;
-            border: 2px solid;
+            width: 18px;
+            height: 18px;
+            border-radius: 8px;
+            border: 2px solid transparent;
         }
-        .legend-dot.selected { background: var(--accent); border-color: var(--accent); }
-        .legend-dot.correct { background: var(--success); border-color: var(--success); }
-        .legend-dot.incorrect { background: var(--error); border-color: var(--error); }
+        .legend-dot.selected { background: var(--accent); border-color: #fff; box-shadow: 0 0 0 1px var(--accent); }
+        .legend-dot.correct  { background: var(--success); }
+        .legend-dot.incorrect{ background: var(--error); }
 
-        /* ── 🔘 ACTIONS ── */
+        /* Botones */
         .actions {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            padding: 10px 16px;
-            background: var(--card);
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
+            gap: 20px;
+            padding: 14px 24px 28px;
+            background: white;
+            border-radius: 0 0 var(--radius) var(--radius);
         }
-        
         .btn {
-            padding: 9px 20px;
-            font-size: 11px;
-            font-weight: 700;
+            padding: 10px 28px;
+            font-size: 0.75rem;
+            font-weight: 800;
             border: none;
-            border-radius: 20px;
+            border-radius: 60px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             font-family: var(--font);
-            min-height: 34px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
         }
-        
         .btn-primary {
-            background: linear-gradient(135deg, var(--success), #00E676);
+            background: linear-gradient(135deg, var(--success), #2E7D32);
             color: white;
             box-shadow: var(--shadow-sm);
         }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            filter: brightness(1.05);
-        }
-        
+        .btn-primary:hover { transform: scale(1.02); background: #00B248; box-shadow: var(--shadow-md); }
         .btn-secondary {
-            background: transparent;
-            color: var(--text-light);
-            border: 2px solid var(--border);
+            background: #F1F5F9;
+            color: #2c3e66;
+            border: 1px solid #CBD5E1;
         }
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(124,77,255,0.08);
-        }
+        .btn-secondary:hover { background: #E6EDF5; border-color: var(--primary); color: var(--primary); }
 
-        /* ── 💬 MODALS ── */
+        /* Modal mejorado */
         .modal-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(26,26,46,0.7);
-            backdrop-filter: blur(3px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            animation: fadeIn 0.25s ease;
-        }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6); /* Un poco más oscuro para mejor contraste */
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2147483647 !important; /* Valor extremadamente alto y con !important */
+}
         .modal-overlay.show { display: flex; }
-        
+
         .modal-card {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 18px 20px;
-            max-width: 94%;
-            width: 360px;
-            max-height: 85%;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            animation: modalSlide 0.35s cubic-bezier(0.4,0,0.2,1);
-            border: 3px solid;
-        }
-        
-        @keyframes modalSlide {
-            from { opacity: 0; transform: translateY(25px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .modal-card.feedback { border-color: var(--primary); }
-        .modal-card.success { 
-            border-color: var(--success); 
-            background: linear-gradient(135deg, #fff, var(--success-bg)); 
-        }
-        
+    background: white;
+    border-radius: 32px;
+    padding: 24px 28px;
+    width: 400px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    border: 2px solid var(--primary);
+    position: relative; /* Añadido para control de capas */
+    z-index: 2147483647 !important;
+}
+        .modal-card.success { border-color: var(--success); }
         .modal-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 14px;
-            padding-bottom: 12px;
-            border-bottom: 2px dashed rgba(0,0,0,0.1);
-        }
-        
-        .modal-title {
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--text);
-            display: flex;
             align-items: center;
-            gap: 7px;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 10px;
         }
-        
+        .modal-title { font-weight: 800; font-size: 1.1rem; display: flex; gap: 8px; align-items: center; }
         .modal-close {
-            background: var(--border);
+            background: #f0f0f0;
             border: none;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            font-size: 16px;
+            width: 30px;
+            height: 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
             cursor: pointer;
+        }
+        .modal-close:hover { background: var(--error); color: white; }
+
+        .feedback-list {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.15s;
-            color: var(--text);
+            flex-direction: column;
+            gap: 12px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 4px;
         }
-        .modal-close:hover {
-            background: var(--error);
-            color: white;
-            transform: rotate(90deg);
-        }
-        
-        .modal-body { font-size: 11.5px; color: var(--text); line-height: 1.6; }
-        
-        .feedback-list { display: flex; flex-direction: column; gap: 8px; }
-        
         .feedback-item {
-            padding: 10px 12px;
-            border-radius: var(--radius-sm);
-            border-left: 4px solid;
-            font-size: 11px;
-            line-height: 1.5;
+            padding: 12px 14px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            border-left: 5px solid;
+            background: #F9F9FC;
         }
-        .feedback-item.correct {
-            background: var(--success-bg);
-            border-color: var(--success);
-        }
-        .feedback-item.incorrect {
-            background: var(--error-bg);
-            border-color: var(--error);
-        }
-        
+        .feedback-item.correct { border-left-color: var(--success); background: #E8F5E9; }
+        .feedback-item.incorrect { border-left-color: var(--error); background: #FFEBEE; }
         .feedback-op {
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
             font-weight: 800;
-            color: var(--primary);
-            background: rgba(124,77,255,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-        
-        .success-icon {
-            font-size: 42px;
-            text-align: center;
-            margin: 8px 0 14px;
-            animation: bounce 1.5s ease infinite;
-        }
-        
-        .success-text {
-            text-align: center;
-            font-size: 12px;
-            line-height: 1.6;
-            color: var(--text);
-        }
-        .success-text strong {
-            color: var(--success);
-            font-weight: 700;
+            background: rgba(0,0,0,0.05);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
         }
 
-        /* ── 🎊 CONFETTI ── */
+        .success-icon { font-size: 56px; text-align: center; margin: 12px 0; }
+        .success-text { text-align: center; font-size: 0.85rem; line-height: 1.5; }
+
         .confetti {
-            position: absolute;
+            position: fixed;
             width: 8px;
-            height: 8px;
-            border-radius: 2px;
+            height: 12px;
+            background: gold;
             pointer-events: none;
-            z-index: 200;
-            animation: confetti-fall 3s ease-in-out forwards;
+            z-index: 100001;
+            animation: fall 2.5s forwards;
         }
-        
-        @keyframes confetti-fall {
+        @keyframes fall {
             0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(800px) rotate(720deg); opacity: 0; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
         }
 
-        /* Responsive safeguard */
-        @media (max-width: 800px) {
-            body { width: 100vw; height: 100vh; border-radius: 0; }
+        @media (max-width: 700px) {
+            .columns-wrapper { gap: 24px; }
+            .game-area { padding: 20px; }
+            .hero-title { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-
-    <!-- 🌟 HERO -->
+<div class="game-container" id="gameContainer">
     <header class="hero">
         <div class="hero-icon">🔍</div>
         <div class="hero-content">
             <div class="hero-title">Operadores WHERE en SQL</div>
-            <div class="hero-sub">Fundamentos de BD • Actividad de emparejamiento</div>
+            <div class="hero-sub">Empareja cada operador con su definición correcta</div>
         </div>
-        <span class="hero-badge">🎯 Práctica</span>
+        <span class="hero-badge">🎯 14 parejas · orden aleatorio</span>
     </header>
 
-    <!-- 📋 INSTRUCTIONS -->
     <div class="instructions">
-        <span class="instructions-icon">💡</span>
-        <p class="instructions-text">
-            <strong>Conecta:</strong> Haz clic en un <em>operador</em> 💜 y luego en su <em>descripción</em> 📝 correspondiente. 
-            ¡Completa las 14 parejas! ✨
-        </p>
+        <span>✨</span>
+        <p class="instructions-text"><strong>Modo conexión:</strong> Clic en operador → clic en descripción. Las líneas aparecerán en el centro. ¡Cada pareja correcta suma! Revisa y verifica.</p>
     </div>
 
-    <!-- 🎯 GAME AREA -->
     <div class="game-area">
-        <svg id="connectionCanvas"></svg>
-        
-        <div class="columns-wrapper">
-            <!-- Operators -->
-            <div class="operators-col" id="operatorsCol">
-                <div class="col-header">⚙️ Operador</div>
-                <div class="operator-card" data-id="1" data-op=">">&gt;</div>
-                <div class="operator-card" data-id="2" data-op=">=">&gt;=</div>
-                <div class="operator-card" data-id="3" data-op="<">&lt;</div>
-                <div class="operator-card" data-id="4" data-op="<=">&lt;=</div>
-                <div class="operator-card" data-id="5" data-op="=">=</div>
-                <div class="operator-card" data-id="6" data-op="<>">&lt;&gt;</div>
-                <div class="operator-card" data-id="7" data-op="AND">AND</div>
-                <div class="operator-card" data-id="8" data-op="OR">OR</div>
-                <div class="operator-card" data-id="9" data-op="NOT">NOT</div>
-                <div class="operator-card" data-id="10" data-op="BETWEEN">BETWEEN</div>
-                <div class="operator-card" data-id="11" data-op="IN">IN</div>
-                <div class="operator-card" data-id="12" data-op="LIKE">LIKE</div>
-                <div class="operator-card" data-id="13" data-op="IS NULL">IS NULL</div>
-                <div class="operator-card" data-id="14" data-op="IS NOT NULL">IS NOT NULL</div>
-            </div>
-
-            <!-- Descriptions -->
-            <div class="descriptions-col" id="descriptionsCol">
-                <div class="col-header">📝 Descripción</div>
-                <div class="description-card" data-id="1"><span class="desc-num">1</span><span>Valor <strong>mayor que</strong> un número específico</span></div>
-                <div class="description-card" data-id="2"><span class="desc-num">2</span><span>Valor <strong>mayor o igual</strong> que un número</span></div>
-                <div class="description-card" data-id="3"><span class="desc-num">3</span><span>Valor <strong>menor que</strong> un número específico</span></div>
-                <div class="description-card" data-id="4"><span class="desc-num">4</span><span>Valor <strong>menor o igual</strong> que un número</span></div>
-                <div class="description-card" data-id="5"><span class="desc-num">5</span><span>Valor <strong>exactamente igual</strong> a un dato</span></div>
-                <div class="description-card" data-id="6"><span class="desc-num">6</span><span>Valor <strong>diferente</strong> de un dato específico</span></div>
-                <div class="description-card" data-id="7"><span class="desc-num">7</span><span><strong>Todas</strong> las condiciones deben cumplirse</span></div>
-                <div class="description-card" data-id="8"><span class="desc-num">8</span><span><strong>Al menos una</strong> condición debe cumplirse</span></div>
-                <div class="description-card" data-id="9"><span class="desc-num">9</span><span><strong>Niega</strong> una condición establecida</span></div>
-                <div class="description-card" data-id="10"><span class="desc-num">10</span><span>Valor dentro de un <strong>rango</strong> (incluye límites)</span></div>
-                <div class="description-card" data-id="11"><span class="desc-num">11</span><span>Compara con <strong>múltiples valores</strong> en una lista</span></div>
-                <div class="description-card" data-id="12"><span class="desc-num">12</span><span>Busca <strong>patrones de texto</strong> con comodines</span></div>
-                <div class="description-card" data-id="13"><span class="desc-num">13</span><span>Identifica registros con valor <strong>nulo</strong></span></div>
-                <div class="description-card" data-id="14"><span class="desc-num">14</span><span>Identifica registros con valor <strong>definido</strong></span></div>
-            </div>
-        </div>
-
-        <!-- Feedback Modal -->
-        <div class="modal-overlay" id="feedbackModal">
-            <div class="modal-card feedback">
-                <div class="modal-header">
-                    <div class="modal-title">📊 Resultados</div>
-                    <button class="modal-close" onclick="closeModal()">✕</button>
-                </div>
-                <div class="modal-body">
-                    <div class="feedback-list" id="feedbackList"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Success Modal -->
-        <div class="modal-overlay" id="successModal">
-            <div class="modal-card success">
-                <div class="modal-header">
-                    <div class="modal-title">🎉 ¡Perfecto!</div>
-                    <button class="modal-close" onclick="closeSuccess()">✕</button>
-                </div>
-                <div class="modal-body">
-                    <div class="success-icon">🏆</div>
-                    <p class="success-text">
-                        Dominar los operadores <strong>WHERE</strong> te permite construir consultas SQL precisas, 
-                        filtrar datos eficientemente y optimizar el rendimiento de tus bases de datos. 
-                        <br><br>
-                        <em>¡Sigue practicando para convertirte en un experto! 🚀</em>
-                    </p>
-                </div>
-            </div>
+        <div class="columns-wrapper" id="dynamicGrid">
+            <!-- Los elementos se inyectarán con JS en orden aleatorio pero manteniendo IDs fijos -->
         </div>
     </div>
 
-    <!-- 📊 LEGEND -->
     <div class="legend">
         <div class="legend-item"><div class="legend-dot selected"></div><span>Seleccionado</span></div>
-        <div class="legend-item"><div class="legend-dot correct"></div><span>✅ Correcto</span></div>
-        <div class="legend-item"><div class="legend-dot incorrect"></div><span>❌ Revisar</span></div>
+        <div class="legend-item"><div class="legend-dot correct"></div><span>Correcto (verde)</span></div>
+        <div class="legend-item"><div class="legend-dot incorrect"></div><span>Incorrecto</span></div>
     </div>
 
-    <!-- 🔘 ACTIONS -->
     <div class="actions">
-        <button class="btn btn-secondary" onclick="resetActivity()">🔄 Reiniciar</button>
-        <button class="btn btn-primary" onclick="checkAnswers()">✅ Verificar</button>
+        <button class="btn btn-secondary" id="resetBtn">🔄 Reiniciar todo</button>
+        <button class="btn btn-primary" id="verifyBtn">✅ Verificar conexiones</button>
     </div>
 
+    <!-- Modales -->
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-card">
+            <div class="modal-header"><div class="modal-title">📋 Resultados</div><button class="modal-close" id="closeFeedbackBtn">✕</button></div>
+            <div class="feedback-list" id="feedbackList"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-card success">
+            <div class="modal-header"><div class="modal-title">🏆 ¡Excelente!</div><button class="modal-close" id="closeSuccessBtn">✕</button></div>
+            <div class="success-icon">🎉</div>
+            <p class="success-text">Has emparejado todos los operadores WHERE correctamente.<br> Dominas los filtros en SQL, ¡sigue así! 🚀</p>
+        </div>
+    </div>
 </div>
 
+<svg id="connSvg"></svg>
+
 <script>
-/* ══ 📦 DATA ══ */
-const correctPairs = {1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14};
+    // ----- DEFINICIONES FIJAS (14 operadores y descripciones originales) -----
+    const OPERATORS_RAW = [
+        { id: 1, text: ">" },
+        { id: 2, text: ">=" },
+        { id: 3, text: "<" },
+        { id: 4, text: "<=" },
+        { id: 5, text: "=" },
+        { id: 6, text: "<>" },
+        { id: 7, text: "AND" },
+        { id: 8, text: "OR" },
+        { id: 9, text: "NOT" },
+        { id: 10, text: "BETWEEN" },
+        { id: 11, text: "IN" },
+        { id: 12, text: "LIKE" },
+        { id: 13, text: "IS NULL" },
+        { id: 14, text: "IS NOT NULL" }
+    ];
 
-const feedbackText = {
-    1: ">&nbsp;filtra valores estrictamente superiores al criterio.",
-    2: ">=&nbsp;incluye el valor límite en la comparación ascendente.",
-    3: "<&nbsp;filtra valores estrictamente inferiores al criterio.",
-    4: "<=&nbsp;incluye el valor límite en la comparación descendente.",
-    5: "=&nbsp;busca coincidencias exactas, fundamental para filtros precisos.",
-    6: "<>&nbsp;excluye valores específicos del resultado.",
-    7: "AND&nbsp;requiere que TODAS las condiciones sean verdaderas.",
-    8: "OR&nbsp;basta con que UNA condición sea verdadera.",
-    9: "NOT&nbsp;invierte el resultado de una condición.",
-    10: "BETWEEN&nbsp;selecciona rangos de forma compacta y legible.",
-    11: "IN&nbsp;compara con listas de valores sin repetir operadores.",
-    12: "LIKE&nbsp;permite búsquedas con patrones: % (cualquier texto), _ (un carácter).",
-    13: "IS NULL&nbsp;detecta ausencia de datos (no usa =).",
-    14: "IS NOT NULL&nbsp;filtra solo registros con datos definidos."
-};
+    const DESCRIPTIONS_RAW = [
+        { id: 1, text: "Valor <strong>mayor que</strong> un número específico" },
+        { id: 2, text: "Valor <strong>mayor o igual</strong> que un número" },
+        { id: 3, text: "Valor <strong>menor que</strong> un número específico" },
+        { id: 4, text: "Valor <strong>menor o igual</strong> que un número" },
+        { id: 5, text: "Valor <strong>exactamente igual</strong> a un dato" },
+        { id: 6, text: "Valor <strong>diferente</strong> de un dato específico" },
+        { id: 7, text: "<strong>Todas</strong> las condiciones deben cumplirse" },
+        { id: 8, text: "<strong>Al menos una</strong> condición debe cumplirse" },
+        { id: 9, text: "<strong>Niega</strong> una condición establecida" },
+        { id: 10, text: "Valor dentro de un <strong>rango</strong> (incluye límites)" },
+        { id: 11, text: "Compara con <strong>múltiples valores</strong> en una lista" },
+        { id: 12, text: "Busca <strong>patrones de texto</strong> con comodines" },
+        { id: 13, text: "Identifica registros con valor <strong>nulo</strong>" },
+        { id: 14, text: "Identifica registros con valor <strong>definido</strong>" }
+    ];
 
-/* ══ 🧠 STATE ══ */
-let state = {
-    selectedOp: null,
-    connections: {}, // {opId: descId}
-    locked: false
-};
-
-/* ══ 🎨 UTILS ══ */
-function $(sel) { return document.querySelector(sel); }
-function $$(sel) { return document.querySelectorAll(sel); }
-
-function createConfetti() {
-    const colors = ['#7C4DFF', '#29B6F6', '#FF6B6B', '#FFD93D', '#00C853'];
-    for (let i = 0; i < 40; i++) {
-        const c = document.createElement('div');
-        c.className = 'confetti';
-        c.style.left = Math.random() * 100 + '%';
-        c.style.background = colors[Math.floor(Math.random() * colors.length)];
-        c.style.animationDelay = Math.random() * 2 + 's';
-        c.style.width = c.style.height = (Math.random() * 6 + 4) + 'px';
-        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-        $('.container').appendChild(c);
-        setTimeout(() => c.remove(), 3000);
-    }
-}
-
-/* ══ 🚀 INIT ══ */
-function init() {
-    $$('.operator-card').forEach(el => {
-        el.onclick = () => selectOperator(el);
-    });
-    $$('.description-card').forEach(el => {
-        el.onclick = () => selectDescription(el);
-    });
-    window.onresize = drawLines;
-}
-
-/* ══ ✋ INTERACTION ══ */
-function selectOperator(el) {
-    if (state.locked) return;
-    
-    // Deselect previous
-    $$('.operator-card.selected').forEach(e => e.classList.remove('selected'));
-    
-    // Toggle selection
-    if (state.selectedOp === el) {
-        state.selectedOp = null;
-        removeTempLine();
-        return;
-    }
-    
-    state.selectedOp = el;
-    el.classList.add('selected');
-    document.onmousemove = drawTempLine;
-}
-
-function selectDescription(el) {
-    if (!state.selectedOp || state.locked) return;
-    
-    const opId = state.selectedOp.dataset.id;
-    const descId = el.dataset.id;
-    
-    // Store connection
-    state.connections[opId] = descId;
-    
-    // Visual cleanup
-    state.selectedOp.classList.remove('selected');
-    state.selectedOp = null;
-    removeTempLine();
-    document.onmousemove = null;
-    
-    // Draw permanent line
-    drawLines();
-}
-
-/* ══ 🎨 LINE DRAWING ══ */
-function getCenter(el) {
-    const rect = el.getBoundingClientRect();
-    const container = $('.container').getBoundingClientRect();
-    return {
-        x: rect.left + rect.width/2 - container.left,
-        y: rect.top + rect.height/2 - container.top
+    const CORRECT_PAIRS = { 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14 };
+    const FEEDBACK_DETAIL = {
+        1: '> filtra valores estrictamente superiores.',
+        2: '>= incluye el valor límite en la comparación ascendente.',
+        3: '< filtra valores estrictamente inferiores.',
+        4: '<= incluye el valor límite en la comparación descendente.',
+        5: '= busca coincidencias exactas.',
+        6: '<> excluye valores específicos.',
+        7: 'AND requiere que TODAS las condiciones sean verdaderas.',
+        8: 'OR basta con que UNA condición sea verdadera.',
+        9: 'NOT invierte el resultado.',
+        10: 'BETWEEN selecciona rangos de forma compacta.',
+        11: 'IN compara con listas de valores.',
+        12: 'LIKE permite búsquedas con comodines % y _.',
+        13: 'IS NULL detecta ausencia de datos (no usa =).',
+        14: 'IS NOT NULL filtra registros con datos definidos.'
     };
-}
 
-function drawTempLine(e) {
-    if (!state.selectedOp) return;
-    
-    const start = getCenter(state.selectedOp);
-    const end = { x: e.clientX - $('.container').getBoundingClientRect().left, y: e.clientY - $('.container').getBoundingClientRect().top };
-    
-    drawCurve(start.x, start.y, end.x, end.y, 'temp');
-}
+    // ---------- Estado global ----------
+    let currentConnections = {};   // { operatorId: descriptionId }
+    let selectedOperatorElem = null;
+    let locked = false;            // después de verificar, no se pueden cambiar líneas hasta reiniciar
 
-function removeTempLine() {
-    const temp = $('#connectionCanvas .temp');
-    if (temp) temp.remove();
-}
+    // Elementos aleatorios dinámicos
+    let currentOperatorsList = [];  // objetos con id, text
+    let currentDescriptionsList = [];
 
-function drawLines() {
-    // Clear existing (except temp)
-    $$('#connectionCanvas path:not(.temp)').forEach(p => p.remove());
-    
-    // Draw each connection
-    Object.entries(state.connections).forEach(([opId, descId]) => {
-        const op = $(`.operator-card[data-id="${opId}"]`);
-        const desc = $(`.description-card[data-id="${descId}"]`);
-        if (!op || !desc) return;
-        
-        const start = getCenter(op);
-        const end = getCenter(desc);
-        
-        // Adjust start to right edge of operator, end to left edge of description
-        start.x = op.getBoundingClientRect().right - $('.container').getBoundingClientRect().left - 8;
-        end.x = desc.getBoundingClientRect().left - $('.container').getBoundingClientRect().left + 8;
-        
-        const lineClass = state.locked ? (correctPairs[opId] == descId ? 'correct' : 'incorrect') : '';
-        drawCurve(start.x, start.y, end.x, end.y, `conn-${opId}`, lineClass);
-    });
-}
+    // Referencias DOM dinámicas
+    let operatorsContainer, descriptionsContainer;
 
-function drawCurve(x1, y1, x2, y2, id, extraClass = '') {
-    // Remove existing with same id
-    const existing = $(`#${id}`);
-    if (existing) existing.remove();
-    
-    const svg = $('#connectionCanvas');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    
-    // Bezier curve for smooth connection
-    const midX = (x1 + x2) / 2;
-    const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
-    
-    path.setAttribute('d', d);
-    path.setAttribute('id', id);
-    path.setAttribute('class', `connection-line ${extraClass}`);
-    
-    svg.appendChild(path);
-}
-
-/* ══ ✅ VERIFICATION ══ */
-function checkAnswers() {
-    state.locked = true;
-    
-    // Update visual states
-    $$('.operator-card, .description-card').forEach(el => {
-        el.classList.remove('matched', 'error');
-    });
-    
-    let correct = 0;
-    const feedbackList = $('#feedbackList');
-    feedbackList.innerHTML = '';
-    
-    // Check each operator
-    for (let i = 1; i <= 14; i++) {
-        const opEl = $(`.operator-card[data-id="${i}"]`);
-        const descId = state.connections[i];
-        const isCorrect = descId && correctPairs[i] == descId;
-        
-        if (isCorrect) {
-            opEl.classList.add('matched');
-            $(`.description-card[data-id="${descId}"]`)?.classList.add('matched');
-            correct++;
-        } else if (descId) {
-            opEl.classList.add('error');
-            $(`.description-card[data-id="${descId}"]`)?.classList.add('error');
+    // ---------- Funciones de ayuda para aleatoriedad (Fisher-Yates) ----------
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
         }
-        
-        // Add feedback item
-        const opSymbol = opEl.dataset.op;
-        const item = document.createElement('div');
-        item.className = `feedback-item ${isCorrect ? 'correct' : 'incorrect'}`;
-        item.innerHTML = `<span class="feedback-op">${opSymbol}</span> ${isCorrect ? '✅' : '❌'} ${feedbackText[i]}`;
-        feedbackList.appendChild(item);
+        return arr;
     }
-    
-    // Update line styles
-    drawLines();
-    
-    // Show modal
-    $('#feedbackModal').classList.add('show');
-    
-    // Celebrate perfect score
-    if (correct === 14) {
-        setTimeout(() => {
-            $('#successModal').classList.add('show');
-            setTimeout(createConfetti, 300);
-        }, 800);
+
+    // Inicializa con orden aleatorio pero manteniendo IDs
+    function initRandomOrder() {
+        // clonar y barajar
+        currentOperatorsList = shuffleArray([...OPERATORS_RAW]);
+        currentDescriptionsList = shuffleArray([...DESCRIPTIONS_RAW]);
     }
-}
 
-/* ══ 🔄 RESET ══ */
-function resetActivity() {
-    state = { selectedOp: null, connections: {}, locked: false };
-    
-    // Reset UI
-    $$('.operator-card, .description-card').forEach(el => {
-        el.classList.remove('selected', 'matched', 'error');
-    });
-    $$('#connectionCanvas path').forEach(p => p.remove());
-    $('#feedbackModal').classList.remove('show');
-    $('#successModal').classList.remove('show');
-    document.onmousemove = null;
-}
+    // Renderizar toda la interfaz desde cero respetando el orden aleatorio
+    function renderGame() {
+        const grid = document.getElementById('dynamicGrid');
+        if (!grid) return;
+        // crear columnas de nuevo
+        grid.innerHTML = `
+            <div class="operators-col" id="operatorsCol">
+                <div class="col-header">⚙️ OPERADOR SQL</div>
+                <div id="operatorsList"></div>
+            </div>
+            <div class="descriptions-col" id="descriptionsCol">
+                <div class="col-header">📝 DESCRIPCIÓN</div>
+                <div id="descriptionsList"></div>
+            </div>
+        `;
+        const operatorsListDiv = document.getElementById('operatorsList');
+        const descriptionsListDiv = document.getElementById('descriptionsList');
 
-/* ══ 🚪 MODALS ══ */
-function closeModal() { $('#feedbackModal').classList.remove('show'); }
-function closeSuccess() { $('#successModal').classList.remove('show'); }
+        // Llenar operadores con orden aleatorio
+        currentOperatorsList.forEach(op => {
+            const card = document.createElement('div');
+            card.className = 'operator-card';
+            card.setAttribute('data-id', op.id);
+            card.textContent = op.text;
+            operatorsListDiv.appendChild(card);
+        });
 
-// Close on overlay click
-$$('.modal-overlay').forEach(overlay => {
-    overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.remove('show'); };
-});
+        // Llenar descripciones con orden aleatorio
+        currentDescriptionsList.forEach(desc => {
+            const card = document.createElement('div');
+            card.className = 'description-card';
+            card.setAttribute('data-id', desc.id);
+            card.innerHTML = `<span class="desc-num">${desc.id}</span><span>${desc.text}</span>`;
+            descriptionsListDiv.appendChild(card);
+        });
 
-/* ══ ▶️ START ══ */
-init();
+        // Reasignar referencias y listeners
+        bindEvents();
+        drawLines();
+    }
+
+    // Bind de eventos después de render
+    function bindEvents() {
+        // quitar listeners previos usando delegación o eventos nuevos
+        const allOps = document.querySelectorAll('.operator-card');
+        const allDescs = document.querySelectorAll('.description-card');
+
+        allOps.forEach(op => {
+            op.removeEventListener('click', operatorClickHandler);
+            op.addEventListener('click', operatorClickHandler);
+        });
+        allDescs.forEach(desc => {
+            desc.removeEventListener('click', descriptionClickHandler);
+            desc.addEventListener('click', descriptionClickHandler);
+        });
+    }
+
+    // Handlers
+    function operatorClickHandler(e) {
+        if (locked) return;
+        const opCard = e.currentTarget;
+        // si ya estaba seleccionado, deseleccionar
+        if (selectedOperatorElem === opCard) {
+            clearSelectedOperator();
+            removeTempLine();
+            document.body.classList.remove('drawing');
+            return;
+        }
+        // quitar selección anterior
+        clearSelectedOperator();
+        selectedOperatorElem = opCard;
+        selectedOperatorElem.classList.add('selected');
+        document.body.classList.add('drawing');
+        // forzar actualización de línea temporal con movimiento
+    }
+
+    function descriptionClickHandler(e) {
+        if (locked) return;
+        if (!selectedOperatorElem) return;
+        const descCard = e.currentTarget;
+        const opId = parseInt(selectedOperatorElem.dataset.id);
+        const descId = parseInt(descCard.dataset.id);
+        // Guardar conexión
+        currentConnections[opId] = descId;
+        // Limpiar selección
+        clearSelectedOperator();
+        removeTempLine();
+        document.body.classList.remove('drawing');
+        drawLines();
+    }
+
+    function clearSelectedOperator() {
+        if (selectedOperatorElem) {
+            selectedOperatorElem.classList.remove('selected');
+            selectedOperatorElem = null;
+        }
+    }
+
+    // SVG Líneas temporales y permanentes (con centro expandido)
+    function getElementCenterForLine(el, side = 'right') {
+        const rect = el.getBoundingClientRect();
+        if (side === 'right') return { x: rect.right - 6, y: rect.top + rect.height / 2 };
+        return { x: rect.left + 6, y: rect.top + rect.height / 2 };
+    }
+
+    let tempPathElement = null;
+    function onMouseMoveHandler(e) {
+        if (!selectedOperatorElem || locked) return;
+        removeTempLine();
+        const start = getElementCenterForLine(selectedOperatorElem, 'right');
+        const end = { x: e.clientX, y: e.clientY };
+        const svg = document.getElementById('connSvg');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const midX = (start.x + end.x) / 2;
+        path.setAttribute('d', `M${start.x},${start.y} C${midX},${start.y} ${midX},${end.y} ${end.x},${end.y}`);
+        path.setAttribute('id', 'tempLine');
+        path.setAttribute('stroke', '#FF6B6B');
+        path.setAttribute('stroke-width', '3');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-dasharray', '6 4');
+        path.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(path);
+        tempPathElement = path;
+    }
+
+    function removeTempLine() {
+        if (tempPathElement) {
+            tempPathElement.remove();
+            tempPathElement = null;
+        }
+        const tempLine = document.getElementById('tempLine');
+        if (tempLine) tempLine.remove();
+    }
+
+    function drawLines() {
+        const svg = document.getElementById('connSvg');
+        // remover todas menos la temp (ya la gestionamos)
+        const allPaths = svg.querySelectorAll('path:not(#tempLine)');
+        allPaths.forEach(p => p.remove());
+        const allCircles = svg.querySelectorAll('circle');
+        allCircles.forEach(c => c.remove());
+
+        Object.entries(currentConnections).forEach(([opIdStr, descIdVal]) => {
+            const opId = parseInt(opIdStr);
+            const descId = descIdVal;
+            const opElem = document.querySelector(`.operator-card[data-id="${opId}"]`);
+            const descElem = document.querySelector(`.description-card[data-id="${descId}"]`);
+            if (!opElem || !descElem) return;
+            const start = getElementCenterForLine(opElem, 'right');
+            const end = getElementCenterForLine(descElem, 'left');
+            const midX = (start.x + end.x) / 2;
+            const isCorrect = (locked && CORRECT_PAIRS[opId] === descId);
+            const strokeColor = locked ? (isCorrect ? '#00C853' : '#EF5350') : '#7C4DFF';
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M${start.x},${start.y} C${midX},${start.y} ${midX},${end.y} ${end.x},${end.y}`);
+            path.setAttribute('stroke', strokeColor);
+            path.setAttribute('stroke-width', locked ? '3.2' : '2.8');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke-linecap', 'round');
+            if (locked && !isCorrect) path.setAttribute('stroke-dasharray', '5 3');
+            svg.appendChild(path);
+            // punto final decorativo
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', end.x);
+            circle.setAttribute('cy', end.y);
+            circle.setAttribute('r', '3.5');
+            circle.setAttribute('fill', strokeColor);
+            svg.appendChild(circle);
+        });
+    }
+
+    // Verificación
+    function verifyMatches() {
+        locked = true;
+        // resetear clases visuales
+        document.querySelectorAll('.operator-card, .description-card').forEach(el => {
+            el.classList.remove('matched', 'error', 'selected');
+        });
+        let correctCount = 0;
+        const feedbackDiv = document.getElementById('feedbackList');
+        feedbackDiv.innerHTML = '';
+        for (let i = 1; i <= 14; i++) {
+            const matchedDesc = currentConnections[i];
+            const isCorrect = (matchedDesc !== undefined && CORRECT_PAIRS[i] === matchedDesc);
+            const opElement = document.querySelector(`.operator-card[data-id="${i}"]`);
+            const descElement = matchedDesc ? document.querySelector(`.description-card[data-id="${matchedDesc}"]`) : null;
+            if (isCorrect) {
+                correctCount++;
+                if (opElement) opElement.classList.add('matched');
+                if (descElement) descElement.classList.add('matched');
+            } else if (matchedDesc !== undefined) {
+                if (opElement) opElement.classList.add('error');
+                if (descElement) descElement.classList.add('error');
+            }
+            const opText = opElement ? opElement.textContent.trim() : `ID ${i}`;
+            const fbItem = document.createElement('div');
+            fbItem.className = `feedback-item ${isCorrect ? 'correct' : 'incorrect'}`;
+            fbItem.innerHTML = `<span class="feedback-op">${opText}</span> ${isCorrect ? '✅' : '❌'} ${FEEDBACK_DETAIL[i]}`;
+            feedbackDiv.appendChild(fbItem);
+        }
+        drawLines();
+        document.getElementById('feedbackModal').classList.add('show');
+        if (correctCount === 14) {
+            setTimeout(() => {
+                document.getElementById('successModal').classList.add('show');
+                launchConfetti();
+            }, 600);
+        }
+    }
+
+    function resetGame() {
+        locked = false;
+        currentConnections = {};
+        clearSelectedOperator();
+        removeTempLine();
+        document.body.classList.remove('drawing');
+        // Nueva aleatorización completa: reordenar listas y regenerar DOM
+        initRandomOrder();
+        renderGame();  // regenera todo, limpia conexiones y dibujo
+        // limpia svg extra
+        const svg = document.getElementById('connSvg');
+        svg.innerHTML = '';
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+    }
+
+    function launchConfetti() {
+        for (let i = 0; i < 100; i++) {
+            const conf = document.createElement('div');
+            conf.classList.add('confetti');
+            conf.style.left = Math.random() * 100 + '%';
+            conf.style.top = '-15px';
+            conf.style.background = `hsl(${Math.random() * 360}, 80%, 60%)`;
+            conf.style.width = conf.style.height = Math.random() * 8 + 5 + 'px';
+            conf.style.position = 'fixed';
+            conf.style.pointerEvents = 'none';
+            conf.style.zIndex = '100000';
+            document.body.appendChild(conf);
+            setTimeout(() => conf.remove(), 2800);
+        }
+    }
+
+    // Inicializar con aleatoriedad y eventos globales de movimiento de línea
+    function setupGlobalEvents() {
+        window.addEventListener('mousemove', onMouseMoveHandler);
+        window.addEventListener('resize', () => drawLines());
+        window.addEventListener('scroll', () => drawLines());
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+        document.getElementById('verifyBtn').addEventListener('click', verifyMatches);
+        document.getElementById('closeFeedbackBtn').addEventListener('click', () => document.getElementById('feedbackModal').classList.remove('show'));
+        document.getElementById('closeSuccessBtn').addEventListener('click', () => document.getElementById('successModal').classList.remove('show'));
+        document.querySelectorAll('.modal-overlay').forEach(over => {
+            over.addEventListener('click', (e) => { if (e.target === over) over.classList.remove('show'); });
+        });
+    }
+
+    // Inicio
+    function start() {
+        initRandomOrder();
+        renderGame();
+        setupGlobalEvents();
+    }
+    start();
 </script>
 </body>
 </html>
