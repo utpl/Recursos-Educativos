@@ -1,385 +1,541 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estructura de Áreas Funcionales</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #1565C0;
-            --primary-light: #1976D2;
-            --accent: #F57C00;
-            --accent-light: #FF9800;
-            --success: #2E7D32;
-            --success-bg: #E8F5E9;
-            --error: #C62828;
-            --error-bg: #FFEBEE;
-            --neutral: #37474F;
-            --neutral-light: #546E7A;
-            --bg: #F4F7FB;
-            --card: #FFFFFF;
-            --border: #CFD8DC;
-            --text: #1A237E;
-            --text-body: #263238;
-            --tag-bg: #E3F2FD;
-            --tag-border: #90CAF9;
-            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-            --font: 'Inter', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Áreas Funcionales — Telecomunicaciones</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F8FC;
+    --card: #FFFFFF;
+    --border: #E2E6F0;
+    --text: #1A1D2E;
+    --muted: #6B7280;
+    --accent: #3B5BDB;
+    --accent-soft: #EEF2FF;
+    --c1: #3B5BDB; /* azul */
+    --c2: #0CA678; /* verde esmeralda */
+    --c3: #F59F00; /* ámbar */
+    --c4: #E64980; /* rosa */
+    --c5: #7048E8; /* violeta */
+    --c6: #1098AD; /* cian */
+    --shadow: 0 2px 16px rgba(59,91,219,0.08);
+    --shadow-hover: 0 8px 32px rgba(59,91,219,0.18);
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text-body);
-            width: 800px;
-            min-height: 600px;
-            max-height: 800px;
-            margin: 0 auto;
-            overflow: hidden;
-            position: relative;
-        }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 48px;
+  }
 
-        .header {
-            background: var(--header-bg);
-            color: white;
-            padding: 22px 30px;
-            text-align: center;
-        }
+  /* ── Header ────────────────────────────────── */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    max-width: 580px;
+  }
+  .header .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 600;
+    letter-spacing: -.02em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .header p {
+    margin-top: 8px;
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+  }
 
-        .header h1 {
-            font-size: 26px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
+  /* ── Diagram wrapper ───────────────────────── */
+  .diagram-wrap {
+    position: relative;
+    width: min(680px, 100%);
+    aspect-ratio: 1 / 1;
+  }
 
-        .main-container {
-            padding: 20px;
-            height: calc(100% - 118px);
-            display: flex;
-            gap: 20px;
-        }
+  /* SVG connections */
+  .connections-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
 
-        .diagram-container {
-            flex: 1;
-            background: var(--card);
-            border: 2px solid var(--border);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            height: 620px;
-        }
+  /* ── Nodes ─────────────────────────────────── */
+  .node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: transform .25s ease, box-shadow .25s ease;
+    z-index: 10;
+    padding: 12px;
+    user-select: none;
+  }
+  .node:hover {
+    transform: translate(-50%, -50%) scale(1.09);
+    box-shadow: var(--shadow-hover);
+  }
 
-        /* Nodo Central */
-        .central-node {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 190px;
-            height: 190px;
-            background: linear-gradient(135deg, #1565C0, #1976D2);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 12px 35px rgba(21, 101, 192, 0.45);
-            z-index: 20;
-            font-size: 17px;
-            font-weight: 600;
-            padding: 20px;
-            line-height: 1.25;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
+  .node-center {
+    width: 168px;
+    height: 168px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(145deg, #3B5BDB, #4C6EF5);
+    border: 3px solid #3B5BDB;
+    color: #fff;
+  }
+  .node-center:hover {
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+  .node-center .node-icon { font-size: 38px; line-height: 1; margin-bottom: 8px; }
+  .node-center .node-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    line-height: 1.35;
+    color: rgba(255,255,255,.95);
+  }
 
-        .central-node:hover {
-            transform: translate(-50%, -50%) scale(1.05);
-        }
+  .node-sat {
+    width: 116px;
+    height: 116px;
+    transform: translate(-50%, -50%);
+  }
+  .node-sat .node-icon { font-size: 28px; line-height: 1; margin-bottom: 5px; }
+  .node-sat .node-label {
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--text);
+  }
 
-        /* Satélites - con posiciones corregidas y más visibles */
-        .satellite {
-            position: absolute;
-            width: 138px;
-            height: 138px;
-            background: white;
-            border: 4px solid;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14.5px;
-            font-weight: 500;
-            padding: 12px 10px;
-            line-height: 1.3;
-            z-index: 10;
-        }
+  /* Color accents per satellite */
+  .node-sat.c1 { border-color: var(--c1); }
+  .node-sat.c2 { border-color: var(--c2); }
+  .node-sat.c3 { border-color: var(--c3); }
+  .node-sat.c4 { border-color: var(--c4); }
+  .node-sat.c5 { border-color: var(--c5); }
+  .node-sat.c6 { border-color: var(--c6); }
 
-        .satellite:hover {
-            transform: scale(1.12);
-            box-shadow: 0 15px 40px rgba(245, 124, 0, 0.35);
-        }
+  .node-sat.c1:hover { box-shadow: 0 8px 32px rgba(59,91,219,.22); }
+  .node-sat.c2:hover { box-shadow: 0 8px 32px rgba(12,166,120,.22); }
+  .node-sat.c3:hover { box-shadow: 0 8px 32px rgba(245,159,0,.22); }
+  .node-sat.c4:hover { box-shadow: 0 8px 32px rgba(230,73,128,.22); }
+  .node-sat.c5:hover { box-shadow: 0 8px 32px rgba(112,72,232,.22); }
+  .node-sat.c6:hover { box-shadow: 0 8px 32px rgba(16,152,173,.22); }
 
-        /* Posiciones corregidas y distribuidas */
-        .satellite1 { border-color: #FF9800; top: 12%; left: 8%; }
-        .satellite2 { border-color: #2E7D32; top: 12%; right: 8%; }
-        .satellite3 { border-color: #1565C0; top: 42%; left: 4%; }
-        .satellite4 { border-color: #F57C00; top: 42%; right: 4%; }
-        .satellite5 { border-color: #1976D2; bottom: 18%; left: 14%; }
-        .satellite6 { border-color: #C62828; bottom: 18%; right: 14%; }
+  /* ── hint ──────────────────────────────────── */
+  .hint {
+    margin-top: 20px;
+    font-size: 12.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+  }
+  .hint span { font-size: 15px; }
 
-        /* Líneas de conexión más gruesas y visibles */
-        .connection {
-            position: absolute;
-            height: 4px;
-            background: linear-gradient(to right, #1565C0, #FF9800);
-            z-index: 5;
-            opacity: 0.9;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
+  /* ── Modal ─────────────────────────────────── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,17,35,.55);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .overlay.open { display: flex; }
 
-        .instruction {
-            position: absolute;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--tag-bg);
-            border: 2px solid var(--tag-border);
-            padding: 12px 24px;
-            font-size: 15px;
-            color: var(--text);
-            text-align: center;
-            z-index: 30;
-            border-radius: 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
+  .modal {
+    background: var(--card);
+    border-radius: 20px;
+    width: min(480px, 100%);
+    padding: 36px 32px 32px;
+    box-shadow: 0 24px 80px rgba(15,17,35,.18);
+    position: relative;
+    animation: popIn .22s ease;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(.94) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
 
-        /* Modal */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
+  .modal-close {
+    position: absolute;
+    top: 18px; right: 20px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: var(--border); }
 
-        .modal-content {
-            background: white;
-            width: 460px;
-            max-width: 92%;
-            border: 5px solid var(--primary);
-            padding: 32px 28px;
-            box-shadow: 0 15px 45px rgba(0,0,0,0.3);
-            position: relative;
-        }
+  .modal-icon { font-size: 42px; margin-bottom: 12px; line-height: 1; }
 
-        .modal-header {
-            font-size: 23px;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
+  .modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
 
-        .modal-body {
-            line-height: 1.75;
-            font-size: 15.8px;
-            color: var(--text-body);
-        }
+  .modal-accent-bar {
+    height: 3px;
+    width: 48px;
+    border-radius: 2px;
+    margin-bottom: 18px;
+  }
 
-        .close-btn {
-            position: absolute;
-            top: 14px;
-            right: 18px;
-            font-size: 32px;
-            cursor: pointer;
-            color: #546E7A;
-        }
+  .modal-body {
+    font-size: 14.5px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
 
-        .nav-buttons {
-            position: absolute;
-            bottom: 26px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 18px;
-            z-index: 40;
-        }
+  .modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 4px 11px;
+    border-radius: 20px;
+    border: 1.5px solid;
+    font-weight: 400;
+  }
 
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 13px 32px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+  /* Modal nav */
+  .modal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background .15s;
+  }
+  .nav-btn:hover { background: var(--accent-soft); }
+  .nav-counter {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
 
-        button:hover {
-            background: var(--primary-light);
-        }
-
-        .reference {
-            position: absolute;
-            bottom: 18px;
-            left: 28px;
-            font-size: 12.8px;
-            color: var(--neutral-light);
-        }
-
-        @media (max-width: 600px) {
-            body { width: 100%; max-height: none; overflow-y: auto; }
-            .diagram-container { height: 560px; }
-        }
-    </style>
+  /* ── footer ─────────────────────────────────── */
+  .footer {
+    margin-top: 32px;
+    font-size: 11.5px;
+    color: #9CA3AF;
+    font-style: italic;
+    text-align: center;
+    max-width: 500px;
+  }
+</style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🌐 Estructura de Áreas Funcionales</h1>
-        <p>Operador de Telecomunicaciones</p>
+<!-- Header -->
+<header class="header">
+  <div class="badge">📡 Base de Datos</div>
+  <h1>Áreas Funcionales de un<br>Operador de Telecomunicaciones</h1>
+  <p>Estructura de datos y componentes principales</p>
+</header>
+
+<!-- Diagram -->
+<div class="diagram-wrap" id="diagram">
+
+  <!-- SVG connections drawn by JS -->
+  <svg class="connections-svg" id="svg-lines"></svg>
+
+  <!-- Central -->
+  <div class="node node-center" id="node-center" onclick="openCentral()">
+    <div class="node-icon">🏢</div>
+    <div class="node-label">Áreas<br>Funcionales</div>
+  </div>
+
+  <!-- Satellites — positions set via JS for precision -->
+  <div class="node node-sat c1" id="n0" onclick="openModal(0)">
+    <div class="node-icon">👤</div>
+    <div class="node-label">Gestión de<br>Clientes</div>
+  </div>
+  <div class="node node-sat c2" id="n1" onclick="openModal(1)">
+    <div class="node-icon">📡</div>
+    <div class="node-label">Inventario<br>de Red</div>
+  </div>
+  <div class="node node-sat c3" id="n2" onclick="openModal(2)">
+    <div class="node-icon">📦</div>
+    <div class="node-label">Provisión de<br>Servicios</div>
+  </div>
+  <div class="node node-sat c4" id="n3" onclick="openModal(3)">
+    <div class="node-icon">📊</div>
+    <div class="node-label">Registro<br>de Tráfico</div>
+  </div>
+  <div class="node node-sat c5" id="n4" onclick="openModal(4)">
+    <div class="node-icon">💳</div>
+    <div class="node-label">Facturación<br>y Cobranza</div>
+  </div>
+  <div class="node node-sat c6" id="n5" onclick="openModal(5)">
+    <div class="node-icon">🔔</div>
+    <div class="node-label">Gestión de<br>Incidencias</div>
+  </div>
+
+</div>
+
+<p class="hint"><span>👆</span> Haz clic en cualquier nodo para ver detalles</p>
+
+<!-- Modal overlay -->
+<div class="overlay" id="overlay" onclick="closeIfBg(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon" id="m-icon"></div>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-accent-bar" id="m-bar"></div>
+    <div class="modal-body" id="m-body"></div>
+    <div class="modal-tags" id="m-tags"></div>
+    <div class="modal-nav">
+      <button class="nav-btn" onclick="prevModal()">← Anterior</button>
+      <span class="nav-counter" id="m-counter"></span>
+      <button class="nav-btn" onclick="nextModal()">Siguiente →</button>
     </div>
+  </div>
+</div>
 
-    <div class="main-container">
+<footer class="footer">
+  Elaboración propia (2026). Estructura de áreas funcionales. Fundamentos de Base de Datos.
+</footer>
 
-        <div class="diagram-container" id="diagram">
+<script>
+  // ── Data ────────────────────────────────────────────────────
+  const areas = [
+    {
+      icon: "👤",
+      title: "Gestión de Clientes",
+      color: "#3B5BDB",
+      colorSoft: "#EEF2FF",
+      body: "Centraliza toda la información relacionada con los suscriptores del operador. Incluye datos de identificación, contratos vigentes, historial de atención y criterios de segmentación comercial.",
+      tags: ["Datos personales", "Contratos", "Historial de servicio", "Segmentación"]
+    },
+    {
+      icon: "📡",
+      title: "Inventario de Red",
+      color: "#0CA678",
+      colorSoft: "#E6FCF5",
+      body: "Registro detallado de los activos físicos y lógicos de la infraestructura de telecomunicaciones: nodos de conmutación, enlaces de transmisión, antenas, torres y equipos activos y pasivos.",
+      tags: ["Nodos", "Enlaces", "Antenas", "Torres", "Equipos activos"]
+    },
+    {
+      icon: "📦",
+      title: "Provisión de Servicios",
+      color: "#F59F00",
+      colorSoft: "#FFF9DB",
+      body: "Gestiona el catálogo de productos y servicios ofertados: planes tarifarios, paquetes combinados, servicios de valor agregado y asignación de líneas o recursos al cliente.",
+      tags: ["Planes", "Paquetes", "Valor agregado", "Líneas asignadas"]
+    },
+    {
+      icon: "📊",
+      title: "Registro de Tráfico",
+      color: "#E64980",
+      colorSoft: "#FFF0F6",
+      body: "Captura y almacena los registros de uso generados por los clientes: CDR (Call Detail Records), registros de sesiones de datos, volumen consumido y metadatos de comunicación.",
+      tags: ["CDR", "Sesiones de datos", "Consumo", "Metadatos"]
+    },
+    {
+      icon: "💳",
+      title: "Facturación y Cobranza",
+      color: "#7048E8",
+      colorSoft: "#F3F0FF",
+      body: "Procesa y consolida los cargos derivados del uso de servicios, genera las facturas periódicas, registra pagos recibidos, controla saldos pendientes y gestiona la cartera en mora.",
+      tags: ["Cargos", "Pagos", "Saldos", "Mora", "Facturas"]
+    },
+    {
+      icon: "🔔",
+      title: "Gestión de Incidencias",
+      color: "#1098AD",
+      colorSoft: "#E3FAFC",
+      body: "Administra el ciclo de vida de los reportes de fallas y solicitudes de soporte técnico: apertura de tickets, asignación de prioridades, escalamientos y tiempos de resolución (SLA).",
+      tags: ["Tickets", "Escalamientos", "SLA", "Soporte técnico"]
+    }
+  ];
 
-            <!-- Nodo Central -->
-            <div class="central-node" onclick="showCentral()">
-                <span style="font-size:48px; margin-bottom:8px;">🏢</span>
-                ÁREAS FUNCIONALES<br>TELECOMUNICACIONES
-            </div>
+  let currentIdx = 0;
 
-            <!-- Satélites (ahora más visibles) -->
-            <div class="satellite satellite1" onclick="showModal(0)">
-                👥<br><strong>Gestión de Clientes</strong>
-            </div>
-            <div class="satellite satellite2" onclick="showModal(1)">
-                📡<br><strong>Inventario de Red</strong>
-            </div>
-            <div class="satellite satellite3" onclick="showModal(2)">
-                📦<br><strong>Provisión de Servicios</strong>
-            </div>
-            <div class="satellite satellite4" onclick="showModal(3)">
-                📊<br><strong>Registro de Tráfico</strong>
-            </div>
-            <div class="satellite satellite5" onclick="showModal(4)">
-                💰<br><strong>Facturación y Cobranza</strong>
-            </div>
-            <div class="satellite satellite6" onclick="showModal(5)">
-                ⚠️<br><strong>Gestión de Incidencias</strong>
-            </div>
+  // ── Layout positions (% of container) ──────────────────────
+  // Angles: 0°=top, clockwise. 6 nodes evenly at 60° each, starting at -90°
+  function getPositions(W, H) {
+    const cx = W / 2, cy = H / 2;
+    const r = Math.min(W, H) * 0.34;
+    const angles = [-90, -30, 30, 90, 150, 210].map(a => a * Math.PI / 180);
+    return angles.map(a => ({
+      x: cx + r * Math.cos(a),
+      y: cy + r * Math.sin(a)
+    }));
+  }
 
-            <!-- Líneas de conexión (más gruesas y visibles) -->
-            <div class="connection" style="top:34%; left:27%; width:152px; transform:rotate(-42deg);"></div>
-            <div class="connection" style="top:34%; right:27%; width:152px; transform:rotate(42deg);"></div>
-            <div class="connection" style="top:49%; left:19%; width:178px; transform:rotate(-15deg);"></div>
-            <div class="connection" style="top:49%; right:19%; width:178px; transform:rotate(15deg);"></div>
-            <div class="connection" style="bottom:31%; left:26%; width:158px; transform:rotate(38deg);"></div>
-            <div class="connection" style="bottom:31%; right:26%; width:158px; transform:rotate(-38deg);"></div>
+  function layoutNodes() {
+    const wrap = document.getElementById('diagram');
+    const W = wrap.offsetWidth, H = wrap.offsetHeight;
+    const cx = W / 2, cy = H / 2;
+    const positions = getPositions(W, H);
 
-            <div class="instruction">
-                👆 Haga clic en los círculos para visualizar la información
-            </div>
+    positions.forEach((pos, i) => {
+      const node = document.getElementById(`n${i}`);
+      node.style.left = pos.x + 'px';
+      node.style.top  = pos.y + 'px';
+    });
 
-        </div>
+    drawLines(cx, cy, positions);
+  }
 
-    </div>
+  function drawLines(cx, cy, positions) {
+    const svg = document.getElementById('svg-lines');
+    svg.innerHTML = '';
+    const colors = areas.map(a => a.color);
 
-    <!-- Modal -->
-    <div class="modal" id="info-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">✕</span>
-            <div class="modal-header" id="modal-title"></div>
-            <div class="modal-body" id="modal-body"></div>
-        </div>
-    </div>
+    positions.forEach((pos, i) => {
+      // dashed line
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', cx);
+      line.setAttribute('y1', cy);
+      line.setAttribute('x2', pos.x);
+      line.setAttribute('y2', pos.y);
+      line.setAttribute('stroke', colors[i]);
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('stroke-dasharray', '6 4');
+      line.setAttribute('opacity', '0.45');
+      svg.appendChild(line);
 
-    <!-- Botones de navegación -->
-    <div class="nav-buttons">
-        <button onclick="prevTopic()">← Anterior</button>
-        <button onclick="nextTopic()">Siguiente →</button>
-    </div>
+      // dot at satellite end
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('cx', pos.x);
+      dot.setAttribute('cy', pos.y);
+      dot.setAttribute('r', '4');
+      dot.setAttribute('fill', colors[i]);
+      dot.setAttribute('opacity', '0.6');
+      svg.appendChild(dot);
+    });
+  }
 
-    <!-- Referencia APA 7 -->
-    <div class="reference">
-        Elaboración propia. (2026). Estructura de áreas funcionales. Fundamentos de Base de Datos, DRBD_2008.
-    </div>
+  // ── Modal ───────────────────────────────────────────────────
+  function openModal(idx) {
+    currentIdx = idx;
+    const a = areas[idx];
+    document.getElementById('m-icon').textContent  = a.icon;
+    document.getElementById('m-title').textContent = a.title;
+    document.getElementById('m-body').textContent  = a.body;
+    document.getElementById('m-bar').style.background = a.color;
+    document.getElementById('m-counter').textContent = `${idx + 1} / ${areas.length}`;
 
-    <script>
-        const topics = [
-            { title: "👥 Gestión de Clientes", content: "Datos personales, contratos, historial de servicio, segmentación." },
-            { title: "📡 Inventario de Red", content: "Nodos, enlaces, antenas, torres, equipos activos y pasivos." },
-            { title: "📦 Provisión de Servicios", content: "Planes, paquetes, servicios de valor agregado, líneas." },
-            { title: "📊 Registro de Tráfico", content: "CDR, registros de datos de sesión, consumo de datos." },
-            { title: "💰 Facturación y Cobranza", content: "Cargos, pagos, saldos, mora." },
-            { title: "⚠️ Gestión de Incidencias", content: "Tickets de soporte, escalamientos, tiempos de resolución." }
-        ];
+    const tagsEl = document.getElementById('m-tags');
+    tagsEl.innerHTML = '';
+    a.tags.forEach(t => {
+      const span = document.createElement('span');
+      span.className = 'tag';
+      span.textContent = t;
+      span.style.borderColor = a.color;
+      span.style.color = a.color;
+      span.style.background = a.colorSoft;
+      tagsEl.appendChild(span);
+    });
 
-        let currentIndex = 0;
+    document.getElementById('overlay').classList.add('open');
+  }
 
-        function showModal(index) {
-            currentIndex = index;
-            const topic = topics[index];
-            document.getElementById('modal-title').innerHTML = topic.title;
-            document.getElementById('modal-body').innerHTML = `<p>${topic.content}</p>`;
-            document.getElementById('info-modal').style.display = 'flex';
-        }
+  function openCentral() {
+    document.getElementById('m-icon').textContent  = '🏢';
+    document.getElementById('m-title').textContent = 'Áreas Funcionales en Telecomunicaciones';
+    document.getElementById('m-body').textContent  = 'Un operador de telecomunicaciones organiza su base de datos en seis grandes áreas funcionales interconectadas, que permiten gestionar clientes, infraestructura, servicios, tráfico, facturación e incidencias de forma integrada.';
+    document.getElementById('m-bar').style.background = '#3B5BDB';
+    document.getElementById('m-counter').textContent = '— / —';
+    document.getElementById('m-tags').innerHTML = '';
+    document.getElementById('overlay').classList.add('open');
+  }
 
-        function showCentral() {
-            document.getElementById('modal-title').innerHTML = `🏢 Áreas Funcionales en Telecomunicaciones`;
-            document.getElementById('modal-body').innerHTML = `
-                <p>A continuación se presentan las principales áreas funcionales de un operador de telecomunicaciones y sus componentes esenciales.</p>
-            `;
-            document.getElementById('info-modal').style.display = 'flex';
-        }
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+  }
 
-        function closeModal() {
-            document.getElementById('info-modal').style.display = 'none';
-        }
+  function closeIfBg(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
 
-        function nextTopic() {
-            currentIndex = (currentIndex + 1) % topics.length;
-            showModal(currentIndex);
-        }
+  function nextModal() {
+    currentIdx = (currentIdx + 1) % areas.length;
+    openModal(currentIdx);
+  }
 
-        function prevTopic() {
-            currentIndex = (currentIndex - 1 + topics.length) % topics.length;
-            showModal(currentIndex);
-        }
+  function prevModal() {
+    currentIdx = (currentIdx - 1 + areas.length) % areas.length;
+    openModal(currentIdx);
+  }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === "Escape") closeModal();
-        });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-        // Inicializar
-        window.onload = () => {
-            console.log("Infografía cargada correctamente");
-        };
-    </script>
+  // ── Init ────────────────────────────────────────────────────
+  window.addEventListener('load', layoutNodes);
+  window.addEventListener('resize', layoutNodes);
+</script>
 </body>
 </html>

@@ -3,417 +3,782 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modelo Relacional y Claves</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Material+Symbols+Outlined" rel="stylesheet">
+    <title>📊 Modelo Relacional y Claves | Drag & Drop Interactivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #1565C0;
-            --primary-light: #1976D2;
-            --accent: #F57C00;
-            --accent-light: #FF9800;
-            --success: #2E7D32;
-            --success-bg: #E8F5E9;
-            --error: #C62828;
-            --error-bg: #FFEBEE;
-            --neutral: #37474F;
-            --neutral-light: #546E7A;
-            --bg: #F4F7FB;
-            --card: #FFFFFF;
-            --border: #CFD8DC;
-            --text: #1A237E;
-            --text-body: #263238;
-            --tag-bg: #E3F2FD;
-            --tag-border: #90CAF9;
-            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-            --drop-hover: #E3F2FD;
-            --drop-border: #42A5F5;
-            --font: 'Inter', sans-serif;
-        }
-
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: var(--font);
-            background-color: var(--bg);
-            color: var(--text-body);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 500px;
-        }
-
-        #main-container {
-            width: 800px;
-            height: 800px;
-            background: var(--bg);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border); /* Único borde sin radius según restricción */
-            display: flex;
-            flex-direction: column;
-        }
-
-        header {
-            background: var(--header-bg);
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 1.4rem;
-            font-weight: 800;
-            margin-bottom: 5px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+        
         }
 
-        .instruction-box {
-            background: rgba(255, 255, 255, 0.15);
-            margin: 10px 20px;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            border-left: 4px solid var(--accent);
+        /* Contenedor principal con efecto glass */
+        .game-wrapper {
+            width: 800px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(2px);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+            transition: all 0.3s;
         }
 
-        .game-layout {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 280px;
-            gap: 20px;
-            padding: 20px;
+        /* Header espectacular */
+        .hero-header {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            padding: 28px 32px;
+            position: relative;
             overflow: hidden;
         }
 
-        /* Columna de Enunciados */
-        .sentences-container {
-            overflow-y: auto;
-            padding-right: 10px;
+        .hero-header::before {
+            content: "📊🔑🗄️";
+            position: absolute;
+            font-size: 130px;
+            opacity: 0.08;
+            right: -20px;
+            top: -30px;
+            pointer-events: none;
+        }
+
+        .hero-header::after {
+            content: "⚡🎯💡";
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.08;
+            left: -15px;
+            bottom: -25px;
+        }
+
+        .hero-content {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .title-section h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #e0f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-section p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .stats-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Layout principal */
+        .main-layout {
+            display: flex;
+            min-height: 580px;
+        }
+
+        /* Panel izquierdo - Enunciados */
+        .sentences-panel {
+            flex: 2;
+            background: #f8fafc;
+            padding: 28px 24px;
+            overflow-y: auto;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
         }
 
         .sentence-card {
-            background: var(--card);
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            font-size: 0.88rem;
-            line-height: 1.4;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background: white;
+            border-radius: 20px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.25s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .sentence-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+            transform: translateX(4px);
+        }
+
+        .sentence-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #334155;
         }
 
         .drop-target {
             display: inline-block;
-            min-width: 130px;
-            height: 28px;
-            background: var(--tag-bg);
-            border: 2px dashed var(--tag-border);
-            border-radius: 4px;
+            min-width: 140px;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #fef9e3, #fff3e0);
+            border: 2px dashed #ff9800;
+            border-radius: 40px;
             vertical-align: middle;
-            margin: 0 5px;
-            transition: all 0.3s;
+            margin: 0 4px;
+            transition: all 0.25s;
             text-align: center;
-            font-weight: 600;
-            color: var(--primary);
-            line-height: 24px;
+            font-weight: 700;
+            color: #f57c00;
+            font-size: 0.85rem;
         }
 
         .drop-target.hover {
-            background: var(--drop-hover);
-            border-color: var(--drop-border);
-            transform: scale(1.05);
+            background: #ffe0b5;
+            border-color: #ff9800;
+            transform: scale(1.02);
+        }
+
+        .drop-target.filled {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border: 2px solid #4caf50;
+            color: #2e7d32;
         }
 
         .drop-target.correct {
-            border: 2px solid var(--success);
-            background: var(--success-bg);
-            color: var(--success);
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border: 2px solid #4caf50;
+            color: #2e7d32;
+            animation: pulse 0.3s ease;
         }
 
-        /* Columna de Opciones */
-        .options-bank {
-            background: var(--card);
-            border-radius: 15px;
-            border: 1px solid var(--border);
-            padding: 15px;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Panel derecho - Opciones */
+        .options-panel {
+            width: 280px;
+            background: white;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+            padding: 24px 16px;
         }
 
-        .options-bank h3 {
-            font-size: 0.9rem;
-            color: var(--neutral);
-            text-align: center;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 8px;
-            margin-bottom: 5px;
+        .options-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
         }
 
         .draggable-item {
-            padding: 10px;
-            background: var(--primary);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            border-radius: 6px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 16px;
             cursor: grab;
             font-size: 0.85rem;
             font-weight: 600;
             text-align: center;
-            transition: transform 0.2s, background 0.2s;
+            transition: all 0.25s;
             user-select: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .draggable-item:hover {
-            background: var(--primary-light);
-            transform: translateX(5px);
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            transform: translateX(6px) scale(1.02);
+            cursor: grab;
         }
 
-        .draggable-item:active { cursor: grabbing; }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
 
-        /* Modal de Retroalimentación */
-        #modal-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(26, 35, 126, 0.85);
-            display: none;
-            justify-content: center;
+        .draggable-item.dragging {
+            opacity: 0.5;
+        }
+
+        /* Footer con botones */
+        .footer-actions {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            z-index: 1000;
+            padding: 20px 32px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .modal {
-            background: var(--card);
-            width: 85%;
-            max-height: 85%;
-            border-radius: 15px;
-            padding: 25px;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-        }
-
-        .modal h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
+        .progress-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .feedback-list {
-            list-style: none;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
+        .progress-badge {
+            background: #e8f0fe;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #667eea;
         }
 
-        .feedback-item {
-            background: var(--bg);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            border-left: 3px solid var(--success);
-        }
-
-        .final-msg {
-            background: var(--success-bg);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 600;
-            color: var(--success);
-            margin-top: 15px;
-        }
-
-        .btn-action {
-            background: var(--accent);
+        .btn-verify {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 800;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.85rem;
             cursor: pointer;
-            display: flex;
+            transition: all 0.2s;
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
-            margin: 0 auto;
+            gap: 8px;
         }
 
-        footer {
-            padding: 15px 20px;
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-reset:hover {
+            background: #e2e8f0;
+        }
+
+        /* Modal moderno */
+        .modal-modern {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal-modern.show {
+            display: flex;
+        }
+
+        .modal-card {
             background: white;
-            border-top: 1px solid var(--border);
+            border-radius: 48px;
+            max-width: 550px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUpModal 0.3s ease;
+        }
+
+        @keyframes slideUpModal {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 24px 28px;
+            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        @media (max-width: 600px) {
-            #main-container { width: 100%; height: auto; }
-            .game-layout { grid-template-columns: 1fr; }
-            .feedback-list { grid-template-columns: 1fr; }
+        .modal-header h3 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #c62828;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 28px;
+        }
+
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .feedback-item {
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 20px;
+            border-left: 4px solid #4caf50;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .congrats-message {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            padding: 20px;
+            border-radius: 24px;
+            text-align: center;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-top: 16px;
+        }
+
+        .score-circle {
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Scrollbars */
+        .sentences-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sentences-panel::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .sentences-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .options-panel {
+                width: 100%;
+                border-top: 1px solid #e2e8f0;
+            }
+            .feedback-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 
-<div id="main-container">
-    <header>
-        <h1><span class="material-symbols-outlined">account_tree</span> Modelo Relacional y Claves</h1>
-        <div class="instruction-box">
-            🎓 Arrastrar cada concepto y colocarlo en el espacio que complete correctamente el enunciado sobre el modelo relacional.
-        </div>
-    </header>
-
-    <main class="game-layout">
-        <section class="sentences-container" id="sentences-list">
-            </section>
-
-        <aside class="options-bank">
-            <h3>⚙️ Conceptos</h3>
-            <div id="options-container" style="display: flex; flex-direction: column; gap: 8px;">
-                </div>
-        </aside>
-    </main>
-
-    <footer>
-        <span style="font-size: 0.85rem; color: var(--neutral-light);">🛠️ Arrastre los bloques azules a los espacios punteados.</span>
-        <button class="btn-action" onclick="checkAll()">
-            VERIFICAR <span class="material-symbols-outlined">fact_check</span>
-        </button>
-    </footer>
-
-    <div id="modal-overlay">
-        <div class="modal">
-            <h2 id="modal-status-title"></h2>
-            <div id="modal-body-content">
-                <div class="feedback-list" id="feedback-grid"></div>
-                <div class="final-msg" id="final-congrats" style="display:none;"></div>
+<div class="game-wrapper">
+    <div class="hero-header">
+        <div class="hero-content">
+            <div class="title-section">
+                <h1>
+                    <span>📊</span> Modelo Relacional y Claves
+                </h1>
+                <p>Arrastra cada concepto al espacio correcto · Fundamentos de Bases de Datos</p>
             </div>
-            <button class="btn-action" style="margin-top:20px" onclick="closeModal()">
-                CONTINUAR <span class="material-symbols-outlined">arrow_forward</span>
+            <div class="stats-badge">
+                <span>🎯</span> 8 conceptos clave
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- Panel izquierdo: Enunciados -->
+        <div class="sentences-panel" id="sentencesPanel">
+            <div class="section-title">
+                <span>📝</span> COMPLETA LOS ENUNCIADOS
+            </div>
+            <div id="sentencesList"></div>
+        </div>
+
+        <!-- Panel derecho: Opciones arrastrables -->
+        <div class="options-panel">
+            <div class="options-header">
+                <span>⚙️</span> CONCEPTOS DISPONIBLES
+            </div>
+            <div id="optionsList"></div>
+        </div>
+    </div>
+
+    <div class="footer-actions">
+        <div class="progress-info">
+            <span class="progress-badge" id="progressCounter">0 / 8 completados</span>
+            <button class="btn-reset" onclick="resetGame()">
+                🔄 Reiniciar
             </button>
+        </div>
+        <button class="btn-verify" onclick="checkAll()">
+            ✅ Verificar respuestas
+        </button>
+    </div>
+</div>
+
+<!-- Modal de resultados -->
+<div class="modal-modern" id="resultModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>
+                <span id="modalIcon">📊</span>
+                <span id="modalTitle">Resultados</span>
+            </h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="score-circle" id="scoreDisplay">0/8</div>
+            <div id="feedbackGrid" class="feedback-grid"></div>
+            <div id="congratsMessage" class="congrats-message" style="display: none;">
+                🎉 ¡Excelente! Dominas los conceptos del modelo relacional 🎉
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const data = [
-        { id: 1, opt: "Clave primaria", emoji: "🔑", ans: "La _____ identifica de forma única cada fila de una tabla y no admite valores nulos ni duplicados [cite: 35].", feedback: "La clave primaria cumple la función de identificación única, garantizando integridad de entidad[cite: 38]." },
-        { id: 2, opt: "Clave foránea", emoji: "🔗", ans: "La _____ establece la relación entre tablas al referenciar la clave primaria de otra tabla [cite: 35].", feedback: "La clave foránea permite vincular tablas, asegurando coherencia referencial entre entidades[cite: 38]." },
-        { id: 3, opt: "Dominio", emoji: "🌐", ans: "El _____ define el conjunto de valores válidos que puede tomar una columna [cite: 35].", feedback: "El dominio restringe los valores posibles de una columna, asegurando consistencia y validez[cite: 38]." },
-        { id: 4, opt: "Tupla", emoji: "📑", ans: "La _____ corresponde a una fila completa que contiene todos los atributos de la relación [cite: 35].", feedback: "La tupla representa un registro completo dentro de la tabla, integrando todos los atributos[cite: 38]." },
-        { id: 5, opt: "Relación", emoji: "📊", ans: "Una _____ se representa físicamente mediante una tabla en el modelo relacional [cite: 35].", feedback: "La relación es la estructura fundamental y se implementa como una tabla en la base de datos[cite: 38]." },
-        { id: 6, opt: "Atomicidad", emoji: "⚛️", ans: "La _____ establece que cada celda debe contener un único valor indivisible [cite: 35].", feedback: "La atomicidad garantiza que los datos sean indivisibles, una regla esencial del modelo[cite: 38]." },
-        { id: 7, opt: "Nombre único", emoji: "🏷️", ans: "Cada tabla debe tener un _____ que permita diferenciarla dentro del esquema [cite: 35].", feedback: "El nombre único permite identificar cada tabla sin ambigüedad dentro del esquema[cite: 38]." },
-        { id: 8, opt: "No duplicidad", emoji: "🚫", ans: "La _____ implica que no se permiten filas repetidas dentro de una tabla [cite: 35].", feedback: "La no duplicidad evita redundancia en registros, asegurando la integridad[cite: 38]." }
+    // Datos de los conceptos
+    const concepts = [
+        { id: 1, term: "Clave primaria", emoji: "🔑", definition: "Identifica de forma única cada fila de una tabla, no admite valores nulos ni duplicados." },
+        { id: 2, term: "Clave foránea", emoji: "🔗", definition: "Establece la relación entre tablas al referenciar la clave primaria de otra tabla." },
+        { id: 3, term: "Dominio", emoji: "🌐", definition: "Define el conjunto de valores válidos que puede tomar una columna." },
+        { id: 4, term: "Tupla", emoji: "📑", definition: "Corresponde a una fila completa que contiene todos los atributos de la relación." },
+        { id: 5, term: "Relación", emoji: "📊", definition: "Se representa físicamente mediante una tabla en el modelo relacional." },
+        { id: 6, term: "Atomicidad", emoji: "⚛️", definition: "Establece que cada celda debe contener un único valor indivisible." },
+        { id: 7, term: "Nombre único", emoji: "🏷️", definition: "Cada tabla debe tener un nombre que permita diferenciarla dentro del esquema." },
+        { id: 8, term: "No duplicidad", emoji: "🚫", definition: "Implica que no se permiten filas repetidas dentro de una tabla." }
     ];
 
-    let draggedText = null;
-    let draggedId = null;
+    // Enunciados con espacios en blanco
+    const sentencesData = [
+        { id: 1, text: "La _____ identifica de forma única cada fila de una tabla y no admite valores nulos ni duplicados.", correct: "Clave primaria" },
+        { id: 2, text: "La _____ establece la relación entre tablas al referenciar la clave primaria de otra tabla.", correct: "Clave foránea" },
+        { id: 3, text: "El _____ define el conjunto de valores válidos que puede tomar una columna.", correct: "Dominio" },
+        { id: 4, text: "La _____ corresponde a una fila completa que contiene todos los atributos de la relación.", correct: "Tupla" },
+        { id: 5, text: "Una _____ se representa físicamente mediante una tabla en el modelo relacional.", correct: "Relación" },
+        { id: 6, text: "La _____ establece que cada celda debe contener un único valor indivisible.", correct: "Atomicidad" },
+        { id: 7, text: "Cada tabla debe tener un _____ que permita diferenciarla dentro del esquema.", correct: "Nombre único" },
+        { id: 8, text: "La _____ implica que no se permiten filas repetidas dentro de una tabla.", correct: "No duplicidad" }
+    ];
 
-    function init() {
-        const sentenceContainer = document.getElementById('sentences-list');
-        const optionsContainer = document.getElementById('options-container');
+    let userAnswers = {};
 
-        // Mezclar datos para no repetir patrón [cite: 34]
-        const shuffledData = [...data].sort(() => Math.random() - 0.5);
-        const shuffledOptions = [...data].sort(() => Math.random() - 0.5);
+    // Función para mezclar arrays (orden aleatorio)
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
 
-        shuffledData.forEach(item => {
-            const parts = item.ans.split('_____');
+    // Renderizar los enunciados
+    function renderSentences() {
+        const container = document.getElementById('sentencesList');
+        container.innerHTML = '';
+        
+        const shuffledSentences = shuffleArray([...sentencesData]);
+        
+        shuffledSentences.forEach(sentence => {
+            const parts = sentence.text.split('_____');
             const card = document.createElement('div');
             card.className = 'sentence-card';
-            card.innerHTML = `${parts[0]} <div class="drop-target" data-correct="${item.opt}">...</div> ${parts[1]}`;
-            sentenceContainer.appendChild(card);
+            card.innerHTML = `
+                <div class="sentence-text">
+                    ${parts[0]}
+                    <span class="drop-target" data-id="${sentence.id}" data-correct="${sentence.correct}">
+                        ${userAnswers[sentence.id] ? userAnswers[sentence.id] : '___'}
+                    </span>
+                    ${parts[1]}
+                </div>
+            `;
+            container.appendChild(card);
         });
+        
+        setupDropTargets();
+        updateProgress();
+    }
 
-        shuffledOptions.forEach(item => {
-            const btn = document.createElement('div');
-            btn.className = 'draggable-item';
-            btn.draggable = true;
-            btn.innerHTML = `${item.emoji} ${item.opt}`;
-            btn.dataset.text = item.opt;
+    // Configurar los objetivos de drop
+    function setupDropTargets() {
+        const dropTargets = document.querySelectorAll('.drop-target');
+        
+        dropTargets.forEach(target => {
+            target.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                target.classList.add('hover');
+            });
             
-            btn.addEventListener('dragstart', (e) => {
-                draggedText = item.opt;
-                e.dataTransfer.setData('text', item.opt);
+            target.addEventListener('dragleave', () => {
+                target.classList.remove('hover');
             });
-            optionsContainer.appendChild(btn);
-        });
-
-        setupDrops();
-    }
-
-    function setupDrops() {
-        const drops = document.querySelectorAll('.drop-target');
-        drops.forEach(drop => {
-            drop.addEventListener('dragover', e => e.preventDefault());
-            drop.addEventListener('dragenter', function() { this.classList.add('hover'); });
-            drop.addEventListener('dragleave', function() { this.classList.remove('hover'); });
-            drop.addEventListener('drop', function(e) {
-                this.classList.remove('hover');
-                const val = e.dataTransfer.getData('text');
-                this.innerText = val;
+            
+            target.addEventListener('drop', (e) => {
+                e.preventDefault();
+                target.classList.remove('hover');
+                const draggedValue = e.dataTransfer.getData('text/plain');
+                if (draggedValue) {
+                    const sentenceId = parseInt(target.dataset.id);
+                    userAnswers[sentenceId] = draggedValue;
+                    target.textContent = draggedValue;
+                    target.classList.add('filled');
+                    updateProgress();
+                }
             });
         });
     }
 
+    // Renderizar las opciones arrastrables
+    function renderOptions() {
+        const container = document.getElementById('optionsList');
+        container.innerHTML = '';
+        
+        const shuffledConcepts = shuffleArray([...concepts]);
+        
+        shuffledConcepts.forEach(concept => {
+            const draggable = document.createElement('div');
+            draggable.className = 'draggable-item';
+            draggable.innerHTML = `${concept.emoji} ${concept.term}`;
+            draggable.draggable = true;
+            draggable.setAttribute('data-term', concept.term);
+            
+            draggable.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', concept.term);
+                draggable.classList.add('dragging');
+            });
+            
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
+            });
+            
+            container.appendChild(draggable);
+        });
+    }
+
+    // Actualizar contador de progreso
+    function updateProgress() {
+        const completed = Object.keys(userAnswers).length;
+        document.getElementById('progressCounter').innerHTML = `${completed} / 8 completados`;
+    }
+
+    // Verificar todas las respuestas
     function checkAll() {
-        const drops = document.querySelectorAll('.drop-target');
         let correctCount = 0;
-        const feedbackGrid = document.getElementById('feedback-grid');
+        const feedbackGrid = document.getElementById('feedbackGrid');
         feedbackGrid.innerHTML = '';
-
-        drops.forEach(drop => {
-            const isCorrect = drop.innerText === drop.dataset.correct;
+        
+        sentencesData.forEach(sentence => {
+            const userAnswer = userAnswers[sentence.id];
+            const isCorrect = userAnswer === sentence.correct;
+            
             if (isCorrect) {
-                drop.classList.add('correct');
                 correctCount++;
-                const itemData = data.find(d => d.opt === drop.dataset.correct);
-                feedbackGrid.innerHTML += `<div class="feedback-item">✅ <b>${itemData.opt}:</b> ${itemData.feedback}</div>`;
+                const concept = concepts.find(c => c.term === sentence.correct);
+                feedbackGrid.innerHTML += `
+                    <div class="feedback-item">
+                        ✅ <strong>${sentence.correct}</strong><br>
+                        <span style="font-size: 0.75rem; color: #475569;">${concept?.definition || 'Concepto correcto'}</span>
+                    </div>
+                `;
+                
+                // Marcar visualmente como correcto
+                const target = document.querySelector(`.drop-target[data-id="${sentence.id}"]`);
+                if (target) target.classList.add('correct');
+            } else if (userAnswer) {
+                const concept = concepts.find(c => c.term === sentence.correct);
+                feedbackGrid.innerHTML += `
+                    <div class="feedback-item" style="border-left-color: #f44336;">
+                        ❌ <strong>${sentence.correct}</strong><br>
+                        <span style="font-size: 0.75rem; color: #475569;">${concept?.definition || 'Concepto fundamental'}</span>
+                    </div>
+                `;
             } else {
-                drop.style.borderColor = 'var(--error)';
-                drop.style.color = 'var(--error)';
+                const concept = concepts.find(c => c.term === sentence.correct);
+                feedbackGrid.innerHTML += `
+                    <div class="feedback-item" style="border-left-color: #ff9800;">
+                        ⚠️ <strong>${sentence.correct}</strong> (sin responder)<br>
+                        <span style="font-size: 0.75rem; color: #475569;">${concept?.definition || 'Arrastra el concepto correcto'}</span>
+                    </div>
+                `;
             }
         });
-
-        const modal = document.getElementById('modal-overlay');
-        const title = document.getElementById('modal-status-title');
-        const congrats = document.getElementById('final-congrats');
-
-        if (correctCount === data.length) {
-            title.innerHTML = "🌍 ¡Excelente Trabajo!";
-            congrats.style.display = 'block';
-            congrats.innerText = "¡Enhorabuena! El modelo relacional organiza datos mediante reglas estrictas que aseguran consistencia, integridad y correcta vinculación[cite: 41].";
+        
+        // Actualizar modal
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        scoreDisplay.innerHTML = `${correctCount}/8`;
+        
+        const modalTitle = document.getElementById('modalTitle');
+        const modalIcon = document.getElementById('modalIcon');
+        const congratsMsg = document.getElementById('congratsMessage');
+        
+        if (correctCount === 8) {
+            modalTitle.innerHTML = '🎉 ¡Excelente Trabajo!';
+            modalIcon.innerHTML = '🏆';
+            congratsMsg.style.display = 'block';
+            createConfetti();
+        } else if (correctCount >= 5) {
+            modalTitle.innerHTML = '📚 ¡Buen Progreso!';
+            modalIcon.innerHTML = '🌟';
+            congratsMsg.style.display = 'none';
         } else {
-            title.innerHTML = "📚 Repaso en Progreso";
-            congrats.style.display = 'none';
+            modalTitle.innerHTML = '📖 Sigue Practicando';
+            modalIcon.innerHTML = '💪';
+            congratsMsg.style.display = 'none';
         }
-        modal.style.display = 'flex';
+        
+        document.getElementById('resultModal').classList.add('show');
     }
 
+    // Reiniciar el juego
+    function resetGame() {
+        userAnswers = {};
+        renderSentences();
+        renderOptions();
+        updateProgress();
+        
+        // Remover clases de correcto de los drop targets
+        document.querySelectorAll('.drop-target').forEach(target => {
+            target.classList.remove('correct', 'filled');
+        });
+    }
+
+    // Cerrar modal
     function closeModal() {
-        document.getElementById('modal-overlay').style.display = 'none';
+        document.getElementById('resultModal').classList.remove('show');
     }
 
+    // Confeti para celebración
+    function createConfetti() {
+        const colors = ['#667eea', '#764ba2', '#f59e0b', '#10b981', '#ef4444'];
+        for (let i = 0; i < 80; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.width = Math.random() * 8 + 4 + 'px';
+            confetti.style.height = Math.random() * 12 + 6 + 'px';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.top = '-20px';
+            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.zIndex = '2000';
+            confetti.style.animation = `confettiFall ${Math.random() * 2 + 2}s linear forwards`;
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }
+    }
+
+    // Agregar keyframes de confeti dinámicamente
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-20px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Inicializar juego
+    function init() {
+        renderSentences();
+        renderOptions();
+    }
+    
     init();
 </script>
-
 </body>
 </html>
