@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Culturas Prehistóricas del Ecuador – Sopa de Letras</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+     
+    }
+
+    /* ── Main Container ── */
+    .container {
+      width: 800px;
+      max-width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(80,100,200,0.13);
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #4f6ef7 0%, #7c3aed 100%);
+      color: #fff;
+      padding: 32px 36px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 50%;
+    }
+    .header-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .header p {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    /* ── Instruction Banner ── */
+    .instruction-bar {
+      background: #eef2ff;
+      border-left: 4px solid #4f6ef7;
+      margin: 24px 28px 0;
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.6;
+    }
+
+    /* ── Word List ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6b7280;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 22px 28px 10px;
+    }
+    .word-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 28px 20px;
+    }
+    .chip {
+      background: #f3f4f6;
+      border: 2px solid #e5e7eb;
+      border-radius: 30px;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      cursor: default;
+      transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.15s;
+      user-select: none;
+    }
+    .chip.found {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #15803d;
+      text-decoration: line-through;
+      transform: scale(0.96);
+    }
+
+    /* ── Grid Area ── */
+    .grid-wrap {
+      padding: 0 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .score-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .score-bar .stat {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .score-bar .stat strong {
+      color: #4f6ef7;
+      font-size: 15px;
+    }
+    .btn-reset {
+      background: none;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-reset:hover { border-color: #4f6ef7; color: #4f6ef7; }
+
+    /* ── Word Search Grid ── */
+    #ws-grid {
+      display: grid;
+      gap: 3px;
+      user-select: none;
+    }
+    .cell {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 6px;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+      text-transform: uppercase;
+    }
+    .cell:hover  { background: #e0e7ff; border-color: #818cf8; transform: scale(1.08); }
+    .cell.selecting { background: #c7d2fe; border-color: #4f6ef7; color: #1e1b4b; }
+    .cell.found-cell { background: #bbf7d0; border-color: #22c55e; color: #166534; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30,27,75,0.45);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(80,100,200,0.25);
+      transform: translateY(30px) scale(0.97);
+      transition: transform 0.3s, opacity 0.3s;
+      opacity: 0;
+      text-align: center;
+    }
+    .modal-overlay.active .modal {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    .modal-emoji { font-size: 52px; margin-bottom: 14px; }
+    .modal h2 { font-size: 22px; color: #1e1b4b; margin-bottom: 10px; }
+    .modal p { font-size: 14px; color: #4b5563; line-height: 1.7; margin-bottom: 20px; }
+    .modal-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .modal-btn:hover { opacity: 0.88; transform: scale(1.04); }
+
+    /* ── Footer ── */
+    .footer {
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      padding: 14px 28px;
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .container { border-radius: 12px; }
+      .header { padding: 22px 18px 20px; }
+      .header h1 { font-size: 19px; }
+      .instruction-bar { margin: 16px 14px 0; }
+      .section-label { padding: 16px 14px 8px; }
+      .word-chips { padding: 0 14px 14px; gap: 6px; }
+      .chip { font-size: 11.5px; padding: 5px 12px; }
+      .grid-wrap { padding: 0 10px 18px; }
+      .cell { width: 28px; height: 28px; font-size: 11px; border-radius: 4px; }
+      #ws-grid { gap: 2px; }
+      .score-bar { flex-direction: column; gap: 8px; align-items: flex-start; }
+      .modal { padding: 26px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ MAIN CONTAINER ══════════════ -->
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">🏺 Historia · Ecuador</div>
+    <h1>Culturas Prehistóricas del Ecuador</h1>
+    <p>Actividad interactiva · Sopa de Letras</p>
+  </div>
+
+  <!-- Instrucción -->
+  <div class="instruction-bar">
+    🔍 <strong>Instrucción:</strong> Identifique en la sopa de letras los nombres de diversas culturas que habitaron el territorio del actual Ecuador durante la prehistoria. Preste atención a la orientación de las palabras, ya que pueden encontrarse en sentido horizontal, vertical o diagonal.
+  </div>
+
+  <!-- Palabras a encontrar -->
+  <div class="section-label">📋 Palabras a encontrar</div>
+  <div class="word-chips" id="word-chips">
+    <!-- Generado por JS -->
+  </div>
+
+  <!-- Puntaje + Grid -->
+  <div class="grid-wrap">
+    <div class="score-bar">
+      <div class="stat">Encontradas: <strong id="found-count">0</strong> / <strong id="total-count">10</strong></div>
+      <button class="btn-reset" id="btn-reset">↺ Reiniciar</button>
+    </div>
+    <div id="ws-grid"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">Recurso educativo | Culturas Prehistóricas del Ecuador</div>
+</div>
+
+<!-- ══════════════ MODAL ══════════════ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-emoji" id="modal-emoji">🎉</div>
+    <h2 id="modal-title">¡Palabra encontrada!</h2>
+    <p id="modal-body"></p>
+    <button class="modal-btn" id="modal-close">Continuar →</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   CONFIGURACIÓN
+════════════════════════════════════════════ */
+const WORDS = [
+  'VALDIVIA', 'MACHALILLA', 'CHORRERA', 'TOLITA',
+  'BAHIA', 'CARANQUI', 'PURUHA', 'YUMBO',
+  'JAMACOAQUE', 'CANARI'
+];
+
+// Retroalimentación final (del documento)
+const FEEDBACK_FINAL = `¡Excelente trabajo! Las palabras identificadas reflejan un reconocimiento adecuado de las principales culturas que formaron parte de la prehistoria ecuatoriana. A través de este ejercicio se fortalece la memoria y la familiarización con los nombres de estos pueblos, permitiendo comprender mejor la diversidad cultural que existió en el territorio antes de la llegada de los incas y los españoles.`;
+
+const GRID_SIZE = 16; // 16 × 16
+
+/* ════════════════════════════════════════════
+   GENERADOR DE SOPA DE LETRAS
+════════════════════════════════════════════ */
+let grid = [];
+let wordPositions = {}; // word → [{r,c}, ...]
+
+function buildGrid() {
+  // Inicializar grid vacío
+  grid = Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(''));
+
+  const directions = [
+    [0,1],[1,0],[1,1],[1,-1],   // H, V, D↘, D↙
+    [0,-1],[-1,0],[-1,-1],[-1,1]
+  ];
+
+  for (const word of WORDS) {
+    let placed = false;
+    let attempts = 0;
+    while (!placed && attempts < 500) {
+      attempts++;
+      const dir = directions[Math.floor(Math.random() * directions.length)];
+      const [dr, dc] = dir;
+      const len = word.length;
+      // Calcular rango de inicio válido
+      const rMin = dr < 0 ? len-1 : 0;
+      const rMax = dr > 0 ? GRID_SIZE - len : GRID_SIZE - 1;
+      const cMin = dc < 0 ? len-1 : 0;
+      const cMax = dc > 0 ? GRID_SIZE - len : GRID_SIZE - 1;
+      if (rMin > rMax || cMin > cMax) continue;
+      const r = rMin + Math.floor(Math.random() * (rMax - rMin + 1));
+      const c = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
+      // Verificar si cabe
+      let ok = true;
+      for (let i = 0; i < len; i++) {
+        const nr = r + dr*i, nc = c + dc*i;
+        if (grid[nr][nc] !== '' && grid[nr][nc] !== word[i]) { ok = false; break; }
+      }
+      if (ok) {
+        const cells = [];
+        for (let i = 0; i < len; i++) {
+          const nr = r + dr*i, nc = c + dc*i;
+          grid[nr][nc] = word[i];
+          cells.push({r: nr, c: nc});
+        }
+        wordPositions[word] = cells;
+        placed = true;
+      }
+    }
+    if (!placed) console.warn('No se pudo colocar:', word);
+  }
+
+  // Rellenar con letras aleatorias
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < GRID_SIZE; r++)
+    for (let c = 0; c < GRID_SIZE; c++)
+      if (grid[r][c] === '')
+        grid[r][c] = letters[Math.floor(Math.random() * letters.length)];
+}
+
+/* ════════════════════════════════════════════
+   ESTADO DEL JUEGO
+════════════════════════════════════════════ */
+let foundWords = new Set();
+let selecting = false;
+let startCell = null;
+let selectedCells = [];
+let foundCellKeys = new Set(); // "r,c" de celdas ya encontradas
+
+/* ════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════ */
+function renderChips() {
+  const container = document.getElementById('word-chips');
+  container.innerHTML = '';
+  WORDS.forEach(w => {
+    const el = document.createElement('span');
+    el.className = 'chip' + (foundWords.has(w) ? ' found' : '');
+    // Mostrar palabras con formato original (Ñ → ñ solo en display)
+    el.textContent = displayWord(w);
+    el.id = 'chip-' + w;
+    container.appendChild(el);
+  });
+}
+
+function displayWord(w) {
+  // Capitalizar y restaurar caracteres especiales para display
+  const map = { 'CANARI': 'Cañari', 'JAMACOAQUE': 'JamaCoaque' };
+  if (map[w]) return map[w];
+  return w.charAt(0) + w.slice(1).toLowerCase();
+}
+
+function renderGrid() {
+  const container = document.getElementById('ws-grid');
+  container.innerHTML = '';
+  container.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.textContent = grid[r][c];
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+
+      if (foundCellKeys.has(`${r},${c}`)) cell.classList.add('found-cell');
+
+      // Mouse events (desktop)
+      cell.addEventListener('mousedown', onStart);
+      cell.addEventListener('mouseenter', onMove);
+      cell.addEventListener('mouseup', onEnd);
+      // Touch events (mobile)
+      cell.addEventListener('touchstart', onTouchStart, {passive: true});
+      cell.addEventListener('touchmove', onTouchMove, {passive: true});
+      cell.addEventListener('touchend', onTouchEnd);
+
+      container.appendChild(cell);
+    }
+  }
+}
+
+function getCellEl(r, c) {
+  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+/* ════════════════════════════════════════════
+   SELECCIÓN
+════════════════════════════════════════════ */
+function onStart(e) {
+  selecting = true;
+  startCell = { r: +e.currentTarget.dataset.r, c: +e.currentTarget.dataset.c };
+  clearSelection();
+  highlightCell(e.currentTarget);
+}
+
+function onMove(e) {
+  if (!selecting) return;
+  const endR = +e.currentTarget.dataset.r;
+  const endC = +e.currentTarget.dataset.c;
+  updateSelection(startCell.r, startCell.c, endR, endC);
+}
+
+function onEnd(e) {
+  if (!selecting) return;
+  selecting = false;
+  checkSelection();
+}
+
+// Touch
+function getTouchCell(e) {
+  const t = e.changedTouches[0];
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  if (el && el.classList.contains('cell')) return el;
+  return null;
+}
+function onTouchStart(e) { onStart({ currentTarget: e.currentTarget }); }
+function onTouchMove(e) {
+  const el = getTouchCell(e);
+  if (el) onMove({ currentTarget: el });
+}
+function onTouchEnd(e) { onEnd(e); }
+
+document.addEventListener('mouseup', () => { if (selecting) { selecting = false; clearSelection(); } });
+
+function clearSelection() {
+  selectedCells.forEach(({r,c}) => {
+    const el = getCellEl(r,c);
+    if (el && !foundCellKeys.has(`${r},${c}`)) el.classList.remove('selecting');
+  });
+  selectedCells = [];
+}
+
+function highlightCell(el) {
+  if (!foundCellKeys.has(`${el.dataset.r},${el.dataset.c}`))
+    el.classList.add('selecting');
+}
+
+function getDirection(r1, c1, r2, c2) {
+  const dr = r2 - r1, dc = c2 - c1;
+  if (dr === 0 && dc === 0) return {dr:0, dc:0, steps:0};
+  const steps = Math.max(Math.abs(dr), Math.abs(dc));
+  const ndr = dr === 0 ? 0 : dr / Math.abs(dr);
+  const ndc = dc === 0 ? 0 : dc / Math.abs(dc);
+  // Validar que sea línea recta (H, V, D)
+  if (Math.abs(dr) !== Math.abs(dc) && dr !== 0 && dc !== 0) return null;
+  return {dr: ndr, dc: ndc, steps};
+}
+
+function updateSelection(r1, c1, r2, c2) {
+  clearSelection();
+  const dir = getDirection(r1, c1, r2, c2);
+  if (!dir) return;
+  const cells = [];
+  for (let i = 0; i <= dir.steps; i++) {
+    const nr = r1 + dir.dr * i;
+    const nc = c1 + dir.dc * i;
+    if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) break;
+    cells.push({r: nr, c: nc});
+    const el = getCellEl(nr, nc);
+    if (el && !foundCellKeys.has(`${nr},${nc}`)) el.classList.add('selecting');
+  }
+  selectedCells = cells;
+}
+
+function checkSelection() {
+  if (selectedCells.length < 2) { clearSelection(); return; }
+  // Construir la palabra seleccionada (y su reversa)
+  const word = selectedCells.map(({r,c}) => grid[r][c]).join('');
+  const wordRev = word.split('').reverse().join('');
+
+  let match = null;
+  for (const w of WORDS) {
+    if (foundWords.has(w)) continue;
+    if (w === word || w === wordRev) { match = w; break; }
+  }
+
+  if (match) {
+    foundWords.add(match);
+    // Marcar celdas como encontradas (usar posiciones canónicas de la palabra)
+    wordPositions[match].forEach(({r,c}) => {
+      foundCellKeys.add(`${r},${c}`);
+      const el = getCellEl(r,c);
+      if (el) { el.classList.remove('selecting'); el.classList.add('found-cell'); }
+    });
+    selectedCells.forEach(({r,c}) => {
+      if (!foundCellKeys.has(`${r},${c}`)) {
+        const el = getCellEl(r,c);
+        if (el) el.classList.remove('selecting');
+      }
+    });
+    selectedCells = [];
+    document.getElementById('chip-' + match).classList.add('found');
+    updateScore();
+    if (foundWords.size === WORDS.length) {
+      setTimeout(() => showModal('🏆', '¡Completado!', FEEDBACK_FINAL, true), 400);
+    } else {
+      showModal('✅', `¡Encontrada! → ${displayWord(match)}`,
+        `Has encontrado la cultura <strong>${displayWord(match)}</strong>. ¡Sigue buscando!`);
+    }
+  } else {
+    clearSelection();
+  }
+}
+
+function updateScore() {
+  document.getElementById('found-count').textContent = foundWords.size;
+}
+
+/* ════════════════════════════════════════════
+   MODAL
+════════════════════════════════════════════ */
+function showModal(emoji, title, body, isFinal = false) {
+  document.getElementById('modal-emoji').textContent = emoji;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-close').textContent = isFinal ? '🎊 ¡Genial!' : 'Continuar →';
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal-overlay').classList.remove('active');
+});
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
+});
+
+/* ════════════════════════════════════════════
+   REINICIAR
+════════════════════════════════════════════ */
+document.getElementById('btn-reset').addEventListener('click', () => {
+  foundWords.clear();
+  foundCellKeys.clear();
+  selectedCells = [];
+  selecting = false;
+  startCell = null;
+  buildGrid();
+  renderGrid();
+  renderChips();
+  updateScore();
+});
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+document.getElementById('total-count').textContent = WORDS.length;
+buildGrid();
+renderGrid();
+renderChips();
+</script>
+</body>
+</html>
