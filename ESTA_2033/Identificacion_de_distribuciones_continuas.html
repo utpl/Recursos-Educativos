@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Identificación de Distribuciones Continuas</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Emparejamiento: Distribuciones Continuas | Estadística</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none; /* Evita selección molesta al hacer clic rápido, pero no bloquea interacción */
+    }
+
     :root {
       --c1: #E84855;
       --c2: #F4A261;
@@ -17,8 +21,8 @@
       --c5: #7B4FBF;
       --dark: #1A1A2E;
       --dark2: #16213E;
-      --surface: #FFFFFF;
       --bg: #F8F5F0;
+      --surface: #FFFFFF;
       --text: #2C2C3E;
       --muted: #6B6B80;
       --border: #E2DED8;
@@ -27,476 +31,589 @@
       --r: 13px;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
+      background: radial-gradient(ellipse at 18% 12%, rgba(232, 72, 85, 0.12) 0%, transparent 50%),
+                  radial-gradient(ellipse at 82% 88%, rgba(123, 79, 191, 0.12) 0%, transparent 50%),
+                  #EDE9E1;
       font-family: var(--font-b);
-      background:
-        radial-gradient(ellipse at 18% 12%, rgba(232, 72, 85, .13) 0%, transparent 50%),
-        radial-gradient(ellipse at 82% 88%, rgba(123, 79, 191, .13) 0%, transparent 50%),
-        #EDE9E1;
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
+      padding: 24px;
     }
 
     .canvas {
-      width: 800px;
-      height: 800px;
+      max-width: 1000px;
+      width: 100%;
       background: var(--bg);
+      border-radius: 28px;
       overflow: hidden;
-      box-shadow: 0 24px 80px rgba(26, 26, 46, .22);
-      display: flex;
-      flex-direction: column;
+      box-shadow: 0 28px 70px rgba(26, 26, 46, 0.25);
+      transition: all 0.2s;
     }
 
     /* HEADER */
-    .header { background: var(--dark); flex-shrink: 0; position: relative; overflow: hidden; }
-    .h-stripe { height: 4px; background: linear-gradient(90deg, var(--c1) 0%, var(--c2) 25%, var(--c3) 50%, var(--c4) 75%, var(--c5) 100%); }
-    .h-glow {
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse at 12% 110%, rgba(232, 72, 85, .18) 0%, transparent 55%),
-        radial-gradient(ellipse at 88% -10%, rgba(123, 79, 191, .2) 0%, transparent 55%);
-      pointer-events: none;
-    }
-    .h-inner { position: relative; z-index: 1; padding: 16px 32px 14px; display: flex; align-items: center; gap: 16px; }
-    .h-embl {
-      width: 46px; height: 46px; flex-shrink: 0; border-radius: 13px;
-      background: linear-gradient(135deg, rgba(123, 79, 191, .28), rgba(69, 123, 157, .22));
-      border: 1.5px solid rgba(255, 255, 255, .12);
-      display: flex; align-items: center; justify-content: center; font-size: 20px;
-    }
+    .header { background: var(--dark); position: relative; }
+    .h-stripe { height: 4px; background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3), var(--c4), var(--c5)); }
+    .h-inner { padding: 18px 28px 16px; display: flex; align-items: center; gap: 16px; }
+    .h-embl { width: 48px; height: 48px; background: rgba(255,255,255,0.08); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid rgba(255,255,255,0.12); }
     .h-meta { flex: 1; }
-    .h-course { font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.38); margin-bottom: 3px; }
-    .h-title { font-family: var(--font-d); font-size: 18px; color: #fff; line-height: 1.22; letter-spacing: -.02em; }
+    .h-course { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 6px; font-weight: 600; }
+    .h-title { font-family: var(--font-d); font-size: 20px; color: white; letter-spacing: -0.3px; }
 
     /* CTRL BAR */
-    .ctrl-bar { background: var(--dark2); padding: 8px 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .ctrl-left { display: flex; align-items: center; gap: 8px; }
-    .ctrl-lbl { font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-right: 2px; }
-    .sdots { display: flex; gap: 5px; }
-    .sdot { width: 22px; height: 7px; border-radius: 3px; background: rgba(255,255,255,.1); transition: background .3s; }
-    .sdot.placed { background: rgba(255,255,255,.32); }
+    .ctrl-bar { background: var(--dark2); padding: 10px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .ctrl-left { display: flex; align-items: center; gap: 12px; }
+    .ctrl-lbl { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+    .sdots { display: flex; gap: 8px; }
+    .sdot { width: 28px; height: 8px; border-radius: 6px; background: rgba(255,255,255,0.15); transition: all 0.2s; }
+    .sdot.placed { background: rgba(244,162,97,0.7); }
     .sdot.ok { background: var(--c3); }
     .sdot.fail { background: var(--c1); }
-    .ctrl-right { display: flex; gap: 7px; align-items: center; }
-    .btn-check {
-      background: var(--c3); color: #fff; border: none; padding: 7px 16px; border-radius: 8px;
-      font-family: var(--font-b); font-size: 11px; font-weight: 700; cursor: pointer;
-      transition: opacity .2s, transform .15s; display: flex; align-items: center; gap: 5px; min-height: 34px;
-    }
-    .btn-check:hover:not(:disabled) { opacity: .85; transform: translateY(-1px); }
-    .btn-check:disabled { opacity: .35; cursor: default; transform: none; }
-    .btn-reset {
-      background: rgba(255,255,255,.1); color: rgba(255,255,255,.65); border: none; padding: 7px 13px;
-      border-radius: 8px; font-family: var(--font-b); font-size: 11px; font-weight: 600; cursor: pointer;
-      transition: background .18s; min-height: 34px; display: none; align-items: center; gap: 5px;
-    }
-    .btn-reset:hover { background: rgba(255,255,255,.18); }
-    .btn-reset.show { display: flex; }
 
-    /* INST BAND */
-    .inst-band {
-      background: linear-gradient(90deg, rgba(123,79,191,.1), rgba(69,123,157,.07));
-      border-bottom: 1px solid rgba(123,79,191,.2);
-      padding: 8px 32px; flex-shrink: 0; display: flex; align-items: center; gap: 8px;
-      font-size: 11.5px; color: var(--text);
-    }
+    .ctrl-right { display: flex; gap: 12px; }
+    .btn-check, .btn-reset { border: none; font-family: var(--font-b); font-weight: 700; font-size: 11px; padding: 8px 18px; border-radius: 40px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; background: rgba(255,255,255,0.12); color: white; backdrop-filter: blur(2px); }
+    .btn-check { background: var(--c3); color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .btn-check:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-check:hover:not(:disabled) { background: #21867a; transform: translateY(-1px); }
+    .btn-reset { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+    .btn-reset:hover { background: rgba(255,255,255,0.22); }
+    .btn-reset.show { display: inline-flex; }
+
+    .inst-band { background: rgba(123,79,191,0.08); padding: 10px 28px; font-size: 12px; display: flex; align-items: center; gap: 12px; color: var(--text); border-bottom: 1px solid var(--border); }
     .inst-band strong { color: var(--dark); }
 
-    /* MAIN AREA */
-    .main-area { flex: 1; overflow-y: auto; padding: 14px 32px 16px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    /* MAIN */
+    .main-area { padding: 20px 28px 26px; overflow-y: auto; max-height: 65vh; }
 
-    /* col labels */
-    .col-lbl {
-      font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
-    }
-    .col-lbl::after { content: ''; flex: 1; height: 1.5px; background: var(--border); border-radius: 1px; }
-
-    /* MATCH LAYOUT — position:relative para anclar el SVG */
     .match-layout {
       display: grid;
       grid-template-columns: 1fr 60px 1fr;
       gap: 0;
       align-items: start;
       position: relative;
+      margin-bottom: 20px;
     }
-    .col-left  { display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 2; }
-    .col-right { display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 2; }
-    .col-mid   { position: relative; align-self: stretch; z-index: 1; }
 
-    /* SVG superpuesto a todo el match-layout */
+    .col-left, .col-right { display: flex; flex-direction: column; gap: 14px; }
+    .col-mid { position: relative; min-width: 20px; }
+
+    /* Tarjetas Situación */
+    .sit-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 2px solid var(--border);
+      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      cursor: pointer;
+    }
+    .sit-card:hover:not(.locked) { border-color: var(--dark); transform: translateX(-3px); box-shadow: 0 12px 20px -10px rgba(0,0,0,0.1); }
+    .sit-card.selected { border-color: var(--c2); box-shadow: 0 0 0 3px rgba(244,162,97,0.35); background: #fffef7; }
+    .sit-card.matched-ok { border-color: var(--c3); background: #f0faf8; cursor: default; }
+    .sit-card.matched-fail { border-color: var(--c1); background: #fff6f5; cursor: default; }
+    .sc-top { background: var(--dark); padding: 7px 14px; display: flex; align-items: center; gap: 12px; border-radius: var(--r) var(--r) 0 0; }
+    .sc-num { width: 24px; height: 24px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: white; }
+    .sc-tag { font-size: 8.5px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.7); text-transform: uppercase; }
+    .sc-body { padding: 12px 14px; font-size: 12px; line-height: 1.55; color: var(--text); }
+
+    /* Tarjetas Distribución */
+    .dist-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      border: 2px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .dist-card:hover:not(.locked) { border-color: var(--dark); transform: translateX(3px); box-shadow: 0 12px 18px -10px rgba(0,0,0,0.08); }
+    .dist-card.selected { border-color: var(--c2); box-shadow: 0 0 0 3px rgba(244,162,97,0.35); background: #fffef7; }
+    .dist-card.matched-ok { border-color: var(--c3); background: #f0faf8; cursor: default; }
+    .dist-card.matched-fail { border-color: var(--c1); background: #fff6f5; cursor: default; }
+    .dc-letter { width: 32px; height: 32px; border-radius: 10px; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; background: var(--dc-color, #ccc); color: white; }
+    .dc-ico { font-size: 22px; }
+    .dc-txt { flex: 1; font-size: 11.5px; line-height: 1.4; }
+    .dc-name { font-weight: 700; font-size: 12px; display: block; margin-bottom: 3px; }
+
+    /* SVG lineas */
     #lineCanvas {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      overflow: visible;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
-      z-index: 3;
+      z-index: 10;
     }
 
-    /* SITUATION CARD */
-    .sit-card {
-      background: var(--surface); border-radius: var(--r); border: 2px solid var(--border);
-      overflow: hidden; cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .15s;
-    }
-    .sit-card:hover:not(.locked) { border-color: var(--dark); box-shadow: 0 6px 20px rgba(26,26,46,.1); transform: translateX(-2px); }
-    .sit-card.selected { border-color: var(--c2); box-shadow: 0 0 0 3px rgba(244,162,97,.22); }
-    .sit-card.matched-ok   { border-color: var(--c3); box-shadow: 0 0 0 2px rgba(42,157,143,.15); cursor: default; }
-    .sit-card.matched-fail { border-color: var(--c1); box-shadow: 0 0 0 2px rgba(232,72,85,.15);  cursor: default; }
-    .sc-top { background: var(--dark); padding: 6px 12px; display: flex; align-items: center; gap: 8px; }
-    .sc-num {
-      width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: 800; color: #fff;
-      background: var(--sc-color, rgba(255,255,255,.15));
-    }
-    .sc-tag { font-size: 8.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.45); }
-    .sc-body { padding: 8px 12px; font-size: 11.5px; color: var(--text); line-height: 1.55; }
-
-    /* DISTRIBUTION CARD */
-    .dist-card {
-      background: var(--surface); border-radius: var(--r); border: 2px solid var(--border);
-      padding: 10px 13px; cursor: pointer; display: flex; align-items: center; gap: 10px;
-      transition: border-color .2s, box-shadow .2s, transform .15s; min-height: 44px;
-    }
-    .dist-card:hover:not(.locked) { border-color: var(--dark); box-shadow: 0 6px 20px rgba(26,26,46,.1); transform: translateX(2px); }
-    .dist-card.selected { border-color: var(--c2); box-shadow: 0 0 0 3px rgba(244,162,97,.22); }
-    .dist-card.matched-ok   { border-color: var(--c3); box-shadow: 0 0 0 2px rgba(42,157,143,.15); cursor: default; }
-    .dist-card.matched-fail { border-color: var(--c1); box-shadow: 0 0 0 2px rgba(232,72,85,.15);  cursor: default; }
-    .dc-letter {
-      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11.5px; font-weight: 800; color: #fff; background: var(--dc-color);
-    }
-    .dc-ico  { font-size: 16px; flex-shrink: 0; }
-    .dc-txt  { font-size: 12px; color: var(--text); line-height: 1.4; flex: 1; }
-    .dc-name { font-weight: 700; color: var(--dc-color); font-size: 11px; display: block; margin-bottom: 1px; }
-
-    /* FEEDBACK PANEL */
+    /* Feedback panel */
     .feedback-panel {
-      background: var(--dark); border-radius: var(--r); padding: 14px 18px; margin-top: 12px;
-      position: relative; overflow: hidden;
-      opacity: 0; transform: translateY(10px);
-      transition: opacity .36s ease, transform .36s ease;
+      background: var(--dark);
+      border-radius: 20px;
+      padding: 18px 22px;
+      margin-top: 20px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
       pointer-events: none;
     }
     .feedback-panel.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .feedback-panel::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 90% 10%, rgba(42,157,143,.18) 0%, transparent 60%);
-    }
-    .fp-lbl  { font-size: 9px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--c3); margin-bottom: 10px; position: relative; }
-    .fp-body { font-size: 12px; color: rgba(255,255,255,.75); line-height: 1.7; position: relative; }
+    .fp-lbl { font-size: 9px; letter-spacing: 2px; color: var(--c3); text-transform: uppercase; font-weight: 800; margin-bottom: 10px; }
+    .fp-body { font-size: 12.5px; color: rgba(255,255,255,0.8); line-height: 1.65; }
 
-    /* RESULT BAR */
     .result-bar {
-      background: rgba(26,26,46,.96); backdrop-filter: blur(4px);
-      padding: 8px 32px; flex-shrink: 0; display: none; align-items: center;
-      justify-content: space-between; border-top: 1px solid rgba(255,255,255,.06);
+      background: rgba(26,26,46,0.96);
+      backdrop-filter: blur(6px);
+      padding: 12px 28px;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
     .result-bar.show { display: flex; }
-    .rb-score { font-family: var(--font-d); font-size: 18px; color: #fff; }
-    .rb-score span { color: var(--c3); }
-    .rb-msg  { font-size: 11px; color: rgba(255,255,255,.52); margin-top: 1px; }
+    .rb-score { font-family: var(--font-d); font-size: 20px; color: white; }
+    .rb-score span { color: var(--c3); font-weight: 800; }
+    .rb-msg { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 3px; }
 
-    /* REF */
-    .ref-bar { background: var(--dark); padding: 8px 32px; flex-shrink: 0; font-size: 10px; color: rgba(255,255,255,.28); font-style: italic; }
+    .ref-bar { background: var(--dark); padding: 10px 28px; font-size: 9px; color: rgba(255,255,255,0.3); text-align: center; }
 
-    @media(max-width:600px) {
-      body { padding: 0; background: var(--bg); }
-      .canvas { width: 100%; max-width: 100%; max-height: none; border-radius: 0; }
-      .h-inner, .ctrl-bar, .inst-band, .main-area, .result-bar, .ref-bar { padding-left: 20px; padding-right: 20px; }
+    @media (max-width: 650px) {
+      body { padding: 12px; }
       .match-layout { grid-template-columns: 1fr 32px 1fr; }
+      .h-inner, .ctrl-bar, .inst-band, .main-area { padding-left: 18px; padding-right: 18px; }
     }
   </style>
 </head>
-
 <body>
-  <div class="canvas">
 
-    <!-- HEADER -->
-    <div class="header">
-      <div class="h-stripe"></div>
-      <div class="h-glow"></div>
-      <div class="h-inner">
-        <div class="h-embl">〰️</div>
-        <div class="h-meta">
-          <div class="h-course">Estadística para análisis de datos</div>
-          <div class="h-title">Identificación de distribuciones continuas</div>
-        </div>
+<div class="canvas">
+  <div class="header">
+    <div class="h-stripe"></div>
+    <div class="h-inner">
+      <div class="h-embl">📊</div>
+      <div class="h-meta">
+        <div class="h-course">Estadística · Modelos Continuos</div>
+        <div class="h-title">Empareja: Situación ⇄ Distribución</div>
       </div>
     </div>
-
-    <!-- CTRL BAR -->
-    <div class="ctrl-bar">
-      <div class="ctrl-left">
-        <div class="ctrl-lbl">Conexiones</div>
-        <div class="sdots" id="scoreDots">
-          <div class="sdot" id="sd0"></div>
-          <div class="sdot" id="sd1"></div>
-          <div class="sdot" id="sd2"></div>
-          <div class="sdot" id="sd3"></div>
-          <div class="sdot" id="sd4"></div>
-        </div>
-      </div>
-      <div class="ctrl-right">
-        <button class="btn-reset" id="btnReset" onclick="resetGame()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-          </svg>
-          Reintentar
-        </button>
-        <button class="btn-check" id="btnCheck" onclick="checkAnswers()" disabled>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M20 6L9 17l-5-5"/>
-          </svg>
-          Verificar
-        </button>
-      </div>
-    </div>
-
-    <!-- INST -->
-    <div class="inst-band">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-      </svg>
-      <div><strong>Instrucción:</strong> Relaciona cada situación con la distribución continua que corresponda. Haz clic en una situación y luego en la distribución para conectarlas.</div>
-    </div>
-
-    <!-- MAIN -->
-    <div class="main-area" id="mainArea">
-
-      <div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;margin-bottom:6px;">
-        <div class="col-lbl">Situaciones</div>
-        <div></div>
-        <div class="col-lbl">Distribuciones</div>
-      </div>
-
-      <!-- CLAVE: SVG dentro del match-layout como hijo directo, posicionado sobre todo el grid -->
-      <div class="match-layout" id="matchLayout">
-        <div class="col-left"  id="colLeft"></div>
-        <div class="col-mid"   id="colMid"></div>
-        <div class="col-right" id="colRight"></div>
-        <svg id="lineCanvas" xmlns="http://www.w3.org/2000/svg"></svg>
-      </div>
-
-      <div class="feedback-panel" id="feedbackPanel">
-        <div class="fp-lbl">✦ Retroalimentación</div>
-        <div class="fp-body">Las distribuciones continuas permiten modelar distintos fenómenos reales según el comportamiento de los datos. La distribución uniforme se utiliza cuando todos los valores dentro de un intervalo son igualmente probables. La distribución exponencial modela el tiempo entre eventos aleatorios, mientras que la distribución Gamma extiende este concepto al tiempo total de varios eventos. Por su parte, la distribución log-normal describe datos con asimetría y colas largas, y la distribución normal representa variables que se agrupan alrededor de un promedio. Reconocer estas diferencias es clave para seleccionar el modelo adecuado en el análisis de datos.</div>
-      </div>
-
-    </div>
-
-    <!-- RESULT BAR -->
-    <div class="result-bar" id="resultBar">
-      <div>
-        <div class="rb-score" id="rbScore"></div>
-        <div class="rb-msg"   id="rbMsg"></div>
-      </div>
-    </div>
-
-    <!-- REF -->
-    <div class="ref-bar">Elaboración propia.</div>
   </div>
 
-  <script>
-    const SITUATIONS = [
-      { id:'s1', num:1, color:'var(--c1)', tag:'Situación 1', body:'El tiempo que tarda un usuario en ser atendido en un sistema donde todos los tiempos entre 3 y 7 minutos son igualmente probables.', correctDist:'d-uniforme' },
-      { id:'s2', num:2, color:'var(--c2)', tag:'Situación 2', body:'El tiempo que transcurre hasta que falla un servidor, considerando que los fallos ocurren de manera aleatoria con una tasa constante.', correctDist:'d-exponencial' },
-      { id:'s3', num:3, color:'var(--c3)', tag:'Situación 3', body:'El tiempo total necesario para completar 5 descargas consecutivas en una red.', correctDist:'d-gamma' },
-      { id:'s4', num:4, color:'var(--c4)', tag:'Situación 4', body:'Los ingresos de usuarios en una plataforma digital, donde la mayoría gana poco y unos pocos ganan cantidades muy altas.', correctDist:'d-lognormal' },
-      { id:'s5', num:5, color:'var(--c5)', tag:'Situación 5', body:'La estatura de los estudiantes de una universidad que se agrupa alrededor de un promedio.', correctDist:'d-normal' }
-    ];
+  <div class="ctrl-bar">
+    <div class="ctrl-left">
+      <div class="ctrl-lbl">CONEXIONES</div>
+      <div class="sdots" id="scoreDots">
+        <div class="sdot" id="sd0"></div><div class="sdot" id="sd1"></div><div class="sdot" id="sd2"></div>
+        <div class="sdot" id="sd3"></div><div class="sdot" id="sd4"></div>
+      </div>
+    </div>
+    <div class="ctrl-right">
+      <button class="btn-reset" id="btnReset" onclick="resetGame()">⟳ Reiniciar</button>
+      <button class="btn-check" id="btnCheck" onclick="checkAnswers()" disabled>✓ Verificar</button>
+    </div>
+  </div>
 
-    const DISTS_BASE = [
-      { id:'d-exponencial', letter:'a', color:'var(--c1)', ico:'⚡', name:'Distribución Exponencial', desc:'Tiempo entre eventos aleatorios con tasa constante.' },
-      { id:'d-normal',      letter:'b', color:'var(--c2)', ico:'🔔', name:'Distribución Normal',      desc:'Variables simétricas agrupadas en torno a un promedio.' },
-      { id:'d-uniforme',    letter:'c', color:'var(--c3)', ico:'📏', name:'Distribución Uniforme',    desc:'Todos los valores en un intervalo son igualmente probables.' },
-      { id:'d-gamma',       letter:'d', color:'var(--c4)', ico:'⏱️', name:'Distribución Gamma',       desc:'Tiempo total de varios eventos consecutivos.' },
-      { id:'d-lognormal',   letter:'e', color:'var(--c5)', ico:'📈', name:'Distribución Log-normal',  desc:'Datos con asimetría positiva y colas largas.' }
-    ];
+  <div class="inst-band">
+    <span>🧠</span> <strong>Cómo funciona:</strong> Haz clic en una situación (izquierda) y luego en una distribución (derecha) para emparejarlas. Si te equivocas, vuelve a hacer clic en el par para deshacer la conexión. Cuando todas las 5 estén conectadas, presiona "Verificar".
+  </div>
 
-    let dists = [], connections = {}, selectedSit = null, selectedDist = null, checked = false;
+  <div class="main-area" id="mainArea">
+    <div class="match-layout" id="matchLayout">
+      <div class="col-left" id="colLeft"></div>
+      <div class="col-mid"></div>
+      <div class="col-right" id="colRight"></div>
+      <svg id="lineCanvas" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="feedback-panel" id="feedbackPanel">
+      <div class="fp-lbl">📘 Aprendizaje clave</div>
+      <div class="fp-body">Cada distribución captura un patrón: Uniforme (igual probabilidad), Exponencial (tiempo entre eventos), Gamma (suma de exponenciales), Log‑normal (datos asimétricos con cola larga) y Normal (simétrica alrededor de la media). ¡Identifícalas correctamente!</div>
+    </div>
+  </div>
 
-    function shuffle(a) {
-      const r = [...a];
-      for (let i = r.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [r[i], r[j]] = [r[j], r[i]];
+  <div class="result-bar" id="resultBar">
+    <div><div class="rb-score" id="rbScore"></div><div class="rb-msg" id="rbMsg"></div></div>
+  </div>
+  <div class="ref-bar">Distribuciones continuas esenciales · Análisis de datos</div>
+</div>
+
+<script>
+  // ----- DATOS DEFINITIVOS -----
+  const SITUATIONS = [
+    { id: 's1', num: 1, color: 'var(--c1)', tag: 'Escenario A', body: 'Tiempo de espera en un sistema donde cualquier valor entre 3 y 7 minutos tiene igual probabilidad.', correctDist: 'd-uniforme' },
+    { id: 's2', num: 2, color: 'var(--c2)', tag: 'Escenario B', body: 'Tiempo hasta la primera falla de un servidor con tasa de fallo constante (λ=0.2 fallos/hora).', correctDist: 'd-exponencial' },
+    { id: 's3', num: 3, color: 'var(--c3)', tag: 'Escenario C', body: 'Tiempo total para completar exactamente 5 procesos consecutivos en una línea de producción.', correctDist: 'd-gamma' },
+    { id: 's4', num: 4, color: 'var(--c4)', tag: 'Escenario D', body: 'Ingresos mensuales en una plataforma: mayoría gana poco, minoría gana sumas muy elevadas (sesgo positivo).', correctDist: 'd-lognormal' },
+    { id: 's5', num: 5, color: 'var(--c5)', tag: 'Escenario E', body: 'Altura de estudiantes universitarios: simétrica, concentrada alrededor del promedio.', correctDist: 'd-normal' }
+  ];
+
+  // Distribuciones originales (se ordenarán aleatoriamente en cada reset)
+  const DISTS_MASTER = [
+    { id: 'd-uniforme',   letter: 'U', color: 'var(--c3)', ico: '📏', name: 'Uniforme Continua',     desc: 'Misma probabilidad en todo [a,b].' },
+    { id: 'd-exponencial',letter: 'E', color: 'var(--c1)', ico: '⚡', name: 'Exponencial',          desc: 'Memoria nula, tiempo entre eventos.' },
+    { id: 'd-gamma',      letter: 'Γ', color: 'var(--c4)', ico: '⏳', name: 'Gamma',                desc: 'Tiempo acumulado de k eventos.' },
+    { id: 'd-lognormal',  letter: 'L', color: 'var(--c5)', ico: '📈', name: 'Log‑normal',           desc: 'Asimetría positiva, cola pesada.' },
+    { id: 'd-normal',     letter: 'N', color: 'var(--c2)', ico: '🔔', name: 'Normal (Gauss)',       desc: 'Campana simétrica, media y varianza.' }
+  ];
+
+  // Estado global
+  let currentDists = [];            // copia barajada
+  let connections = {};             // { situationId : distributionId }
+  let selectedSit = null;
+  let selectedDist = null;
+  let gameLocked = false;           // true después de verificar (no más cambios hasta reset)
+  let verificationDone = false;
+
+  // Elementos DOM
+  const colLeft = document.getElementById('colLeft');
+  const colRight = document.getElementById('colRight');
+  const svgLines = document.getElementById('lineCanvas');
+  const btnCheck = document.getElementById('btnCheck');
+  const btnReset = document.getElementById('btnReset');
+  const feedbackPanel = document.getElementById('feedbackPanel');
+  const resultBar = document.getElementById('resultBar');
+  const rbScoreSpan = document.getElementById('rbScore');
+  const rbMsgSpan = document.getElementById('rbMsg');
+
+  // Helper: barajar
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Renderizar ambas columnas desde cero
+  function renderCards() {
+    // Render izquierda: situaciones fijas en orden
+    colLeft.innerHTML = '';
+    SITUATIONS.forEach(sit => {
+      const card = document.createElement('div');
+      card.className = `sit-card ${connections[sit.id] ? 'connected' : ''}`;
+      if (gameLocked) card.classList.add('locked');
+      card.id = `sit-${sit.id}`;
+      card.dataset.sitId = sit.id;
+      card.style.setProperty('--sc-color', sit.color);
+      card.innerHTML = `
+        <div class="sc-top">
+          <div class="sc-num">${sit.num}</div>
+          <div class="sc-tag">${sit.tag}</div>
+        </div>
+        <div class="sc-body">${sit.body}</div>
+      `;
+      // Añadir clases de resultado si ya se verificó
+      if (verificationDone && connections[sit.id]) {
+        const isOk = connections[sit.id] === sit.correctDist;
+        card.classList.add(isOk ? 'matched-ok' : 'matched-fail');
+      } else if (verificationDone && !connections[sit.id]) {
+        // Si por alguna razón no hay conexión, pero ya verificado no debería pasar, por seguridad.
       }
-      return r;
-    }
-
-    function build() {
-      connections = {}; selectedSit = null; selectedDist = null; checked = false;
-      dists = shuffle([...DISTS_BASE]);
-
-      const left = document.getElementById('colLeft');
-      left.innerHTML = '';
-      SITUATIONS.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'sit-card'; div.id = `sit-${s.id}`; div.dataset.sitId = s.id;
-        div.style.setProperty('--sc-color', s.color);
-        div.innerHTML = `
-          <div class="sc-top">
-            <div class="sc-num">${s.num}</div>
-            <div class="sc-tag">${s.tag}</div>
-          </div>
-          <div class="sc-body">${s.body}</div>`;
-        div.addEventListener('click', () => pickSit(s.id));
-        left.appendChild(div);
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (gameLocked) return;
+        handleSitClick(sit.id);
       });
+      colLeft.appendChild(card);
+    });
 
-      const right = document.getElementById('colRight');
-      right.innerHTML = '';
-      dists.forEach(d => {
-        const div = document.createElement('div');
-        div.className = 'dist-card'; div.id = `dist-${d.id}`; div.dataset.distId = d.id;
-        div.style.setProperty('--dc-color', d.color);
-        div.innerHTML = `
-          <div class="dc-letter">${d.letter}</div>
-          <div class="dc-ico">${d.ico}</div>
-          <div class="dc-txt"><span class="dc-name">${d.name}</span>${d.desc}</div>`;
-        div.addEventListener('click', () => pickDist(d.id));
-        right.appendChild(div);
-      });
-
-      updateDots();
-      document.getElementById('btnCheck').disabled = true;
-      document.getElementById('btnReset').classList.remove('show');
-      document.getElementById('feedbackPanel').classList.remove('show');
-      document.getElementById('resultBar').classList.remove('show');
-      document.getElementById('lineCanvas').innerHTML = '';
-    }
-
-    function pickSit(id) {
-      if (checked) return;
-      if (connections[id]) { delete connections[id]; renderLines(); updateDots(); updateCheckBtn(); clearSel(); return; }
-      clearSel();
-      selectedSit = id;
-      document.getElementById(`sit-${id}`).classList.add('selected');
-      tryConnect();
-    }
-
-    function pickDist(id) {
-      if (checked) return;
-      const existingSit = Object.keys(connections).find(k => connections[k] === id);
-      if (existingSit) { delete connections[existingSit]; renderLines(); updateDots(); updateCheckBtn(); clearSel(); return; }
-      clearSel();
-      selectedDist = id;
-      document.getElementById(`dist-${id}`).classList.add('selected');
-      tryConnect();
-    }
-
-    function tryConnect() {
-      if (selectedSit && selectedDist) {
-        connections[selectedSit] = selectedDist;
-        clearSel(); renderLines(); updateDots(); updateCheckBtn();
-      }
-    }
-
-    function clearSel() {
-      selectedSit = null; selectedDist = null;
-      document.querySelectorAll('.sit-card.selected,.dist-card.selected').forEach(el => el.classList.remove('selected'));
-    }
-
-    function renderLines() {
-      const svg = document.getElementById('lineCanvas');
-      svg.innerHTML = '';
-
-      // Referencia: el match-layout (padre posicionado del SVG)
-      const layoutEl = document.getElementById('matchLayout');
-      const layoutR  = layoutEl.getBoundingClientRect();
-
-      Object.entries(connections).forEach(([sid, did]) => {
-        const sc = document.getElementById(`sit-${sid}`);
-        const dc = document.getElementById(`dist-${did}`);
-        if (!sc || !dc) return;
-
-        const scR = sc.getBoundingClientRect();
-        const dcR = dc.getBoundingClientRect();
-
-        // Coordenadas relativas al match-layout
-        const x1 = scR.right  - layoutR.left;
-        const y1 = scR.top    + scR.height / 2 - layoutR.top;
-        const x2 = dcR.left   - layoutR.left;
-        const y2 = dcR.top    + dcR.height / 2 - layoutR.top;
-
-        let color = 'rgba(244,162,97,.85)';
-        if (checked) {
-          const s = SITUATIONS.find(s => s.id === sid);
-          color = s && s.correctDist === did ? 'rgba(42,157,143,.9)' : 'rgba(232,72,85,.9)';
+    // Render derecha: distribuciones actuales (orden aleatorio)
+    colRight.innerHTML = '';
+    currentDists.forEach(dist => {
+      const card = document.createElement('div');
+      card.className = `dist-card`;
+      if (gameLocked) card.classList.add('locked');
+      card.id = `dist-${dist.id}`;
+      card.dataset.distId = dist.id;
+      card.style.setProperty('--dc-color', dist.color);
+      card.innerHTML = `
+        <div class="dc-letter" style="background: ${dist.color};">${dist.letter}</div>
+        <div class="dc-ico">${dist.ico}</div>
+        <div class="dc-txt"><span class="dc-name">${dist.name}</span>${dist.desc}</div>
+      `;
+      if (verificationDone) {
+        // Buscar si alguna situación apunta a esta dist y es correcta/incorrecta
+        let anyWrong = false, anyRight = false;
+        for (let [sitId, distId] of Object.entries(connections)) {
+          if (distId === dist.id) {
+            const sit = SITUATIONS.find(s => s.id === sitId);
+            if (sit && sit.correctDist === distId) anyRight = true;
+            else anyWrong = true;
+          }
         }
-
-        const cx1 = x1 + 20, cx2 = x2 - 20;
-
-        // Puntos de anclaje
-        [[x1, y1], [x2, y2]].forEach(([cx, cy]) => {
-          const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', '5');
-          c.setAttribute('fill', color);
-          svg.appendChild(c);
-        });
-
-        // Curva
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', `M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', color);
-        path.setAttribute('stroke-width', '2.5');
-        path.setAttribute('stroke-linecap', 'round');
-        svg.appendChild(path);
+        if (anyRight && !anyWrong) card.classList.add('matched-ok');
+        else if (anyWrong && !anyRight) card.classList.add('matched-fail');
+        else if (anyRight && anyWrong) card.classList.add('matched-fail'); // si hay mezcla falla general
+      }
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (gameLocked) return;
+        handleDistClick(dist.id);
       });
-    }
+      colRight.appendChild(card);
+    });
+  }
 
-    function checkAnswers() {
-      if (Object.keys(connections).length < 5) return;
-      checked = true; let correct = 0;
-      SITUATIONS.forEach((s, i) => {
-        const did = connections[s.id];
-        const ok  = did === s.correctDist;
-        if (ok) correct++;
-        const sc = document.getElementById(`sit-${s.id}`);
-        const dc = did ? document.getElementById(`dist-${did}`) : null;
-        sc.classList.remove('selected'); sc.classList.add(ok ? 'matched-ok' : 'matched-fail'); sc.classList.add('locked');
-        if (dc) { dc.classList.remove('selected'); dc.classList.add(ok ? 'matched-ok' : 'matched-fail'); dc.classList.add('locked'); }
-        const dot = document.getElementById(`sd${i}`);
-        dot.classList.remove('placed'); dot.classList.add(ok ? 'ok' : 'fail');
-      });
-      document.querySelectorAll('.sit-card:not(.locked),.dist-card:not(.locked)').forEach(el => el.classList.add('locked'));
+  // Lógica de selección y conexión
+  function handleSitClick(sitId) {
+    if (gameLocked) return;
+
+    // Si la situación ya está conectada, al hacer clic se DESCONECTA (permitir edición)
+    if (connections[sitId]) {
+      delete connections[sitId];
+      clearSelected();
+      renderCards();
       renderLines();
-      document.getElementById('btnCheck').disabled = true;
-      const msgs = ['Sigue practicando 💪', '¡Buen intento!', '¡Casi!', '¡Muy bien!', '¡Excelente!', '¡Perfecto! Todo correcto 🎉'];
-      document.getElementById('rbScore').innerHTML = `<span>${correct}</span> / 5 correctas`;
-      document.getElementById('rbMsg').textContent = msgs[correct] || msgs[5];
-      document.getElementById('resultBar').classList.add('show');
-      document.getElementById('feedbackPanel').classList.add('show');
-      document.getElementById('btnReset').classList.add('show');
-      setTimeout(() => document.getElementById('feedbackPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 380);
+      updateDotsAndButton();
+      return;
     }
 
-    function updateDots() {
-      SITUATIONS.forEach((s, i) => {
-        const dot = document.getElementById(`sd${i}`);
-        dot.classList.remove('placed', 'ok', 'fail');
-        if (connections[s.id]) dot.classList.add('placed');
-      });
+    // Si hay una distribución seleccionada, conectar
+    if (selectedDist !== null) {
+      // Conectar situación actual con la distribución seleccionada
+      connections[sitId] = selectedDist;
+      clearSelected();
+      renderCards();
+      renderLines();
+      updateDotsAndButton();
+      return;
     }
 
-    function updateCheckBtn() {
-      document.getElementById('btnCheck').disabled = Object.keys(connections).length < 5;
+    // Ninguna selección previa de distribución: seleccionar esta situación
+    clearSelected();
+    selectedSit = sitId;
+    highlightSelected();
+  }
+
+  function handleDistClick(distId) {
+    if (gameLocked) return;
+
+    // Verificar si esta distribución ya está conectada a alguna situación
+    const existingSit = Object.keys(connections).find(sitKey => connections[sitKey] === distId);
+    if (existingSit) {
+      // Si ya está en uso, desvincular (borrar esa conexión)
+      delete connections[existingSit];
+      clearSelected();
+      renderCards();
+      renderLines();
+      updateDotsAndButton();
+      return;
     }
 
-    function resetGame() { build(); }
+    // Si hay una situación seleccionada, conectar
+    if (selectedSit !== null) {
+      connections[selectedSit] = distId;
+      clearSelected();
+      renderCards();
+      renderLines();
+      updateDotsAndButton();
+      return;
+    }
 
-    let rt;
-    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderLines, 80); });
+    // Ninguna situación seleccionada: seleccionar esta distribución
+    clearSelected();
+    selectedDist = distId;
+    highlightSelected();
+  }
 
-    build();
-  </script>
+  function clearSelected() {
+    selectedSit = null;
+    selectedDist = null;
+    // remover clase selected de todas las tarjetas
+    document.querySelectorAll('.sit-card.selected, .dist-card.selected').forEach(card => card.classList.remove('selected'));
+  }
+
+  function highlightSelected() {
+    if (selectedSit) {
+      const el = document.getElementById(`sit-${selectedSit}`);
+      if (el) el.classList.add('selected');
+    }
+    if (selectedDist) {
+      const el = document.getElementById(`dist-${selectedDist}`);
+      if (el) el.classList.add('selected');
+    }
+  }
+
+  // Dibujar líneas curvas entre cards conectadas
+  function renderLines() {
+    svgLines.innerHTML = '';
+    const layoutEl = document.getElementById('matchLayout');
+    if (!layoutEl) return;
+    const layoutRect = layoutEl.getBoundingClientRect();
+    if (layoutRect.width === 0) return;
+
+    for (const [sitId, distId] of Object.entries(connections)) {
+      const sitCard = document.getElementById(`sit-${sitId}`);
+      const distCard = document.getElementById(`dist-${distId}`);
+      if (!sitCard || !distCard) continue;
+
+      const sitRect = sitCard.getBoundingClientRect();
+      const distRect = distCard.getBoundingClientRect();
+
+      const x1 = sitRect.right - layoutRect.left;
+      const y1 = sitRect.top + sitRect.height / 2 - layoutRect.top;
+      const x2 = distRect.left - layoutRect.left;
+      const y2 = distRect.top + distRect.height / 2 - layoutRect.top;
+
+      // color de línea: si ya verificamos, mostrar verde o rojo; si no, color naranja dinámico
+      let lineColor = '#F4A261';
+      if (verificationDone) {
+        const sit = SITUATIONS.find(s => s.id === sitId);
+        const isOk = (sit && sit.correctDist === distId);
+        lineColor = isOk ? 'rgba(42,157,143,0.95)' : 'rgba(232,72,85,0.95)';
+      } else {
+        lineColor = 'rgba(244,162,97,0.85)';
+      }
+
+      // punto origen y destino
+      const circle1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle1.setAttribute('cx', x1); circle1.setAttribute('cy', y1); circle1.setAttribute('r', '5');
+      circle1.setAttribute('fill', lineColor);
+      svgLines.appendChild(circle1);
+
+      const circle2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle2.setAttribute('cx', x2); circle2.setAttribute('cy', y2); circle2.setAttribute('r', '5');
+      circle2.setAttribute('fill', lineColor);
+      svgLines.appendChild(circle2);
+
+      // curva de Bezier
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const cp1x = x1 + (x2 - x1) * 0.35;
+      const cp1y = y1;
+      const cp2x = x2 - (x2 - x1) * 0.35;
+      const cp2y = y2;
+      const d = `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', lineColor);
+      path.setAttribute('stroke-width', '2.8');
+      path.setAttribute('stroke-dasharray', '0');
+      path.setAttribute('stroke-linecap', 'round');
+      svgLines.appendChild(path);
+    }
+  }
+
+  function updateDotsAndButton() {
+    const connectionsCount = Object.keys(connections).length;
+    for (let i = 0; i < SITUATIONS.length; i++) {
+      const dot = document.getElementById(`sd${i}`);
+      dot.classList.remove('placed', 'ok', 'fail');
+      const sitId = SITUATIONS[i].id;
+      if (connections[sitId]) {
+        if (verificationDone) {
+          const correct = SITUATIONS[i].correctDist === connections[sitId];
+          dot.classList.add(correct ? 'ok' : 'fail');
+        } else {
+          dot.classList.add('placed');
+        }
+      }
+    }
+    // habilitar botón verificar si hay 5 conexiones y no está bloqueado
+    if (!gameLocked && connectionsCount === 5) {
+      btnCheck.disabled = false;
+    } else {
+      btnCheck.disabled = true;
+    }
+  }
+
+  // Verificación y bloqueo final
+  function checkAnswers() {
+    if (gameLocked) return;
+    const totalConnected = Object.keys(connections).length;
+    if (totalConnected < 5) return;
+
+    gameLocked = true;
+    verificationDone = true;
+    let correctCount = 0;
+
+    SITUATIONS.forEach(sit => {
+      const matchedDist = connections[sit.id];
+      if (matchedDist && matchedDist === sit.correctDist) {
+        correctCount++;
+      }
+    });
+
+    // Aplicar estilos de resultado a todas las cards y actualizar
+    renderCards();     // esto agregará clases matched-ok / fail según verificationDone
+    renderLines();
+    updateDotsAndButton();
+
+    // Mostrar feedback y resultado
+    const messages = ["❌ Sigue practicando", "📘 Revisa los conceptos", "📈 ¡Bien! casi perfecto", "🎉 ¡Excelente!", "🏆 ¡Dominas las distribuciones!", "✨ Perfecto, 5/5"];
+    const idx = Math.min(correctCount, 5);
+    rbScoreSpan.innerHTML = `<span>${correctCount}</span> / 5 emparejamientos correctos`;
+    rbMsgSpan.textContent = messages[idx];
+    resultBar.classList.add('show');
+    feedbackPanel.classList.add('show');
+
+    // Deshabilitar botón check y mostrar reset
+    btnCheck.disabled = true;
+    btnReset.classList.add('show');
+
+    // Bloquear nuevos clics: desactivar eventos adicionales
+    document.querySelectorAll('.sit-card, .dist-card').forEach(card => {
+      card.classList.add('locked');
+    });
+  }
+
+  // Reiniciar completamente el juego
+  function resetGame() {
+    // Resetear estado
+    gameLocked = false;
+    verificationDone = false;
+    connections = {};
+    selectedSit = null;
+    selectedDist = null;
+
+    // Barajar distribuciones
+    currentDists = shuffleArray([...DISTS_MASTER]);
+
+    // Limpiar clases de resultado y render
+    renderCards();
+    renderLines();
+    updateDotsAndButton();
+
+    // Ocultar paneles de resultado y feedback si están visibles
+    resultBar.classList.remove('show');
+    feedbackPanel.classList.remove('show');
+    btnReset.classList.remove('show');
+    btnCheck.disabled = true;
+
+    // Asegurar que las tarjetas ya no tengan bloqueo visual extra
+    clearSelected();
+  }
+
+  // Eventos resize para redibujar líneas correctamente
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (svgLines) renderLines();
+    }, 100);
+  });
+
+  // Inicializar juego con orden aleatorio de distribuciones
+  function init() {
+    currentDists = shuffleArray([...DISTS_MASTER]);
+    gameLocked = false;
+    verificationDone = false;
+    connections = {};
+    selectedSit = null;
+    selectedDist = null;
+    renderCards();
+    renderLines();
+    updateDotsAndButton();
+    resultBar.classList.remove('show');
+    feedbackPanel.classList.remove('show');
+    btnReset.classList.remove('show');
+    btnCheck.disabled = true;
+  }
+
+  // Exponer reset globalmente para el botón
+  window.resetGame = resetGame;
+  window.checkAnswers = checkAnswers;
+
+  init();
+</script>
 </body>
 </html>
