@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Laboratorio constitucional latinoamericano</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:white;
+  min-height:100vh;
+  display:flex;justify-content:center;
+
+}
+
+/* CONTENEDOR PRINCIPAL ANCHO MÁXIMO 800px */
+.wrap{width:100%;max-width:800px}
+
+/* HEADER - TEMA LITE */
+.hd{
+  background:linear-gradient(135deg,#2c3e50 0%,#34495e 100%);
+  border-radius:20px;padding:14px 28px 20px;color:#fff;
+  margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+.hd-badge{
+  display:inline-block;background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.25);border-radius:20px;
+  padding:4px 14px;font-size:11px;font-weight:700;letter-spacing:.6px;margin-bottom:10px;
+}
+.hd h1{font-size:1.3rem;font-weight:800;line-height:1.3;margin-bottom:8px}
+.hd p{font-size:.85rem;opacity:.9;line-height:1.5;max-width:95%}
+
+/* TOOLBAR */
+.toolbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.score-pill{
+  background:#fff;border:1.5px solid #cbd5e1;border-radius:30px;
+  padding:7px 18px;font-size:.85rem;color:#2c3e50;font-weight:700;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+.score-pill span{font-size:1.2rem;color:#2c3e50;margin:0 4px;}
+.btn{
+  border:none;border-radius:12px;padding:10px 22px;
+  font-size:.85rem;font-weight:800;cursor:pointer;
+  transition:transform .18s,box-shadow .18s;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn-verify{
+  background:#2c3e50;color:#fff;
+  box-shadow:0 2px 8px rgba(44,62,80,.3);margin-left:auto;
+}
+.btn-reset{
+  background:#cbd5e1;color:#2c3e50;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+/* GAME SHELL */
+.game-shell{
+  background:#fff;border-radius:20px;
+  box-shadow:0 4px 20px rgba(0,0,0,.08);
+  border:1px solid #e2e8f0;overflow:visible;
+  position:relative;
+}
+
+/* COL HEADERS */
+.col-heads{
+  display:grid;grid-template-columns:1fr 80px 1fr;
+  border-bottom:1px solid #e2e8f0;border-radius:20px 20px 0 0;overflow:hidden;
+}
+.col-head{padding:8px 18px;font-size:.75rem;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.col-head.lh{background:#f1f5f9;color:#334155;border-right:1px solid #e2e8f0}
+.col-head.rh{background:#f8fafc;color:#334155}
+.col-head.mid{background:#f1f5f9}
+
+/* GAME BODY */
+.game-body{
+  display:grid;grid-template-columns:200px 80px 420px;
+  position:relative;
+}
+
+/* COLUMNS */
+.col{padding:16px 12px;display:flex;flex-direction:column;gap:10px}
+.col.left{align-items:flex-end}
+.col.right{align-items:flex-start}
+
+/* CENTER SVG ZONE */
+.svg-zone{
+  position:relative;
+  background:#fafcff;
+  border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;
+}
+#mainSvg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  overflow:visible;pointer-events:none;
+}
+
+/* ITEMS - PALETA LITE */
+.item{
+  border-radius:11px;padding:10px 14px;cursor:pointer;
+  font-size:0.75rem;line-height:1.4;font-weight:500;
+  border:1.5px solid transparent;position:relative;
+  display:flex;align-items:flex-start;gap:8px;
+  width:100%;max-width:490px;
+  transition:transform .16s,box-shadow .16s,border-color .16s;
+  user-select:none;
+  background:#fff;
+  border-color:#e2e8f0;
+  color:#334155;
+}
+.item:hover:not(.dragging-ignore){
+  transform:translateY(-2px);
+  box-shadow:0 5px 18px rgba(0,0,0,.1);
+  border-color:#94a3b8;
+}
+.item.selected{
+  border-width:2px !important;
+  border-color:#2c3e50 !important;
+  background:#f8fafc !important;
+  box-shadow:0 0 0 3px rgba(44,62,80,.15) !important;
+  transform:translateY(-2px);
+}
+
+/* Colores diferenciados por tema */
+.item.theme1{background:#eff6ff;border-color:#bfdbfe;color:#1e40af} /* Lab */
+.item.theme2{background:#f0fdf4;border-color:#bbf7d0;color:#14532d} /* Centralismo */
+.item.theme3{background:#fefce8;border-color:#fef08a;color:#713f12} /* Federalismo */
+.item.theme4{background:#fef2f2;border-color:#fecaca;color:#991b1b} /* Liberales */
+.item.theme5{background:#f5f3ff;border-color:#ddd6fe;color:#3730a3} /* Conservadores */
+.item.theme6{background:#fff7ed;border-color:#fed7aa;color:#9a3412} /* Constituciones */
+.item.theme7{background:#ecfdf5;border-color:#a7f3d0;color:#064e3b} /* Inestabilidad */
+.item.theme8{background:#fdf2f8;border-color:#fbcfe8;color:#831843}
+
+/* Feedback states */
+.item.ok{
+  background:#dcfce7 !important;border-color:#22c55e !important;color:#14532d !important;
+}
+.item.ok::after{content:'✅';position:absolute;top:6px;right:9px;font-size:13px}
+.item.fail{
+  background:#fee2e2 !important;border-color:#ef4444 !important;color:#991b1b !important;
+}
+.item.fail::after{content:'❌';position:absolute;top:6px;right:9px;font-size:13px}
+
+/* Dot anchors */
+.dot{
+  position:absolute;width:12px;height:12px;border-radius:50%;
+  top:50%;transform:translateY(-50%);
+  border:2px solid currentColor;background:#fff;
+  transition:background .2s;z-index:2;
+}
+.col.left .item .dot{right:-6px;cursor:crosshair}
+.col.right .item .dot{left:-6px}
+.col.left .item.selected .dot,
+.col.left .item.connected .dot{background:currentColor}
+
+/* Badge letter */
+.badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:21px;height:21px;border-radius:6px;padding:0 4px;
+  font-size:.7rem;font-weight:900;flex-shrink:0;
+  background:#e2e8f0;color:#334155;
+}
+.emoji-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+
+/* MODAL para verificación */
+.modal-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  z-index:300;justify-content:center;align-items:center;padding:20px;
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:#fff;border-radius:24px;padding:28px 26px;
+  max-width:580px;width:100%;
+  box-shadow:0 20px 40px rgba(0,0,0,.2);
+  animation:popIn .32s cubic-bezier(.34,1.56,.64,1);
+  max-height:85vh;overflow-y:auto;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.modal-icon{font-size:3rem;margin-bottom:8px;text-align:center}
+.modal h2{font-size:1.25rem;font-weight:800;color:#1e293b;margin-bottom:12px;text-align:center}
+.modal p{font-size:.85rem;color:#475569;line-height:1.7;margin-bottom:20px}
+
+.modal-stats{
+  display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;
+}
+.stat-chip{
+  border-radius:20px;padding:5px 16px;font-size:.8rem;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+}
+.stat-ok  {background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+.stat-fail{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+.stat-miss{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+
+.answers-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;
+  margin-bottom:20px;
+}
+.answer-row{
+  border-radius:10px;padding:9px 12px;font-size:.78rem;line-height:1.45;
+  display:flex;align-items:flex-start;gap:8px;
+  border:1.5px solid transparent;
+}
+.answer-row.row-ok  {background:#f0fdf4;border-color:#bbf7d0;color:#14532d}
+.answer-row.row-fail{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.answer-row .ar-icon{font-size:14px;flex-shrink:0;margin-top:2px}
+.answer-row .ar-text strong{display:block;font-weight:700;margin-bottom:2px;font-size:.8rem}
+.answer-row .ar-text span{opacity:.75;font-size:.72rem}
+
+.modal-retro{
+  background:#f1f5f9;border-radius:12px;padding:12px 16px;
+  font-size:.8rem;color:#334155;line-height:1.65;
+  margin-bottom:20px;
+}
+.btn-play{
+  background:#2c3e50;color:#fff;border:none;
+  border-radius:14px;padding:12px 28px;font-size:.9rem;font-weight:800;
+  cursor:pointer;width:100%;
+  transition:transform .18s,box-shadow .18s;
+}
+.btn-play:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(44,62,80,.3)}
+
+#tempSvg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+
+@media(max-width:600px){
+  .col-heads,.svg-zone{display:none}
+  .game-body{grid-template-columns:1fr}
+  .col{align-items:stretch;padding:10px}
+  .item{max-width:none;font-size:.8rem}
+  .col.left .item .dot{display:none}
+  .col.right .item .dot{display:none}
+  .answers-grid{grid-template-columns:1fr}
+  .hd{padding:20px 18px}
+  .hd h1{font-size:1.15rem}
+  .modal{padding:20px 18px}
+}
+</style>
+</head>
+<body>
+<svg id="tempSvg"></svg>
+
+<div class="wrap">
+
+  <div class="hd">
+    <div class="hd-badge">Historia Constitucional · Siglo XIX</div>
+    <h1>Laboratorio constitucional latinoamericano</h1>
+    <p>Analice los principales elementos del laboratorio constitucional latinoamericano en el siglo XIX. Relacione cada concepto con su descripción.</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="score-pill">🔗 Conexiones: <span id="lineCount">0</span> / <span id="totalCount">0</span></div>
+    <button class="btn btn-reset" onclick="resetGame()">🔄 Reiniciar</button>
+    <button class="btn btn-verify" id="btnVerify" onclick="verify()" disabled>✅ Verificar respuestas</button>
+  </div>
+
+  <div class="game-shell">
+    <div class="col-heads">
+      <div class="col-head lh">📌 &nbsp;Conceptos</div>
+      <div class="col-head mid"></div>
+      <div class="col-head rh">📝 &nbsp;Descripciones</div>
+    </div>
+    <div class="game-body" id="gameBody">
+      <div class="col left"  id="leftCol"></div>
+      <div class="svg-zone"  id="svgZone"><svg id="mainSvg"></svg></div>
+      <div class="col right" id="rightCol"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL de resultados -->
+<div class="modal-bg" id="resultModal">
+  <div class="modal">
+    <div class="modal-icon" id="modalIcon">📊</div>
+    <h2 id="modalTitle">Resultados</h2>
+    <div class="modal-stats" id="modalStats"></div>
+    <div class="answers-grid" id="modalAnswersGrid"></div>
+    <div class="modal-retro" id="modalRetro"></div>
+    <button class="btn-play" onclick="closeResultModal();resetGame()">↺ Jugar de nuevo</button>
+  </div>
+</div>
+
+<script>
+// ================================================================
+//                     DATOS DEL JUEGO
+// ================================================================
+
+// CONCEPTOS (Columna Izquierda)
+const CONCEPTOS = [
+  {id:1, emoji:"🧪", text:"Laboratorio constitucional", answer:"F", colorClass:"theme1"},
+  {id:2, emoji:"🏛️", text:"Centralismo", answer:"A", colorClass:"theme2"},
+  {id:3, emoji:"🗺️", text:"Federalismo", answer:"B", colorClass:"theme3"},
+  {id:4, emoji:"🕊️", text:"Liberales", answer:"C", colorClass:"theme4"},
+  {id:5, emoji:"🛡️", text:"Conservadores", answer:"D", colorClass:"theme5"},
+  {id:6, emoji:"📜", text:"Constituciones como instrumentos políticos", answer:"E", colorClass:"theme6"},
+  {id:7, emoji:"⚡", text:"Inestabilidad política", answer:"G", colorClass:"theme7"},
+];
+
+// DESCRIPCIONES (Columna Derecha)
+const DESCRIPCIONES = [
+  {letter:"A", emoji:"🏛️", text:"Corriente que defendía la organización del poder desde un gobierno fuerte y centralizado, con menor autonomía regional.", colorClass:"theme2"},
+  {letter:"B", emoji:"🗺️", text:"Enfoque que promovía la descentralización del poder político, otorgando mayor autonomía a las regiones o provincias.", colorClass:"theme3"},
+  {letter:"C", emoji:"🕊️", text:"Grupo que impulsaba cambios como la limitación del poder de la Iglesia, la ampliación de derechos y la modernización del Estado.", colorClass:"theme4"},
+  {letter:"D", emoji:"🛡️", text:"Grupo que defendía el orden tradicional, el papel de la Iglesia y estructuras sociales jerárquicas.", colorClass:"theme5"},
+  {letter:"E", emoji:"📜", text:"Proceso en el que las constituciones se modificaban constantemente como resultado de conflictos políticos y luchas de poder.", colorClass:"theme6"},
+  {letter:"F", emoji:"🧪", text:"Concepto que describe a América Latina como un espacio de ensayo político donde se experimentaron diversos modelos de organización estatal.", colorClass:"theme1"},
+  {letter:"G", emoji:"⚡", text:"Situación caracterizada por conflictos constantes, cambios de gobierno y dificultades para consolidar sistemas políticos estables.", colorClass:"theme7"},
+];
+
+// TEXTOS DE RETROALIMENTACIÓN
+const RETRO_PERFECT = "¡Excelente trabajo! Las relaciones establecidas evidencian una comprensión adecuada del laboratorio constitucional latinoamericano como un proceso dinámico marcado por tensiones ideológicas, disputas de poder y constantes cambios institucionales. A través de este ejercicio se reconoce que las constituciones no fueron documentos estáticos, sino herramientas de lucha política en un contexto de inestabilidad y búsqueda de modelos de organización estatal.";
+const RETRO_PARTIAL  = "Buen intento. Has identificado correctamente varios elementos clave, pero revisa aquellos relacionados con la organización del poder y los actores políticos de la época.";
+const RETRO_LOW      = "Sigue practicando. Es fundamental distinguir entre las posturas centralistas y federalistas, así como el papel de las constituciones en el siglo XIX.";
+
+// ================================================================
+//                    LÓGICA DEL JUEGO
+// ================================================================
+
+const TOTAL = CONCEPTOS.length;
+document.getElementById('totalCount').textContent = TOTAL;
+
+let selectedConceptId = null;
+let connections = {};
+let verified = false;
+let shuffledDescs = [];
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+
+function render(){
+  shuffledDescs = shuffle(DESCRIPCIONES);
+  document.getElementById('leftCol').innerHTML = '';
+  document.getElementById('rightCol').innerHTML = '';
+  document.getElementById('mainSvg').innerHTML = '';
+  document.getElementById('lineCount').textContent = Object.keys(connections).length;
+  document.getElementById('btnVerify').disabled = (Object.keys(connections).length === 0);
+  verified = false;
+
+  CONCEPTOS.forEach(c => {
+    const el = document.createElement('div');
+    el.className = `item ${c.colorClass}`;
+    el.id = `c-${c.id}`;
+    el.innerHTML = `<span class="emoji-icon">${c.emoji}</span><span style="flex:1">${c.text}</span><span class="dot" id="dotL-${c.id}"></span>`;
+    el.addEventListener('click', ()=>onConceptClick(c.id));
+    document.getElementById('leftCol').appendChild(el);
+  });
+
+  shuffledDescs.forEach(d => {
+    const el = document.createElement('div');
+    el.className = `item ${d.colorClass}`;
+    el.id = `d-${d.letter}`;
+    el.innerHTML = `<span class="dot" id="dotR-${d.letter}"></span><span class="badge">${d.letter}</span><span style="flex:1">${d.text}</span>`;
+    el.addEventListener('click', ()=>onDescClick(d.letter));
+    document.getElementById('rightCol').appendChild(el);
+  });
+}
+
+function onConceptClick(id){
+  if(verified) return;
+  if(connections[id]){
+    removeLine(id);
+    delete connections[id];
+    updateCount();
+  }
+  if(selectedConceptId === id){ deselect(); return; }
+  deselect();
+  selectedConceptId = id;
+  document.getElementById(`c-${id}`).classList.add('selected');
+  drawTempLine(id);
+}
+
+function onDescClick(letter){
+  if(verified) return;
+  if(selectedConceptId === null) return;
+  const existing = Object.entries(connections).find(([,l])=>l===letter);
+  if(existing){
+    removeLine(parseInt(existing[0]));
+    delete connections[existing[0]];
+  }
+  connections[selectedConceptId] = letter;
+  drawLine(selectedConceptId, letter);
+  deselect();
+  updateCount();
+}
+
+function deselect(){
+  if(selectedConceptId!==null){
+    document.getElementById(`c-${selectedConceptId}`)?.classList.remove('selected');
+  }
+  selectedConceptId = null;
+  document.getElementById('tempSvg').innerHTML='';
+}
+
+function updateCount(){
+  const n = Object.keys(connections).length;
+  document.getElementById('lineCount').textContent = n;
+  document.getElementById('btnVerify').disabled = (n === 0);
+}
+
+function getCenterInZone(dotEl){
+  const zone = document.getElementById('svgZone');
+  const zr = zone.getBoundingClientRect();
+  const dr = dotEl.getBoundingClientRect();
+  return { x: dr.left + dr.width/2 - zr.left, y: dr.top + dr.height/2 - zr.top };
+}
+
+function makePath(p1,p2){ const mid=(p2.x-p1.x)*0.45; return `M${p1.x},${p1.y} C${p1.x+mid},${p1.y} ${p2.x-mid},${p2.y} ${p2.x},${p2.y}`; }
+
+const LINE_COLORS = ["#3b82f6","#10b981","#a855f7","#f97316","#6366f1","#ca8a04","#ec4899","#14b8a6"];
+
+function drawLine(cId, letter, forceColor){
+  const color = forceColor || LINE_COLORS[(cId-1)%LINE_COLORS.length];
+  const svg = document.getElementById('mainSvg');
+  const zone = document.getElementById('svgZone');
+  svg.setAttribute('viewBox', `0 0 ${zone.offsetWidth} ${zone.offsetHeight}`);
+  const dL = document.getElementById(`dotL-${cId}`);
+  const dR = document.getElementById(`dotR-${letter}`);
+  if(!dL||!dR) return;
+  const p1 = getCenterInZone(dL), p2 = getCenterInZone(dR), d = makePath(p1,p2);
+  const glow = document.createElementNS('http://www.w3.org/2000/svg','path');
+  glow.setAttribute('d',d); glow.setAttribute('fill','none'); glow.setAttribute('stroke',color);
+  glow.setAttribute('stroke-width','8'); glow.setAttribute('stroke-opacity','0.15'); glow.setAttribute('stroke-linecap','round');
+  glow.dataset.lineId = `g-${cId}`;
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d',d); path.setAttribute('fill','none'); path.setAttribute('stroke',color);
+  path.setAttribute('stroke-width','2.8'); path.setAttribute('stroke-linecap','round');
+  path.dataset.lineId = `l-${cId}`;
+  svg.appendChild(glow); svg.appendChild(path);
+}
+
+function removeLine(cId){
+  const svg = document.getElementById('mainSvg');
+  svg.querySelectorAll(`[data-line-id="l-${cId}"]`).forEach(e=>e.remove());
+  svg.querySelectorAll(`[data-line-id="g-${cId}"]`).forEach(e=>e.remove());
+}
+
+function drawTempLine(cId){
+  const dL = document.getElementById(`dotL-${cId}`);
+  if(!dL) return;
+  const p1 = dL.getBoundingClientRect();
+  const tempSvg = document.getElementById('tempSvg');
+  function onMove(e){
+    const mx = e.clientX || (e.touches&&e.touches[0].clientX);
+    const my = e.clientY || (e.touches&&e.touches[0].clientY);
+    tempSvg.innerHTML = '';
+    const mid = (mx - p1.left - p1.width/2) * 0.45;
+    const d = `M${p1.left+p1.width/2},${p1.top+p1.height/2} C${p1.left+p1.width/2+mid},${p1.top+p1.height/2} ${mx-mid},${my} ${mx},${my}`;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',d); path.setAttribute('fill','none');
+    path.setAttribute('stroke',LINE_COLORS[(cId-1)%LINE_COLORS.length]);
+    path.setAttribute('stroke-width','2.5'); path.setAttribute('stroke-dasharray','6 4');
+    path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-opacity','.7');
+    tempSvg.appendChild(path);
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', ()=>{ document.removeEventListener('mousemove', onMove); tempSvg.innerHTML=''; }, {once:true});
+}
+
+function redrawAll(recolor){
+  document.getElementById('mainSvg').innerHTML='';
+  Object.entries(connections).forEach(([id,letter])=>{
+    const cId = parseInt(id);
+    let color = LINE_COLORS[(cId-1)%LINE_COLORS.length];
+    if(recolor){
+      const concept = CONCEPTOS.find(c=>c.id===cId);
+      color = concept.answer === letter ? '#22c55e' : '#ef4444';
+    }
+    drawLine(cId, letter, color);
+  });
+}
+
+window.addEventListener('resize',()=>setTimeout(()=>redrawAll(verified),80));
+
+function verify(){
+  if(Object.keys(connections).length===0) return;
+  verified = true;
+  document.getElementById('btnVerify').disabled = true;
+  let correct=0, wrong=0, missing=0;
+  const answersGrid = document.getElementById('modalAnswersGrid');
+  answersGrid.innerHTML = '';
+  CONCEPTOS.forEach(c => {
+    const cEl = document.getElementById(`c-${c.id}`);
+    const chosen = connections[c.id];
+    if(!chosen){
+      missing++;
+      const row = document.createElement('div'); row.className='answer-row row-fail';
+      row.innerHTML=`<span class="ar-icon">⚠️</span><div class="ar-text"><strong>${c.text}</strong><span>Sin respuesta → Correcta: ${c.answer}</span></div>`;
+      answersGrid.appendChild(row);
+    } else if(chosen===c.answer){
+      correct++;
+      cEl.classList.add('ok');
+      document.getElementById(`d-${chosen}`)?.classList.add('ok');
+      const row = document.createElement('div'); row.className='answer-row row-ok';
+      row.innerHTML=`<span class="ar-icon">✅</span><div class="ar-text"><strong>${c.text}</strong><span>→ ${chosen} ¡Correcto!</span></div>`;
+      answersGrid.appendChild(row);
+    } else {
+      wrong++;
+      cEl.classList.add('fail');
+      document.getElementById(`d-${chosen}`)?.classList.add('fail');
+      const row = document.createElement('div'); row.className='answer-row row-fail';
+      row.innerHTML=`<span class="ar-icon">❌</span><div class="ar-text"><strong>${c.text}</strong><span>Elegiste: ${chosen} · Correcta: ${c.answer}</span></div>`;
+      answersGrid.appendChild(row);
+    }
+  });
+  const modalStats = document.getElementById('modalStats');
+  modalStats.innerHTML = `<span class="stat-chip stat-ok">✅ Correctas: ${correct}</span><span class="stat-chip stat-fail">❌ Incorrectas: ${wrong}</span>${missing>0?`<span class="stat-chip stat-miss">⚠️ Sin respuesta: ${missing}</span>`:''}`;
+  const pct = Math.round(correct/TOTAL*100);
+  const modalTitle = document.getElementById('modalTitle');
+  const modalIcon = document.getElementById('modalIcon');
+  if(correct===TOTAL){
+    modalTitle.textContent = `🏆 ¡Perfecto! ${correct}/${TOTAL}`;
+    modalIcon.textContent = '🏆';
+  } else if(correct>=TOTAL/2){
+    modalTitle.textContent = `📊 Resultados: ${pct}% (${correct}/${TOTAL})`;
+    modalIcon.textContent = '📊';
+  } else {
+    modalTitle.textContent = `📊 Resultados: ${pct}% (${correct}/${TOTAL})`;
+    modalIcon.textContent = '📚';
+  }
+  const modalRetro = document.getElementById('modalRetro');
+  if(correct===TOTAL) modalRetro.textContent = RETRO_PERFECT;
+  else if(correct>=TOTAL/2) modalRetro.textContent = RETRO_PARTIAL;
+  else modalRetro.textContent = RETRO_LOW;
+  redrawAll(true);
+  document.getElementById('resultModal').classList.add('open');
+}
+
+function resetGame(){
+  connections = {};
+  selectedConceptId = null;
+  verified = false;
+  document.getElementById('resultModal').classList.remove('open');
+  document.getElementById('tempSvg').innerHTML='';
+  render();
+}
+
+function closeResultModal(){ document.getElementById('resultModal').classList.remove('open'); }
+document.getElementById('resultModal').addEventListener('click',function(e){ if(e.target===this) closeResultModal(); });
+render();
+</script>
+</body>
+</html>
