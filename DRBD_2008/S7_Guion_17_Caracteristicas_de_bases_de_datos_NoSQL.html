@@ -1,843 +1,853 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🗄️ Bases de Datos NoSQL</title>
-    <style>
-        :root {
-            /* 🎨 Paleta de HEADERS OSCUROS - Elige tu favorito */
-            /* Opción 1: Verde Bosque Profundo */
-            --header-bg-1: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
-            /* Opción 2: Azul Noche Elegante */
-            --header-bg-2: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-            /* Opción 3: Café Premium */
-            --header-bg-3: linear-gradient(135deg, #3E2723 0%, #5D4037 50%, #6D4C41 100%);
-            /* Opción 4: Púrpura Tecnológico */
-            --header-bg-4: linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #7B1FA2 100%);
-            /* Opción 5: Gris Carbón Moderno */
-            --header-bg-5: linear-gradient(135deg, #212121 0%, #424242 50%, #616161 100%);
-            
-            /* 🎯 Header activo (cambia el número para probar variantes) */
-            --header-bg: var(--header-bg-1);
-            
-            /* 🎨 Paleta corporal vibrante y equilibrada */
-            --primary:     #00C853;  /* 🟢 Verde éxito */
-            --primary-2:   #00BFA5;  /* 🟦 Cian fresco */
-            --accent:      #FF6B6B;  /* 🔴 Coral energético */
-            --accent-2:    #FFD93D;  /* 🟡 Amarillo brillante */
-            --success:     #00C853;
-            --success-bg:  #E8F5E9;
-            --warning:     #FF9800;
-            --warning-bg:  #FFF3E0;
-            --error:       #EF5350;
-            --error-bg:    #FFEBEE;
-            
-            /* 📦 Base */
-            --bg:          linear-gradient(135deg, #F8F9FF 0%, #F0F4FF 50%, #E8F4FD 100%);
-            --card:        #FFFFFF;
-            --card-hover:  #FAFAFF;
-            --border:      #E0E0E0;
-            --text:        #1A1A2E;
-            --text-light:  #546E7A;
-            --white:       #FFFFFF;
-            
-            /* ✨ Efectos */
-            --shadow-sm:   0 2px 8px rgba(0,0,0,0.08);
-            --shadow-md:   0 8px 24px rgba(0,0,0,0.12);
-            --shadow-lg:   0 16px 48px rgba(0,0,0,0.18);
-            --radius:      14px;
-            --radius-sm:   10px;
-            
-            /* 🔤 Tipografía */
-            --font:        system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bases de Datos NoSQL</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D0F14;
+  --surface: #13161E;
+  --surface2: #1A1E2A;
+  --border: rgba(255,255,255,0.07);
+  --border-glow: rgba(255,255,255,0.15);
+  --text: #F0EEE8;
+  --text-dim: #8A8880;
+  --text-muted: #4A4845;
 
-        body {
-            font-family: var(--font);
-            background: #E0E0E0;
-            color: var(--text);
-            font-size: 12.5px;
-            line-height: 1.55;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            overflow: hidden;
-        }
+  --c1: #4ECDC4;   /* teal — escalabilidad */
+  --c2: #F7C59F;   /* amber — esquema */
+  --c3: #A8DADC;   /* sky — disponibilidad */
+  --c4: #C77DFF;   /* violet — consistencia */
 
-        /* ── 📐 CONTENEDOR PRINCIPAL 800×800px EXACTOS ── */
-        .infografia-container {
-            width: 800px;
-            height: 800px;
-            max-width: 800px;
-            max-height: 800px;
-            background: var(--bg);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            flex-direction: column;
-            border-radius: 0 !important;
-        }
+  --c1d: rgba(78,205,196,0.12);
+  --c2d: rgba(247,197,159,0.12);
+  --c3d: rgba(168,218,220,0.12);
+  --c4d: rgba(199,125,255,0.12);
 
-        /* ── 🌟 HERO HEADER OSCURO ── */
-        .hero {
-            background: var(--header-bg);
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
-            /* Clip-path geométrico sutil */
-            clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -40%;
-            right: -30%;
-            width: 200px;
-            height: 200px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 50%;
-            animation: float 8s ease-in-out infinite;
-        }
-        
-        .hero::after {
-            content: '';
-            position: absolute;
-            bottom: -25%;
-            left: -15%;
-            width: 140px;
-            height: 140px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            animation: float 10s ease-in-out infinite reverse;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-15px) scale(1.1); }
-        }
-        
-        .hero-icon {
-            font-size: 32px;
-            background: rgba(255,255,255,0.2);
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            z-index: 1;
-            animation: bounce 2.5s ease infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-        
-        .hero-content { flex: 1; z-index: 1; }
-        .hero-title {
-            color: var(--white);
-            font-size: 16px;
-            font-weight: 800;
-            line-height: 1.3;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .hero-sub {
-            color: rgba(255,255,255,0.9);
-            font-size: 11px;
-            margin-top: 3px;
-            font-weight: 500;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .hero-badge {
-            background: var(--white);
-            color: #1B5E20;
-            font-size: 9px;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 18px;
-            white-space: nowrap;
-            z-index: 1;
-            box-shadow: var(--shadow-sm);
-            animation: pulse 2.5s ease infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.07); }
-        }
+  --glow1: 0 0 32px rgba(78,205,196,0.35);
+  --glow2: 0 0 32px rgba(247,197,159,0.35);
+  --glow3: 0 0 32px rgba(168,218,220,0.35);
+  --glow4: 0 0 32px rgba(199,125,255,0.35);
+}
 
-        /* ── 📋 INSTRUCCIÓN ── */
-        .instruction {
-            background: linear-gradient(135deg, #E8F5E9, #E3F2FD);
-            padding: 9px 18px;
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            border-left: 4px solid var(--primary);
-            margin: 8px 16px;
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            flex-shrink: 0;
-        }
-        
-        .instruction-icon { font-size: 18px; animation: bounce 3s ease infinite; }
-        
-        .instruction-text {
-            color: var(--text);
-            font-size: 11.5px;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-        .instruction-text strong {
-            color: var(--primary);
-        }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* ── 🎯 GRID DE TARJETAS ── */
-        .grid-cards {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            padding: 8px 16px 12px;
-            flex: 1;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary) transparent;
-        }
-        
-        .grid-cards::-webkit-scrollbar { width: 4px; }
-        .grid-cards::-webkit-scrollbar-thumb { 
-            background: linear-gradient(180deg, var(--primary), var(--primary-2)); 
-            border-radius: 2px; 
-        }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
 
-        /* Tarjeta interactiva */
-        .topic-card {
-            background: var(--card);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 14px 16px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .topic-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(0,200,83,0.08), rgba(0,191,165,0.08));
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        
-        .topic-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-        }
-        .topic-card:hover::before { opacity: 1; }
-        
-        .topic-card.active {
-            border-color: var(--accent);
-            background: linear-gradient(135deg, #fff, #FFF8E1);
-            box-shadow: 0 0 0 3px rgba(255,107,107,0.2);
-        }
+/* ── STARFIELD ── */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--d) ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+@keyframes twinkle {
+  0%, 100% { opacity: var(--min-o); transform: scale(1); }
+  50% { opacity: var(--max-o); transform: scale(1.4); }
+}
 
-        .card-icon {
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            z-index: 1;
-        }
+/* ── LAYOUT ── */
+.container {
+  position: relative;
+  z-index: 1;
+  width: 800px;
+  height: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-        .topic-title {
-            font-size: 13.5px;
-            font-weight: 800;
-            color: var(--text);
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .topic-title::before {
-            content: '';
-            display: block;
-            width: 3px;
-            height: 14px;
-            background: var(--accent);
-            border-radius: 2px;
-        }
+/* ── TOP HEADER ── */
+.top-header {
+  text-align: center;
+  padding: 28px 0 0;
+  flex-shrink: 0;
+}
+.top-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1.15;
+}
+.top-header h1 span {
+  background: linear-gradient(90deg, var(--c1), var(--c3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.top-header p {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+  font-weight: 400;
+}
+.hint {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 5px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
 
-        .topic-preview {
-            font-size: 11px;
-            color: var(--text-light);
-            line-height: 1.4;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+/* ── ORBITAL STAGE ── */
+.orbital-stage {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-        /* ── 📊 DECORACIÓN GEOMÉTRICA ── */
-        .geo-divider {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), var(--accent), var(--primary-2), transparent);
-            margin: 4px 20px;
-            border-radius: 2px;
-            flex-shrink: 0;
-        }
+/* Orbit rings */
+.orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  pointer-events: none;
+  animation: orbit-spin var(--spin-dur) linear infinite;
+  animation-direction: var(--spin-dir);
+}
+.orbit-ring.r1 { width: 440px; height: 440px; --spin-dur: 60s; --spin-dir: normal; }
+.orbit-ring.r2 { width: 320px; height: 320px; --spin-dur: 40s; --spin-dir: reverse; border-style: dashed; opacity: 0.4; }
 
-        /* ── 📝 REFERENCIA APA ── */
-        .apa-reference {
-            background: linear-gradient(135deg, #F5F5F5, #EEEEEE);
-            padding: 10px 16px;
-            margin: 4px 16px 12px;
-            border-left: 3px solid var(--text-light);
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            font-size: 10.5px;
-            color: var(--text-light);
-            line-height: 1.5;
-            flex-shrink: 0;
-        }
-        .apa-reference strong {
-            color: var(--text);
-            font-weight: 700;
-        }
-        .apa-reference em {
-            font-style: italic;
-        }
+@keyframes orbit-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
-        /* ── 💬 MODAL INTERACTIVO ── */
-        .modal-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(26,26,46,0.75);
-            backdrop-filter: blur(4px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            animation: fadeIn 0.25s ease;
-        }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-overlay.show { display: flex; }
-        
-        .modal-card {
-            background: var(--card);
-            border-radius: var(--radius);
-            width: 92%;
-            max-width: 420px;
-            max-height: 88%;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            animation: modalSlide 0.35s cubic-bezier(0.4,0,0.2,1);
-            border: 3px solid var(--primary);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        @keyframes modalSlide {
-            from { opacity: 0; transform: translateY(30px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .modal-header {
-            background: var(--header-bg);
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-        
-        .modal-title {
-            color: var(--white);
-            font-size: 14px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-        
-        .modal-close {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            transition: all 0.15s;
-        }
-        .modal-close:hover {
-            background: var(--error);
-            transform: rotate(90deg);
-        }
-        
-        .modal-body {
-            padding: 16px 18px;
-            font-size: 12px;
-            color: var(--text);
-            line-height: 1.65;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        .modal-body strong {
-            color: var(--primary);
-            font-weight: 700;
-        }
-        
-        .modal-body .figure-placeholder {
-            background: linear-gradient(135deg, #E8F5E9, #E3F2FD);
-            border: 2px dashed var(--primary);
-            border-radius: var(--radius-sm);
-            padding: 12px;
-            margin: 10px 0;
-            text-align: center;
-            font-size: 11px;
-            color: var(--text-light);
-        }
+/* ── CENTRAL NODE ── */
+.central-node {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 2px solid var(--border-glow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: default;
+  z-index: 10;
+  box-shadow: 0 0 60px rgba(78,205,196,0.15), 0 0 120px rgba(78,205,196,0.07), inset 0 1px 0 rgba(255,255,255,0.08);
+  animation: core-pulse 4s ease-in-out infinite;
+}
+@keyframes core-pulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(78,205,196,0.12), 0 0 80px rgba(78,205,196,0.06), inset 0 1px 0 rgba(255,255,255,0.08); }
+  50% { box-shadow: 0 0 70px rgba(78,205,196,0.25), 0 0 140px rgba(78,205,196,0.12), inset 0 1px 0 rgba(255,255,255,0.08); }
+}
+.central-node .cn-icon { font-size: 32px; line-height: 1; }
+.central-node .cn-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c1);
+  line-height: 1.2;
+  text-align: center;
+  padding: 0 8px;
+}
 
-        .modal-footer {
-            padding: 12px 18px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-            background: #FAFAFA;
-        }
-        
-        .modal-counter {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-light);
-            background: rgba(0,200,83,0.1);
-            padding: 4px 12px;
-            border-radius: 14px;
-        }
-        
-        .nav-btn {
-            padding: 8px 16px;
-            font-size: 11px;
-            font-weight: 700;
-            border: none;
-            border-radius: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s ease;
-            font-family: var(--font);
-            min-height: 32px;
-        }
-        
-        .nav-btn.primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-2));
-            color: white;
-        }
-        .nav-btn.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
-        .nav-btn.primary:disabled {
-            background: #B0BEC5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .nav-btn.ghost {
-            background: transparent;
-            color: var(--text-light);
-            border: 2px solid var(--border);
-        }
-        .nav-btn.ghost:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(0,200,83,0.08);
-        }
-        .nav-btn.ghost:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+/* connector lines from center */
+.connector {
+  position: absolute;
+  width: 2px;
+  transform-origin: top center;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+  z-index: 5;
+}
 
-        /* ── 🎊 CONFETTI ── */
-        .confetti {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border-radius: 2px;
-            pointer-events: none;
-            z-index: 200;
-            animation: confetti-fall 3s ease-in-out forwards;
-        }
-        @keyframes confetti-fall {
-            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(800px) rotate(720deg); opacity: 0; }
-        }
+/* ── SATELLITE NODES ── */
+.satellite {
+  position: absolute;
+  width: 130px;
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.satellite:hover { transform: scale(1.08); }
+.satellite:hover .sat-card { border-color: var(--sat-color); box-shadow: 0 0 30px var(--sat-glow), 0 8px 32px rgba(0,0,0,0.4); }
+.satellite:hover .sat-icon-wrap { transform: translateY(-3px) scale(1.1); }
 
-        /* Selector de tema visible para demo */
-        .theme-selector {
-            position: absolute;
-            bottom: 8px;
-            right: 16px;
-            display: flex;
-            gap: 4px;
-            z-index: 50;
-            background: rgba(255,255,255,0.9);
-            padding: 4px;
-            border-radius: 20px;
-            box-shadow: var(--shadow-sm);
-        }
-        .theme-dot {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 2px solid white;
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
-        .theme-dot:hover { transform: scale(1.15); }
-        .theme-dot.active { box-shadow: 0 0 0 2px var(--accent); }
-        .theme-dot.t1 { background: linear-gradient(135deg, #1B5E20, #388E3C); }
-        .theme-dot.t2 { background: linear-gradient(135deg, #0D47A1, #1976D2); }
-        .theme-dot.t3 { background: linear-gradient(135deg, #3E2723, #6D4C41); }
-        .theme-dot.t4 { background: linear-gradient(135deg, #4A148C, #7B1FA2); }
-        .theme-dot.t5 { background: linear-gradient(135deg, #212121, #616161); }
+/* connector dot on card edge */
+.sat-connector-line {
+  width: 1px;
+  height: 18px;
+  background: linear-gradient(to bottom, transparent, var(--sat-color));
+  opacity: 0.5;
+}
+.satellite[data-pos="top"] .sat-connector-line { order: 2; background: linear-gradient(to top, transparent, var(--sat-color)); }
+.satellite[data-pos="bottom"] .sat-connector-line { order: 0; }
+.satellite[data-pos="left"] .sat-connector-line { display: none; }
+.satellite[data-pos="right"] .sat-connector-line { display: none; }
 
-        /* Responsive safeguard */
-        @media (max-width: 600px) {
-            body { padding: 0; }
-            .infografia-container { 
-                width: 100vw; 
-                height: 100vh; 
-                border-radius: 0; 
-            }
-            .grid-cards { grid-template-columns: 1fr; }
-        }
-    </style>
+.sat-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  width: 130px;
+  order: 1;
+  position: relative;
+  overflow: hidden;
+}
+.sat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, var(--sat-glow-bg), transparent 70%);
+  pointer-events: none;
+}
+.sat-icon-wrap {
+  font-size: 24px;
+  margin-bottom: 7px;
+  line-height: 1;
+  display: block;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+.sat-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+}
+.sat-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sat-glow-bg);
+  color: var(--sat-color);
+  border: 1px solid var(--sat-color);
+  position: relative;
+  z-index: 1;
+  opacity: 0.9;
+}
+
+/* Position satellites at 4 cardinal + diagonal positions */
+/* Top */
+.satellite[data-idx="0"] { top: 42px; left: 50%; transform: translateX(-50%); }
+.satellite[data-idx="0"]:hover { transform: translateX(-50%) scale(1.08); }
+
+/* Right */
+.satellite[data-idx="1"] { top: 50%; right: 20px; transform: translateY(-50%); }
+.satellite[data-idx="1"]:hover { transform: translateY(-50%) scale(1.08); }
+
+/* Bottom */
+.satellite[data-idx="2"] { bottom: 42px; left: 50%; transform: translateX(-50%); }
+.satellite[data-idx="2"]:hover { transform: translateX(-50%) scale(1.08); }
+
+/* Left */
+.satellite[data-idx="3"] { top: 50%; left: 20px; transform: translateY(-50%); }
+.satellite[data-idx="3"]:hover { transform: translateY(-50%) scale(1.08); }
+
+/* SVG connector lines */
+.connectors-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  flex-shrink: 0;
+  padding: 0 0 20px;
+  text-align: center;
+}
+.apa-ref {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+/* ── MODAL ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal {
+  background: var(--surface);
+  border: 1.5px solid var(--border-glow);
+  border-radius: 20px;
+  width: 480px;
+  max-width: 94vw;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  overflow: hidden;
+  transform: scale(0.92) translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.34,1.3,0.64,1), opacity 0.25s ease;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+}
+.modal-backdrop.open .modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-top {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.modal-top-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 20px 20px 0 0;
+}
+.modal-icon-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.modal-big-icon {
+  font-size: 38px;
+  line-height: 1;
+  background: var(--modal-icon-bg);
+  width: 60px; height: 60px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--modal-border);
+  flex-shrink: 0;
+}
+.modal-title-block .modal-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--modal-color);
+  margin-bottom: 3px;
+}
+.modal-title-block h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
+}
+.modal-close {
+  position: absolute;
+  top: 18px; right: 18px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.modal-close:hover { background: #EF4444; color: white; border-color: #EF4444; }
+
+.modal-body {
+  padding: 20px 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+.modal-body p {
+  font-size: 13px;
+  line-height: 1.75;
+  color: #B8B5AE;
+  margin-bottom: 14px;
+}
+.modal-body p:last-child { margin-bottom: 0; }
+.modal-body strong { color: var(--modal-color); font-weight: 500; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+.feat-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.feat-icon { font-size: 16px; flex-shrink: 0; line-height: 1.3; }
+.feat-text { font-size: 11.5px; color: #A0A09A; line-height: 1.5; }
+.feat-text b { color: var(--text); font-weight: 500; display: block; margin-bottom: 1px; }
+
+.use-case-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--modal-icon-bg);
+  color: var(--modal-color);
+  border: 1px solid var(--modal-border);
+  margin: 3px 3px 0 0;
+}
+
+.modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0,0,0,0.2);
+}
+.modal-counter {
+  font-family: 'DM Mono', monospace, sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.nav-btns { display: flex; gap: 8px; }
+.mnav-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mnav-btn.ghost {
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.mnav-btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--border-glow); }
+.mnav-btn.ghost:disabled { opacity: 0.3; cursor: default; }
+.mnav-btn.primary {
+  color: var(--bg);
+  background: var(--modal-color);
+}
+.mnav-btn.primary:hover { opacity: 0.88; transform: translateY(-1px); }
+.mnav-btn.primary:disabled { opacity: 0.3; cursor: default; }
+</style>
 </head>
 <body>
 
-<div class="infografia-container">
+<!-- STARFIELD -->
+<div class="stars" id="stars"></div>
 
-    <!-- 🌟 HERO HEADER OSCURO -->
-    <header class="hero">
-        <div class="hero-icon">🗄️</div>
-        <div class="hero-content">
-            <div class="hero-title">🔍 Bases de Datos NoSQL</div>
-            <div class="hero-sub">
-                <span>📊 Fundamentos de BD</span>
-                <span>⚡ Infografía interactiva</span>
-            </div>
-        </div>
-        <span class="hero-badge">🎯 Click para explorar</span>
-    </header>
+<div class="container">
 
-    <!-- 📋 INSTRUCCIÓN -->
-    <div class="instruction">
-        <span class="instruction-icon">👆</span>
-        <p class="instruction-text">
-            <strong>Toca cada tarjeta</strong> para ver detalles + usa ⬅️ ➡️ para navegar
-        </p>
+  <!-- HEADER -->
+  <div class="top-header">
+    <h1>Bases de Datos <span>NoSQL</span></h1>
+    <p>Fundamentos de Base de Datos &nbsp;·&nbsp; DRBD_2008 &nbsp;·&nbsp; 2026</p>
+    <div class="hint">&#x1F6F8; Haz clic en cada satélite para explorar</div>
+  </div>
+
+  <!-- ORBITAL STAGE -->
+  <div class="orbital-stage" id="stage">
+
+    <!-- Orbit rings -->
+    <div class="orbit-ring r1"></div>
+    <div class="orbit-ring r2"></div>
+
+    <!-- SVG connectors -->
+    <svg class="connectors-svg" id="connectorsSvg"></svg>
+
+    <!-- CENTRAL NODE -->
+    <div class="central-node">
+      <span class="cn-icon">&#x1F5C4;&#xFE0F;</span>
+      <span class="cn-label">NoSQL<br>Core</span>
     </div>
 
-    <!-- 🎯 GRID DE TARJETAS -->
-    <div class="grid-cards">
-        
-        <!-- Tarjeta 1: Escalabilidad -->
-        <div class="topic-card" data-topic="0">
-            <div class="card-icon">📈 🔗</div>
-            <div class="topic-title">Escalabilidad Horizontal</div>
-            <div class="topic-preview">🖥️ Distribución en servidores commodity • Crecimiento ilimitado</div>
-        </div>
-
-        <!-- Tarjeta 2: Esquema Flexible -->
-        <div class="topic-card" data-topic="1">
-            <div class="card-icon">🧩 ✏️</div>
-            <div class="topic-title">Esquema Flexible</div>
-            <div class="topic-preview">📄 Sin estructura fija • Evolución sin migraciones</div>
-        </div>
-
-        <!-- Tarjeta 3: Alta Disponibilidad -->
-        <div class="topic-card" data-topic="2">
-            <div class="card-icon">🌍 ✅</div>
-            <div class="topic-title">Alta Disponibilidad</div>
-            <div class="topic-preview">🔄 Replicación automática • Tolerancia a fallos</div>
-        </div>
-
-        <!-- Tarjeta 4: Consistencia Eventual -->
-        <div class="topic-card" data-topic="3">
-            <div class="card-icon">⚖️ 🔄</div>
-            <div class="topic-title">Consistencia Eventual</div>
-            <div class="topic-preview">🎯 Teorema CAP • Modelo BASE vs ACID</div>
-        </div>
-
+    <!-- SATELLITES (4 cardinal directions) -->
+    <!-- TOP: Escalabilidad -->
+    <div class="satellite" data-idx="0" data-topic="0"
+      style="--sat-color:var(--c1); --sat-glow: var(--glow1); --sat-glow-bg: var(--c1d); --sat-border: rgba(78,205,196,0.4);">
+      <div class="sat-card">
+        <span class="sat-icon-wrap">&#x1F4C8;</span>
+        <div class="sat-title">Escalabilidad Horizontal</div>
+        <span class="sat-tag">Scale-out</span>
+      </div>
+      <div class="sat-connector-line"></div>
     </div>
 
-    <!-- 📊 DIVISOR GEOMÉTRICO -->
-    <div class="geo-divider"></div>
-
-    <!-- 📝 REFERENCIA APA -->
-    <div class="apa-reference">
-        <strong>Figura 1.</strong> <em>Características de bases de datos NoSQL</em><br>
-        📌 Adaptado de "Fundamentos de BD NoSQL", Depto. TI, 2025. Elaboración propia.
+    <!-- RIGHT: Esquema Flexible -->
+    <div class="satellite" data-idx="1" data-topic="1"
+      style="--sat-color:var(--c2); --sat-glow: var(--glow2); --sat-glow-bg: var(--c2d); --sat-border: rgba(247,197,159,0.4);">
+      <div class="sat-card">
+        <span class="sat-icon-wrap">&#x1F9E9;</span>
+        <div class="sat-title">Esquema Flexible</div>
+        <span class="sat-tag">Schema-free</span>
+      </div>
+      <div class="sat-connector-line"></div>
     </div>
 
-    <!-- 💬 MODAL DE CONTENIDO -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <div class="modal-title" id="modalTitle">📈 Título</div>
-                <button class="modal-close" id="modalClose">✕</button>
-            </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Contenido dinámico -->
-            </div>
-            <div class="modal-footer">
-                <button class="nav-btn ghost" id="prevBtn" disabled>⬅️ Anterior</button>
-                <span class="modal-counter" id="modalCounter">1 / 4</span>
-                <button class="nav-btn primary" id="nextBtn">Siguiente ➡️</button>
-            </div>
+    <!-- BOTTOM: Alta Disponibilidad -->
+    <div class="satellite" data-idx="2" data-topic="2"
+      style="--sat-color:var(--c3); --sat-glow: var(--glow3); --sat-glow-bg: var(--c3d); --sat-border: rgba(168,218,220,0.4);">
+      <div class="sat-connector-line"></div>
+      <div class="sat-card">
+        <span class="sat-icon-wrap">&#x1F30D;</span>
+        <div class="sat-title">Alta Disponibilidad</div>
+        <span class="sat-tag">Always-on</span>
+      </div>
+    </div>
+
+    <!-- LEFT: Consistencia Eventual -->
+    <div class="satellite" data-idx="3" data-topic="3"
+      style="--sat-color:var(--c4); --sat-glow: var(--glow4); --sat-glow-bg: var(--c4d); --sat-border: rgba(199,125,255,0.4);">
+      <div class="sat-card">
+        <span class="sat-icon-wrap">&#x2696;&#xFE0F;</span>
+        <div class="sat-title">Consistencia Eventual</div>
+        <span class="sat-tag">BASE model</span>
+      </div>
+      <div class="sat-connector-line"></div>
+    </div>
+
+  </div><!-- /orbital-stage -->
+
+  <!-- FOOTER -->
+  <div class="bottom-bar">
+    <div class="apa-ref">Elaboración propia. (2026). Características de bases de datos NoSQL. Fundamentos de Base de Datos, DRBD_2008.</div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modal">
+    <div class="modal-top">
+      <div class="modal-top-accent" id="modalAccent"></div>
+      <div class="modal-icon-row">
+        <div class="modal-big-icon" id="modalBigIcon"></div>
+        <div class="modal-title-block">
+          <div class="modal-label" id="modalLabel"></div>
+          <h2 id="modalTitle"></h2>
         </div>
+      </div>
+      <button class="modal-close" id="modalClose">&#x2715;</button>
     </div>
-
-    <!-- 🎨 SELECTOR DE TEMAS (Demo) -->
-    <div class="theme-selector">
-        <div class="theme-dot t1 active" onclick="setTheme(1)" title="🌲 Verde Bosque"></div>
-        <div class="theme-dot t2" onclick="setTheme(2)" title="🌙 Azul Noche"></div>
-        <div class="theme-dot t3" onclick="setTheme(3)" title="☕ Café Premium"></div>
-        <div class="theme-dot t4" onclick="setTheme(4)" title="💜 Púrpura Tech"></div>
-        <div class="theme-dot t5" onclick="setTheme(5)" title="⚫ Carbón Moderno"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <span class="modal-counter" id="modalCounter">01 / 04</span>
+      <div class="nav-btns">
+        <button class="mnav-btn ghost" id="prevBtn">&#x2190; Anterior</button>
+        <button class="mnav-btn primary" id="nextBtn">Siguiente &#x2192;</button>
+      </div>
     </div>
-
+  </div>
 </div>
 
 <script>
-/* ══ 📦 DATA ══ */
+/* ── STARFIELD ── */
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2.2 + 0.4;
+  const minO = (Math.random() * 0.12 + 0.03).toFixed(2);
+  const maxO = (Math.random() * 0.45 + 0.2).toFixed(2);
+  s.style.cssText = `
+    width:${size}px;height:${size}px;
+    left:${Math.random()*100}%;top:${Math.random()*100}%;
+    --min-o:${minO};--max-o:${maxO};
+    --d:${(Math.random()*4+2).toFixed(1)}s;
+    --delay:${(Math.random()*5).toFixed(1)}s;
+    opacity:${minO};
+  `;
+  starsEl.appendChild(s);
+}
+
+/* ── CONNECTORS via SVG ── */
+function drawConnectors() {
+  const svg = document.getElementById('connectorsSvg');
+  const stage = document.getElementById('stage');
+  const stageRect = stage.getBoundingClientRect();
+  const cx = stageRect.width / 2;
+  const cy = stageRect.height / 2;
+
+  const sats = document.querySelectorAll('.satellite');
+  const colors = ['#4ECDC4','#F7C59F','#A8DADC','#C77DFF'];
+  svg.innerHTML = '';
+
+  sats.forEach((sat, i) => {
+    const card = sat.querySelector('.sat-card');
+    const cardRect = card.getBoundingClientRect();
+    const satRect = sat.getBoundingClientRect();
+
+    const satCx = satRect.left - stageRect.left + satRect.width / 2;
+    const satCy = satRect.top - stageRect.top + satRect.height / 2;
+
+    // direction from center to sat
+    const dx = satCx - cx;
+    const dy = satCy - cy;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    // start at edge of central node (r=60)
+    const r = 62;
+    const x1 = cx + dx/dist * r;
+    const y1 = cy + dy/dist * r;
+
+    // end at sat center (reduced by half card)
+    const endR = 68;
+    const x2 = cx + dx/dist * (dist - endR);
+    const y2 = cy + dy/dist * (dist - endR);
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', colors[i]);
+    line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('stroke-dasharray', '5 4');
+    line.setAttribute('opacity', '0.4');
+    svg.appendChild(line);
+
+    // animated dot traveling along line
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('r', '3');
+    circle.setAttribute('fill', colors[i]);
+    circle.setAttribute('opacity', '0.8');
+    svg.appendChild(circle);
+
+    const anim = document.createElementNS('http://www.w3.org/2000/svg','animateMotion');
+    anim.setAttribute('dur', `${3 + i * 0.7}s`);
+    anim.setAttribute('repeatCount', 'indefinite');
+    anim.setAttribute('keyPoints', i % 2 === 0 ? '0;1' : '1;0');
+    anim.setAttribute('keyTimes', '0;1');
+    anim.setAttribute('calcMode', 'linear');
+
+    const mpath = document.createElementNS('http://www.w3.org/2000/svg','mpath');
+    const pathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const pid = `p${i}`;
+    pathEl.setAttribute('id', pid);
+    pathEl.setAttribute('d', `M${x1},${y1} L${x2},${y2}`);
+    pathEl.setAttribute('fill', 'none');
+    svg.appendChild(pathEl);
+    mpath.setAttribute('href', `#${pid}`);
+    anim.appendChild(mpath);
+    circle.appendChild(anim);
+  });
+}
+
+window.addEventListener('load', () => { setTimeout(drawConnectors, 100); });
+
+/* ── DATA ── */
 const topics = [
-    {
-        icon: '📈',
-        title: 'Escalabilidad Horizontal',
-        content: `
-            <p><strong>🎯 Concepto clave:</strong> Las BD NoSQL están diseñadas para distribuirse entre múltiples servidores económicos (commodity).</p>
-            <div class="figure-placeholder">🖥️ [Diagrama: Cluster de nodos escalando horizontalmente]</div>
-            <p><strong>✅ Beneficios:</strong></p>
-            <ul style="padding-left:18px;margin:8px 0">
-                <li>Crecimiento incremental sin downtime</li>
-                <li>Costo proporcional a la necesidad</li>
-                <li>Sin límite teórico de expansión</li>
-            </ul>
-            <p><em>💡 Ideal para: Big Data, aplicaciones web globales, IoT</em></p>
-        `
-    },
-    {
-        icon: '🧩',
-        title: 'Esquema Flexible',
-        content: `
-            <p><strong>🎯 Concepto clave:</strong> Almacenan datos sin esquema rígido predefinido, permitiendo evolución dinámica.</p>
-            <div class="figure-placeholder">📄 [Ejemplo: Documentos JSON con campos variables por registro]</div>
-            <p><strong>✅ Beneficios:</strong></p>
-            <ul style="padding-left:18px;margin:8px 0">
-                <li>Desarrollo ágil sin migraciones costosas</li>
-                <li>Adaptación a datos heterogéneos</li>
-                <li>Iteración rápida en prototipos</li>
-            </ul>
-            <p><em>💡 Ideal para: Startups, datos semi-estructurados, microservicios</em></p>
-        `
-    },
-    {
-        icon: '🌍',
-        title: 'Alta Disponibilidad',
-        content: `
-            <p><strong>🎯 Concepto clave:</strong> Replicación incorporada y distribución geográfica garantizan servicio continuo.</p>
-            <div class="figure-placeholder">🔄 [Esquema: Réplicas multi-zona con failover automático]</div>
-            <p><strong>✅ Beneficios:</strong></p>
-            <ul style="padding-left:18px;margin:8px 0">
-                <li>99.99% uptime con configuración adecuada</li>
-                <li>Recuperación ante desastres integrada</li>
-                <li>Sin punto único de fallo</li>
-            </ul>
-            <p><em>💡 Ideal para: Servicios críticos, e-commerce, aplicaciones 24/7</em></p>
-        `
-    },
-    {
-        icon: '⚖️',
-        title: 'Consistencia Eventual',
-        content: `
-            <p><strong>🎯 Concepto clave:</strong> Relajan consistencia inmediata (ACID) para priorizar disponibilidad y tolerancia a particiones (CAP).</p>
-            <div class="figure-placeholder">⚖️ [Teorema CAP: Consistency • Availability • Partition Tolerance]</div>
-            <p><strong>🔄 Modelo BASE:</strong></p>
-            <ul style="padding-left:18px;margin:8px 0">
-                <li><strong>B</strong>asically <strong>A</strong>vailable: Disponible la mayor parte del tiempo</li>
-                <li><strong>S</strong>oft state: Estado puede cambiar sin input</li>
-                <li><strong>E</strong>ventual consistency: Converge a consistencia con el tiempo</li>
-            </ul>
-            <p><em>💡 Ideal para: Redes sociales, analytics, cachés distribuidas</em></p>
-        `
-    }
+  {
+    color: '#4ECDC4',
+    iconBg: 'rgba(78,205,196,0.12)',
+    border: 'rgba(78,205,196,0.3)',
+    icon: '&#x1F4C8;',
+    label: 'Característica 01',
+    title: 'Escalabilidad Horizontal',
+    body: `
+      <p>Las bases de datos NoSQL están <strong>diseñadas para distribuirse</strong> entre múltiples servidores económicos (commodity hardware), permitiendo un crecimiento incremental y sin límite teórico de expansión.</p>
+      <div class="features-grid">
+        <div class="feat-item"><span class="feat-icon">&#x1F5A5;&#xFE0F;</span><div class="feat-text"><b>Sharding nativo</b>Partición automática de datos entre nodos</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F4B0;</span><div class="feat-text"><b>Costo proporcional</b>Escala sin inversión monolítica</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x26A1;</span><div class="feat-text"><b>Sin downtime</b>Añade capacidad en caliente</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x267E;&#xFE0F;</span><div class="feat-text"><b>Sin límite</b>Teóricamente ilimitado</div></div>
+      </div>
+      <p>&#x1F4CC; <strong>Casos de uso ideales:</strong></p>
+      <span class="use-case-pill">&#x1F310; Big Data</span>
+      <span class="use-case-pill">&#x1F4F1; Apps globales</span>
+      <span class="use-case-pill">&#x1F916; IoT</span>
+    `
+  },
+  {
+    color: '#F7C59F',
+    iconBg: 'rgba(247,197,159,0.12)',
+    border: 'rgba(247,197,159,0.3)',
+    icon: '&#x1F9E9;',
+    label: 'Característica 02',
+    title: 'Esquema Flexible',
+    body: `
+      <p>Almacenan datos <strong>sin esquema rígido predefinido</strong>. Cada documento o registro puede tener una estructura diferente, permitiendo evolución dinámica del modelo de datos sin migraciones costosas.</p>
+      <div class="features-grid">
+        <div class="feat-item"><span class="feat-icon">&#x1F4C4;</span><div class="feat-text"><b>Schema-on-read</b>Estructura definida al consultar</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F504;</span><div class="feat-text"><b>Sin migraciones</b>Evolución sin ALTER TABLE</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F9BE;</span><div class="feat-text"><b>Datos heterogéneos</b>Campos variables por registro</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F680;</span><div class="feat-text"><b>Agilidad</b>Prototipado y cambios rápidos</div></div>
+      </div>
+      <p>&#x1F4CC; <strong>Casos de uso ideales:</strong></p>
+      <span class="use-case-pill">&#x1F9EA; Startups</span>
+      <span class="use-case-pill">&#x26D3;&#xFE0F; Microservicios</span>
+      <span class="use-case-pill">&#x1F4CA; Semi-estructurado</span>
+    `
+  },
+  {
+    color: '#A8DADC',
+    iconBg: 'rgba(168,218,220,0.12)',
+    border: 'rgba(168,218,220,0.3)',
+    icon: '&#x1F30D;',
+    label: 'Característica 03',
+    title: 'Alta Disponibilidad',
+    body: `
+      <p>Replicación incorporada y distribución geográfica garantizan <strong>servicio continuo sin punto único de fallo</strong>, con recuperación automática ante desastres y latencia mínima.</p>
+      <div class="features-grid">
+        <div class="feat-item"><span class="feat-icon">&#x1F504;</span><div class="feat-text"><b>Réplicas multi-zona</b>Datos redundantes geográficamente</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x2705;</span><div class="feat-text"><b>99.99% uptime</b>Acuerdos de nivel de servicio</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x26A1;</span><div class="feat-text"><b>Failover automático</b>Sin intervención manual</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F6E1;&#xFE0F;</span><div class="feat-text"><b>Tolerancia a fallos</b>Nodo caído no afecta el servicio</div></div>
+      </div>
+      <p>&#x1F4CC; <strong>Casos de uso ideales:</strong></p>
+      <span class="use-case-pill">&#x1F6D2; E-commerce</span>
+      <span class="use-case-pill">&#x1F3E5; Servicios críticos</span>
+      <span class="use-case-pill">&#x23F0; Apps 24/7</span>
+    `
+  },
+  {
+    color: '#C77DFF',
+    iconBg: 'rgba(199,125,255,0.12)',
+    border: 'rgba(199,125,255,0.3)',
+    icon: '&#x2696;&#xFE0F;',
+    label: 'Característica 04',
+    title: 'Consistencia Eventual',
+    body: `
+      <p>Relajan la consistencia inmediata de ACID para <strong>priorizar disponibilidad y tolerancia a particiones</strong> según el Teorema CAP, adoptando el modelo BASE.</p>
+      <div class="features-grid">
+        <div class="feat-item"><span class="feat-icon">&#x1F170;&#xFE0F;</span><div class="feat-text"><b>Basically Available</b>Disponible la mayor parte del tiempo</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F53C;</span><div class="feat-text"><b>Soft State</b>Estado puede cambiar sin input</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F552;</span><div class="feat-text"><b>Eventual Consistency</b>Converge a consistencia gradual</div></div>
+        <div class="feat-item"><span class="feat-icon">&#x1F5FA;&#xFE0F;</span><div class="feat-text"><b>Teorema CAP</b>C, A y P — elige dos</div></div>
+      </div>
+      <p>&#x1F4CC; <strong>Casos de uso ideales:</strong></p>
+      <span class="use-case-pill">&#x1F4F2; Redes sociales</span>
+      <span class="use-case-pill">&#x1F4CA; Analytics</span>
+      <span class="use-case-pill">&#x1F5C3;&#xFE0F; Cachés distribuidas</span>
+    `
+  }
 ];
 
-/* ══ 🧠 STATE ══ */
-let state = {
-    currentTopic: null,
-    modalIndex: 0
-};
+/* ── MODAL STATE ── */
+let current = 0;
 
-/* ══ 🎨 UTILS ══ */
-function $(sel) { return document.querySelector(sel); }
-function $$(sel) { return document.querySelectorAll(sel); }
-
-function createConfetti() {
-    const colors = ['#00C853', '#00BFA5', '#FF6B6B', '#FFD93D', '#7C4DFF'];
-    for (let i = 0; i < 35; i++) {
-        const c = document.createElement('div');
-        c.className = 'confetti';
-        c.style.left = Math.random() * 100 + '%';
-        c.style.background = colors[Math.floor(Math.random() * colors.length)];
-        c.style.animationDelay = Math.random() * 2 + 's';
-        c.style.width = c.style.height = (Math.random() * 6 + 4) + 'px';
-        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-        $('.infografia-container').appendChild(c);
-        setTimeout(() => c.remove(), 3000);
-    }
+function applyModalTheme(t) {
+  const modal = document.getElementById('modal');
+  modal.style.setProperty('--modal-color', t.color);
+  modal.style.setProperty('--modal-icon-bg', t.iconBg);
+  modal.style.setProperty('--modal-border', t.border);
+  document.getElementById('modalAccent').style.background = t.color;
+  document.getElementById('modalBigIcon').style.background = t.iconBg;
+  document.getElementById('modalBigIcon').style.borderColor = t.border;
+  document.getElementById('modalBigIcon').innerHTML = t.icon;
+  document.getElementById('modalLabel').style.color = t.color;
+  document.getElementById('modalLabel').textContent = t.label;
+  document.getElementById('modalTitle').textContent = t.title;
+  document.getElementById('modalBody').innerHTML = t.body;
+  document.getElementById('modalCounter').textContent =
+    String(current + 1).padStart(2,'0') + ' / ' + String(topics.length).padStart(2,'0');
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === topics.length - 1;
+  document.querySelector('.mnav-btn.primary').style.background = t.color;
+  document.querySelector('.mnav-btn.primary').style.color = '#0D0F14';
 }
 
-/* ══ 🚀 INIT ══ */
-function init() {
-    // Click en tarjetas
-    $$('.topic-card').forEach((card, idx) => {
-        card.onclick = () => openModal(idx);
-    });
-    
-    // Navegación modal
-    $('#prevBtn').onclick = () => navigateModal(-1);
-    $('#nextBtn').onclick = () => navigateModal(1);
-    $('#modalClose').onclick = closeModal;
-    $('#modalOverlay').onclick = (e) => { if (e.target.id === 'modalOverlay') closeModal(); };
-    
-    // Teclas de navegación
-    document.onkeydown = (e) => {
-        if (!$('#modalOverlay').classList.contains('show')) return;
-        if (e.key === 'ArrowLeft') navigateModal(-1);
-        if (e.key === 'ArrowRight') navigateModal(1);
-        if (e.key === 'Escape') closeModal();
-    };
-}
-
-/* ══ 💬 MODAL ══ */
-function openModal(index) {
-    state.modalIndex = index;
-    const topic = topics[index];
-    
-    $('#modalTitle').innerHTML = `${topic.icon} ${topic.title}`;
-    $('#modalBody').innerHTML = topic.content;
-    updateModalNav();
-    
-    $('#modalOverlay').classList.add('show');
-    
-    // Highlight tarjeta activa
-    $$('.topic-card').forEach((c, i) => {
-        c.classList.toggle('active', i === index);
-    });
-    
-    // Mini celebración al abrir
-    if (index === 0) setTimeout(createConfetti, 400);
-}
-
-function navigateModal(dir) {
-    const newIndex = state.modalIndex + dir;
-    if (newIndex < 0 || newIndex >= topics.length) return;
-    
-    state.modalIndex = newIndex;
-    const topic = topics[newIndex];
-    
-    // Transición suave
-    const body = $('#modalBody');
-    body.style.opacity = '0';
-    body.style.transform = 'translateY(10px)';
-    
-    setTimeout(() => {
-        $('#modalTitle').innerHTML = `${topic.icon} ${topic.title}`;
-        body.innerHTML = topic.content;
-        body.style.opacity = '1';
-        body.style.transform = 'translateY(0)';
-        updateModalNav();
-    }, 150);
-    
-    // Actualizar highlight
-    $$('.topic-card').forEach((c, i) => {
-        c.classList.toggle('active', i === newIndex);
-    });
-}
-
-function updateModalNav() {
-    const idx = state.modalIndex;
-    const total = topics.length;
-    
-    $('#prevBtn').disabled = (idx === 0);
-    $('#nextBtn').disabled = (idx === total - 1);
-    $('#modalCounter').textContent = `${idx + 1} / ${total}`;
-    
-    // Cambiar texto del botón siguiente
-    $('#nextBtn').innerHTML = idx === total - 1 ? '✅ Listo' : 'Siguiente ➡️';
+function openModal(idx) {
+  current = idx;
+  applyModalTheme(topics[current]);
+  document.getElementById('modalBackdrop').classList.add('open');
 }
 
 function closeModal() {
-    $('#modalOverlay').classList.remove('show');
-    $$('.topic-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('modalBackdrop').classList.remove('open');
 }
 
-/* ══ 🎨 TEMAS HEADER ══ */
-function setTheme(num) {
-    // Actualizar variable CSS
-    document.documentElement.style.setProperty('--header-bg', `var(--header-bg-${num})`);
-    
-    // Actualizar indicador activo
-    $$('.theme-dot').forEach((dot, i) => {
-        dot.classList.toggle('active', i + 1 === num);
-    });
-    
-    // Feedback visual
-    $('.hero').style.animation = 'none';
-    setTimeout(() => $('.hero').style.animation = '', 10);
-}
+document.querySelectorAll('.satellite').forEach(sat => {
+  sat.addEventListener('click', () => {
+    openModal(parseInt(sat.dataset.topic));
+  });
+});
 
-/* ══ ▶️ START ══ */
-init();
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalBackdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalBackdrop')) closeModal();
+});
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (current > 0) { current--; applyModalTheme(topics[current]); }
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (current < topics.length - 1) { current++; applyModalTheme(topics[current]); }
+});
+
+document.addEventListener('keydown', e => {
+  const open = document.getElementById('modalBackdrop').classList.contains('open');
+  if (!open) return;
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'ArrowLeft' && current > 0) { current--; applyModalTheme(topics[current]); }
+  if (e.key === 'ArrowRight' && current < topics.length - 1) { current++; applyModalTheme(topics[current]); }
+});
 </script>
 </body>
 </html>

@@ -1,441 +1,560 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arquitecturas de datos para analítica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #1565C0;
-            --primary-light: #1976D2;
-            --accent: #F57C00;
-            --accent-light: #FF9800;
-            --success: #2E7D32;
-            --success-bg: #E8F5E9;
-            --error: #C62828;
-            --error-bg: #FFEBEE;
-            --neutral: #37474F;
-            --neutral-light: #546E7A;
-            --bg: #F4F7FB;
-            --card: #FFFFFF;
-            --border: #CFD8DC;
-            --text: #1A237E;
-            --text-body: #263238;
-            --tag-bg: #E3F2FD;
-            --tag-border: #90CAF9;
-            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-            --font: 'Inter', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitecturas de datos para analítica</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F4F0;
+    --surface: #FFFFFF;
+    --surface2: #F9F8F5;
+    --border: rgba(0,0,0,0.07);
+    --border-md: rgba(0,0,0,0.13);
+    --text-primary: #1A1916;
+    --text-secondary: #5C5A55;
+    --text-muted: #9B9893;
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --blue-mid: #378ADD;
+    --teal: #0F6E56;
+    --teal-bg: #E1F5EE;
+    --teal-mid: #1D9E75;
+    --amber: #854F0B;
+    --amber-bg: #FAEEDA;
+    --amber-mid: #BA7517;
+    --purple: #3C3489;
+    --purple-bg: #EEEDFE;
+    --purple-mid: #7F77DD;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text-body);
-            width: 800px;
-            min-height: 600px;
-            max-height: 800px;
-            margin: 0 auto;
-            overflow: hidden;
-            position: relative;
-        }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
 
-        .header {
-            background: var(--header-bg);
-            color: white;
-            padding: 22px 30px;
-            text-align: center;
-        }
+  .wrapper {
+    width: 100%;
+    max-width: 820px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border-md);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
 
-        .header h1 {
-            font-size: 26px;
-            font-weight: 600;
-        }
+  /* TOP BAR */
+  .top-bar {
+    padding: 20px 28px 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-muted);
+    padding: 9px 16px 11px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--text-primary); font-weight: 500; border-bottom-color: var(--text-primary); }
 
-        .main-container {
-            padding: 20px;
-            height: calc(100% - 118px);
-            display: flex;
-            gap: 20px;
-        }
+  /* CONTENT PAGES */
+  .content { display: none; padding: 28px; flex: 1; }
+  .content.active { display: block; }
 
-        .sidebar {
-            width: 260px;
-            background: var(--card);
-            border: 2px solid var(--border);
-            padding: 20px;
-            overflow-y: auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
+  /* INTRO PAGE */
+  .intro-lead {
+    padding: 0 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .intro-lead h1 {
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+  }
+  .intro-lead p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    max-width: 540px;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 10px;
+  }
+  .mini-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s, background 0.15s;
+  }
+  .mini-card:hover {
+    border-color: var(--border-md);
+    background: var(--surface);
+    transform: translateY(-2px);
+  }
+  .mc-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-bottom: 12px;
+  }
+  .mc-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .mc-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
+  .mc-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
-        .content-area {
-            flex: 1;
-            background: var(--card);
-            border: 2px solid var(--primary);
-            padding: 0;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
+  /* INNER PAGES */
+  .page-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .page-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    max-width: 520px;
+    margin-bottom: 24px;
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .block-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .block-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 9px;
+  }
+  .block-item:last-child { margin-bottom: 0; }
+  .b-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+  .block-item strong { font-weight: 500; color: var(--text-primary); }
+  .block.full { grid-column: span 2; }
+  .use-strip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+  .use-strip .us-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
 
-        .menu-title {
-            color: var(--primary);
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 18px;
-            text-align: center;
-        }
+  /* FLOW ROW */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .flow-node {
+    font-size: 12px;
+    padding: 6px 13px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+  }
+  .flow-arrow { color: var(--text-muted); font-size: 14px; }
 
-        .menu-item {
-            padding: 14px 18px;
-            margin-bottom: 8px;
-            background: white;
-            border: 2px solid var(--border);
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 15px;
-        }
+  /* PILLS */
+  .pills { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 8px; }
+  .pill {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-md);
+  }
 
-        .menu-item:hover {
-            border-color: var(--accent);
-            transform: translateX(8px);
-            background: var(--drop-hover);
-        }
+  /* COMPARE TABLE */
+  .compare-table { width: 100%; border-collapse: collapse; }
+  .compare-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--border-md);
+  }
+  .compare-table td {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table td:first-child { color: var(--text-muted); width: 38%; }
+  .compare-table td:not(:first-child) { font-weight: 400; padding-left: 12px; }
 
-        .menu-item.active {
-            background: var(--tag-bg);
-            border-color: var(--primary);
-            font-weight: 600;
-        }
+  /* NAV */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .nav-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    background: var(--surface2);
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover:not(:disabled) {
+    background: var(--surface);
+    color: var(--text-primary);
+    border-color: var(--border-md);
+  }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .page-indicator {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
 
-        .page {
-            display: none;
-            height: 100%;
-            padding: 28px;
-            overflow-y: auto;
-        }
+  /* REFERENCE */
+  .ref-bar {
+    padding: 10px 28px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    background: var(--surface);
+    letter-spacing: 0.02em;
+  }
 
-        .page.active {
-            display: block;
-        }
-
-        .page h2 {
-            color: var(--primary);
-            font-size: 22px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .intro {
-            line-height: 1.75;
-            font-size: 15.8px;
-            margin-bottom: 24px;
-        }
-
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .comp-card {
-            background: white;
-            border: 2px solid var(--border);
-            padding: 18px;
-            transition: all 0.3s;
-        }
-
-        .comp-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-        }
-
-        .comp-card h3 {
-            margin-bottom: 12px;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: var(--card);
-            width: 460px;
-            border: 4px solid var(--accent);
-            padding: 32px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-            position: relative;
-        }
-
-        .modal-header {
-            font-size: 23px;
-            font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .nav-buttons {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 28px;
-        }
-
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 26px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: var(--primary-light);
-        }
-
-        .instruction {
-            background: var(--tag-bg);
-            border: 2px solid var(--tag-border);
-            padding: 14px 20px;
-            margin-bottom: 20px;
-            font-size: 15px;
-            color: var(--text);
-            text-align: center;
-        }
-
-        .reference {
-            position: absolute;
-            bottom: 18px;
-            left: 28px;
-            right: 28px;
-            font-size: 12.5px;
-            color: var(--neutral-light);
-            border-top: 1px solid var(--border);
-            padding-top: 12px;
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            body {
-                width: 100%;
-                max-height: none;
-                overflow-y: auto;
-            }
-            .main-container {
-                flex-direction: column;
-                padding: 16px;
-                height: auto;
-            }
-            .sidebar {
-                width: 100%;
-                max-height: 260px;
-            }
-            .content-area {
-                height: 520px;
-            }
-            .modal-content {
-                width: 92%;
-                padding: 24px;
-            }
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    .wrapper { border-radius: 12px; }
+    .top-bar, .content, .nav-bar, .ref-bar { padding-left: 18px; padding-right: 18px; }
+    .cards-grid { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .block.full { grid-column: span 1; }
+    .intro-lead h1 { font-size: 19px; }
+    .page-title { font-size: 19px; }
+  }
+</style>
 </head>
 <body>
+<div class="wrapper">
 
-    <div class="header">
-        <h1>📈 Arquitecturas de datos para analítica</h1>
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="meta-label">Fundamentos de base de datos · DRBD_2008</div>
+    <div class="tabs">
+      <button class="tab active" onclick="go(0)">Introducción</button>
+      <button class="tab" onclick="go(1)">OLTP</button>
+      <button class="tab" onclick="go(2)">OLAP</button>
+      <button class="tab" onclick="go(3)">Data warehouse</button>
+      <button class="tab" onclick="go(4)">Data lake</button>
     </div>
+  </div>
 
-    <div class="main-container">
-
-        <!-- Sidebar con menú (títulos en celeste) -->
-        <div class="sidebar">
-            <div class="menu-title">📊 Temas de la Infografía</div>
-            
-            <div onclick="showPage(0)" class="menu-item active" id="menu-0">
-                <span style="font-size:24px;">🏠</span> Introducción
-            </div>
-            <div onclick="showPage(1)" class="menu-item" id="menu-1">
-                <span style="font-size:24px;">⚡</span> OLTP
-            </div>
-            <div onclick="showPage(2)" class="menu-item" id="menu-2">
-                <span style="font-size:24px;">📊</span> OLAP
-            </div>
-            <div onclick="showPage(3)" class="menu-item" id="menu-3">
-                <span style="font-size:24px;">🏛️</span> Data Warehouse
-            </div>
-            <div onclick="showPage(4)" class="menu-item" id="menu-4">
-                <span style="font-size:24px;">🌊</span> Data Lake
-            </div>
-        </div>
-
-        <!-- Área de contenido -->
-        <div class="content-area">
-
-            <div class="instruction">
-                👆 Haga clic en los temas para visualizar la información
-            </div>
-
-            <!-- Página 0: Introducción -->
-            <div class="page active" id="page-0">
-                <h2><span style="font-size:32px;">📈</span> Arquitecturas de Datos para Analítica</h2>
-                <p class="intro">
-                    Las arquitecturas de datos permiten comprender cómo se gestionan y analizan grandes volúmenes de información 
-                    en distintos contextos organizacionales. A continuación, se presenta una síntesis visual que compara sus 
-                    características, usos y ventajas principales.
-                </p>
-            </div>
-
-            <!-- Página 1: OLTP -->
-            <div class="page" id="page-1">
-                <h2><span style="font-size:32px;">⚡</span> OLTP (Online Transaction Processing)</h2>
-                <div class="comparison-grid">
-                    <div class="comp-card">
-                        <h3>✅ Características</h3>
-                        <ul style="line-height:1.7;">
-                            <li>Enfocado en operaciones diarias</li>
-                            <li>Consultas simples y rápidas (milisegundos)</li>
-                            <li>Datos actuales y detallados</li>
-                            <li>Estructura normalizada</li>
-                        </ul>
-                    </div>
-                    <div class="comp-card">
-                        <h3>🎯 Uso principal</h3>
-                        <p>Facturación, registros de transacciones, sistemas operativos.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Página 2: OLAP -->
-            <div class="page" id="page-2">
-                <h2><span style="font-size:32px;">📊</span> OLAP (Online Analytical Processing)</h2>
-                <div class="comparison-grid">
-                    <div class="comp-card">
-                        <h3>✅ Características</h3>
-                        <ul style="line-height:1.7;">
-                            <li>Enfocado en análisis y toma de decisiones</li>
-                            <li>Consultas complejas (segundos a minutos)</li>
-                            <li>Datos históricos y agregados</li>
-                            <li>Estructura multidimensional</li>
-                        </ul>
-                    </div>
-                    <div class="comp-card">
-                        <h3>🎯 Uso principal</h3>
-                        <p>Análisis de tendencias, reportes gerenciales, inteligencia de negocios.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Página 3: Data Warehouse -->
-            <div class="page" id="page-3">
-                <h2><span style="font-size:32px;">🏛️</span> Data Warehouse</h2>
-                <p class="intro">
-                    Base de datos analítica centralizada que integra datos estructurados, históricos y no volátiles.
-                </p>
-                <ul style="line-height:1.8; font-size:15.5px;">
-                    <li>✅ Datos integrados y consolidados</li>
-                    <li>✅ Solo lectura y análisis</li>
-                    <li>✅ Esquemas: Estrella, Copo de nieve, Constelación</li>
-                    <li>🎯 Uso: Inteligencia de Negocios (BI)</li>
-                </ul>
-            </div>
-
-            <!-- Página 4: Data Lake -->
-            <div class="page" id="page-4">
-                <h2><span style="font-size:32px;">🌊</span> Data Lake</h2>
-                <p class="intro">
-                    Repositorio de datos en bruto que soporta todo tipo de datos (estructurados, semi-estructurados y no estructurados).
-                </p>
-                <ul style="line-height:1.8; font-size:15.5px;">
-                    <li>✅ Esquema aplicado al consultar (schema-on-read)</li>
-                    <li>✅ Alta escalabilidad y bajo costo</li>
-                    <li>🎯 Uso: Ciencia de datos, Machine Learning, Big Data</li>
-                </ul>
-            </div>
-
-            <!-- Botones de navegación -->
-            <div class="nav-buttons">
-                <button onclick="prevPage()">← Anterior</button>
-                <button onclick="nextPage()">Siguiente →</button>
-            </div>
-
-            <!-- Referencia APA 7 -->
-            <div class="reference">
-                Elaboración propia. (2026). Arquitecturas de datos para analítica. 
-                Fundamentos de Base de Datos, DRBD_2008.
-            </div>
-
-        </div>
+  <!-- PAGE 0: INTRO -->
+  <div class="content active" id="pg-0">
+    <div class="intro-lead">
+      <h1>Arquitecturas de datos<br>para analítica</h1>
+      <p>Las arquitecturas de datos permiten gestionar y analizar grandes volúmenes de información según el contexto organizacional. Esta guía visual compara sus características, usos y ventajas.</p>
     </div>
+    <div class="cards-grid">
+      <div class="mini-card" onclick="go(1)">
+        <div class="mc-dot" style="background:var(--blue);"></div>
+        <div class="mc-tag" style="color:var(--blue);">OLTP</div>
+        <div class="mc-title">Transaccional</div>
+        <div class="mc-desc">Operaciones diarias en tiempo real</div>
+      </div>
+      <div class="mini-card" onclick="go(2)">
+        <div class="mc-dot" style="background:var(--teal);"></div>
+        <div class="mc-tag" style="color:var(--teal);">OLAP</div>
+        <div class="mc-title">Analítico</div>
+        <div class="mc-desc">Consultas complejas sobre historial</div>
+      </div>
+      <div class="mini-card" onclick="go(3)">
+        <div class="mc-dot" style="background:var(--amber);"></div>
+        <div class="mc-tag" style="color:var(--amber);">Warehouse</div>
+        <div class="mc-title">Centralizado</div>
+        <div class="mc-desc">Datos estructurados integrados</div>
+      </div>
+      <div class="mini-card" onclick="go(4)">
+        <div class="mc-dot" style="background:var(--purple);"></div>
+        <div class="mc-tag" style="color:var(--purple);">Data lake</div>
+        <div class="mc-title">Masivo</div>
+        <div class="mc-desc">Repositorio flexible en bruto</div>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        let currentPage = 0;
-        const totalPages = 5;
+  <!-- PAGE 1: OLTP -->
+  <div class="content" id="pg-1">
+    <div class="page-badge" style="background:var(--blue-bg); color:var(--blue);">OLTP</div>
+    <div class="page-title">Online Transaction Processing</div>
+    <p class="page-desc">Sistema orientado al registro de operaciones diarias con alta velocidad, garantizando integridad y consistencia en cada transacción.</p>
+    <div class="two-col">
+      <div class="block">
+        <div class="block-label" style="color:var(--blue);">Características</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue);"></div>Operaciones cortas y frecuentes</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue);"></div>Respuesta en milisegundos</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue);"></div>Datos actuales y detallados</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue);"></div>Esquema normalizado (3NF)</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue);"></div>Alta concurrencia de usuarios</div>
+      </div>
+      <div class="block">
+        <div class="block-label" style="color:var(--blue);">Propiedades ACID</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue-mid);"></div><span><strong>Atomicidad</strong> — todo o nada</span></div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue-mid);"></div><span><strong>Consistencia</strong> — estado válido siempre</span></div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue-mid);"></div><span><strong>Aislamiento</strong> — transacciones independientes</span></div>
+        <div class="block-item"><div class="b-dot" style="background:var(--blue-mid);"></div><span><strong>Durabilidad</strong> — cambios persistentes</span></div>
+      </div>
+    </div>
+    <div class="use-strip">
+      <div class="us-label">Casos de uso</div>
+      Sistemas bancarios y de pagos · Facturación y punto de venta · Reservas de vuelos y hoteles · Gestión de inventario en tiempo real
+    </div>
+  </div>
 
-        function showPage(pageIndex) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(`page-${pageIndex}`).classList.add('active');
+  <!-- PAGE 2: OLAP -->
+  <div class="content" id="pg-2">
+    <div class="page-badge" style="background:var(--teal-bg); color:var(--teal);">OLAP</div>
+    <div class="page-title">Online Analytical Processing</div>
+    <p class="page-desc">Sistema diseñado para consultas complejas sobre grandes volúmenes de datos históricos, optimizado para inteligencia de negocios y toma de decisiones.</p>
+    <div class="two-col">
+      <div class="block">
+        <div class="block-label" style="color:var(--teal);">Características</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal);"></div>Consultas complejas y multidimensionales</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal);"></div>Respuesta de segundos a minutos</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal);"></div>Datos históricos y agregados</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal);"></div>Estructura desnormalizada</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal);"></div>Optimizado para lectura</div>
+      </div>
+      <div class="block">
+        <div class="block-label" style="color:var(--teal);">Operaciones clave</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal-mid);"></div><span><strong>Drill-down</strong> — mayor detalle</span></div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal-mid);"></div><span><strong>Roll-up</strong> — mayor agregación</span></div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal-mid);"></div><span><strong>Slice &amp; dice</strong> — filtrado multidimensional</span></div>
+        <div class="block-item"><div class="b-dot" style="background:var(--teal-mid);"></div><span><strong>Pivot</strong> — rotación de dimensiones</span></div>
+      </div>
+    </div>
+    <div class="use-strip">
+      <div class="us-label">Casos de uso</div>
+      Análisis de tendencias de ventas · Reportes gerenciales y dashboards · Segmentación de clientes · Forecasting y planificación financiera
+    </div>
+  </div>
 
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            document.getElementById(`menu-${pageIndex}`).classList.add('active');
+  <!-- PAGE 3: DATA WAREHOUSE -->
+  <div class="content" id="pg-3">
+    <div class="page-badge" style="background:var(--amber-bg); color:var(--amber);">Data warehouse</div>
+    <div class="page-title">Almacén de datos analítico</div>
+    <p class="page-desc">Base de datos centralizada que integra datos estructurados de múltiples fuentes operacionales, optimizada para análisis histórico y reporting empresarial.</p>
+    <div class="two-col">
+      <div class="block">
+        <div class="block-label" style="color:var(--amber);">Propiedades — Inmon</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--amber);"></div>Orientado a temas de negocio</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--amber);"></div>Integrado de múltiples fuentes</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--amber);"></div>No volátil — solo lectura</div>
+        <div class="block-item"><div class="b-dot" style="background:var(--amber);"></div>Variante en el tiempo (histórico)</div>
+      </div>
+      <div class="block">
+        <div class="block-label" style="color:var(--amber);">Esquemas de modelado</div>
+        <div class="pills">
+          <span class="pill" style="background:var(--amber-bg); color:var(--amber); border-color:transparent;">Estrella</span>
+          <span class="pill" style="background:var(--amber-bg); color:var(--amber); border-color:transparent;">Copo de nieve</span>
+          <span class="pill" style="background:var(--amber-bg); color:var(--amber); border-color:transparent;">Constelación</span>
+        </div>
+        <div style="margin-top:14px; font-size:12px; color:var(--text-muted); line-height:1.6;">
+          La capa ETL transforma y limpia los datos antes de ingresarlos al almacén.
+        </div>
+      </div>
+      <div class="block full">
+        <div class="block-label" style="color:var(--amber);">Flujo de datos</div>
+        <div class="flow-row">
+          <span class="flow-node" style="background:var(--amber-bg); color:var(--amber);">Fuentes OLTP</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node" style="background:var(--amber-bg); color:var(--amber);">ETL / ELT</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node" style="background:var(--amber-bg); color:var(--amber);">Staging area</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node" style="background:var(--amber); color:#FAEEDA; font-weight:500;">Data warehouse</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node" style="background:var(--amber-bg); color:var(--amber);">Herramientas BI</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            currentPage = pageIndex;
-        }
+  <!-- PAGE 4: DATA LAKE -->
+  <div class="content" id="pg-4">
+    <div class="page-badge" style="background:var(--purple-bg); color:var(--purple);">Data lake</div>
+    <div class="page-title">Repositorio de datos en bruto</div>
+    <p class="page-desc">Almacén masivo y flexible que acepta cualquier tipo de dato en su formato original. El esquema se aplica en el momento de la consulta.</p>
+    <div class="two-col">
+      <div class="block">
+        <div class="block-label" style="color:var(--purple);">Características técnicas</div>
+        <table class="compare-table">
+          <tr><td>Tipos de datos</td><td>Estructurado · Semi · No estructurado</td></tr>
+          <tr><td>Esquema</td><td>Schema-on-read</td></tr>
+          <tr><td>Escalabilidad</td><td>Horizontal y masiva</td></tr>
+          <tr><td>Costo</td><td>Bajo (almacenamiento objeto)</td></tr>
+          <tr><td>Acceso</td><td>API / Query engines</td></tr>
+        </table>
+      </div>
+      <div class="block">
+        <div class="block-label" style="color:var(--purple);">Vs. data warehouse</div>
+        <table class="compare-table">
+          <tr><td>Estructura</td><td>Flexible vs Rígida</td></tr>
+          <tr><td>Usuarios</td><td>Científicos vs Analistas</td></tr>
+          <tr><td>Procesamiento</td><td>Al consultar vs Al cargar</td></tr>
+          <tr><td>Calidad</td><td>Raw vs Curada</td></tr>
+          <tr><td>Tiempo al insight</td><td>Mayor vs Menor</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="use-strip" style="margin-top:12px;">
+      <div class="us-label">Casos de uso</div>
+      Machine learning e IA · Análisis de logs y clickstream · Procesamiento de imágenes, audio y video · Big Data y data science exploratoria
+    </div>
+  </div>
 
-        function nextPage() {
-            let next = currentPage + 1;
-            if (next >= totalPages) next = 0;
-            showPage(next);
-        }
+  <!-- NAV BAR -->
+  <div class="nav-bar">
+    <button class="nav-btn" id="btn-prev" onclick="prev()" disabled>← Anterior</button>
+    <span class="page-indicator" id="pg-count">01 / 05</span>
+    <button class="nav-btn" id="btn-next" onclick="next()">Siguiente →</button>
+  </div>
 
-        function prevPage() {
-            let prev = currentPage - 1;
-            if (prev < 0) prev = totalPages - 1;
-            showPage(prev);
-        }
+  <!-- REFERENCE -->
+  <div class="ref-bar">
+    Elaboración propia. (2026). Arquitecturas de datos para analítica. Fundamentos de Base de Datos, DRBD_2008.
+  </div>
 
-        // Inicializar
-        window.onload = () => {
-            showPage(0);
-        };
-    </script>
+</div>
+
+<script>
+  let cur = 0;
+  const total = 5;
+
+  function go(n) {
+    document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('pg-' + n).classList.add('active');
+    document.querySelectorAll('.tab')[n].classList.add('active');
+    cur = n;
+    const num = String(cur + 1).padStart(2, '0');
+    document.getElementById('pg-count').textContent = num + ' / ' + String(total).padStart(2, '0');
+    document.getElementById('btn-prev').disabled = cur === 0;
+    document.getElementById('btn-next').disabled = cur === total - 1;
+  }
+
+  function next() { if (cur < total - 1) go(cur + 1); }
+  function prev() { if (cur > 0) go(cur - 1); }
+
+  go(0);
+</script>
 </body>
 </html>

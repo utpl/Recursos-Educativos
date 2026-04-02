@@ -1,410 +1,694 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecosistema NoSQL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #1565C0;
-            --primary-light: #1976D2;
-            --accent: #F57C00;
-            --accent-light: #FF9800;
-            --success: #2E7D32;
-            --success-bg: #E8F5E9;
-            --error: #C62828;
-            --error-bg: #FFEBEE;
-            --neutral: #37474F;
-            --neutral-light: #546E7A;
-            --bg: #F4F7FB;
-            --card: #FFFFFF;
-            --border: #CFD8DC;
-            --text: #1A237E;
-            --text-body: #263238;
-            --tag-bg: #E3F2FD;
-            --tag-border: #90CAF9;
-            --header-bg: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
-            --font: 'Inter', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecosistema NoSQL</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #F5F6FA;
+  --surf:   #FFFFFF;
+  --border: #E8EAF0;
+  --text:   #14162A;
+  --muted:  #7B7F9E;
+  --faint:  #F0F1F8;
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  --c0: #4361EE; --c0s: #EBF0FF;
+  --c1: #00B37E; --c1s: #E6FAF4;
+  --c2: #F77F00; --c2s: #FFF3E0;
+  --c3: #E63946; --c3s: #FFF0F1;
+  --c4: #7B2FBE; --c4s: #F5EEFF;
 
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text-body);
-            width: 800px;
-            min-height: 600px;
-            max-height: 800px;
-            margin: 0 auto;
-            overflow: hidden;
-            position: relative;
-        }
+  --font: 'Sora', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --r: 16px;
+  --tr: .22s ease;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .header {
-            background: var(--header-bg);
-            color: white;
-            padding: 22px 30px;
-            text-align: center;
-        }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 44px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-        .header h1 {
-            font-size: 26px;
-            font-weight: 600;
-        }
+/* ── Header ─────────────────────────── */
+.top { text-align: center; margin-bottom: 48px; max-width: 620px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; background: #EBF0FF; color: #4361EE;
+  padding: 5px 14px; border-radius: 99px; margin-bottom: 16px;
+}
+.chip::before { content: "◈"; font-size: 13px; }
+h1 {
+  font-size: clamp(26px, 4vw, 36px); font-weight: 700;
+  letter-spacing: -.03em; line-height: 1.15;
+}
+h1 em { font-style: normal; color: #4361EE; }
+.subtitle {
+  margin-top: 10px; font-size: 15px; color: var(--muted);
+  font-weight: 300; line-height: 1.6;
+}
 
-        .main-container {
-            padding: 20px;
-            height: calc(100% - 118px);
-            display: flex;
-            gap: 20px;
-        }
+/* ── Grid ───────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: min(960px, 100%);
+  margin-bottom: 14px;
+}
+/* intro card spans all 4 */
+.card-intro { grid-column: 1 / -1; }
 
-        .sidebar {
-            width: 260px;
-            background: var(--card);
-            border: 2px solid var(--border);
-            padding: 20px;
-            overflow-y: auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
+/* ── Card ───────────────────────────── */
+.card {
+  background: var(--surf);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 22px 18px 18px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--tr), box-shadow var(--tr), border-color var(--tr);
+  display: flex; flex-direction: column; gap: 10px;
+  user-select: none;
+}
+.card::after {
+  content: '';
+  position: absolute; inset: 0 0 auto 0;
+  height: 3px; border-radius: var(--r) var(--r) 0 0;
+  background: var(--ac); opacity: 0;
+  transition: opacity var(--tr);
+}
+.card:hover::after { opacity: 1; }
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 40px rgba(0,0,0,.08);
+  border-color: var(--ac);
+}
+.card[data-i="0"] { --ac: var(--c0); --acs: var(--c0s); }
+.card[data-i="1"] { --ac: var(--c1); --acs: var(--c1s); }
+.card[data-i="2"] { --ac: var(--c2); --acs: var(--c2s); }
+.card[data-i="3"] { --ac: var(--c3); --acs: var(--c3s); }
+.card[data-i="4"] { --ac: var(--c4); --acs: var(--c4s); }
 
-        .content-area {
-            flex: 1;
-            background: var(--card);
-            border: 2px solid var(--primary);
-            padding: 0;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
+.card-icon {
+  font-size: 26px;
+  width: 50px; height: 50px;
+  background: var(--acs);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.card-name {
+  font-family: var(--mono); font-size: 13px;
+  font-weight: 500; color: var(--ac);
+}
+.card-title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.card-desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; font-weight: 300; flex: 1; }
 
-        .menu-title {
-            color: var(--primary);
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 18px;
-            text-align: center;
-        }
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 4px;
+}
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag-pill {
+  font-family: var(--mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 99px;
+  background: var(--acs); color: var(--ac);
+  border: 1px solid color-mix(in srgb, var(--ac) 20%, transparent);
+}
+.card-arrow {
+  font-size: 16px; color: var(--border);
+  transition: color var(--tr), transform var(--tr);
+}
+.card:hover .card-arrow { color: var(--ac); transform: translateX(3px); }
 
-        .menu-item {
-            padding: 14px 18px;
-            margin-bottom: 8px;
-            background: white;
-            border: 2px solid var(--border);
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 15px;
-        }
+/* intro card layout */
+.card-intro {
+  flex-direction: row; align-items: center; gap: 24px;
+  padding: 24px 28px;
+}
+.card-intro .intro-text { flex: 1; }
+.card-intro .intro-text h2 {
+  font-size: 17px; font-weight: 600; margin-bottom: 8px;
+}
+.card-intro .intro-text p {
+  font-size: 13.5px; color: var(--muted); line-height: 1.65; font-weight: 300;
+}
+.intro-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.intro-pill {
+  font-size: 11.5px; font-family: var(--mono);
+  padding: 4px 12px; border-radius: 99px;
+  border: 1.5px solid var(--border); color: var(--muted);
+  background: var(--faint);
+}
+.nosql-big {
+  font-size: 56px; font-weight: 700; letter-spacing: -.05em;
+  color: #E8EAF0; line-height: 1; flex-shrink: 0;
+  font-family: var(--mono);
+}
 
-        .menu-item:hover {
-            border-color: var(--accent);
-            transform: translateX(8px);
-            background: var(--drop-hover);
-        }
+/* hint */
+.hint { font-size: 12px; color: var(--muted); font-family: var(--mono); display: flex; align-items: center; gap: 8px; }
+.hint::before { content: "↑"; }
 
-        .menu-item.active {
-            background: var(--tag-bg);
-            border-color: var(--primary);
-            font-weight: 600;
-        }
+/* ── Overlay ─────────────────────────── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(14,16,36,.5);
+  backdrop-filter: blur(7px);
+  display: none; align-items: center; justify-content: center;
+  z-index: 300; padding: 20px;
+  gap: 16px;
+}
+.overlay.open { display: flex; }
 
-        .page {
-            display: none;
-            height: 100%;
-            padding: 28px;
-            overflow-y: auto;
-        }
+/* ── Modal ──────────────────────────── */
+.modal {
+  background: var(--surf);
+  border-radius: 20px;
+  width: min(460px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(14,16,36,.18);
+  position: relative;
+  animation: up .24s ease;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  flex-shrink: 0;
+}
+/* second modal slides from right */
+.modal.modal-b {
+  animation: slideR .26s ease;
+}
+@keyframes up {
+  from { opacity:0; transform: translateY(20px) scale(.96); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+@keyframes slideR {
+  from { opacity:0; transform: translateX(30px) scale(.96); }
+  to   { opacity:1; transform: translateX(0) scale(1); }
+}
 
-        .page.active {
-            display: block;
-        }
+/* modal top bar */
+.m-top {
+  padding: 26px 26px 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px;
+  position: sticky; top: 0;
+  background: var(--surf);
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  z-index: 5;
+}
+.m-title-wrap { display: flex; align-items: center; gap: 12px; }
+.m-icon {
+  font-size: 26px; width: 52px; height: 52px;
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.m-name { font-family: var(--mono); font-size: 18px; font-weight: 500; }
+.m-sub  { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 300; }
+.close-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--faint); border: none; cursor: pointer;
+  font-size: 16px; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background var(--tr);
+}
+.close-btn:hover { background: var(--border); }
 
-        .page h2 {
-            color: var(--primary);
-            font-size: 22px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+/* divider label between modals */
+.modal-divider {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; color: var(--muted); flex-shrink: 0;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+}
+.modal-divider span { writing-mode: vertical-rl; text-orientation: mixed; }
+.divider-line { width: 1.5px; height: 60px; background: var(--border); }
 
-        .intro {
-            line-height: 1.75;
-            font-size: 15.8px;
-            margin-bottom: 24px;
-        }
+/* modal body */
+.m-body { padding: 20px 26px 28px; display: flex; flex-direction: column; gap: 20px; }
 
-        pre {
-            background: #F4F7FB;
-            padding: 16px;
-            border-radius: 0;
-            font-size: 13.5px;
-            overflow-x: auto;
-            border: 1px solid var(--border);
-        }
+/* section */
+.sec-label {
+  font-size: 10px; font-family: var(--mono);
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 18px 0;
-            font-size: 14.5px;
-        }
+/* points */
+.points { display: flex; flex-direction: column; gap: 7px; }
+.point {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13.5px; line-height: 1.6; color: var(--text);
+}
+.pdot {
+  width: 6px; height: 6px; border-radius: 50%;
+  margin-top: 8px; flex-shrink: 0;
+}
 
-        th, td {
-            border: 1px solid var(--border);
-            padding: 12px 14px;
-            text-align: left;
-        }
+/* code */
+.code-wrap {
+  background: #14162A; border-radius: 10px;
+  padding: 15px 18px; overflow-x: auto;
+}
+.code-top {
+  font-family: var(--mono); font-size: 10px;
+  color: #555F7B; margin-bottom: 8px; letter-spacing: .06em;
+}
+pre {
+  font-family: var(--mono); font-size: 12px;
+  line-height: 1.75; color: #CDD9F5; margin: 0;
+  white-space: pre;
+}
+.kw { color: #79B8FF; }
+.fn { color: #56D364; }
+.id { color: #F9C74F; }
+.st { color: #A5D6FF; }
+.cm { color: #555F7B; }
+.op { color: #FF7B72; }
+.nb { color: #FF9800; }
 
-        th {
-            background: var(--accent);
-            color: white;
-            font-weight: 600;
-        }
+/* software pills */
+.sw-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.sw-pill {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 12px;
+  padding: 7px 13px; border-radius: 10px;
+  border: 1.5px solid; font-weight: 400;
+}
 
-        .nav-buttons {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 28px;
-        }
+/* tip box */
+.tip-box {
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.tip-icon { font-size: 20px; flex-shrink: 0; }
+.tip-text { font-size: 13px; line-height: 1.65; }
+.tip-text strong { font-weight: 600; }
 
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 26px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+/* nav strip */
+.m-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 26px 24px;
+  border-top: 1px solid var(--border);
+}
+.nav-btn {
+  font-family: var(--font); font-size: 12.5px; font-weight: 500;
+  color: var(--mc); background: none; border: 1.5px solid var(--border);
+  padding: 7px 14px; border-radius: 8px; cursor: pointer;
+  transition: background var(--tr), border-color var(--tr);
+  display: flex; align-items: center; gap: 5px;
+}
+.nav-btn:hover { background: var(--mc-s); border-color: var(--mc); }
+.nav-btn:disabled { opacity: .3; pointer-events: none; }
+.m-counter { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 
-        button:hover {
-            background: var(--primary-light);
-        }
+/* ── Footer ─────────────────────────── */
+footer {
+  margin-top: 36px; font-size: 11px; color: #B0B4C8;
+  font-style: italic; text-align: center;
+}
 
-        .instruction {
-            background: var(--tag-bg);
-            border: 2px solid var(--tag-border);
-            padding: 14px 20px;
-            margin-bottom: 20px;
-            font-size: 15px;
-            color: var(--text);
-            text-align: center;
-        }
-
-        .reference {
-            position: absolute;
-            bottom: 18px;
-            left: 28px;
-            right: 28px;
-            font-size: 12.5px;
-            color: var(--neutral-light);
-            border-top: 1px solid var(--border);
-            padding-top: 12px;
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            body {
-                width: 100%;
-                max-height: none;
-                overflow-y: auto;
-            }
-            .main-container {
-                flex-direction: column;
-                padding: 16px;
-                height: auto;
-            }
-            .sidebar {
-                width: 100%;
-                max-height: 260px;
-            }
-            .content-area {
-                height: 520px;
-            }
-        }
-    </style>
+@media (max-width: 600px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .card-intro { grid-column: 1 / -1; flex-direction: column; }
+  .nosql-big { font-size: 40px; }
+  .overlay { flex-direction: column; overflow-y: auto; }
+  .modal-divider { flex-direction: row; }
+  .modal-divider span { writing-mode: horizontal-tb; }
+  .divider-line { width: 60px; height: 1.5px; }
+}
+@media (max-width: 500px) {
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🌐 Ecosistema NoSQL</h1>
+<div class="top">
+  <div class="chip">Base de Datos </div>
+  <h1>Ecosistema <em>NoSQL</em></h1>
+  <p class="subtitle">Cuatro modelos de almacenamiento no relacional,<br>cada uno optimizado para un tipo de dato y escenario.</p>
+</div>
+
+<div class="grid" id="grid">
+
+  <!-- Intro card -->
+  <div class="card card-intro" style="--ac:#4361EE; --acs:#EBF0FF; cursor:default;" data-i="0">
+    <div class="nosql-big">NoSQL</div>
+    <div class="intro-text">
+      <h2>¿Qué es el ecosistema NoSQL?</h2>
+      <p>Los modelos NoSQL ofrecen estructuras de almacenamiento adaptadas a necesidades de flexibilidad, velocidad y escalabilidad en entornos de datos complejos. No existe un único modelo: cada uno brilla en un caso de uso diferente.</p>
+      <div class="intro-pills">
+        <span class="intro-pill">Sin esquema fijo</span>
+        <span class="intro-pill">Escalabilidad horizontal</span>
+        <span class="intro-pill">Alta disponibilidad</span>
+        <span class="intro-pill">Datos heterogéneos</span>
+      </div>
     </div>
+  </div>
 
-    <div class="main-container">
+  <!-- 4 model cards -->
+  <div class="card" data-i="1" onclick="openCard(0)">
+    <div class="card-icon">📄</div>
+    <div class="card-name">Documental</div>
+    <div class="card-title">Flexibilidad total<br>con JSON / BSON</div>
+    <div class="card-desc">Almacena documentos semi-estructurados sin esquema fijo. Ideal para datos heterogéneos.</div>
+    <div class="card-footer">
+      <div class="card-tags"><span class="tag-pill">MongoDB</span><span class="tag-pill">CouchDB</span></div>
+      <span class="card-arrow">→</span>
+    </div>
+  </div>
 
-        <!-- Sidebar menú (títulos en celeste) -->
-        <div class="sidebar">
-            <div class="menu-title">📌 Modelos del Ecosistema NoSQL</div>
-            
-            <div onclick="showPage(0)" class="menu-item active" id="menu-0">
-                <span style="font-size:24px;">🏠</span> Introducción
-            </div>
-            <div onclick="showPage(1)" class="menu-item" id="menu-1">
-                <span style="font-size:24px;">📄</span> Documental
-            </div>
-            <div onclick="showPage(2)" class="menu-item" id="menu-2">
-                <span style="font-size:24px;">🔑</span> Clave-Valor
-            </div>
-            <div onclick="showPage(3)" class="menu-item" id="menu-3">
-                <span style="font-size:24px;">📊</span> Columnas Anchas
-            </div>
-            <div onclick="showPage(4)" class="menu-item" id="menu-4">
-                <span style="font-size:24px;">🔗</span> Grafos
-            </div>
+  <div class="card" data-i="2" onclick="openCard(1)">
+    <div class="card-icon">🔑</div>
+    <div class="card-name">Clave-Valor</div>
+    <div class="card-title">Velocidad extrema<br>O(1) lookup</div>
+    <div class="card-desc">El modelo más simple y rápido. Acceso directo por clave sin escanear nada más.</div>
+    <div class="card-footer">
+      <div class="card-tags"><span class="tag-pill">Redis</span><span class="tag-pill">DynamoDB</span></div>
+      <span class="card-arrow">→</span>
+    </div>
+  </div>
+
+  <div class="card" data-i="3" onclick="openCard(2)">
+    <div class="card-icon">📊</div>
+    <div class="card-name">Columnas Anchas</div>
+    <div class="card-title">Escalabilidad masiva<br>para Big Data</div>
+    <div class="card-desc">Lee solo las columnas necesarias sobre billones de registros. Imbatible en telemetría.</div>
+    <div class="card-footer">
+      <div class="card-tags"><span class="tag-pill">Cassandra</span><span class="tag-pill">HBase</span></div>
+      <span class="card-arrow">→</span>
+    </div>
+  </div>
+
+  <div class="card" data-i="4" onclick="openCard(3)">
+    <div class="card-icon">🔗</div>
+    <div class="card-name">Grafos</div>
+    <div class="card-title">Relaciones complejas<br>como primer ciudadano</div>
+    <div class="card-desc">El dato más importante es la conexión entre nodos. Ideal para topologías de red.</div>
+    <div class="card-footer">
+      <div class="card-tags"><span class="tag-pill">Neo4j</span><span class="tag-pill">Neptune</span></div>
+      <span class="card-arrow">→</span>
+    </div>
+  </div>
+
+</div>
+
+<p class="hint">Haz clic en una tarjeta para ver dos paneles de detalle</p>
+
+<!-- ── Dual Modal Overlay ── -->
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+
+  <!-- Modal A: Concepto + Código -->
+  <div class="modal modal-a" id="modal-a">
+    <div class="m-top">
+      <div class="m-title-wrap">
+        <div class="m-icon" id="a-icon"></div>
+        <div>
+          <div class="m-name" id="a-name"></div>
+          <div class="m-sub" id="a-sub"></div>
         </div>
+      </div>
+      <button class="close-btn" onclick="closeAll()">✕</button>
+    </div>
+    <div class="m-body" id="a-body"></div>
+    <div class="m-nav">
+      <button class="nav-btn" id="btn-prev" onclick="nav(-1)">← Ant.</button>
+      <span class="m-counter" id="m-counter"></span>
+      <button class="nav-btn" id="btn-next" onclick="nav(1)">Sig. →</button>
+    </div>
+  </div>
 
-        <!-- Área de contenido -->
-        <div class="content-area">
+  <!-- Divider -->
+  <div class="modal-divider">
+    <div class="divider-line"></div>
+    <span>VS</span>
+    <div class="divider-line"></div>
+  </div>
 
-            <div class="instruction">
-                👆 Haga clic en los temas para visualizar la información
-            </div>
+  <!-- Modal B: Software + Redes -->
+  <div class="modal modal-b" id="modal-b">
+    <div class="m-top">
+      <div class="m-title-wrap">
+        <div class="m-icon" id="b-icon"></div>
+        <div>
+          <div class="m-name" id="b-name"></div>
+          <div class="m-sub" id="b-sub"></div>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeAll()">✕</button>
+    </div>
+    <div class="m-body" id="b-body"></div>
+  </div>
 
-            <!-- Página 0: Introducción -->
-            <div class="page active" id="page-0">
-                <h2><span style="font-size:32px;">🌐</span> Ecosistema NoSQL</h2>
-                <p class="intro">
-                    Los modelos NoSQL ofrecen distintas estructuras de almacenamiento adaptadas a necesidades específicas 
-                    de flexibilidad, velocidad y escalabilidad en entornos de datos complejos. A continuación, se presentan 
-                    sus principales características, ejemplos y aplicaciones en redes.
-                </p>
-            </div>
+</div>
 
-            <!-- Página 1: Documental -->
-            <div class="page" id="page-1">
-                <h2><span style="font-size:32px;">📄</span> DOCUMENTAL</h2>
-                <p><strong>Flexibilidad Total (JSON/BSON)</strong></p>
-                <p>Imagina un archivo donde guardas la configuración de un Router. Si mañana el fabricante añade un nuevo parámetro, simplemente lo sumas al documento sin romper nada.</p>
-                <pre>{
-  "dispositivo_id": "RT-204",
-  "modelo": "Cisco v3",
-  "interfaces": [
-    { "name": "eth0", "ip": "10.0.0.1" },
-    { "name": "wlan0", "status": "up" }
+<footer>Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7a ed.). Pearson. · Elaboración propia, 2026.</footer>
+
+<script>
+const COLS = [
+  { mc:'#00B37E', mcs:'#E6FAF4' },
+  { mc:'#F77F00', mcs:'#FFF3E0' },
+  { mc:'#E63946', mcs:'#FFF0F1' },
+  { mc:'#7B2FBE', mcs:'#F5EEFF' },
+];
+
+const DATA = [
+  {
+    emoji: '📄',
+    name: 'Documental',
+    sub: 'Modelo orientado a documentos · JSON / BSON',
+    tagline: 'Flexibilidad total',
+    points: [
+      'Almacena datos como documentos JSON o BSON anidados.',
+      'Sin esquema fijo: cada documento puede tener campos distintos.',
+      'Admite arrays y objetos embebidos directamente.',
+      'Consultas ricas sobre cualquier campo del documento.',
+    ],
+    code: {
+      lang: 'JSON',
+      src: `{
+  <span class="id">"dispositivo_id"</span>: <span class="st">"RT-204"</span>,
+  <span class="id">"modelo"</span>: <span class="st">"Cisco v3"</span>,
+  <span class="id">"interfaces"</span>: [
+    { <span class="id">"name"</span>: <span class="st">"eth0"</span>, <span class="id">"ip"</span>: <span class="st">"10.0.0.1"</span> },
+    { <span class="id">"name"</span>: <span class="st">"wlan0"</span>, <span class="id">"status"</span>: <span class="st">"up"</span> }
   ]
-}</pre>
-                <p><strong>Ejemplos de Software</strong></p>
-                <ul>
-                    <li>• MongoDB</li>
-                    <li>• CouchDB</li>
-                </ul>
-                <p><strong>Tip de Redes</strong></p>
-                <p>Úsala para configuraciones de dispositivos <strong>Multi-Vendor</strong> donde cada uno tiene campos distintos.</p>
-            </div>
+}`
+    },
+    sw: [
+      { name: 'MongoDB',  icon: '🍃' },
+      { name: 'CouchDB',  icon: '🛋️' },
+      { name: 'Firebase', icon: '🔥' },
+    ],
+    tip: {
+      icon: '📡',
+      text: 'Ideal para configuraciones de dispositivos <strong>Multi-Vendor</strong>: cada router, switch o AP puede tener campos distintos sin romper el esquema.',
+    },
+    usecases: ['Perfiles de dispositivos', 'Configuraciones de red', 'Catálogos de inventario'],
+  },
+  {
+    emoji: '🔑',
+    name: 'Clave-Valor',
+    sub: 'Modelo más simple · lookup O(1)',
+    tagline: 'Velocidad extrema',
+    points: [
+      'Estructura mínima: una clave única → un valor opaco.',
+      'Acceso en tiempo constante O(1) sin importar el tamaño.',
+      'El valor puede ser string, JSON, binario o cualquier tipo.',
+      'Soporta TTL (expiración) para datos temporales.',
+    ],
+    code: {
+      lang: 'Redis CLI',
+      src: `<span class="kw">SET</span>  <span class="id">session:88</span>  <span class="st">'{"user":"admin","login":"14:02"}'</span>
+<span class="kw">GET</span>  <span class="id">session:88</span>
+<span class="cm">→  {"user":"admin","login":"14:02"}</span>
 
-            <!-- Página 2: Clave-Valor -->
-            <div class="page" id="page-2">
-                <h2><span style="font-size:32px;">🔑</span> CLAVE-VALOR</h2>
-                <p><strong>Velocidad Extrema (O(1))</strong></p>
-                <p>Es el modelo más sencillo y rápido. Es como un diccionario: das una palabra (clave) y recibes una definición (valor). Ideal para datos que se consultan millones de veces.</p>
-                <pre>session_88 → { user: 'admin', login: '14:02' }
-session_89 → { user: 'guest', login: '14:05' }</pre>
-                <p><strong>Ejemplos de Software</strong></p>
-                <ul>
-                    <li>• Redis</li>
-                    <li>• DynamoDB</li>
-                </ul>
-                <p><strong>Tip de Redes</strong></p>
-                <p>La mejor para Auditorías de Tráfico (Netflow) que guardan petabytes de datos temporales.</p>
-            </div>
+<span class="kw">EXPIRE</span>  <span class="id">session:88</span>  <span class="nb">3600</span>   <span class="cm">-- TTL 1h</span>`
+    },
+    sw: [
+      { name: 'Redis',     icon: '⚡' },
+      { name: 'DynamoDB',  icon: '☁️' },
+      { name: 'Memcached', icon: '🧠' },
+    ],
+    tip: {
+      icon: '🔒',
+      text: 'Perfecta para <strong>gestión de sesiones</strong>, caché de autenticación y almacenamiento temporal de flujos Netflow donde la velocidad es crítica.',
+    },
+    usecases: ['Caché de sesiones', 'Rate limiting', 'Datos temporales'],
+  },
+  {
+    emoji: '📊',
+    name: 'Columnas Anchas',
+    sub: 'Big Data · lectura columnar selectiva',
+    tagline: 'Escalabilidad masiva',
+    points: [
+      'Organiza datos en familias de columnas, no en filas completas.',
+      'Lee solo las columnas requeridas: eficiencia extrema en análisis.',
+      'Escala a petabytes de forma lineal y horizontal.',
+      'Optimizado para escrituras masivas y consultas de rangos.',
+    ],
+    code: {
+      lang: 'CQL (Cassandra)',
+      src: `<span class="kw">CREATE TABLE</span> <span class="id">trafico</span> (
+  <span class="id">ip_origen</span>   <span class="fn">TEXT</span>,
+  <span class="id">timestamp</span>   <span class="fn">TIMESTAMP</span>,
+  <span class="id">protocolo</span>   <span class="fn">TEXT</span>,
+  <span class="id">bytes</span>        <span class="fn">BIGINT</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="id">ip_origen</span>, <span class="id">timestamp</span>)
+);`
+    },
+    sw: [
+      { name: 'Cassandra', icon: '🪐' },
+      { name: 'HBase',     icon: '🐘' },
+      { name: 'BigTable',  icon: '📋' },
+    ],
+    tip: {
+      icon: '📶',
+      text: 'La mejor opción para <strong>auditorías de tráfico Netflow</strong> y telemetría de red: almacena billones de registros y filtra solo por las columnas de interés.',
+    },
+    usecases: ['Telemetría de red', 'Logs masivos', 'Series temporales'],
+  },
+  {
+    emoji: '🔗',
+    name: 'Grafos',
+    sub: 'Relaciones como dato principal · nodos + aristas',
+    tagline: 'Conexiones complejas',
+    points: [
+      'El modelo almacena nodos (entidades) y aristas (relaciones).',
+      'Cada relación es un ciudadano de primera clase con propiedades.',
+      'Consultas de rutas y patrones imposibles en SQL sin joins masivos.',
+      'Traversal eficiente sobre millones de conexiones.',
+    ],
+    code: {
+      lang: 'Cypher (Neo4j)',
+      src: `<span class="cm">-- Ruta más corta entre dos routers</span>
+<span class="kw">MATCH</span> p = <span class="fn">shortestPath</span>(
+  (a:<span class="id">Router</span> {id: <span class="st">"R1"</span>})
+  -[:<span class="fn">CONECTADO_A</span>*]-
+  (b:<span class="id">Router</span> {id: <span class="st">"R8"</span>})
+)
+<span class="kw">RETURN</span> p`
+    },
+    sw: [
+      { name: 'Neo4j',   icon: '🕸️' },
+      { name: 'Neptune', icon: '🔵' },
+      { name: 'ArangoDB',icon: '🦅' },
+    ],
+    tip: {
+      icon: '🗺️',
+      text: 'Indispensable para modelar <strong>topologías de red</strong>: calcular ruta OSPF más corta, detectar bucles de spanning tree o analizar dependencias entre servicios.',
+    },
+    usecases: ['Topología de red', 'Detección de bucles', 'Rutas OSPF'],
+  },
+];
 
-            <!-- Página 3: Columnas Anchas -->
-            <div class="page" id="page-3">
-                <h2><span style="font-size:32px;">📊</span> COLUMNAS ANCHAS</h2>
-                <p><strong>Escalabilidad Masiva (Big Data)</strong></p>
-                <p>En lugar de leer toda una fila, lee solo la columna que necesitas. Si tienes un billón de logs de red y solo quieres las IPs de origen, este modelo es imbatible.</p>
-                <table>
-                    <thead>
-                        <tr><th>Familia: Tráfico de Red</th><th>IP_Origen</th><th>Protocolo</th><th>Bytes</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td></td><td>192.168.1.1</td><td>TCP</td><td>450</td></tr>
-                        <tr><td></td><td>10.0.5.20</td><td>UDP</td><td>1200</td></tr>
-                    </tbody>
-                </table>
-                <p><strong>Ejemplos de Software</strong></p>
-                <ul>
-                    <li>• Cassandra</li>
-                    <li>• HBase</li>
-                </ul>
-                <p><strong>Tip de Redes</strong></p>
-                <p>La mejor para Auditorías de Tráfico (Netflow) que guardan petabytes de datos temporales.</p>
-            </div>
+let cur = 0;
 
-            <!-- Página 4: Grafos -->
-            <div class="page" id="page-4">
-                <h2><span style="font-size:32px;">🔗</span> GRAFOS</h2>
-                <p><strong>Relaciones Complejas</strong></p>
-                <p>Aquí lo importante no es el dato en sí, sino cómo se conecta con otros. Ideal para mapear quién está conectado a qué switch y detectar dónde falló la red.</p>
-                <p><strong>Ejemplos de Software</strong></p>
-                <ul>
-                    <li>• Neo4j</li>
-                    <li>• Neptune</li>
-                </ul>
-                <p><strong>Tip de Redes</strong></p>
-                <p>Indispensable para calcular la <strong>'ruta más corta'</strong> (OSPF) o detectar bucles en la topología.</p>
-            </div>
+function openCard(idx) {
+  cur = idx;
+  render(idx);
+  document.getElementById('overlay').classList.add('open');
+}
+function closeAll() { document.getElementById('overlay').classList.remove('open'); }
+function bgClose(e) { if (e.target === document.getElementById('overlay')) closeAll(); }
+function nav(d) { cur = Math.max(0, Math.min(DATA.length-1, cur+d)); render(cur); }
 
-            <!-- Botones de navegación -->
-            <div class="nav-buttons">
-                <button onclick="prevPage()">← Anterior</button>
-                <button onclick="nextPage()">Siguiente →</button>
-            </div>
+function render(idx) {
+  const d = DATA[idx];
+  const col = COLS[idx];
 
-            <!-- Referencia APA 7 -->
-            <div class="reference">
-                Elmasri, R., &amp; Navathe, S. B. (2016). <em>Fundamentals of Database Systems</em> (7a ed.). Pearson.
-            </div>
+  // Apply CSS vars to both modals
+  ['modal-a','modal-b'].forEach(id => {
+    const m = document.getElementById(id);
+    m.style.setProperty('--mc',  col.mc);
+    m.style.setProperty('--mc-s', col.mcs);
+  });
 
-        </div>
+  // ── Modal A ──────────────────────────────────
+  document.getElementById('a-icon').textContent = d.emoji;
+  document.getElementById('a-icon').style.background = col.mcs;
+  document.getElementById('a-name').textContent = d.name;
+  document.getElementById('a-name').style.color = col.mc;
+  document.getElementById('a-sub').textContent  = d.sub;
+  document.getElementById('m-counter').textContent = `${idx+1} / ${DATA.length}`;
+  document.getElementById('btn-prev').disabled = idx === 0;
+  document.getElementById('btn-next').disabled = idx === DATA.length-1;
+
+  document.getElementById('a-body').innerHTML = `
+    <div>
+      <div class="sec-label">Características clave</div>
+      <div class="points">${d.points.map(p=>`
+        <div class="point">
+          <div class="pdot" style="background:${col.mc}"></div>
+          <span>${p}</span>
+        </div>`).join('')}
+      </div>
     </div>
+    <div>
+      <div class="sec-label">Ejemplo de estructura</div>
+      <div class="code-wrap">
+        <div class="code-top">${d.code.lang}</div>
+        <pre>${d.code.src}</pre>
+      </div>
+    </div>
+  `;
 
-    <script>
-        let currentPage = 0;
-        const totalPages = 5;
+  // ── Modal B ──────────────────────────────────
+  document.getElementById('b-icon').textContent = '⚙️';
+  document.getElementById('b-icon').style.background = col.mcs;
+  document.getElementById('b-name').textContent = 'Implementación y redes';
+  document.getElementById('b-name').style.color = col.mc;
+  document.getElementById('b-sub').textContent  = d.tagline + ' · casos de uso reales';
 
-        function showPage(pageIndex) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(`page-${pageIndex}`).classList.add('active');
+  const swHTML = d.sw.map(s=>`
+    <div class="sw-pill" style="border-color:${col.mc}33; color:${col.mc}; background:${col.mcs}">
+      <span>${s.icon}</span>${s.name}
+    </div>`).join('');
 
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            document.getElementById(`menu-${pageIndex}`).classList.add('active');
+  const ucHTML = d.usecases.map(u=>`
+    <div class="point">
+      <div class="pdot" style="background:${col.mc}"></div>
+      <span style="font-size:13px">${u}</span>
+    </div>`).join('');
 
-            currentPage = pageIndex;
-        }
+  document.getElementById('b-body').innerHTML = `
+    <div>
+      <div class="sec-label">Software popular</div>
+      <div class="sw-grid">${swHTML}</div>
+    </div>
+    <div>
+      <div class="sec-label">Casos de uso en redes</div>
+      <div class="points">${ucHTML}</div>
+    </div>
+    <div>
+      <div class="sec-label">Tip de aplicación</div>
+      <div class="tip-box" style="background:${col.mcs}">
+        <div class="tip-icon">${d.tip.icon}</div>
+        <div class="tip-text" style="color:${col.mc}">${d.tip.text}</div>
+      </div>
+    </div>
+  `;
+}
 
-        function nextPage() {
-            let next = currentPage + 1;
-            if (next >= totalPages) next = 0;
-            showPage(next);
-        }
-
-        function prevPage() {
-            let prev = currentPage - 1;
-            if (prev < 0) prev = totalPages - 1;
-            showPage(prev);
-        }
-
-        // Inicializar
-        window.onload = () => {
-            showPage(0);
-        };
-    </script>
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('overlay').classList.contains('open')) return;
+  if (e.key === 'Escape') closeAll();
+  if (e.key === 'ArrowRight') nav(1);
+  if (e.key === 'ArrowLeft')  nav(-1);
+});
+</script>
 </body>
 </html>
