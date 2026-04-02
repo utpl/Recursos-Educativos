@@ -1,378 +1,909 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Quiz: Culturas Andinas y Mesoamericanas</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#f0f4ff 0%,#faf5ff 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;}
-.container{width:800px;max-width:100%;background:#fff;border-radius:22px;box-shadow:0 10px 50px rgba(79,110,247,0.12);overflow:hidden;}
-.header{background:linear-gradient(135deg,#4f6ef7 0%,#7c3aed 100%);color:#fff;padding:34px 38px 30px;position:relative;overflow:hidden;}
-.header::after{content:'';position:absolute;bottom:-50px;right:-50px;width:220px;height:220px;background:rgba(255,255,255,0.06);border-radius:50%;}
-.header-badge{display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:4px 14px;font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
-.header h1{font-size:22px;font-weight:800;line-height:1.3;margin-bottom:6px;}
-.header p{font-size:13px;opacity:.85;}
-.progress-wrap{padding:20px 28px 0;}
-.progress-top{display:flex;justify-content:space-between;font-size:12.5px;color:#6b7280;margin-bottom:7px;font-weight:600;}
-.progress-track{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;}
-.progress-fill{height:100%;background:linear-gradient(90deg,#4f6ef7,#7c3aed);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);width:0%;}
-.instruction{background:#eef2ff;border-left:4px solid #4f6ef7;margin:20px 28px;padding:13px 16px;border-radius:0 10px 10px 0;font-size:13.5px;color:#374151;line-height:1.65;}
-.quiz-area{padding:0 28px 28px;}
-.q-card{display:none;animation:fadeUp .35s ease;}
-.q-card.active{display:block;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-.q-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-.q-num{background:linear-gradient(135deg,#4f6ef7,#7c3aed);color:#fff;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;}
-.q-type-badge{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;color:#6b7280;letter-spacing:.5px;text-transform:uppercase;}
-.q-text{font-size:15px;font-weight:600;color:#1e1b4b;line-height:1.6;margin-bottom:20px;}
-.options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-.opt{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border:2px solid #e5e7eb;border-radius:12px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;font-size:14px;color:#374151;line-height:1.5;}
-.opt:hover{border-color:#818cf8;background:#f5f3ff;transform:translateX(3px);}
-.opt-letter{width:26px;height:26px;background:#f3f4f6;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#6b7280;flex-shrink:0;transition:background .2s,color .2s;}
-.opt.selected{border-color:#4f6ef7;background:#eef2ff;}
-.opt.selected .opt-letter{background:#4f6ef7;color:#fff;}
-.opt.correct{border-color:#22c55e!important;background:#f0fdf4!important;}
-.opt.correct .opt-letter{background:#22c55e;color:#fff;}
-.opt.wrong{border-color:#ef4444!important;background:#fef2f2!important;}
-.opt.wrong .opt-letter{background:#ef4444;color:#fff;}
-.opt.disabled{cursor:default;pointer-events:none;}
-.match-wrap{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
-.match-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f9fafb;border:2px solid #e5e7eb;border-radius:12px;transition:border-color .2s;}
-.match-row.correct{border-color:#22c55e;background:#f0fdf4;}
-.match-row.wrong{border-color:#ef4444;background:#fef2f2;}
-.match-concept{font-size:14px;font-weight:700;color:#1e1b4b;min-width:80px;}
-.match-arrow{color:#9ca3af;font-size:16px;flex-shrink:0;}
-.match-select{flex:1;padding:7px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13.5px;color:#374151;background:#fff;outline:none;cursor:pointer;transition:border-color .2s;}
-.match-select:focus{border-color:#4f6ef7;}
-.match-select:disabled{background:#f9fafb;cursor:default;}
-.case-opts{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
-.case-opt{flex:1;min-width:180px;padding:18px;border:2px solid #e5e7eb;border-radius:14px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;text-align:center;}
-.case-opt:hover{border-color:#818cf8;background:#f5f3ff;transform:translateY(-3px);}
-.opt-tag{display:inline-block;background:#f3f4f6;border-radius:6px;padding:2px 10px;font-size:11px;font-weight:800;color:#6b7280;margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase;}
-.opt-name{font-size:15px;font-weight:700;color:#1e1b4b;}
-.case-opt.selected{border-color:#4f6ef7;background:#eef2ff;}
-.case-opt.correct{border-color:#22c55e!important;background:#f0fdf4!important;}
-.case-opt.wrong{border-color:#ef4444!important;background:#fef2f2!important;}
-.case-opt.disabled{cursor:default;pointer-events:none;}
-.feedback-box{border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.6;margin-bottom:18px;display:none;animation:fadeUp .3s ease;}
-.feedback-box.show{display:block;}
-.feedback-box.ok{background:#f0fdf4;border-left:4px solid #22c55e;color:#166534;}
-.feedback-box.fail{background:#fef2f2;border-left:4px solid #ef4444;color:#991b1b;}
-.btn-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
-.btn{padding:11px 26px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:opacity .2s,transform .15s;}
-.btn:hover{opacity:.88;transform:scale(1.03);}
-.btn:disabled{opacity:.4;cursor:default;transform:none;}
-.btn-check{background:linear-gradient(135deg,#4f6ef7,#7c3aed);color:#fff;}
-.btn-next{background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;}
-.btn-next.hidden{display:none;}
-.score-panel{display:none;text-align:center;padding:30px 20px 10px;animation:fadeUp .4s ease;}
-.score-panel.show{display:block;}
-.score-circle{width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,#4f6ef7,#7c3aed);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:0 8px 24px rgba(79,110,247,0.3);}
-.score-circle .score-num{font-size:32px;font-weight:900;line-height:1;}
-.score-circle .score-lbl{font-size:12px;opacity:.85;margin-top:2px;}
-.score-panel h2{font-size:20px;font-weight:800;color:#1e1b4b;margin-bottom:12px;}
-.final-fb{font-size:13.5px;color:#374151;line-height:1.7;background:#f9fafb;border-radius:12px;padding:16px;border-left:4px solid #4f6ef7;text-align:left;margin-bottom:22px;}
-.btn-retry{background:linear-gradient(135deg,#4f6ef7,#7c3aed);color:#fff;border:none;border-radius:10px;padding:12px 30px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .15s;}
-.btn-retry:hover{opacity:.88;transform:scale(1.04);}
-.footer{background:#f9fafb;border-top:1px solid #e5e7eb;padding:12px 28px;font-size:11.5px;color:#9ca3af;text-align:center;}
-@media(max-width:600px){
-  .container{border-radius:14px;}
-  .header{padding:22px 18px 20px;}
-  .header h1{font-size:16px;}
-  .instruction{margin:14px;}
-  .quiz-area{padding:0 14px 20px;}
-  .progress-wrap{padding:16px 14px 0;}
-  .q-text{font-size:14px;}
-  .opt{font-size:13px;padding:11px 12px;}
-  .case-opts{flex-direction:column;}
-  .case-opt{min-width:unset;}
-  .btn{padding:10px 18px;font-size:13px;}
-  .match-concept{min-width:60px;font-size:13px;}
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz: Culturas Andinas y Mesoamericanas</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+     
+    }
+
+    .container {
+      width: 800px;
+      max-width: 100%;
+      background: #fff;
+   
+      box-shadow: 0 10px 50px rgba(79, 110, 247, 0.12);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4f6ef7 0%, #7c3aed 100%);
+      color: #fff;
+      padding: 8px 38px 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -50px;
+      right: -50px;
+      width: 220px;
+      height: 220px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      font-size: 12px;
+      opacity: .85;
+    }
+
+    .progress-wrap {
+      padding: 8px 28px 0;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: #6b7280;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4f6ef7, #7c3aed);
+      border-radius: 99px;
+      transition: width .5s cubic-bezier(.4, 0, .2, 1);
+      width: 0%;
+    }
+
+    .instruction {
+      background: #eef2ff;
+      border-left: 4px solid #4f6ef7;
+      margin: 20px 28px;
+      padding: 13px 16px;
+      border-radius: 0 10px 10px 0;
+      font-size: 13.5px;
+      color: #374151;
+      line-height: 1.65;
+    }
+
+    .quiz-area {
+      padding: 0 28px 28px;
+    }
+
+    .q-card {
+      display: none;
+      animation: fadeUp .35s ease;
+    }
+
+    .q-card.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .q-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .q-num {
+      background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .q-type-badge {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #6b7280;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    .q-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1e1b4b;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .15s;
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    .opt:hover {
+      border-color: #818cf8;
+      background: #f5f3ff;
+      transform: translateX(3px);
+    }
+
+    .opt-letter {
+      width: 26px;
+      height: 26px;
+      background: #f3f4f6;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #6b7280;
+      flex-shrink: 0;
+      transition: background .2s, color .2s;
+    }
+
+    .opt.selected {
+      border-color: #4f6ef7;
+      background: #eef2ff;
+    }
+
+    .opt.selected .opt-letter {
+      background: #4f6ef7;
+      color: #fff;
+    }
+
+    .opt.correct {
+      border-color: #22c55e !important;
+      background: #f0fdf4 !important;
+    }
+
+    .opt.correct .opt-letter {
+      background: #22c55e;
+      color: #fff;
+    }
+
+    .opt.wrong {
+      border-color: #ef4444 !important;
+      background: #fef2f2 !important;
+    }
+
+    .opt.wrong .opt-letter {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .opt.disabled {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .match-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .match-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      transition: border-color .2s;
+    }
+
+    .match-row.correct {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+
+    .match-row.wrong {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+
+    .match-concept {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e1b4b;
+      min-width: 80px;
+    }
+
+    .match-arrow {
+      color: #9ca3af;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .match-select {
+      flex: 1;
+      padding: 7px 12px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: #374151;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+
+    .match-select:focus {
+      border-color: #4f6ef7;
+    }
+
+    .match-select:disabled {
+      background: #f9fafb;
+      cursor: default;
+    }
+
+    .case-opts {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .case-opt {
+      flex: 1;
+      min-width: 180px;
+      padding: 18px;
+      border: 2px solid #e5e7eb;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .15s;
+      text-align: center;
+    }
+
+    .case-opt:hover {
+      border-color: #818cf8;
+      background: #f5f3ff;
+      transform: translateY(-3px);
+    }
+
+    .opt-tag {
+      display: inline-block;
+      background: #f3f4f6;
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #6b7280;
+      margin-bottom: 8px;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    .opt-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e1b4b;
+    }
+
+    .case-opt.selected {
+      border-color: #4f6ef7;
+      background: #eef2ff;
+    }
+
+    .case-opt.correct {
+      border-color: #22c55e !important;
+      background: #f0fdf4 !important;
+    }
+
+    .case-opt.wrong {
+      border-color: #ef4444 !important;
+      background: #fef2f2 !important;
+    }
+
+    .case-opt.disabled {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .feedback-box {
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+      display: none;
+      animation: fadeUp .3s ease;
+    }
+
+    .feedback-box.show {
+      display: block;
+    }
+
+    .feedback-box.ok {
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      color: #166534;
+    }
+
+    .feedback-box.fail {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #991b1b;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 11px 26px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: opacity .2s, transform .15s;
+    }
+
+    .btn:hover {
+      opacity: .88;
+      transform: scale(1.03);
+    }
+
+    .btn:disabled {
+      opacity: .4;
+      cursor: default;
+      transform: none;
+    }
+
+    .btn-check {
+      background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+      color: #fff;
+    }
+
+    .btn-next {
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      color: #fff;
+    }
+
+    .btn-next.hidden {
+      display: none;
+    }
+
+    .score-panel {
+      display: none;
+      text-align: center;
+      padding: 30px 20px 10px;
+      animation: fadeUp .4s ease;
+    }
+
+    .score-panel.show {
+      display: block;
+    }
+
+    .score-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      box-shadow: 0 8px 24px rgba(79, 110, 247, 0.3);
+    }
+
+    .score-circle .score-num {
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .score-circle .score-lbl {
+      font-size: 12px;
+      opacity: .85;
+      margin-top: 2px;
+    }
+
+    .score-panel h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1e1b4b;
+      margin-bottom: 12px;
+    }
+
+    .final-fb {
+      font-size: 13.5px;
+      color: #374151;
+      line-height: 1.7;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 16px;
+      border-left: 4px solid #4f6ef7;
+      text-align: left;
+      margin-bottom: 22px;
+    }
+
+    .btn-retry {
+      background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 30px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+
+    .btn-retry:hover {
+      opacity: .88;
+      transform: scale(1.04);
+    }
+
+    .footer {
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      padding: 12px 28px;
+      font-size: 11.5px;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    @media(max-width:600px) {
+      .container {
+        border-radius: 14px;
+      }
+
+      .header {
+        padding: 22px 18px 20px;
+      }
+
+      .header h1 {
+        font-size: 16px;
+      }
+
+      .instruction {
+        margin: 14px;
+      }
+
+      .quiz-area {
+        padding: 0 14px 20px;
+      }
+
+      .progress-wrap {
+        padding: 16px 14px 0;
+      }
+
+      .q-text {
+        font-size: 14px;
+      }
+
+      .opt {
+        font-size: 13px;
+        padding: 11px 12px;
+      }
+
+      .case-opts {
+        flex-direction: column;
+      }
+
+      .case-opt {
+        min-width: unset;
+      }
+
+      .btn {
+        padding: 10px 18px;
+        font-size: 13px;
+      }
+
+      .match-concept {
+        min-width: 60px;
+        font-size: 13px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
-  <div class="header">
-    <div class="header-badge">🌎 Historia · Precolombino</div>
-    <h1>Quiz: Culturas Andinas y Mesoamericanas antes de la conquista</h1>
-    <p>Analice cada pregunta y seleccione la respuesta correcta.</p>
+  <div class="container">
+    <div class="header">
+      <div class="header-badge">🌎 Historia · Precolombino</div>
+      <h1>Quiz: Culturas Andinas y Mesoamericanas antes de la conquista</h1>
+      <p>Analice cada pregunta y seleccione la respuesta correcta.</p>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span id="progress-label">Pregunta 1 de 4</span>
+        <span id="score-live">✅ 0 correctas</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+    <div class="instruction">
+      📋 <strong>Instrucción:</strong> Analice cada pregunta y seleccione la respuesta correcta. Considere las
+      características sociales, políticas, económicas y religiosas de las culturas maya, azteca e inca, así como sus
+      formas de organización, cosmovisión y mecanismos de integración territorial.
+    </div>
+    <div class="quiz-area">
+
+      <!-- Q1 -->
+      <div class="q-card active" id="q1">
+        <div class="q-header">
+          <div class="q-num">1</div>
+          <div class="q-type-badge">📝 Opción múltiple</div>
+        </div>
+        <div class="q-text">¿Cuál de las siguientes características fue común en las culturas precolombinas como mayas,
+          aztecas e incas?</div>
+        <div class="options" id="q1-opts">
+          <div class="opt" data-val="A" onclick="selectOpt(this,'q1')">
+            <div class="opt-letter">A</div>
+            <div>Uso de sistemas monetarios avanzados para el comercio interno.</div>
+          </div>
+          <div class="opt" data-val="B" onclick="selectOpt(this,'q1')">
+            <div class="opt-letter">B</div>
+            <div>Desarrollo de sistemas agrícolas intensivos que sostenían grandes poblaciones.</div>
+          </div>
+          <div class="opt" data-val="C" onclick="selectOpt(this,'q1')">
+            <div class="opt-letter">C</div>
+            <div>Organización política basada en democracias participativas.</div>
+          </div>
+          <div class="opt" data-val="D" onclick="selectOpt(this,'q1')">
+            <div class="opt-letter">D</div>
+            <div>Ausencia de relaciones entre religión y poder político.</div>
+          </div>
+        </div>
+        <div class="feedback-box" id="q1-fb"></div>
+        <div class="btn-row">
+          <button class="btn btn-check" id="q1-check" onclick="checkQ1()" disabled>Verificar respuesta</button>
+          <button class="btn btn-next hidden" id="q1-next" onclick="goTo(2)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="q-card" id="q2">
+        <div class="q-header">
+          <div class="q-num">2</div>
+          <div class="q-type-badge">✔️ Verdadero / Falso</div>
+        </div>
+        <div class="q-text">La cosmovisión de las culturas precolombinas vinculaba el poder político con lo divino,
+          legitimando la autoridad de los gobernantes.</div>
+        <div class="options" id="q2-opts">
+          <div class="opt" data-val="V" onclick="selectOpt(this,'q2')">
+            <div class="opt-letter">V</div>
+            <div>Verdadero</div>
+          </div>
+          <div class="opt" data-val="F" onclick="selectOpt(this,'q2')">
+            <div class="opt-letter">F</div>
+            <div>Falso</div>
+          </div>
+        </div>
+        <div class="feedback-box" id="q2-fb"></div>
+        <div class="btn-row">
+          <button class="btn btn-check" id="q2-check" onclick="checkQ2()" disabled>Verificar respuesta</button>
+          <button class="btn btn-next hidden" id="q2-next" onclick="goTo(3)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="q-card" id="q3">
+        <div class="q-header">
+          <div class="q-num">3</div>
+          <div class="q-type-badge">🔗 Relacionar columnas</div>
+        </div>
+        <div class="q-text">Relacione cada cultura con una de sus características principales:</div>
+        <div class="match-wrap">
+          <div class="match-row" id="mr-mayas">
+            <div class="match-concept">Mayas</div>
+            <div class="match-arrow">→</div>
+            <select class="match-select" id="sel-mayas">
+              <option value="">— Seleccione —</option>
+              <option value="A">A. Sistema administrativo basado en quipus y red vial extensa</option>
+              <option value="B">B. Sistema de ciudades-estado con escritura jeroglífica y calendario avanzado</option>
+              <option value="C">C. Expansión territorial mediante alianzas y sistema tributario</option>
+            </select>
+          </div>
+          <div class="match-row" id="mr-aztecas">
+            <div class="match-concept">Aztecas</div>
+            <div class="match-arrow">→</div>
+            <select class="match-select" id="sel-aztecas">
+              <option value="">— Seleccione —</option>
+              <option value="A">A. Sistema administrativo basado en quipus y red vial extensa</option>
+              <option value="B">B. Sistema de ciudades-estado con escritura jeroglífica y calendario avanzado</option>
+              <option value="C">C. Expansión territorial mediante alianzas y sistema tributario</option>
+            </select>
+          </div>
+          <div class="match-row" id="mr-incas">
+            <div class="match-concept">Incas</div>
+            <div class="match-arrow">→</div>
+            <select class="match-select" id="sel-incas">
+              <option value="">— Seleccione —</option>
+              <option value="A">A. Sistema administrativo basado en quipus y red vial extensa</option>
+              <option value="B">B. Sistema de ciudades-estado con escritura jeroglífica y calendario avanzado</option>
+              <option value="C">C. Expansión territorial mediante alianzas y sistema tributario</option>
+            </select>
+          </div>
+        </div>
+        <div class="feedback-box" id="q3-fb"></div>
+        <div class="btn-row">
+          <button class="btn btn-check" id="q3-check" onclick="checkQ3()" disabled>Verificar respuesta</button>
+          <button class="btn btn-next hidden" id="q3-next" onclick="goTo(4)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="q-card" id="q4">
+        <div class="q-header">
+          <div class="q-num">4</div>
+          <div class="q-type-badge">🏛️ Caso práctico</div>
+        </div>
+        <div class="q-text">En una sociedad precolombina, el gobernante es considerado descendiente de una deidad, se
+          organiza el trabajo colectivo mediante unidades comunitarias y se administra un amplio territorio sin
+          escritura alfabética utilizando sistemas de registro alternativos.<br><br>En este contexto, ¿a qué cultura
+          corresponde esta descripción?</div>
+        <div class="case-opts" id="q4-opts">
+          <div class="case-opt" data-val="A" onclick="selectCase(this)">
+            <div class="opt-tag">Opción A</div>
+            <div class="opt-name">🏯 Cultura Maya</div>
+          </div>
+          <div class="case-opt" data-val="B" onclick="selectCase(this)">
+            <div class="opt-tag">Opción B</div>
+            <div class="opt-name">🦅 Cultura Inca</div>
+          </div>
+        </div>
+        <div class="feedback-box" id="q4-fb"></div>
+        <div class="btn-row">
+          <button class="btn btn-check" id="q4-check" onclick="checkQ4()" disabled>Verificar respuesta</button>
+          <button class="btn btn-next hidden" id="q4-next" onclick="showResults()">Ver resultados 🏆</button>
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div class="score-panel" id="score-panel">
+        <div class="score-circle">
+          <div class="score-num" id="final-score">0/4</div>
+          <div class="score-lbl">correctas</div>
+        </div>
+        <h2 id="final-title">¡Quiz completado!</h2>
+        <div class="final-fb">¡Excelente trabajo! Las respuestas seleccionadas reflejan una comprensión adecuada de las
+          culturas andinas y mesoamericanas como sociedades complejas que desarrollaron sistemas políticos, económicos y
+          religiosos altamente estructurados. A través de este ejercicio se reconoce la diversidad de formas de
+          organización y los mecanismos que permitieron la integración de amplios territorios antes de la llegada de los
+          europeos.</div>
+        <button class="btn-retry" onclick="resetQuiz()">↺ Intentar de nuevo</button>
+      </div>
+
+    </div>
+    <div class="footer">Recurso educativo | Culturas Andinas y Mesoamericanas antes de la conquista</div>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-top">
-      <span id="progress-label">Pregunta 1 de 4</span>
-      <span id="score-live">✅ 0 correctas</span>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-  </div>
-  <div class="instruction">
-    📋 <strong>Instrucción:</strong> Analice cada pregunta y seleccione la respuesta correcta. Considere las características sociales, políticas, económicas y religiosas de las culturas maya, azteca e inca, así como sus formas de organización, cosmovisión y mecanismos de integración territorial.
-  </div>
-  <div class="quiz-area">
 
-    <!-- Q1 -->
-    <div class="q-card active" id="q1">
-      <div class="q-header">
-        <div class="q-num">1</div>
-        <div class="q-type-badge">📝 Opción múltiple</div>
-      </div>
-      <div class="q-text">¿Cuál de las siguientes características fue común en las culturas precolombinas como mayas, aztecas e incas?</div>
-      <div class="options" id="q1-opts">
-        <div class="opt" data-val="A" onclick="selectOpt(this,'q1')"><div class="opt-letter">A</div><div>Uso de sistemas monetarios avanzados para el comercio interno.</div></div>
-        <div class="opt" data-val="B" onclick="selectOpt(this,'q1')"><div class="opt-letter">B</div><div>Desarrollo de sistemas agrícolas intensivos que sostenían grandes poblaciones.</div></div>
-        <div class="opt" data-val="C" onclick="selectOpt(this,'q1')"><div class="opt-letter">C</div><div>Organización política basada en democracias participativas.</div></div>
-        <div class="opt" data-val="D" onclick="selectOpt(this,'q1')"><div class="opt-letter">D</div><div>Ausencia de relaciones entre religión y poder político.</div></div>
-      </div>
-      <div class="feedback-box" id="q1-fb"></div>
-      <div class="btn-row">
-        <button class="btn btn-check" id="q1-check" onclick="checkQ1()" disabled>Verificar respuesta</button>
-        <button class="btn btn-next hidden" id="q1-next" onclick="goTo(2)">Siguiente →</button>
-      </div>
-    </div>
+  <script>
+    var currentQ = 1, correctCount = 0;
+    var q1sel = null, q1done = false;
+    var q2sel = null, q2done = false;
+    var q3done = false;
+    var q4sel = null, q4done = false;
 
-    <!-- Q2 -->
-    <div class="q-card" id="q2">
-      <div class="q-header">
-        <div class="q-num">2</div>
-        <div class="q-type-badge">✔️ Verdadero / Falso</div>
-      </div>
-      <div class="q-text">La cosmovisión de las culturas precolombinas vinculaba el poder político con lo divino, legitimando la autoridad de los gobernantes.</div>
-      <div class="options" id="q2-opts">
-        <div class="opt" data-val="V" onclick="selectOpt(this,'q2')"><div class="opt-letter">V</div><div>Verdadero</div></div>
-        <div class="opt" data-val="F" onclick="selectOpt(this,'q2')"><div class="opt-letter">F</div><div>Falso</div></div>
-      </div>
-      <div class="feedback-box" id="q2-fb"></div>
-      <div class="btn-row">
-        <button class="btn btn-check" id="q2-check" onclick="checkQ2()" disabled>Verificar respuesta</button>
-        <button class="btn btn-next hidden" id="q2-next" onclick="goTo(3)">Siguiente →</button>
-      </div>
-    </div>
+    function updateProgress(q) {
+      document.getElementById('progress-label').textContent = 'Pregunta ' + q + ' de 4';
+      document.getElementById('progress-fill').style.width = ((q - 1) / 4 * 100) + '%';
+    }
+    function updateScoreLive() {
+      document.getElementById('score-live').textContent = '✅ ' + correctCount + ' correctas';
+    }
+    function goTo(n) {
+      document.getElementById('q' + currentQ).classList.remove('active');
+      currentQ = n;
+      document.getElementById('q' + n).classList.add('active');
+      updateProgress(n);
+    }
 
-    <!-- Q3 -->
-    <div class="q-card" id="q3">
-      <div class="q-header">
-        <div class="q-num">3</div>
-        <div class="q-type-badge">🔗 Relacionar columnas</div>
-      </div>
-      <div class="q-text">Relacione cada cultura con una de sus características principales:</div>
-      <div class="match-wrap">
-        <div class="match-row" id="mr-mayas">
-          <div class="match-concept">Mayas</div>
-          <div class="match-arrow">→</div>
-          <select class="match-select" id="sel-mayas">
-            <option value="">— Seleccione —</option>
-            <option value="A">A. Sistema administrativo basado en quipus y red vial extensa</option>
-            <option value="B">B. Sistema de ciudades-estado con escritura jeroglífica y calendario avanzado</option>
-            <option value="C">C. Expansión territorial mediante alianzas y sistema tributario</option>
-          </select>
-        </div>
-        <div class="match-row" id="mr-aztecas">
-          <div class="match-concept">Aztecas</div>
-          <div class="match-arrow">→</div>
-          <select class="match-select" id="sel-aztecas">
-            <option value="">— Seleccione —</option>
-            <option value="A">A. Sistema administrativo basado en quipus y red vial extensa</option>
-            <option value="B">B. Sistema de ciudades-estado con escritura jeroglífica y calendario avanzado</option>
-            <option value="C">C. Expansión territorial mediante alianzas y sistema tributario</option>
-          </select>
-        </div>
-        <div class="match-row" id="mr-incas">
-          <div class="match-concept">Incas</div>
-          <div class="match-arrow">→</div>
-          <select class="match-select" id="sel-incas">
-            <option value="">— Seleccione —</option>
-            <option value="A">A. Sistema administrativo basado en quipus y red vial extensa</option>
-            <option value="B">B. Sistema de ciudades-estado con escritura jeroglífica y calendario avanzado</option>
-            <option value="C">C. Expansión territorial mediante alianzas y sistema tributario</option>
-          </select>
-        </div>
-      </div>
-      <div class="feedback-box" id="q3-fb"></div>
-      <div class="btn-row">
-        <button class="btn btn-check" id="q3-check" onclick="checkQ3()" disabled>Verificar respuesta</button>
-        <button class="btn btn-next hidden" id="q3-next" onclick="goTo(4)">Siguiente →</button>
-      </div>
-    </div>
+    // Q1
+    function selectOpt(el, qid) {
+      if ((qid === 'q1' && q1done) || (qid === 'q2' && q2done)) return;
+      el.parentElement.querySelectorAll('.opt').forEach(function (o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      if (qid === 'q1') { q1sel = el.dataset.val; document.getElementById('q1-check').disabled = false; }
+      if (qid === 'q2') { q2sel = el.dataset.val; document.getElementById('q2-check').disabled = false; }
+    }
+    function checkQ1() {
+      if (q1done) return; q1done = true;
+      document.querySelectorAll('#q1-opts .opt').forEach(function (o) {
+        o.classList.add('disabled');
+        if (o.dataset.val === 'B') o.classList.add('correct');
+        else if (o.dataset.val === q1sel && q1sel !== 'B') o.classList.add('wrong');
+      });
+      var fb = document.getElementById('q1-fb');
+      if (q1sel === 'B') { correctCount++; fb.className = 'feedback-box show ok'; fb.innerHTML = '✅ <strong>Correcto.</strong> Estas culturas desarrollaron sistemas agrícolas complejos que permitieron sostener grandes poblaciones y consolidar estructuras sociales avanzadas.'; }
+      else { fb.className = 'feedback-box show fail'; fb.innerHTML = '❌ <strong>Incorrecto.</strong> La respuesta correcta es la <strong>B</strong>: las culturas precolombinas desarrollaron sistemas agrícolas intensivos para sostener grandes poblaciones.'; }
+      updateScoreLive();
+      document.getElementById('q1-check').disabled = true;
+      document.getElementById('q1-next').classList.remove('hidden');
+    }
 
-    <!-- Q4 -->
-    <div class="q-card" id="q4">
-      <div class="q-header">
-        <div class="q-num">4</div>
-        <div class="q-type-badge">🏛️ Caso práctico</div>
-      </div>
-      <div class="q-text">En una sociedad precolombina, el gobernante es considerado descendiente de una deidad, se organiza el trabajo colectivo mediante unidades comunitarias y se administra un amplio territorio sin escritura alfabética utilizando sistemas de registro alternativos.<br><br>En este contexto, ¿a qué cultura corresponde esta descripción?</div>
-      <div class="case-opts" id="q4-opts">
-        <div class="case-opt" data-val="A" onclick="selectCase(this)">
-          <div class="opt-tag">Opción A</div>
-          <div class="opt-name">🏯 Cultura Maya</div>
-        </div>
-        <div class="case-opt" data-val="B" onclick="selectCase(this)">
-          <div class="opt-tag">Opción B</div>
-          <div class="opt-name">🦅 Cultura Inca</div>
-        </div>
-      </div>
-      <div class="feedback-box" id="q4-fb"></div>
-      <div class="btn-row">
-        <button class="btn btn-check" id="q4-check" onclick="checkQ4()" disabled>Verificar respuesta</button>
-        <button class="btn btn-next hidden" id="q4-next" onclick="showResults()">Ver resultados 🏆</button>
-      </div>
-    </div>
+    // Q2
+    function checkQ2() {
+      if (q2done) return; q2done = true;
+      document.querySelectorAll('#q2-opts .opt').forEach(function (o) {
+        o.classList.add('disabled');
+        if (o.dataset.val === 'V') o.classList.add('correct');
+        else if (o.dataset.val === q2sel && q2sel !== 'V') o.classList.add('wrong');
+      });
+      var fb = document.getElementById('q2-fb');
+      if (q2sel === 'V') { correctCount++; fb.className = 'feedback-box show ok'; fb.innerHTML = '✅ <strong>Correcto.</strong> En estas culturas, la religión cumplía un rol central en la legitimación del poder político, vinculando a los gobernantes con entidades divinas.'; }
+      else { fb.className = 'feedback-box show fail'; fb.innerHTML = '❌ <strong>Incorrecto.</strong> La afirmación es <strong>Verdadera</strong>. La cosmovisión precolombina vinculaba el poder político con lo divino.'; }
+      updateScoreLive();
+      document.getElementById('q2-check').disabled = true;
+      document.getElementById('q2-next').classList.remove('hidden');
+    }
 
-    <!-- Score -->
-    <div class="score-panel" id="score-panel">
-      <div class="score-circle">
-        <div class="score-num" id="final-score">0/4</div>
-        <div class="score-lbl">correctas</div>
-      </div>
-      <h2 id="final-title">¡Quiz completado!</h2>
-      <div class="final-fb">¡Excelente trabajo! Las respuestas seleccionadas reflejan una comprensión adecuada de las culturas andinas y mesoamericanas como sociedades complejas que desarrollaron sistemas políticos, económicos y religiosos altamente estructurados. A través de este ejercicio se reconoce la diversidad de formas de organización y los mecanismos que permitieron la integración de amplios territorios antes de la llegada de los europeos.</div>
-      <button class="btn-retry" onclick="resetQuiz()">↺ Intentar de nuevo</button>
-    </div>
+    // Q3
+    var q3correct = { mayas: 'B', aztecas: 'C', incas: 'A' };
+    ['sel-mayas', 'sel-aztecas', 'sel-incas'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', function () {
+        var all = ['sel-mayas', 'sel-aztecas', 'sel-incas'].every(function (i) { return document.getElementById(i).value !== ''; });
+        document.getElementById('q3-check').disabled = !all;
+      });
+    });
+    function checkQ3() {
+      if (q3done) return; q3done = true;
+      var allOk = true;
+      Object.keys(q3correct).forEach(function (cult) {
+        var sel = document.getElementById('sel-' + cult);
+        var row = document.getElementById('mr-' + cult);
+        sel.disabled = true;
+        if (sel.value === q3correct[cult]) row.classList.add('correct');
+        else { row.classList.add('wrong'); allOk = false; }
+      });
+      var fb = document.getElementById('q3-fb');
+      if (allOk) { correctCount++; fb.className = 'feedback-box show ok'; fb.innerHTML = '✅ <strong>Correcto.</strong> Cada cultura desarrolló características distintivas que reflejan su organización política, económica y cultural dentro del mundo precolombino.'; }
+      else { fb.className = 'feedback-box show fail'; fb.innerHTML = '❌ <strong>Incorrecto.</strong> Las asociaciones correctas son: <strong>Mayas → B</strong> (ciudades-estado y escritura jeroglífica) | <strong>Aztecas → C</strong> (expansión y sistema tributario) | <strong>Incas → A</strong> (quipus y red vial).'; }
+      updateScoreLive();
+      document.getElementById('q3-check').disabled = true;
+      document.getElementById('q3-next').classList.remove('hidden');
+    }
 
-  </div>
-  <div class="footer">Recurso educativo | Culturas Andinas y Mesoamericanas antes de la conquista</div>
-</div>
+    // Q4
+    function selectCase(el) {
+      if (q4done) return;
+      document.querySelectorAll('#q4-opts .case-opt').forEach(function (o) { o.classList.remove('selected'); });
+      el.classList.add('selected');
+      q4sel = el.dataset.val;
+      document.getElementById('q4-check').disabled = false;
+    }
+    function checkQ4() {
+      if (q4done) return; q4done = true;
+      document.querySelectorAll('#q4-opts .case-opt').forEach(function (o) {
+        o.classList.add('disabled');
+        if (o.dataset.val === 'B') o.classList.add('correct');
+        else if (o.dataset.val === q4sel && q4sel !== 'B') o.classList.add('wrong');
+      });
+      var fb = document.getElementById('q4-fb');
+      if (q4sel === 'B') { correctCount++; fb.className = 'feedback-box show ok'; fb.innerHTML = '✅ <strong>Correcto.</strong> Esta opción describe características propias del imperio inca: el carácter teocrático del poder, el sistema del ayllu y el uso de quipus para la administración.'; }
+      else { fb.className = 'feedback-box show fail'; fb.innerHTML = '❌ <strong>Incorrecto.</strong> La respuesta correcta es la <strong>Cultura Inca</strong>. Los mayas desarrollaron escritura jeroglífica y no utilizaron sistemas como los quipus ni una organización estatal centralizada como la inca.'; }
+      updateScoreLive();
+      document.getElementById('q4-check').disabled = true;
+      document.getElementById('q4-next').classList.remove('hidden');
+    }
 
-<script>
-var currentQ=1, correctCount=0;
-var q1sel=null,q1done=false;
-var q2sel=null,q2done=false;
-var q3done=false;
-var q4sel=null,q4done=false;
+    // Results
+    function showResults() {
+      document.getElementById('q4').classList.remove('active');
+      document.getElementById('score-panel').classList.add('show');
+      document.getElementById('progress-fill').style.width = '100%';
+      document.getElementById('progress-label').textContent = 'Quiz completado';
+      document.getElementById('final-score').textContent = correctCount + '/4';
+      var titles = ['¡Sigue practicando! 💪', '¡Buen esfuerzo! 👍', '¡Muy bien! 🌟', '¡Excelente! 🏆'];
+      document.getElementById('final-title').textContent = titles[correctCount] || '¡Quiz completado!';
+    }
 
-function updateProgress(q){
-  document.getElementById('progress-label').textContent='Pregunta '+q+' de 4';
-  document.getElementById('progress-fill').style.width=((q-1)/4*100)+'%';
-}
-function updateScoreLive(){
-  document.getElementById('score-live').textContent='✅ '+correctCount+' correctas';
-}
-function goTo(n){
-  document.getElementById('q'+currentQ).classList.remove('active');
-  currentQ=n;
-  document.getElementById('q'+n).classList.add('active');
-  updateProgress(n);
-}
+    // Reset
+    function resetQuiz() {
+      currentQ = 1; correctCount = 0;
+      q1sel = null; q1done = false; q2sel = null; q2done = false; q3done = false; q4sel = null; q4done = false;
+      document.querySelectorAll('#q1-opts .opt,#q2-opts .opt').forEach(function (o) { o.className = 'opt'; });
+      ['q1-fb', 'q2-fb', 'q3-fb', 'q4-fb'].forEach(function (id) { document.getElementById(id).className = 'feedback-box'; });
+      ['q1-check', 'q2-check'].forEach(function (id) { document.getElementById(id).disabled = true; });
+      ['q1-next', 'q2-next', 'q3-next', 'q4-next'].forEach(function (id) { document.getElementById(id).classList.add('hidden'); });
+      ['sel-mayas', 'sel-aztecas', 'sel-incas'].forEach(function (id) { var s = document.getElementById(id); s.value = ''; s.disabled = false; });
+      ['mr-mayas', 'mr-aztecas', 'mr-incas'].forEach(function (id) { document.getElementById(id).className = 'match-row'; });
+      document.getElementById('q3-check').disabled = true;
+      document.querySelectorAll('#q4-opts .case-opt').forEach(function (o) { o.className = 'case-opt'; });
+      document.getElementById('q4-check').disabled = true;
+      document.getElementById('score-panel').classList.remove('show');
+      document.getElementById('q1').classList.add('active');
+      updateProgress(1); updateScoreLive();
+    }
 
-// Q1
-function selectOpt(el,qid){
-  if((qid==='q1'&&q1done)||(qid==='q2'&&q2done)) return;
-  el.parentElement.querySelectorAll('.opt').forEach(function(o){o.classList.remove('selected');});
-  el.classList.add('selected');
-  if(qid==='q1'){q1sel=el.dataset.val;document.getElementById('q1-check').disabled=false;}
-  if(qid==='q2'){q2sel=el.dataset.val;document.getElementById('q2-check').disabled=false;}
-}
-function checkQ1(){
-  if(q1done) return; q1done=true;
-  document.querySelectorAll('#q1-opts .opt').forEach(function(o){
-    o.classList.add('disabled');
-    if(o.dataset.val==='B') o.classList.add('correct');
-    else if(o.dataset.val===q1sel&&q1sel!=='B') o.classList.add('wrong');
-  });
-  var fb=document.getElementById('q1-fb');
-  if(q1sel==='B'){correctCount++;fb.className='feedback-box show ok';fb.innerHTML='✅ <strong>Correcto.</strong> Estas culturas desarrollaron sistemas agrícolas complejos que permitieron sostener grandes poblaciones y consolidar estructuras sociales avanzadas.';}
-  else{fb.className='feedback-box show fail';fb.innerHTML='❌ <strong>Incorrecto.</strong> La respuesta correcta es la <strong>B</strong>: las culturas precolombinas desarrollaron sistemas agrícolas intensivos para sostener grandes poblaciones.';}
-  updateScoreLive();
-  document.getElementById('q1-check').disabled=true;
-  document.getElementById('q1-next').classList.remove('hidden');
-}
-
-// Q2
-function checkQ2(){
-  if(q2done) return; q2done=true;
-  document.querySelectorAll('#q2-opts .opt').forEach(function(o){
-    o.classList.add('disabled');
-    if(o.dataset.val==='V') o.classList.add('correct');
-    else if(o.dataset.val===q2sel&&q2sel!=='V') o.classList.add('wrong');
-  });
-  var fb=document.getElementById('q2-fb');
-  if(q2sel==='V'){correctCount++;fb.className='feedback-box show ok';fb.innerHTML='✅ <strong>Correcto.</strong> En estas culturas, la religión cumplía un rol central en la legitimación del poder político, vinculando a los gobernantes con entidades divinas.';}
-  else{fb.className='feedback-box show fail';fb.innerHTML='❌ <strong>Incorrecto.</strong> La afirmación es <strong>Verdadera</strong>. La cosmovisión precolombina vinculaba el poder político con lo divino.';}
-  updateScoreLive();
-  document.getElementById('q2-check').disabled=true;
-  document.getElementById('q2-next').classList.remove('hidden');
-}
-
-// Q3
-var q3correct={mayas:'B',aztecas:'C',incas:'A'};
-['sel-mayas','sel-aztecas','sel-incas'].forEach(function(id){
-  document.getElementById(id).addEventListener('change',function(){
-    var all=['sel-mayas','sel-aztecas','sel-incas'].every(function(i){return document.getElementById(i).value!=='';});
-    document.getElementById('q3-check').disabled=!all;
-  });
-});
-function checkQ3(){
-  if(q3done) return; q3done=true;
-  var allOk=true;
-  Object.keys(q3correct).forEach(function(cult){
-    var sel=document.getElementById('sel-'+cult);
-    var row=document.getElementById('mr-'+cult);
-    sel.disabled=true;
-    if(sel.value===q3correct[cult]) row.classList.add('correct');
-    else{row.classList.add('wrong');allOk=false;}
-  });
-  var fb=document.getElementById('q3-fb');
-  if(allOk){correctCount++;fb.className='feedback-box show ok';fb.innerHTML='✅ <strong>Correcto.</strong> Cada cultura desarrolló características distintivas que reflejan su organización política, económica y cultural dentro del mundo precolombino.';}
-  else{fb.className='feedback-box show fail';fb.innerHTML='❌ <strong>Incorrecto.</strong> Las asociaciones correctas son: <strong>Mayas → B</strong> (ciudades-estado y escritura jeroglífica) | <strong>Aztecas → C</strong> (expansión y sistema tributario) | <strong>Incas → A</strong> (quipus y red vial).';}
-  updateScoreLive();
-  document.getElementById('q3-check').disabled=true;
-  document.getElementById('q3-next').classList.remove('hidden');
-}
-
-// Q4
-function selectCase(el){
-  if(q4done) return;
-  document.querySelectorAll('#q4-opts .case-opt').forEach(function(o){o.classList.remove('selected');});
-  el.classList.add('selected');
-  q4sel=el.dataset.val;
-  document.getElementById('q4-check').disabled=false;
-}
-function checkQ4(){
-  if(q4done) return; q4done=true;
-  document.querySelectorAll('#q4-opts .case-opt').forEach(function(o){
-    o.classList.add('disabled');
-    if(o.dataset.val==='B') o.classList.add('correct');
-    else if(o.dataset.val===q4sel&&q4sel!=='B') o.classList.add('wrong');
-  });
-  var fb=document.getElementById('q4-fb');
-  if(q4sel==='B'){correctCount++;fb.className='feedback-box show ok';fb.innerHTML='✅ <strong>Correcto.</strong> Esta opción describe características propias del imperio inca: el carácter teocrático del poder, el sistema del ayllu y el uso de quipus para la administración.';}
-  else{fb.className='feedback-box show fail';fb.innerHTML='❌ <strong>Incorrecto.</strong> La respuesta correcta es la <strong>Cultura Inca</strong>. Los mayas desarrollaron escritura jeroglífica y no utilizaron sistemas como los quipus ni una organización estatal centralizada como la inca.';}
-  updateScoreLive();
-  document.getElementById('q4-check').disabled=true;
-  document.getElementById('q4-next').classList.remove('hidden');
-}
-
-// Results
-function showResults(){
-  document.getElementById('q4').classList.remove('active');
-  document.getElementById('score-panel').classList.add('show');
-  document.getElementById('progress-fill').style.width='100%';
-  document.getElementById('progress-label').textContent='Quiz completado';
-  document.getElementById('final-score').textContent=correctCount+'/4';
-  var titles=['¡Sigue practicando! 💪','¡Buen esfuerzo! 👍','¡Muy bien! 🌟','¡Excelente! 🏆'];
-  document.getElementById('final-title').textContent=titles[correctCount]||'¡Quiz completado!';
-}
-
-// Reset
-function resetQuiz(){
-  currentQ=1;correctCount=0;
-  q1sel=null;q1done=false;q2sel=null;q2done=false;q3done=false;q4sel=null;q4done=false;
-  document.querySelectorAll('#q1-opts .opt,#q2-opts .opt').forEach(function(o){o.className='opt';});
-  ['q1-fb','q2-fb','q3-fb','q4-fb'].forEach(function(id){document.getElementById(id).className='feedback-box';});
-  ['q1-check','q2-check'].forEach(function(id){document.getElementById(id).disabled=true;});
-  ['q1-next','q2-next','q3-next','q4-next'].forEach(function(id){document.getElementById(id).classList.add('hidden');});
-  ['sel-mayas','sel-aztecas','sel-incas'].forEach(function(id){var s=document.getElementById(id);s.value='';s.disabled=false;});
-  ['mr-mayas','mr-aztecas','mr-incas'].forEach(function(id){document.getElementById(id).className='match-row';});
-  document.getElementById('q3-check').disabled=true;
-  document.querySelectorAll('#q4-opts .case-opt').forEach(function(o){o.className='case-opt';});
-  document.getElementById('q4-check').disabled=true;
-  document.getElementById('score-panel').classList.remove('show');
-  document.getElementById('q1').classList.add('active');
-  updateProgress(1);updateScoreLive();
-}
-
-updateProgress(1);updateScoreLive();
-</script>
+    updateProgress(1); updateScoreLive();
+  </script>
 </body>
+
 </html>
