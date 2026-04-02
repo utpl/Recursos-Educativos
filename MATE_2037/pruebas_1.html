@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funciones Especiales · MATE_2037</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:    #f0ece4;
+  --white: #ffffff;
+  --ink:   #1a1410;
+  --ink2:  #3e2e1a;
+  --muted: #8a7860;
+  --sand:  #ddd0b8;
+  --cA: #1a5e8a; --cA-l: #eaf3fb;
+  --cB: #1a6e48; --cB-l: #eafaf2;
+  --cC: #7a3898; --cC-l: #f5eefb;
+  --cD: #c05818; --cD-l: #fff4e8;
+  --ok:  #1a6e40; --ok-l: #e8f8ee;
+  --err: #a02020; --err-l: #fdecea;
+  --hdr: #1e2a44;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  width: 800px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+.hdr {
+  background: var(--hdr);
+  padding: 15px 24px 13px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hdr h1 { font-size: 15px; font-weight: 800; color: #fff; line-height: 1.2; }
+.hdr-sub { font-size: 9.5px; color: rgba(255,255,255,.45); margin-top: 3px; }
+.chip {
+  border: 1px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.6);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.inst {
+  background: var(--white);
+  border-bottom: 1.5px solid var(--sand);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10.5px;
+  color: var(--ink2);
+  flex-wrap: wrap;
+}
+
+.inst-badge {
+  background: var(--hdr);
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* BOARD - Contenedor principal con posición relativa (clave para el SVG) */
+.board {
+  position: relative;
+  padding: 18px 24px 10px;
+  display: grid;
+  grid-template-columns: 1fr 48px 1fr;
+  gap: 0;
+  align-items: start;
+}
+
+/* SVG dentro del board con posición absoluta */
+.conn-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  overflow: visible;
+}
+
+.col-hdr {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  padding-bottom: 8px;
+}
+
+.q-col, .a-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.q-card {
+  background: var(--white);
+  border: 2px solid var(--sand);
+  border-radius: 13px;
+  padding: 13px 14px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  transition: border-color .2s;
+}
+
+.q-card.sel { border-color: var(--hdr); }
+.q-card.ok { border-color: var(--ok); }
+.q-card.err { border-color: var(--err); }
+
+.q-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 7px;
+}
+
+.q-text {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.q-status {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 16px;
+}
+
+/* Punto derecho (en preguntas) */
+.r-dot {
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid var(--sand);
+  background: var(--white);
+  z-index: 10;
+  cursor: pointer;
+  transition: all .18s;
+}
+
+.r-dot:hover { transform: translateY(-50%) scale(1.25); border-color: var(--hdr); }
+.r-dot.active { border-color: var(--hdr); background: var(--hdr); box-shadow: 0 0 0 4px rgba(30,42,68,.2); }
+.r-dot.ok-dot { border-color: var(--ok); background: var(--ok); }
+.r-dot.err-dot { border-color: var(--err); background: var(--err); }
+
+.a-card {
+  background: var(--white);
+  border: 2px solid var(--sand);
+  border-radius: 13px;
+  padding: 13px 14px;
+  position: relative;
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  user-select: none;
+}
+
+.a-card:hover:not(.used):not(.locked) {
+  border-color: var(--hdr);
+  transform: translateX(-3px);
+  box-shadow: 0 5px 16px rgba(0,0,0,.12);
+}
+
+.a-card.used { opacity: .55; cursor: default; background: #f5f3ef; }
+.a-card.locked { cursor: default; }
+.a-card.ok { border-color: var(--ok); background: var(--ok-l); }
+.a-card.err { border-color: var(--err); background: var(--err-l); }
+
+/* Punto izquierdo (en respuestas) */
+.l-dot {
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid var(--sand);
+  background: var(--white);
+  z-index: 10;
+  cursor: pointer;
+  transition: all .18s;
+}
+
+.l-dot.pulse {
+  animation: pulse 1.2s ease-in-out infinite;
+  border-color: var(--hdr);
+}
+
+@keyframes pulse {
+  0%,100%{box-shadow:0 0 0 0 rgba(30,42,68,.3)}
+  50%{box-shadow:0 0 0 6px rgba(30,42,68,0)}
+}
+
+.l-dot.ok-dot { border-color: var(--ok); background: var(--ok); }
+.l-dot.err-dot { border-color: var(--err); background: var(--err); }
+
+.a-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.a-text {
+  font-size: 11px;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+
+.fb-row {
+  display: none;
+  margin: 3px 0 0;
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  border: 1.5px solid transparent;
+}
+
+.fb-row.show { display: flex; gap: 8px; align-items: flex-start; }
+.fb-row.ok { background: var(--ok-l); border-color: rgba(26,110,64,.2); color: var(--ok); }
+.fb-row.err { background: var(--err-l); border-color: rgba(160,32,32,.2); color: var(--err); }
+.fb-ico { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+.actions {
+  padding: 10px 24px 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 22px;
+  cursor: pointer;
+  border: none;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-verify {
+  background: var(--hdr);
+  color: #fff;
+  box-shadow: 0 3px 14px rgba(30,42,68,.22);
+}
+
+.btn-verify:hover:not(:disabled) { background: #111e34; }
+.btn-verify:disabled { opacity: .4; cursor: not-allowed; }
+
+.btn-reset {
+  background: var(--white);
+  color: var(--muted);
+  border: 1.5px solid var(--sand);
+}
+
+.btn-reset:hover { border-color: var(--muted); color: var(--ink); }
+
+.score-pill {
+  margin-left: auto;
+  background: var(--white);
+  border: 1.5px solid var(--sand);
+  color: var(--ink2);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+}
+
+.success {
+  display: none;
+  margin: 0 24px 16px;
+  background: var(--ok-l);
+  border: 2px solid rgba(26,110,64,.28);
+  border-radius: 14px;
+  padding: 15px 18px;
+  font-size: 11.5px;
+  color: var(--ok);
+  line-height: 1.7;
+}
+
+.success.show { display: flex; gap: 12px; align-items: flex-start; }
+.success-ico { font-size: 22px; flex-shrink: 0; }
+
+.foot {
+  background: var(--hdr);
+  padding: 7px 24px;
+  font-size: 9px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <h1>Funciones especiales, composición e inversa</h1>
+    <div class="hdr-sub">Cálculo Diferencial</div>
+  </div>
+  <div><div class="chip">Conectar puntos</div></div>
+</div>
+
+<div class="inst">
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <circle cx="6.5" cy="6.5" r="6" stroke="#8a6820" stroke-width="1.1"/>
+    <path d="M6.5 4v4M6.5 9.5v.3" stroke="#8a6820" stroke-width="1.1" stroke-linecap="round"/>
+  </svg>
+  Conecta cada pregunta con la respuesta correcta. Haz clic en el punto de la pregunta, luego en el punto de la respuesta.
+  <div class="inst-badge">1 respuesta por pregunta</div>
+</div>
+
+<!-- BOARD: contenedor principal con posición relativa -->
+<div class="board" id="board">
+  <svg class="conn-svg" id="connSvg"></svg>
+
+  <!-- Columna izquierda: Preguntas -->
+  <div class="q-col" id="qCol">
+    <div class="col-hdr">PREGUNTAS</div>
+
+    <div class="q-card" id="qA">
+      <div class="q-letter" style="background:var(--cA)">A</div>
+      <div class="q-text">¿Qué caracteriza a una función exponencial?</div>
+      <div class="q-status" id="qsA"></div>
+      <div class="r-dot" id="rdA" onclick="questionTap('A')"></div>
+    </div>
+    <div class="fb-row" id="fbA"></div>
+
+    <div class="q-card" id="qB">
+      <div class="q-letter" style="background:var(--cB)">B</div>
+      <div class="q-text">¿Cuál es el dominio de la función logarítmica?</div>
+      <div class="q-status" id="qsB"></div>
+      <div class="r-dot" id="rdB" onclick="questionTap('B')"></div>
+    </div>
+    <div class="fb-row" id="fbB"></div>
+
+    <div class="q-card" id="qC">
+      <div class="q-letter" style="background:var(--cC)">C</div>
+      <div class="q-text">¿Qué propiedad cumple la composición de funciones?</div>
+      <div class="q-status" id="qsC"></div>
+      <div class="r-dot" id="rdC" onclick="questionTap('C')"></div>
+    </div>
+    <div class="fb-row" id="fbC"></div>
+
+    <div class="q-card" id="qD">
+      <div class="q-letter" style="background:var(--cD)">D</div>
+      <div class="q-text">¿Qué condición debe cumplir una función para tener inversa?</div>
+      <div class="q-status" id="qsD"></div>
+      <div class="r-dot" id="rdD" onclick="questionTap('D')"></div>
+    </div>
+    <div class="fb-row" id="fbD"></div>
+  </div>
+
+  <div class="mid-spacer"></div>
+
+  <!-- Columna derecha: Respuestas (se llenan dinámicamente) -->
+  <div class="a-col" id="aCol">
+    <div class="col-hdr">RESPUESTAS</div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-reset" onclick="resetAll()">↺ Reiniciar</button>
+  <button class="btn btn-verify" id="btnVerify" onclick="verify()" disabled>Verificar ✓</button>
+  <div class="score-pill" id="scoreEl">Conectadas: 0 / 4</div>
+</div>
+
+<div class="success" id="successBanner">
+  <div class="success-ico">🎉</div>
+  <div><strong>¡Excelente trabajo!</strong> Has conectado correctamente todos los conceptos de funciones especiales, composición e inversa.</div>
+</div>
+
+<div class="foot">
+  <span>Elaboración propia. · Rohoden, K. (2025). <em>Funciones especiales, composición e inversa.</em> UTPL.</span>
+</div>
+
+<script>
+const ANSWERS_DATA = [
+  { id: '1', label: 'RESPUESTA 1', text: 'Elevar una base constante positiva distinta de 1 a una potencia dependiente de la variable.', correctFor: 'A', color: 'var(--cA)', fb: 'La función exponencial se utiliza para modelar procesos de crecimiento o decaimiento.' },
+  { id: '2', label: 'RESPUESTA 2', text: 'Valores positivos de x, sin incluir el cero.', correctFor: 'B', color: 'var(--cB)', fb: 'La función logarítmica solo existe para valores positivos de x.' },
+  { id: '3', label: 'RESPUESTA 3', text: 'No es conmutativa, es decir f∘g ≠ g∘f.', correctFor: 'C', color: 'var(--cC)', fb: 'La composición de funciones no es conmutativa, el orden importa.' },
+  { id: '4', label: 'RESPUESTA 4', text: 'Debe ser inyectiva, verificada con la prueba de la recta horizontal.', correctFor: 'D', color: 'var(--cD)', fb: 'La función inversa solo existe si la función es inyectiva.' }
+];
+
+const QUESTION_IDS = ['A', 'B', 'C', 'D'];
+let connections = {};
+let activeQuestion = null;
+let verified = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildAnswers() {
+  const col = document.getElementById('aCol');
+  // Mantener el header
+  const hdr = col.querySelector('.col-hdr');
+  col.innerHTML = '';
+  col.appendChild(hdr);
+
+  shuffle(ANSWERS_DATA).forEach(ans => {
+    const card = document.createElement('div');
+    card.className = 'a-card';
+    card.id = 'ans-' + ans.id;
+    card.dataset.ansId = ans.id;
+    card.innerHTML = `
+      <div class="l-dot" id="ld-${ans.id}"></div>
+      <div class="a-label" style="color:${ans.color}">${ans.label}</div>
+      <div class="a-text">${ans.text}</div>
+    `;
+    card.addEventListener('click', () => answerTap(ans.id));
+    col.appendChild(card);
+  });
+}
+
+function questionTap(qId) {
+  if (verified) return;
+  
+  if (connections[qId]) {
+    removeConnection(qId);
+  }
+  
+  if (activeQuestion === qId) {
+    setActiveQuestion(null);
+    return;
+  }
+  
+  setActiveQuestion(qId);
+  
+  // Pulsar puntos de respuesta disponibles
+  ANSWERS_DATA.forEach(ans => {
+    const used = Object.values(connections).includes(ans.id);
+    if (!used) {
+      const dot = document.getElementById('ld-' + ans.id);
+      if (dot) dot.classList.add('pulse');
+    }
+  });
+}
+
+function answerTap(ansId) {
+  if (verified || !activeQuestion) return;
+  
+  // Si esta respuesta ya está conectada a otra pregunta, la desconectamos
+  const existingQ = Object.entries(connections).find(([, a]) => a === ansId);
+  if (existingQ && existingQ[0] !== activeQuestion) {
+    removeConnection(existingQ[0]);
+  }
+  
+  connections[activeQuestion] = ansId;
+  clearPulse();
+  setActiveQuestion(null);
+  renderAll();
+  updateScore();
+}
+
+function setActiveQuestion(qId) {
+  activeQuestion = qId;
+  QUESTION_IDS.forEach(id => {
+    const dot = document.getElementById('rd' + id);
+    if (dot) dot.classList.toggle('active', id === qId);
+  });
+}
+
+function clearPulse() {
+  ANSWERS_DATA.forEach(ans => {
+    const dot = document.getElementById('ld-' + ans.id);
+    if (dot) dot.classList.remove('pulse');
+  });
+}
+
+function removeConnection(qId) {
+  delete connections[qId];
+  renderAll();
+  updateScore();
+}
+
+function renderAll() {
+  // Resetear estilos de preguntas
+  QUESTION_IDS.forEach(qId => {
+    const card = document.getElementById('q' + qId);
+    const dot = document.getElementById('rd' + qId);
+    if (card) card.classList.remove('sel', 'ok', 'err');
+    if (dot) dot.className = 'r-dot';
+  });
+  
+  // Resetear estilos de respuestas
+  ANSWERS_DATA.forEach(ans => {
+    const card = document.getElementById('ans-' + ans.id);
+    const dot = document.getElementById('ld-' + ans.id);
+    if (card) card.classList.remove('used', 'ok', 'err', 'locked');
+    if (dot) dot.className = 'l-dot';
+  });
+  
+  // Aplicar estilos según conexiones
+  Object.entries(connections).forEach(([qId, ansId]) => {
+    const qCard = document.getElementById('q' + qId);
+    const qDot = document.getElementById('rd' + qId);
+    const aCard = document.getElementById('ans-' + ansId);
+    
+    if (qCard) qCard.classList.add('sel');
+    if (qDot) qDot.classList.add('active');
+    if (aCard) aCard.classList.add('used');
+  });
+  
+  drawLines();
+}
+
+function drawLines() {
+  const svg = document.getElementById('connSvg');
+  if (!svg) return;
+  
+  svg.innerHTML = '';
+  const boardRect = document.getElementById('board').getBoundingClientRect();
+  
+  Object.entries(connections).forEach(([qId, ansId]) => {
+    const qDot = document.getElementById('rd' + qId);
+    const aDot = document.getElementById('ld-' + ansId);
+    
+    if (!qDot || !aDot) return;
+    
+    const qRect = qDot.getBoundingClientRect();
+    const aRect = aDot.getBoundingClientRect();
+    
+    const x1 = qRect.left + qRect.width / 2 - boardRect.left;
+    const y1 = qRect.top + qRect.height / 2 - boardRect.top;
+    const x2 = aRect.left + aRect.width / 2 - boardRect.left;
+    const y2 = aRect.top + aRect.height / 2 - boardRect.top;
+    
+    const midX = (x1 + x2) / 2;
+    
+    let strokeColor = '#2a4070';
+    if (verified) {
+      const ans = ANSWERS_DATA.find(a => a.id === ansId);
+      const isCorrect = ans && ans.correctFor === qId;
+      strokeColor = isCorrect ? '#1a6e40' : '#a02020';
+    }
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}`);
+    path.setAttribute('stroke', strokeColor);
+    path.setAttribute('stroke-width', '2.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    if (!verified) {
+      path.setAttribute('stroke-dasharray', '5 3');
+    }
+    svg.appendChild(path);
+    
+    // Círculo al inicio
+    const startCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    startCircle.setAttribute('cx', x1);
+    startCircle.setAttribute('cy', y1);
+    startCircle.setAttribute('r', '3.5');
+    startCircle.setAttribute('fill', strokeColor);
+    svg.appendChild(startCircle);
+    
+    // Círculo al final
+    const endCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    endCircle.setAttribute('cx', x2);
+    endCircle.setAttribute('cy', y2);
+    endCircle.setAttribute('r', '3.5');
+    endCircle.setAttribute('fill', strokeColor);
+    svg.appendChild(endCircle);
+  });
+}
+
+function updateScore() {
+  const count = Object.keys(connections).length;
+  const scoreEl = document.getElementById('scoreEl');
+  const btnVerify = document.getElementById('btnVerify');
+  
+  if (scoreEl) scoreEl.textContent = `Conectadas: ${count} / 4`;
+  if (btnVerify) btnVerify.disabled = count < 4;
+}
+
+function verify() {
+  if (Object.keys(connections).length < 4) return;
+  
+  verified = true;
+  clearPulse();
+  setActiveQuestion(null);
+  
+  let correct = 0;
+  
+  QUESTION_IDS.forEach(qId => {
+    const ansId = connections[qId];
+    const ans = ANSWERS_DATA.find(a => a.id === ansId);
+    const isCorrect = ans && ans.correctFor === qId;
+    if (isCorrect) correct++;
+    
+    const qCard = document.getElementById('q' + qId);
+    const qStatus = document.getElementById('qs' + qId);
+    const qDot = document.getElementById('rd' + qId);
+    
+    if (qCard) {
+      qCard.classList.remove('sel');
+      qCard.classList.add(isCorrect ? 'ok' : 'err');
+    }
+    if (qStatus) qStatus.textContent = isCorrect ? '✅' : '❌';
+    if (qDot) {
+      qDot.className = 'r-dot ' + (isCorrect ? 'ok-dot' : 'err-dot');
+    }
+    
+    const aCard = document.getElementById('ans-' + ansId);
+    const aDot = document.getElementById('ld-' + ansId);
+    
+    if (aCard) {
+      aCard.classList.remove('used');
+      aCard.classList.add(isCorrect ? 'ok' : 'err', 'locked');
+    }
+    if (aDot) {
+      aDot.className = 'l-dot ' + (isCorrect ? 'ok-dot' : 'err-dot');
+    }
+    
+    const fb = document.getElementById('fb' + qId);
+    if (fb && ans) {
+      fb.className = 'fb-row show ' + (isCorrect ? 'ok' : 'err');
+      fb.innerHTML = `<div class="fb-ico">${isCorrect ? '✅' : '❌'}</div>
+        <div><strong>${isCorrect ? '¡Correcto!' : 'Incorrecto.'}</strong> ${ans.fb}</div>`;
+    }
+  });
+  
+  const scoreEl = document.getElementById('scoreEl');
+  const btnVerify = document.getElementById('btnVerify');
+  
+  if (scoreEl) scoreEl.textContent = `Resultado: ${correct} / 4`;
+  if (btnVerify) btnVerify.style.display = 'none';
+  
+  drawLines();
+  
+  if (correct === 4) {
+    document.getElementById('successBanner').classList.add('show');
+  }
+}
+
+function resetAll() {
+  verified = false;
+  connections = {};
+  activeQuestion = null;
+  
+  QUESTION_IDS.forEach(qId => {
+    const qCard = document.getElementById('q' + qId);
+    const qStatus = document.getElementById('qs' + qId);
+    const qDot = document.getElementById('rd' + qId);
+    const fb = document.getElementById('fb' + qId);
+    
+    if (qCard) qCard.classList.remove('sel', 'ok', 'err');
+    if (qStatus) qStatus.textContent = '';
+    if (qDot) qDot.className = 'r-dot';
+    if (fb) {
+      fb.className = 'fb-row';
+      fb.innerHTML = '';
+    }
+  });
+  
+  const svg = document.getElementById('connSvg');
+  if (svg) svg.innerHTML = '';
+  
+  const btnVerify = document.getElementById('btnVerify');
+  const scoreEl = document.getElementById('scoreEl');
+  const successBanner = document.getElementById('successBanner');
+  
+  if (btnVerify) {
+    btnVerify.style.display = '';
+    btnVerify.disabled = true;
+  }
+  if (scoreEl) scoreEl.textContent = 'Conectadas: 0 / 4';
+  if (successBanner) successBanner.classList.remove('show');
+  
+  buildAnswers();
+  updateScore();
+}
+
+// Redibujar líneas en resize
+window.addEventListener('resize', () => setTimeout(drawLines, 50));
+window.addEventListener('scroll', () => setTimeout(drawLines, 50));
+
+// Inicializar
+buildAnswers();
+updateScore();
+</script>
+</body>
+</html>

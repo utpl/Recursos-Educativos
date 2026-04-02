@@ -48,7 +48,7 @@
       right: 0;
       bottom: 0;
       opacity: 0.06;
-      background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c2410c' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+      background-image: url("image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c2410c' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
       pointer-events: none;
     }
     
@@ -252,7 +252,7 @@
     
     .question-number {
       position: absolute;
-      top: -14px;
+      top: -8px;
       left: 24px;
       background: var(--accent);
       color: white;
@@ -450,6 +450,7 @@
       justify-content: center;
       gap: 16px;
       margin-top: 20px;
+      position: relative;
     }
     
     .nav-btn {
@@ -490,6 +491,33 @@
     
     .nav-btn.finish.show {
       display: flex;
+    }
+    
+    /* Animación shake para feedback visual */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .nav-btn.shake {
+      animation: shake 0.3s ease;
+    }
+    
+    .nav-hint {
+      position: absolute;
+      bottom: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--text-light);
+      font-style: italic;
+      white-space: nowrap;
+      display: none;
+    }
+    
+    .nav-hint.show {
+      display: block;
     }
     
     /* Final Screen */
@@ -720,7 +748,7 @@
           </div>
         </div>
         
-        <!-- PREGUNTA 3 -->
+        <!-- PREGUNTA 3: MATCHING -->
         <div class="question-slide" data-question="3">
           <div class="question-box">
             <span class="question-number">Pregunta 3 de 4</span>
@@ -819,6 +847,7 @@
           <button class="nav-btn finish" id="finish-btn" onclick="showFinal()">
             <span>🏆</span> Ver Resultado
           </button>
+          <div class="nav-hint" id="nav-hint"></div>
         </div>
       </div>
     </div>
@@ -868,6 +897,7 @@
     function startQuiz() {
       document.getElementById('screen-intro').classList.remove('active');
       document.getElementById('screen-quiz').classList.add('active');
+      updateNavButtons();
     }
     
     function selectOption(question, option, isCorrect) {
@@ -890,9 +920,20 @@
         btn.style.pointerEvents = 'none';
       });
       
-      const selectedBtn = slide.querySelector(`.option-btn:nth-child(${option === 'A' ? 1 : option === 'B' ? 2 : option === 'C' ? 3 : 4})`);
-      selectedBtn.classList.remove('disabled');
-      selectedBtn.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+      // Find and mark selected button
+      const buttons = slide.querySelectorAll('.option-btn');
+      let selectedIndex = -1;
+      if (option === 'A') selectedIndex = 0;
+      else if (option === 'B') selectedIndex = 1;
+      else if (option === 'C') selectedIndex = 2;
+      else if (option === 'D') selectedIndex = 3;
+      else if (option === 'V') selectedIndex = 0;
+      else if (option === 'F') selectedIndex = 1;
+      
+      if (selectedIndex >= 0 && buttons[selectedIndex]) {
+        buttons[selectedIndex].classList.remove('disabled');
+        buttons[selectedIndex].classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+      }
       
       // Show feedback
       if (question === 4) {
@@ -947,13 +988,16 @@
         const dot = document.querySelectorAll('.progress-dot')[2];
         dot.classList.remove('active');
         dot.classList.add(allCorrect ? 'correct' : 'wrong');
-        document.querySelectorAll('.progress-dot')[3].classList.add('active');
+        if (currentQuestion < totalQuestions) {
+          document.querySelectorAll('.progress-dot')[3].classList.add('active');
+        }
         
         // Show feedback
         document.getElementById('feedback-3').classList.add('show');
         
         if (allCorrect) correctAnswers++;
         
+        // ✅ IMPORTANTE: Actualizar navegación AHORA que está respondida
         updateNavButtons();
       }
     }
@@ -961,7 +1005,7 @@
     function checkMatchComplete() {
       // Visual feedback that we're waiting for a description
       document.querySelectorAll('.matching-item[data-desc]').forEach(item => {
-        if (!item.classList.contains('matched')) {
+        if (!item.classList.contains('matched') && !item.classList.contains('matched-wrong')) {
           item.style.borderStyle = 'dashed';
           setTimeout(() => {
             item.style.borderStyle = 'solid';
@@ -972,35 +1016,92 @@
     
     function changeQuestion(direction) {
       const newQ = currentQuestion + direction;
-      if (newQ >= 1 && newQ <= totalQuestions) {
-        document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.remove('active');
-        currentQuestion = newQ;
-        document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.add('active');
-        updateNavButtons();
+      
+      // Validar rango
+      if (newQ < 1 || newQ > totalQuestions) return;
+      
+      // ✅ VALIDACIÓN: Solo permitir avanzar si la pregunta ACTUAL está respondida
+      if (direction === 1 && !answered[currentQuestion]) {
+        showNavHint('⚠️ Responde esta pregunta para continuar');
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.classList.add('shake');
+        setTimeout(() => nextBtn.classList.remove('shake'), 300);
+        return;
       }
+      
+      // Retroceder: siempre permitido
+      
+      // Cambiar slide
+      document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.remove('active');
+      currentQuestion = newQ;
+      document.querySelector(`.question-slide[data-question="${currentQuestion}"]`).classList.add('active');
+      
+      updateNavButtons();
+    }
+    
+    function showNavHint(message) {
+      const hint = document.getElementById('nav-hint');
+      hint.textContent = message;
+      hint.classList.add('show');
+      setTimeout(() => hint.classList.remove('show'), 3000);
     }
     
     function updateNavButtons() {
-      document.getElementById('prev-btn').disabled = currentQuestion === 1;
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const finishBtn = document.getElementById('finish-btn');
+      
+      // Botón anterior: habilitado si no es la primera pregunta
+      prevBtn.disabled = (currentQuestion === 1);
       
       const currentAnswered = answered[currentQuestion];
       
       if (currentQuestion === totalQuestions) {
-        document.getElementById('next-btn').style.display = 'none';
-        const allAnswered = Object.values(answered).every(v => v);
+        // Última pregunta
+        nextBtn.style.display = 'none';
+        
+        const allAnswered = Object.values(answered).every(v => v === true);
         if (allAnswered) {
-          document.getElementById('finish-btn').classList.add('show');
+          finishBtn.classList.add('show');
+        } else {
+          finishBtn.classList.remove('show');
         }
       } else {
-        document.getElementById('next-btn').style.display = currentAnswered ? 'flex' : 'none';
-        document.getElementById('finish-btn').classList.remove('show');
+        // ✅ CORRECCIÓN: Siempre mostrar "Siguiente", pero deshabilitar si no está respondida
+        nextBtn.style.display = 'flex';
+        nextBtn.disabled = !currentAnswered;
+        finishBtn.classList.remove('show');
       }
+      
+      // Actualizar dots de progreso
+      updateProgressDots();
+    }
+    
+    function updateProgressDots() {
+      const dots = document.querySelectorAll('.progress-dot');
+      dots.forEach((dot, index) => {
+        const qNum = index + 1;
+        // Reset classes
+        dot.classList.remove('active', 'correct', 'wrong');
+        
+        // Dot activo = pregunta actual
+        if (qNum === currentQuestion) {
+          dot.classList.add('active');
+        } 
+        // Dot ya respondido = mostrar estado
+        else if (answered[qNum]) {
+          dot.classList.add('correct');
+        }
+      });
     }
     
     function showFinal() {
-      document.getElementById('screen-quiz').classList.remove('active');
-      document.getElementById('screen-final').classList.add('active');
-      document.getElementById('correct-count').textContent = correctAnswers;
+      const allAnswered = Object.values(answered).every(v => v === true);
+      if (allAnswered) {
+        document.getElementById('screen-quiz').classList.remove('active');
+        document.getElementById('screen-final').classList.add('active');
+        document.getElementById('correct-count').textContent = correctAnswers;
+      }
     }
   </script>
 </body>

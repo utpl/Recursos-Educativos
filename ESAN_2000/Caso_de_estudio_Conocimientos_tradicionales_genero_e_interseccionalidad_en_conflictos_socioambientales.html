@@ -304,6 +304,10 @@
       display: flex;
     }
     
+    .question-slide.answered .question-box {
+      border-color: var(--success);
+    }
+    
     .question-box {
       background: var(--card-bg);
       border: 4px solid var(--accent);
@@ -504,6 +508,11 @@
       transition: all 0.2s;
     }
     
+    .modal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #92400e;
+    }
+    
     .slider-nav {
       display: flex;
       justify-content: center;
@@ -665,7 +674,7 @@
     <header class="header">
       <span class="header-icon">🌾👩‍🌾🌽</span>
       <h1>Conocimientos Tradicionales, Género e Interseccionalidad</h1>
-      <p>Caso de estudio práctico | Semana 11 | ESAN_2000 Ecología Política</p>
+      <p>Caso de estudio práctico  Ecología Política</p>
     </header>
     
     <!-- PANTALLA 1: CONTEXTO -->
@@ -920,7 +929,7 @@
     </div>
     
     <footer class="footer">
-      📚 ESAN_2000 Ecología Política | Caso de estudio: Conocimientos tradicionales, género e interseccionalidad
+      📚 Ecología Política | Caso de estudio: Conocimientos tradicionales, género e interseccionalidad
     </footer>
   </div>
   
@@ -936,30 +945,47 @@
     }
     
     function goToQuestion(q) {
-      // Solo permitir ir a preguntas que ya han sido respondidas
-      if (!answered[q]) return;
+      // Validar que no se salte preguntas no respondidas hacia adelante
+      if (q > currentQuestion && !answered[currentQuestion]) {
+        return; // No permitir saltar sin responder
+      }
       
-      // Cambiar slide activo
-      document.querySelectorAll('.question-slide').forEach(slide => {
-        slide.classList.remove('active');
-      });
-      document.querySelector(`.question-slide[data-question="${q}"]`).classList.add('active');
-      
-      // Actualizar dots
-      document.querySelectorAll('.slider-dot').forEach((dot, index) => {
-        dot.classList.remove('active');
-        if (index + 1 === q) dot.classList.add('active');
-      });
-      
-      currentQuestion = q;
-      updateNavButtons();
+      // Permitir navegación a preguntas ya respondidas o la siguiente secuencial
+      if (q <= currentQuestion || answered[q] || q === currentQuestion + 1) {
+        // Cambiar slide activo
+        document.querySelectorAll('.question-slide').forEach(slide => {
+          slide.classList.remove('active');
+        });
+        document.querySelector(`.question-slide[data-question="${q}"]`).classList.add('active');
+        
+        // Actualizar dots activos
+        document.querySelectorAll('.slider-dot').forEach(dot => {
+          dot.classList.remove('active');
+          if (parseInt(dot.dataset.q) === q) {
+            dot.classList.add('active');
+          }
+        });
+        
+        currentQuestion = q;
+        updateNavButtons();
+      }
     }
     
     function changeQuestion(direction) {
       const newQ = currentQuestion + direction;
-      if (newQ >= 1 && newQ <= totalQuestions && answered[newQ]) {
-        goToQuestion(newQ);
+      
+      // Validar rango
+      if (newQ < 1 || newQ > totalQuestions) return;
+      
+      // Permitir avanzar si la pregunta actual está respondida
+      // Permitir retroceder a cualquier pregunta anterior
+      if (direction === 1) {
+        // Avanzar: solo si la actual está respondida
+        if (!answered[currentQuestion]) return;
       }
+      // Retroceder: siempre permitido a preguntas anteriores
+      
+      goToQuestion(newQ);
     }
     
     function updateNavButtons() {
@@ -967,31 +993,33 @@
       const nextBtn = document.getElementById('next-btn');
       const finishBtn = document.getElementById('finish-btn');
       
-      // Botón anterior
-      prevBtn.disabled = currentQuestion === 1;
+      // Botón anterior: habilitado si no estamos en la primera pregunta
+      prevBtn.disabled = (currentQuestion === 1);
       
       // Verificar si todas están respondidas
       const allAnswered = Object.values(answered).every(v => v === true);
       
-      // Botón siguiente y finalizar
+      // Lógica para botones de navegación
       if (currentQuestion === totalQuestions) {
+        // Última pregunta: mostrar botón "Finalizar" si todo está respondido
         nextBtn.style.display = 'none';
-        if (allAnswered) {
-          finishBtn.style.display = 'flex';
-        } else {
-          finishBtn.style.display = 'none';
-        }
+        finishBtn.style.display = allAnswered ? 'flex' : 'none';
       } else {
+        // Preguntas intermedias: mostrar "Siguiente"
         nextBtn.style.display = 'flex';
         finishBtn.style.display = 'none';
         
-        // Habilitar siguiente solo si la siguiente pregunta ya está respondida
-        if (answered[currentQuestion + 1]) {
-          nextBtn.disabled = false;
-        } else {
-          nextBtn.disabled = true;
-        }
+        // ✅ CORRECCIÓN: Habilitar "Siguiente" si la pregunta ACTUAL está respondida
+        nextBtn.disabled = !answered[currentQuestion];
       }
+      
+      // Actualizar estado visual de los dots
+      document.querySelectorAll('.slider-dot').forEach(dot => {
+        const qNum = parseInt(dot.dataset.q);
+        if (answered[qNum]) {
+          dot.classList.add('answered');
+        }
+      });
     }
     
     function openFeedback(question, option, isCorrect) {
@@ -1021,6 +1049,9 @@
           : '0 0 0 4px #eab308, 6px 6px 0 rgba(0,0,0,0.1)';
       }
       
+      // Agregar clase visual al slide respondido
+      slide.classList.add('answered');
+      
       // Mostrar modal de retroalimentación
       const modalId = `modal-${question}-${option}`;
       const modal = document.getElementById(modalId);
@@ -1029,15 +1060,8 @@
         document.getElementById('modal-overlay').classList.add('active');
       }
       
-      // ACTUALIZAR NAVEGACIÓN: habilitar siguiente si existe
+      // ACTUALIZAR NAVEGACIÓN después de responder
       updateNavButtons();
-      
-      // Si no es la última pregunta, mostrar un mensaje de que puede continuar
-      if (question < totalQuestions) {
-        // El botón siguiente ahora debería estar habilitado porque la pregunta actual está respondida
-        // pero la siguiente aún no, así que no se habilita automáticamente para navegar
-        // El usuario debe hacer clic en el dot de la siguiente o terminar la actual y luego ir
-      }
     }
     
     function closeModal() {
@@ -1046,8 +1070,8 @@
         m.style.display = 'none';
       });
       
-      // Después de cerrar el modal, si la pregunta actual es la 1 y ya está respondida,
-      // el usuario puede hacer clic en el dot de la pregunta 2 para ir a ella
+      // ✅ Importante: actualizar botones después de cerrar el modal
+      updateNavButtons();
     }
     
     function closeModalOutside(event) {
