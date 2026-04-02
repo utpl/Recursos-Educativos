@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Quiz: Neoliberalismo y crisis social en América Latina</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  :root {
+    --ink:     #1a1523;
+    --wine:    #6b1f3c;
+    --rose:    #c9445e;
+    --rose-lt: #fce7ec;
+    --gold:    #b8891e;
+    --gold-lt: #fdf3dc;
+    --sage:    #2f6b50;
+    --sage-lt: #d6f0e3;
+    --sand:    #f7f3ed;
+    --border:  #e4dbd0;
+    --correct: #1e6e47;
+    --wrong:   #9b1c3a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--sand);
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(107,31,60,0.07) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 100%, rgba(47,107,80,0.07) 0%, transparent 60%);
+    min-height: 100vh;
+    display: flex; align-items: flex-start; justify-content: center;
+ 
+  }
+
+  .container {
+    width: 800px; max-width: 100%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 16px 56px rgba(26,21,35,0.11);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  /* ══ HEADER ══ */
+  .header {
+    background: var(--wine);
+    padding: 10px 38px 8px;
+    position: relative; overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Ccircle cx='40' cy='40' r='38' stroke='rgba(255,255,255,0.04)' stroke-width='1'/%3E%3Ccircle cx='40' cy='40' r='25' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E") center/80px;
+  }
+  .header::after {
+    content: '✝';
+    position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
+    font-size: 100px; opacity: 0.07; color: #fff; pointer-events: none;
+  }
+  .h-sup {
+    font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(255,255,255,0.55); margin-bottom: 10px;
+  }
+  .header h1 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 20px; font-weight: 700; color: #fff;
+    line-height: 1.2; margin-bottom: 8px;
+  }
+  .header p { font-size: 12px; color: rgba(255,255,255,0.72); line-height: 1.6; max-width: 90%; }
+
+  /* ══ STEPS TRACKER ══ */
+  .steps-wrap {
+    padding: 18px 32px;
+    background: #fdfaf6;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: 0; flex: 1;
+  }
+  .step-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #b0a898;
+    flex-shrink: 0;
+    transition: all 0.3s;
+    position: relative; z-index: 1;
+  }
+  .step-circle.active { border-color: var(--wine); background: var(--wine); color: #fff; }
+  .step-circle.done   { border-color: var(--sage); background: var(--sage); color: #fff; }
+  .step-circle.done::after { content: '✓'; font-size: 13px; }
+  .step-circle.done .step-n { display: none; }
+  .step-connector {
+    flex: 1; height: 2px; background: var(--border);
+    margin: 0 -1px;
+    transition: background 0.3s;
+  }
+  .step-connector.done { background: var(--sage); }
+
+  /* ══ INSTRUCTION BAR ══ */
+  .instr {
+    background: var(--gold-lt);
+    border-left: 4px solid var(--gold);
+    margin: 22px 28px 0;
+    padding: 13px 17px;
+    border-radius: 0 10px 10px 0;
+    font-size: 13px; color: #5a4010; line-height: 1.6;
+  }
+  .instr strong { color: var(--gold); }
+
+  /* ══ QUIZ BODY ══ */
+  .quiz-body { padding: 24px 28px 28px; }
+
+  /* ══ QUESTION CARD ══ */
+  .q-card {
+    display: none;
+    animation: fadeSlide 0.38s ease;
+  }
+  .q-card.active { display: block; }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .q-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .q-pill {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--rose-lt); border: 1.5px solid #f0b8c5;
+    border-radius: 30px; padding: 5px 14px;
+    font-size: 11px; font-weight: 800; color: var(--rose);
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .q-text {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 15px; color: var(--ink);
+    line-height: 1.65; margin-bottom: 20px;
+  }
+
+  /* ══ OPCIONES MÚLTIPLE ══ */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: #fdfaf6; border: 2px solid var(--border);
+    border-radius: 12px; padding: 13px 16px;
+    cursor: pointer; font-size: 13.5px; color: var(--ink);
+    line-height: 1.55; font-weight: 600;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    width: 100%; text-align: left;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--rose); background: var(--rose-lt);
+    transform: translateX(5px);
+  }
+  .opt-lbl {
+    min-width: 28px; height: 28px; border-radius: 8px;
+    background: var(--border); display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #7a6a5a;
+    flex-shrink: 0; transition: background 0.2s, color 0.2s;
+  }
+  .opt.correct { background: var(--sage-lt); border-color: #5cb88a; }
+  .opt.correct .opt-lbl { background: var(--sage); color: #fff; }
+  .opt.wrong   { background: var(--rose-lt); border-color: var(--rose); }
+  .opt.wrong .opt-lbl { background: var(--rose); color: #fff; }
+  .opt:disabled { cursor: default; transform: none; }
+
+  /* ══ VERDADERO / FALSO ══ */
+  .tf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tf-card {
+    border: 2px solid var(--border); border-radius: 16px;
+    background: #fdfaf6; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px 14px; gap: 10px;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  }
+  .tf-card:hover:not(:disabled) { border-color: var(--rose); background: var(--rose-lt); transform: scale(1.03); }
+  .tf-icon { font-size: 34px; }
+  .tf-label { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .tf-card.correct { background: var(--sage-lt); border-color: #5cb88a; }
+  .tf-card.correct .tf-label { color: var(--sage); }
+  .tf-card.wrong   { background: var(--rose-lt); border-color: var(--rose); }
+  .tf-card.wrong   .tf-label { color: var(--rose); }
+  .tf-card:disabled { cursor: default; transform: none; }
+
+  /* ══ RELACIONAR COLUMNAS ══ */
+  .match-rows { display: flex; flex-direction: column; gap: 12px; }
+  .match-row { display: flex; align-items: center; gap: 10px; }
+  .match-concept {
+    background: var(--rose-lt); border: 1.5px solid #f0b8c5;
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 13px; font-weight: 700; color: var(--wine);
+    min-width: 120px; text-align: center; flex-shrink: 0;
+  }
+  .match-arrow { font-size: 18px; color: #c0b0a0; flex-shrink: 0; }
+  .match-sel {
+    flex: 1; padding: 10px 32px 10px 12px;
+    border: 2px solid var(--border); border-radius: 10px;
+    background: #fdfaf6; font-size: 13px; font-weight: 600;
+    color: var(--ink); cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%239a8878' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+    font-family: 'Nunito', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .match-sel:focus { outline: none; border-color: var(--wine); }
+  .match-sel:disabled { cursor: default; }
+  .match-sel.correct { border-color: #5cb88a; background-color: var(--sage-lt); }
+  .match-sel.wrong   { border-color: var(--rose); background-color: var(--rose-lt); }
+  .match-ind { font-size: 18px; flex-shrink: 0; }
+  .btn-check {
+    margin-top: 14px; padding: 10px 24px;
+    background: var(--sage); color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: opacity 0.2s, transform 0.15s;
+    float: right;
+  }
+  .btn-check:hover:not(:disabled) { opacity: 0.88; transform: scale(1.04); }
+  .btn-check:disabled { opacity: 0.4; cursor: default; }
+
+  /* ══ CASO DE ESTUDIO ══ */
+  .case-scenario {
+    background: #fdfaf6; border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
+    font-size: 13.5px; color: #4a3f32; line-height: 1.75;
+    font-style: italic; margin-bottom: 18px;
+    position: relative;
+  }
+  .case-scenario::before {
+    content: '"'; font-family: 'Libre Baskerville', serif;
+    font-size: 48px; color: var(--gold); opacity: 0.3;
+    position: absolute; left: 12px; top: 4px; line-height: 1;
+  }
+  .case-opts { display: flex; flex-direction: column; gap: 10px; }
+  .case-opt {
+    border: 2px solid var(--border); border-radius: 14px;
+    padding: 16px 18px; cursor: pointer; background: #fdfaf6;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    width: 100%; text-align: left;
+  }
+  .case-opt:hover:not(:disabled) { border-color: var(--rose); background: var(--rose-lt); transform: translateX(5px); }
+  .case-opt-tag { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--rose); margin-bottom: 5px; }
+  .case-opt-txt { font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.55; }
+  .case-opt.correct { background: var(--sage-lt); border-color: #5cb88a; }
+  .case-opt.correct .case-opt-tag { color: var(--sage); }
+  .case-opt.wrong   { background: var(--rose-lt); border-color: var(--rose); }
+  .case-opt:disabled { cursor: default; transform: none; }
+
+  /* ══ FEEDBACK ══ */
+  .fb-box {
+    margin-top: 14px; border-radius: 12px; padding: 13px 16px;
+    font-size: 13px; line-height: 1.7; display: none;
+    animation: fadeSlide 0.3s ease;
+  }
+  .fb-box.show { display: block; }
+  .fb-box.ok  { background: var(--sage-lt); border: 2px solid #91d8b4; color: var(--correct); }
+  .fb-box.err { background: var(--rose-lt); border: 2px solid #f0b8c5; color: var(--wrong); }
+  .fb-box strong { font-weight: 800; }
+
+  /* ══ NAVEGACIÓN ══ */
+  .nav-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px; gap: 10px;
+  }
+  .btn-nav {
+    padding: 11px 26px; border-radius: 10px;
+    font-size: 13.5px; font-weight: 800; cursor: pointer; border: none;
+    font-family: 'Nunito', sans-serif;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-nav:hover:not(:disabled) { opacity: 0.88; transform: scale(1.03); }
+  .btn-nav:disabled { opacity: 0.35; cursor: default; transform: none; }
+  .btn-prev { background: #f0ebe3; color: #7a6a5a; }
+  .btn-next { background: var(--wine); color: #fff; }
+
+  /* ══ PANTALLA DE RESULTADOS ══ */
+  #result-screen { display: none; padding: 28px; animation: fadeSlide 0.4s ease; }
+  .result-hero {
+    background: linear-gradient(135deg, var(--wine), #a83060);
+    border-radius: 18px; padding: 32px 24px;
+    text-align: center; margin-bottom: 22px;
+    position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content: '✝'; font-size: 120px; color: rgba(255,255,255,0.06);
+    position: absolute; right: 16px; top: -10px; pointer-events: none;
+  }
+  .result-emoji { font-size: 58px; margin-bottom: 12px; }
+  .result-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 8px;
+  }
+  .result-score {
+    font-size: 50px; font-weight: 900; color: #fff;
+    font-family: 'Nunito', sans-serif; line-height: 1;
+  }
+  .result-sub { font-size: 13px; color: rgba(255,255,255,0.72); margin-top: 6px; }
+
+  .result-fb {
+    background: var(--gold-lt); border: 2px solid #e8c870;
+    border-radius: 14px; padding: 18px 20px;
+    font-size: 13.5px; color: #5a4010; line-height: 1.75;
+    margin-bottom: 20px;
+  }
+  .result-fb strong { font-weight: 800; color: var(--gold); }
+
+  .btn-retry {
+    display: block; width: 100%; padding: 14px;
+    background: var(--wine); color: #fff; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 800; cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: opacity 0.2s;
+  }
+  .btn-retry:hover { opacity: 0.88; }
+
+  /* ══ FOOTER ══ */
+  .footer {
+    background: #fdfaf6; border-top: 1px solid var(--border);
+    padding: 12px 28px; font-size: 11px; color: #b0a090; text-align: center;
+  }
+
+  /* ══ RESPONSIVE ══ */
+  @media (max-width: 600px) {
+    body { padding: 10px 8px 36px; }
+    .header { padding: 22px 18px 18px; }
+    .header h1 { font-size: 18px; }
+    .steps-wrap { padding: 14px 16px; }
+    .instr { margin: 16px 14px 0; }
+    .quiz-body { padding: 18px 14px 22px; }
+    .tf-grid { grid-template-columns: 1fr; }
+    .match-row { flex-direction: column; align-items: stretch; }
+    .match-arrow { transform: rotate(90deg); align-self: center; }
+    .match-concept { min-width: unset; text-align: left; }
+    .result-hero { padding: 22px 16px; }
+    #result-screen { padding: 18px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ================================================ -->
+  <!-- HEADER: Título y descripción del quiz -->
+  <!-- ================================================ -->
+  <div class="header">
+    <div class="h-sup">América Latina Contemporánea</div>
+    <h1>Quiz: Neoliberalismo y crisis social en América Latina</h1>
+    <p>Evalúe su comprensión sobre las reformas económicas, sus impactos sociales y los conflictos políticos en la región.</p>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- STEPS TRACKER -->
+  <!-- ================================================ -->
+  <div class="steps-wrap">
+    <div class="step-item">
+      <div class="step-circle active" id="sc1"><span class="step-n">1</span></div>
+      <div class="step-connector" id="cn1"></div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle" id="sc2"><span class="step-n">2</span></div>
+      <div class="step-connector" id="cn2"></div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle" id="sc3"><span class="step-n">3</span></div>
+      <div class="step-connector" id="cn3"></div>
+    </div>
+    <div class="step-item" style="flex:0">
+      <div class="step-circle" id="sc4"><span class="step-n">4</span></div>
+    </div>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- INSTRUCCIÓN -->
+  <!-- ================================================ -->
+  <div class="instr">
+    🎯 <strong>Instrucción:</strong> Analice cada pregunta y seleccione la respuesta correcta. Considere las características del neoliberalismo en América Latina, sus efectos sociales, las protestas regionales y la persistencia de la violencia armada.
+  </div>
+
+  <!-- ================================================ -->
+  <!-- CUERPO DEL QUIZ -->
+  <!-- ================================================ -->
+  <div class="quiz-body" id="quiz-body">
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PREGUNTA 1: OPCIÓN MÚLTIPLE -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="q-card active" id="q1">
+      <div class="q-head">
+        <div class="q-pill">📋 Opción múltiple</div>
+      </div>
+      <div class="q-text">¿Cuál fue una característica central del modelo neoliberal aplicado en América Latina?</div>
+      <div class="options">
+        <button class="opt" data-q="1" data-v="A" onclick="answerMC(this, '1', 'A', 'B')">
+          <span class="opt-lbl">A</span>
+          <span>La ampliación del gasto público y el fortalecimiento de la redistribución social.</span>
+        </button>
+        <button class="opt" data-q="1" data-v="B" onclick="answerMC(this, '1', 'B', 'B')">
+          <span class="opt-lbl">B</span>
+          <span>La privatización de empresas estatales, la liberalización del comercio y la reducción del gasto público.</span>
+        </button>
+        <button class="opt" data-q="1" data-v="C" onclick="answerMC(this, '1', 'C', 'B')">
+          <span class="opt-lbl">C</span>
+          <span>La eliminación de la dependencia del capital extranjero mediante economías cerradas.</span>
+        </button>
+        <button class="opt" data-q="1" data-v="D" onclick="answerMC(this, '1', 'D', 'B')">
+          <span class="opt-lbl">D</span>
+          <span>La sustitución del mercado por un sistema estatal de planificación integral.</span>
+        </button>
+      </div>
+      <div class="fb-box" id="fb1"></div>
+      <div class="nav-row">
+        <button class="btn-nav btn-prev" disabled>← Anterior</button>
+        <button class="btn-nav btn-next" id="nx1" onclick="goTo(2)" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PREGUNTA 2: VERDADERO / FALSO -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="q-card" id="q2">
+      <div class="q-head">
+        <div class="q-pill">✅ Verdadero / Falso</div>
+      </div>
+      <div class="q-text">Aunque en ciertos momentos el neoliberalismo generó estabilidad económica, también provocó desempleo, precarización laboral y profundización de las desigualdades sociales.</div>
+      <div class="tf-grid">
+        <button class="tf-card" onclick="answerTF(this, '2', 'V', 'V')">
+          <span class="tf-icon">✅</span>
+          <span class="tf-label">Verdadero</span>
+        </button>
+        <button class="tf-card" onclick="answerTF(this, '2', 'F', 'V')">
+          <span class="tf-icon">❌</span>
+          <span class="tf-label">Falso</span>
+        </button>
+      </div>
+      <div class="fb-box" id="fb2"></div>
+      <div class="nav-row">
+        <button class="btn-nav btn-prev" onclick="goTo(1)">← Anterior</button>
+        <button class="btn-nav btn-next" id="nx2" onclick="goTo(3)" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PREGUNTA 3: RELACIONAR COLUMNAS (MATCH)         -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="q-card" id="q3">
+      <div class="q-head">
+        <div class="q-pill">🔗 Relacionar columnas</div>
+      </div>
+      <div class="q-text">Relacione cada caso con la situación que mejor lo representa:</div>
+      <div class="match-rows">
+        <!-- Fila 1 -->
+        <div class="match-row">
+          <div class="match-concept">Caracazo</div>
+          <div class="match-arrow">→</div>
+          <select class="match-sel" id="ms1" onchange="checkMatchReady()">
+            <option value="">-- Seleccione --</option>
+            <option value="A">Colapso financiero, recesión profunda y estallido social asociado al “corralito”</option>
+            <option value="B">Estallido social en Venezuela que marcó un quiebre entre el Estado y amplios sectores populares</option>
+            <option value="C">Guerrilla colombiana financiada mediante secuestros, extorsiones y narcotráfico</option>
+            <option value="D">Movimiento insurgente peruano de inspiración maoísta que combinó violencia revolucionaria con terror</option>
+          </select>
+          <span class="match-ind" id="mi1"></span>
+        </div>
+        <!-- Fila 2 -->
+        <div class="match-row">
+          <div class="match-concept">Crisis argentina de 2001</div>
+          <div class="match-arrow">→</div>
+          <select class="match-sel" id="ms2" onchange="checkMatchReady()">
+            <option value="">-- Seleccione --</option>
+            <option value="A">Colapso financiero, recesión profunda y estallido social asociado al “corralito”</option>
+            <option value="B">Estallido social en Venezuela que marcó un quiebre entre el Estado y amplios sectores populares</option>
+            <option value="C">Guerrilla colombiana financiada mediante secuestros, extorsiones y narcotráfico</option>
+            <option value="D">Movimiento insurgente peruano de inspiración maoísta que combinó violencia revolucionaria con terror</option>
+          </select>
+          <span class="match-ind" id="mi2"></span>
+        </div>
+        <!-- Fila 3 -->
+        <div class="match-row">
+          <div class="match-concept">Sendero Luminoso</div>
+          <div class="match-arrow">→</div>
+          <select class="match-sel" id="ms3" onchange="checkMatchReady()">
+            <option value="">-- Seleccione --</option>
+            <option value="A">Colapso financiero, recesión profunda y estallido social asociado al “corralito”</option>
+            <option value="B">Estallido social en Venezuela que marcó un quiebre entre el Estado y amplios sectores populares</option>
+            <option value="C">Guerrilla colombiana financiada mediante secuestros, extorsiones y narcotráfico</option>
+            <option value="D">Movimiento insurgente peruano de inspiración maoísta que combinó violencia revolucionaria con terror</option>
+          </select>
+          <span class="match-ind" id="mi3"></span>
+        </div>
+        <!-- Fila 4 (Agregada para completar el contenido) -->
+        <div class="match-row">
+          <div class="match-concept">FARC</div>
+          <div class="match-arrow">→</div>
+          <select class="match-sel" id="ms4" onchange="checkMatchReady()">
+            <option value="">-- Seleccione --</option>
+            <option value="A">Colapso financiero, recesión profunda y estallido social asociado al “corralito”</option>
+            <option value="B">Estallido social en Venezuela que marcó un quiebre entre el Estado y amplios sectores populares</option>
+            <option value="C">Guerrilla colombiana financiada mediante secuestros, extorsiones y narcotráfico</option>
+            <option value="D">Movimiento insurgente peruano de inspiración maoísta que combinó violencia revolucionaria con terror</option>
+          </select>
+          <span class="match-ind" id="mi4"></span>
+        </div>
+      </div>
+      <div style="overflow:hidden;margin-top:14px;">
+        <button class="btn-check" id="btn-check3" onclick="submitMatch()" disabled>Verificar ✔</button>
+      </div>
+      <div class="fb-box" id="fb3"></div>
+      <div class="nav-row" style="clear:both;">
+        <button class="btn-nav btn-prev" onclick="goTo(2)">← Anterior</button>
+        <button class="btn-nav btn-next" id="nx3" onclick="goTo(4)" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PREGUNTA 4: CASO DE ESTUDIO -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="q-card" id="q4">
+      <div class="q-head">
+        <div class="q-pill">📖 Caso de estudio</div>
+      </div>
+      <div class="q-text">Un analista regional compara varios países latinoamericanos entre fines del siglo XX e inicios del XXI. Observa que algunos aplicaron reformas neoliberales, lograron cierta estabilidad macroeconómica y, sin embargo, enfrentaron fuertes crisis sociales, protestas masivas e incluso conflictos armados prolongados. En este contexto, ¿cuál interpretación es más adecuada?</div>
+      <div class="case-scenario">
+        Contexto: La región experimentó una tensión constante entre las nuevas políticas económicas de mercado y la creciente demanda de justicia social por parte de la ciudadanía.
+      </div>
+      <div class="case-opts">
+        <button class="case-opt" onclick="answerCase(this, '4', 'A', 'B')">
+          <div class="case-opt-tag">Opción A</div>
+          <div class="case-opt-txt">Las democracias latinoamericanas lograron resolver de manera equilibrada la relación entre crecimiento económico y justicia social.</div>
+        </button>
+        <button class="case-opt" onclick="answerCase(this, '4', 'B', 'B')">
+          <div class="case-opt-tag">Opción B</div>
+          <div class="case-opt-txt">La región vivió una tensión persistente entre democracia política, desigualdad social y conflictividad, evidenciando los límites del neoliberalismo y de los procesos de democratización.</div>
+        </button>
+      </div>
+      <div class="fb-box" id="fb4"></div>
+      <div class="nav-row">
+        <button class="btn-nav btn-prev" onclick="goTo(3)">← Anterior</button>
+        <button class="btn-nav btn-next" id="nx4" onclick="showResult()" disabled>Ver resultados 🏆</button>
+      </div>
+    </div>
+
+  </div><!-- /quiz-body -->
+
+  <!-- ================================================ -->
+  <!-- PANTALLA DE RESULTADOS FINALES -->
+  <!-- ================================================ -->
+  <div id="result-screen">
+    <div class="result-hero">
+      <div class="result-emoji" id="res-emoji">🏆</div>
+      <div class="result-title">¡Quiz completado!</div>
+      <div class="result-score" id="res-score">0/4</div>
+      <div class="result-sub" id="res-sub">Puntaje obtenido</div>
+    </div>
+    <div class="result-fb">
+      <strong>🎓 Retroalimentación final:</strong><br><br>
+      ¡Excelente trabajo! Las respuestas seleccionadas reflejan una comprensión adecuada del neoliberalismo en América Latina como un proceso que combinó ajustes económicos, debilitamiento de la redistribución social y profundas tensiones políticas. A través de este ejercicio se reconoce que las reformas neoliberales generaron estabilidad parcial en algunos casos, pero también desempleo, desigualdad, protestas masivas y escenarios de violencia prolongada que afectaron seriamente a las democracias latinoamericanas.
+    </div>
+    <button class="btn-retry" onclick="retryAll()">↺ Intentar nuevamente</button>
+  </div>
+
+  <div class="footer">© 2023 - Departamento de Historia</div>
+</div>
+
+<script>
+/* ================================================ */
+/* CONFIGURACIÓN DE RESPUESTAS Y FEEDBACK          */
+/* ================================================ */
+const FEEDBACK_TEXTS = {
+  q1: {
+    correct: "Correcto. El neoliberalismo se consolidó en la región a través de programas de ajuste estructural que priorizaron la estabilidad macroeconómica por encima de la redistribución social.",
+    wrong: "Incorrecto. La característica central fue la privatización de empresas estatales, la liberalización del comercio y la reducción del gasto público."
+  },
+  q2: {
+    correct: "Correcto. El contenido muestra que, si bien hubo episodios de estabilidad, el costo social del modelo fue muy alto y derivó en múltiples crisis y protestas.",
+    wrong: "Incorrecto. El modelo neoliberal generó altos costos sociales, incluyendo desempleo y profundización de la desigualdad."
+  },
+  q3: {
+    correct: "Correcto. Estos casos muestran cómo el neoliberalismo, la exclusión social y la violencia política se articularon en escenarios distintos, pero atravesados por fuertes tensiones estructurales.",
+    wrong: "Algunas relaciones son incorrectas. Intente identificar mejor el contexto histórico de cada movimiento."
+  },
+  q4: {
+    correct: "Esta opción es correcta porque integra los elementos centrales del tema: crecimiento desigual, crisis sociales, protestas y persistencia de la violencia en algunos países.",
+    wrong: "Esta interpretación es limitada, ya que el contenido muestra precisamente que la estabilidad económica no evitó el agravamiento de la desigualdad y la conflictividad social."
+  }
+};
+
+// Respuestas correctas para el ejercicio de relacionar
+const MATCH_ANS = { 
+  ms1: 'B', // Caracazo
+  ms2: 'A', // Crisis argentina
+  ms3: 'D', // Sendero Luminoso
+  ms4: 'C'  // FARC
+};
+
+/* ================================================ */
+/* ESTADO DE LA APLICACIÓN                          */
+/* ================================================ */
+const TOTAL_QUESTIONS = 4;
+const state = { current: 1, score: 0, matchDone: false };
+
+/* ================================================ */
+/* FUNCIONES DE NAVEGACIÓN                         */
+/* ================================================ */
+function updateSteps(n) {
+  for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+    const sc = document.getElementById('sc' + i);
+    if (sc) {
+      if (i < n)       { sc.className = 'step-circle done'; }
+      else if (i === n) { sc.className = 'step-circle active'; }
+      else              { sc.className = 'step-circle'; }
+    }
+  }
+  for (let i = 1; i < TOTAL_QUESTIONS; i++) {
+    const cn = document.getElementById('cn' + i);
+    if (cn) cn.className = 'step-connector' + (i < n ? ' done' : '');
+  }
+}
+
+function goTo(n) {
+  // Ocultar pregunta actual
+  document.getElementById('q' + state.current).classList.remove('active');
+  
+  // Mostrar nueva pregunta
+  state.current = n;
+  document.getElementById('q' + state.current).classList.add('active');
+  
+  // Actualizar pasos
+  updateSteps(n);
+}
+
+/* ================================================ */
+/* LÓGICA DE RESPUESTAS                            */
+/* ================================================ */
+
+function showFeedback(qId, isCorrect) {
+  const fbBox = document.getElementById('fb' + qId);
+  fbBox.innerHTML = isCorrect ? FEEDBACK_TEXTS[qId].correct : FEEDBACK_TEXTS[qId].wrong;
+  fbBox.className = 'fb-box show ' + (isCorrect ? 'ok' : 'err');
+}
+
+function disableQuestion(qId) {
+  // Deshabilitar botones de opción
+  const container = document.getElementById('q' + qId);
+  const buttons = container.querySelectorAll('button');
+  buttons.forEach(b => b.disabled = true);
+}
+
+// --- Pregunta 1: Opción Múltiple ---
+function answerMC(btn, qId, selected, correct) {
+  if (document.getElementById('nx' + qId).disabled === false) return; // Ya respondida
+
+  const isCorrect = (selected === correct);
+  
+  if (isCorrect) {
+    btn.classList.add('correct');
+    state.score++;
+  } else {
+    btn.classList.add('wrong');
+    // Resaltar la correcta
+    const correctBtn = document.querySelector(`#q${qId} .opt[data-v="${correct}"]`);
+    if (correctBtn) correctBtn.classList.add('correct');
+  }
+
+  disableQuestion(qId);
+  showFeedback(qId, isCorrect);
+  document.getElementById('nx' + qId).disabled = false;
+}
+
+// --- Pregunta 2: Verdadero / Falso ---
+function answerTF(btn, qId, selected, correct) {
+  if (document.getElementById('nx' + qId).disabled === false) return;
+
+  const isCorrect = (selected === correct);
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    state.score++;
+  } else {
+    btn.classList.add('wrong');
+    // Mostrar la correcta
+    const correctVal = (correct === 'V') ? 'Verdadero' : 'Falso';
+    // Buscar el botón que contiene el texto correcto
+    const allBtns = btn.parentElement.querySelectorAll('.tf-card');
+    allBtns.forEach(b => {
+      if(b.innerText.includes(correctVal)) b.classList.add('correct');
+    });
+  }
+
+  disableQuestion(qId);
+  showFeedback(qId, isCorrect);
+  document.getElementById('nx' + qId).disabled = false;
+}
+
+// --- Pregunta 3: Relacionar ---
+function checkMatchReady() {
+  const ids = ['ms1', 'ms2', 'ms3', 'ms4'];
+  let allFilled = true;
+  ids.forEach(id => {
+    if (document.getElementById(id).value === "") allFilled = false;
+  });
+  document.getElementById('btn-check3').disabled = !allFilled;
+}
+
+function submitMatch() {
+  if (state.matchDone) return;
+
+  const ids = ['ms1', 'ms2', 'ms3', 'ms4'];
+  let allCorrect = true;
+  let correctCount = 0;
+
+  ids.forEach(id => {
+    const sel = document.getElementById(id);
+    const ind = document.getElementById(id.replace('ms', 'mi'));
+    const val = sel.value;
+    const correctVal = MATCH_ANS[id];
+
+    if (val === correctVal) {
+      sel.classList.add('correct');
+      ind.innerHTML = '✅';
+      correctCount++;
+    } else {
+      sel.classList.add('wrong');
+      ind.innerHTML = '❌';
+      allCorrect = false;
+    }
+    sel.disabled = true;
+  });
+
+  document.getElementById('btn-check3').disabled = true;
+
+  // Sumar puntaje (1 punto si todas son correctas, o parcial? 
+  // Para simplificar y ser estricto: Sumamos 1 solo si es perfecto, 
+  // o podríamos sumar 0.25 por cada una. Haremos 1 punto total si es 100% correcto 
+  // para mantener la lógica simple de enteros).
+  if (allCorrect) {
+    state.score++;
+  }
+
+  showFeedback('3', allCorrect);
+  document.getElementById('nx3').disabled = false;
+  state.matchDone = true;
+}
+
+// --- Pregunta 4: Caso de Estudio ---
+function answerCase(btn, qId, selected, correct) {
+  if (document.getElementById('nx' + qId).disabled === false) return;
+
+  const isCorrect = (selected === correct);
+  
+  if (isCorrect) {
+    btn.classList.add('correct');
+    state.score++;
+  } else {
+    btn.classList.add('wrong');
+    const correctBtn = document.querySelector(`#q${qId} .case-opt[data-v="${correct}"]`); // Nota: agregué data-v en HTML abajo
+    if(correctBtn) correctBtn.classList.add('correct');
+  }
+
+  disableQuestion(qId);
+  showFeedback(qId, isCorrect);
+  document.getElementById('nx' + qId).disabled = false;
+}
+
+/* ================================================ */
+/* RESULTADOS Y REINICIO                           */
+/* ================================================ */
+function showResult() {
+  document.getElementById('quiz-body').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+  document.getElementById('res-score').innerText = state.score + '/' + TOTAL_QUESTIONS;
+  
+  // Ocultar pasos al final
+  document.querySelector('.steps-wrap').style.display = 'none';
+  document.querySelector('.instr').style.display = 'none';
+
+  // Mensaje según puntaje
+  const emoji = document.getElementById('res-emoji');
+  if (state.score === 4) emoji.innerText = '🏆';
+  else if (state.score >= 2) emoji.innerText = '👍';
+  else emoji.innerText = '📚';
+}
+
+function retryAll() {
+  // Resetear estado
+  state.score = 0;
+  state.current = 1;
+  state.matchDone = false;
+
+  // Resetear UI
+  document.getElementById('quiz-body').style.display = 'block';
+  document.getElementById('result-screen').style.display = 'none';
+  document.querySelector('.steps-wrap').style.display = 'flex';
+  document.querySelector('.instr').style.display = 'block';
+
+  // Resetear preguntas
+  for(let i=1; i<=4; i++) {
+    // Limpiar clases y botones
+    const qCard = document.getElementById('q' + i);
+    qCard.classList.remove('active');
+    
+    // Rehabilitar botones
+    const btns = qCard.querySelectorAll('button');
+    btns.forEach(b => {
+      b.disabled = false;
+      b.classList.remove('correct', 'wrong');
+    });
+
+    // Limpiar feedbacks
+    const fb = document.getElementById('fb' + i);
+    fb.className = 'fb-box';
+    fb.innerHTML = '';
+
+    // Resetear botones de navegación
+    if (i > 1) document.getElementById('nx' + i).disabled = true;
+  }
+  
+  // Resetear Específicos Match (Q3)
+  ['ms1','ms2','ms3','ms4'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.value = "";
+    sel.disabled = false;
+    sel.classList.remove('correct', 'wrong');
+    document.getElementById(id.replace('ms', 'mi')).innerHTML = "";
+  });
+  document.getElementById('btn-check3').disabled = true;
+
+  // Volver a Q1
+  document.getElementById('q1').classList.add('active');
+  document.getElementById('nx1').disabled = true; // Q1 next disabled initially
+  updateSteps(1);
+}
+</script>
+</body>
+</html>
