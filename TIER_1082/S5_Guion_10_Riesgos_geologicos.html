@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riesgos Geológicos — Unir con líneas</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #f3f0eb;
+  --panel:       #ffffff;
+  --stone:       #3d3530;
+  --stone-mid:   #6b5e55;
+  --stone-soft:  #a89890;
+  --stone-pale:  #ede8e3;
+  --lava:        #c0392b;
+  --lava-glow:   #e74c3c;
+  --amber:       #d97706;
+  --amber-pale:  #fef3c7;
+  --teal:        #0d7c6b;
+  --teal-pale:   #d1faf4;
+  --border:      #d5ccc5;
+
+  /* state colors */
+  --selected-a:  #c0392b;
+  --selected-b:  #1565a0;
+  --correct:     #2e7d32;
+  --correct-bg:  #e8f5e9;
+  --wrong:       #b71c1c;
+  --wrong-bg:    #fdecea;
+  --line-pending:#c0392b;
+  --line-correct:#2e7d32;
+  --line-wrong:  #b71c1c;
+}
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg);
+  width: 800px; max-width: 800px;
+  min-height: 800px; overflow-x: hidden;
+  position: relative;
+}
+
+/* ── tectonic texture bg ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      30deg,
+      transparent 0px, transparent 28px,
+      rgba(160,120,80,0.04) 28px, rgba(160,120,80,0.04) 29px
+    ),
+    repeating-linear-gradient(
+      -30deg,
+      transparent 0px, transparent 28px,
+      rgba(160,120,80,0.04) 28px, rgba(160,120,80,0.04) 29px
+    );
+  pointer-events: none; z-index: 0;
+}
+
+/* ══ HEADER ══ */
+.header {
+  background: linear-gradient(140deg, #2c1810 0%, #5c2e1a 55%, #8b4513 100%);
+  padding: 17px 26px 14px;
+  position: relative; overflow: hidden; z-index: 1;
+  border-bottom: 3px solid var(--lava-glow);
+}
+.header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 14px,
+    rgba(255,255,255,0.025) 14px, rgba(255,255,255,0.025) 15px);
+}
+.header::after {
+  content: '🌋';
+  position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+  font-size: 56px; opacity: 0.14;
+}
+.h-eye {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 600; letter-spacing: 3px;
+  text-transform: uppercase; color: #f0a060; margin-bottom: 4px;
+}
+.header h1 {
+  font-size: 19px; font-weight: 800; color: white; line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.h-sub { font-size: 11.5px; color: rgba(255,255,255,0.60); margin-top: 5px; font-weight: 300; }
+.instr-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,160,80,0.35);
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 11px; color: #f0c080; margin-top: 9px; font-weight: 600;
+}
+
+/* ══ MAIN AREA ══ */
+.main-area {
+  position: relative; z-index: 1;
+  height: 610px; overflow: hidden;
+}
+
+/* ══ SLIDES ══ */
+.slide {
+  display: none; height: 100%; overflow-y: auto;
+  padding: 10px 22px 4px;
+  animation: fadeUp .3s ease;
+}
+.slide.active { display: block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.slide::-webkit-scrollbar { width: 4px; }
+.slide::-webkit-scrollbar-thumb { background: var(--stone-soft); border-radius: 4px; }
+
+/* ══ ACTIVITY WRAPPER ══ */
+.activity-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--stone-soft);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.activity-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ══ MATCHING BOARD ══ */
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 80px 2fr;
+  gap: 0 0;
+  align-items: start;
+}
+
+/* SVG canvas for lines */
+.lines-svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 2;
+  overflow: visible;
+}
+
+/* Columns */
+.col { display: flex; flex-direction: column; gap: 8px; z-index: 3; position: relative; }
+.col-a { padding-right: 8px; }
+.col-b { padding-left: 8px; }
+
+.col-spacer { } /* middle column for connector zone */
+
+/* Column labels */
+.col-header {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; padding: 6px 12px;
+  border-radius: 8px; text-align: center; margin-bottom: 4px;
+}
+.col-header-a { background: rgba(192,57,43,0.12); color: var(--lava); border: 1px solid rgba(192,57,43,0.25); }
+.col-header-b { background: rgba(21,101,160,0.10); color: #1565a0; border: 1px solid rgba(21,101,160,0.22); }
+
+/* Items */
+.item {
+  border-radius: 11px;
+  padding: 10px 13px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  position: relative;
+  border: 2px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  user-select: none;
+}
+.item:hover:not(.matched):not(.wrong-match) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 16px rgba(0,0,0,0.12);
+}
+
+/* Column A items */
+.item-a { display: flex; align-items: center; gap: 10px; }
+.item-a .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700; color: var(--lava);
+  width: 22px; min-width: 22px; text-align: center;
+}
+.item-a .label { font-size: 12.5px; font-weight: 600; color: var(--stone); line-height: 1.3; }
+
+/* Column B items */
+.item-b { }
+.item-b .case-letter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 700; color: #1565a0;
+  letter-spacing: 1px; margin-bottom: 4px;
+}
+.item-b .case-text { font-size: 11.5px; color: var(--stone-mid); line-height: 1.55; }
+
+/* Connector dots */
+.dot-a {
+  position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--lava); border: 2px solid white;
+  box-shadow: 0 0 0 2px var(--lava), 0 0 8px rgba(192,57,43,0.4);
+  transition: all 0.2s;
+  cursor: pointer; z-index: 4;
+}
+.dot-b {
+  position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #1565a0; border: 2px solid white;
+  box-shadow: 0 0 0 2px #1565a0, 0 0 8px rgba(21,101,160,0.4);
+  transition: all 0.2s;
+  cursor: pointer; z-index: 4;
+}
+
+/* States */
+.item.selected-a { border-color: var(--lava); background: rgba(192,57,43,0.05); }
+.item.selected-a .dot-a { transform: translateY(-50%) scale(1.4); box-shadow: 0 0 0 3px var(--lava), 0 0 14px rgba(192,57,43,0.6); }
+.item.selected-b { border-color: #1565a0; background: rgba(21,101,160,0.05); }
+.item.selected-b .dot-b { transform: translateY(-50%) scale(1.4); box-shadow: 0 0 0 3px #1565a0, 0 0 14px rgba(21,101,160,0.5); }
+
+.item.matched { border-color: var(--correct); background: var(--correct-bg); cursor: default; }
+.item.matched .num, .item.matched .case-letter { color: var(--correct); }
+.item.matched .dot-a, .item.matched .dot-b { background: var(--correct); box-shadow: 0 0 0 2px var(--correct); }
+
+.item.wrong-match { border-color: var(--wrong); background: var(--wrong-bg); animation: shake .4s ease; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+
+/* ══ PROGRESS BAR ══ */
+.progress-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.progress-track {
+  flex: 1; height: 6px; background: var(--stone-pale);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--correct), #66bb6a);
+  border-radius: 3px; transition: width 0.5s ease;
+  width: 0%;
+}
+.progress-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700; color: var(--stone-mid);
+  white-space: nowrap;
+}
+
+/* ══ FEEDBACK CARD ══ */
+.feedback-card {
+  display: none; margin-top: 18px;
+  background: var(--panel); border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  border-top: 4px solid var(--correct);
+  animation: cardReveal .4s cubic-bezier(.34,1.56,.64,1);
+}
+.feedback-card.show { display: block; }
+@keyframes cardReveal {
+  from{opacity:0;transform:scale(.92) translateY(12px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.feedback-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.feedback-icon { font-size:28px; }
+.feedback-title { font-size:15px; font-weight:700; color:var(--stone); }
+.feedback-body { font-size:13px; line-height:1.72; color:var(--stone-mid); }
+.feedback-pairs {
+  display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:12px;
+}
+.pair-chip {
+  background: var(--correct-bg); border-radius:8px;
+  padding:7px 10px; font-size:11.5px; font-weight:600;
+  color:var(--correct); border-left:3px solid var(--correct);
+  display:flex; align-items:center; gap:6px;
+}
+
+/* ══ NAV BAR ══ */
+.nav-bar {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:9px 22px; background:var(--panel);
+  border-top:1px solid var(--border);
+  position:sticky; bottom:0; z-index:10;
+}
+.nav-btn {
+  background:linear-gradient(135deg,#5c2e1a,#8b4513);
+  color:white; border:none; border-radius:20px;
+  padding:8px 18px; font-size:12.5px; font-weight:700;
+  cursor:pointer; font-family:'Sora',sans-serif;
+  transition:all .2s ease;
+  box-shadow:0 2px 8px rgba(92,46,26,.3);
+}
+.nav-btn:hover { transform:translateY(-2px); box-shadow:0 5px 14px rgba(92,46,26,.4); }
+.nav-btn:disabled { opacity:.28; pointer-events:none; }
+.nav-lbl { font-size:11px; color:var(--stone-soft); font-weight:600; text-align:center; }
+
+/* Reset btn */
+.reset-btn {
+  background:none; border:2px solid var(--border); border-radius:20px;
+  padding:7px 14px; font-size:12px; font-weight:700; color:var(--stone-mid);
+  cursor:pointer; font-family:'Sora',sans-serif; transition:all .2s;
+}
+.reset-btn:hover { border-color:var(--lava); color:var(--lava); }
+
+@media (max-width:600px){
+  body{width:100%;}
+  .board{grid-template-columns:1fr 40px 1fr;}
+  .item-a .label,.item-b .case-text{font-size:11px;}
+  .main-area{height:auto;}
+  .slide{height:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="h-eye">⛰️ Actividad interactiva · Geología</div>
+  <h1>Riesgos Geológicos</h1>
+  <div class="h-sub">Relacione cada caso con el tipo de riesgo geológico que corresponde</div>
+  <div class="instr-chip">🔗 Haga clic en un riesgo y luego en su caso para unirlos</div>
+</div>
+
+<!-- MAIN AREA -->
+<div class="main-area">
+
+  <!-- SLIDE 0: ACTIVITY -->
+  <div class="slide active" id="slide-0">
+
+    <!-- Progress -->
+    <div class="progress-row">
+      <span class="progress-label" id="prog-label">0 / 5 pares</span>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+    </div>
+
+    <div class="activity-label">📋 Relacione Columna A con Columna B</div>
+
+    <!-- Board -->
+    <div class="board" id="board">
+      <!-- SVG lines layer -->
+      <svg class="lines-svg" id="linesSvg"></svg>
+
+      <!-- COLUMN A -->
+      <div class="col col-a" id="colA">
+        <div class="col-header col-header-a">Columna A · Tipo de riesgo</div>
+
+        <div class="item item-a" id="a1" data-id="1" onclick="selectA(this)">
+          <span class="num">1</span>
+          <span class="label">Terremoto</span>
+          <div class="dot-a"></div>
+        </div>
+        <div class="item item-a" id="a2" data-id="2" onclick="selectA(this)">
+          <span class="num">2</span>
+          <span class="label">Erupción volcánica</span>
+          <div class="dot-a"></div>
+        </div>
+        <div class="item item-a" id="a3" data-id="3" onclick="selectA(this)">
+          <span class="num">3</span>
+          <span class="label">Deslizamiento</span>
+          <div class="dot-a"></div>
+        </div>
+        <div class="item item-a" id="a4" data-id="4" onclick="selectA(this)">
+          <span class="num">4</span>
+          <span class="label">Inundación</span>
+          <div class="dot-a"></div>
+        </div>
+        <div class="item item-a" id="a5" data-id="5" onclick="selectA(this)">
+          <span class="num">5</span>
+          <span class="label">Riesgo sísmico</span>
+          <div class="dot-a"></div>
+        </div>
+      </div>
+
+      <!-- SPACER (middle) -->
+      <div class="col-spacer"></div>
+
+      <!-- COLUMN B -->
+      <div class="col col-b" id="colB">
+        <div class="col-header col-header-b">Columna B · Casos</div>
+
+        <div class="item item-b" id="bA" data-id="A" onclick="selectB(this)">
+          <div class="dot-b"></div>
+          <div class="case-letter">CASO A</div>
+          <div class="case-text">Tras varios días de lluvia intensa en una zona montañosa de Loja, una gran masa de tierra y rocas se desprende de la ladera, bloquea una vía y pone en peligro a varias viviendas cercanas.</div>
+        </div>
+        <div class="item item-b" id="bB" data-id="B" onclick="selectB(this)">
+          <div class="dot-b"></div>
+          <div class="case-letter">CASO B</div>
+          <div class="case-text">En una comunidad cercana al Cotopaxi, las autoridades activan alertas por emisión de ceniza, gases y material volcánico que podría afectar cultivos, fuentes de agua y poblaciones aledañas.</div>
+        </div>
+        <div class="item item-b" id="bC" data-id="C" onclick="selectB(this)">
+          <div class="dot-b"></div>
+          <div class="case-letter">CASO C</div>
+          <div class="case-text">En una provincia costera, se reconoce que por su ubicación geográfica existe alta probabilidad de que, en algún momento, un movimiento fuerte del suelo afecte edificaciones y servicios básicos.</div>
+        </div>
+        <div class="item item-b" id="bD" data-id="D" onclick="selectB(this)">
+          <div class="dot-b"></div>
+          <div class="case-letter">CASO D</div>
+          <div class="case-text">Durante una temporada de lluvias extremas asociadas al fenómeno de El Niño, varias zonas de la Costa quedan cubiertas por agua, afectando viviendas, carreteras y actividades productivas.</div>
+        </div>
+        <div class="item item-b" id="bE" data-id="E" onclick="selectB(this)">
+          <div class="dot-b"></div>
+          <div class="case-letter">CASO E</div>
+          <div class="case-text">El 16 de abril de 2016, un fuerte movimiento de magnitud 7,8 sacudió la costa norte del Ecuador, ocasionando pérdidas humanas, daños en infraestructura y miles de personas afectadas.</div>
+        </div>
+      </div>
+    </div><!-- /board -->
+
+    <!-- Feedback card -->
+    <div class="feedback-card" id="feedbackCard">
+      <div class="feedback-header">
+        <span class="feedback-icon">🏆</span>
+        <div>
+          <div class="feedback-title">¡Actividad completada!</div>
+        </div>
+      </div>
+      <div class="feedback-body">¡Felicitaciones! Al completar la actividad, reforzó la importancia de comprender estos fenómenos para promover la prevención, la preparación y una adecuada gestión del territorio ante amenazas naturales.</div>
+      <div class="feedback-pairs" id="feedbackPairs"></div>
+    </div>
+
+  </div><!-- /slide-0 -->
+
+</div><!-- /main-area -->
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <button class="reset-btn" onclick="resetActivity()">↺ Reiniciar</button>
+  <div class="nav-lbl" id="nav-lbl">Selecciona un riesgo y luego un caso</div>
+  <button class="nav-btn" id="btn-verify" onclick="verifyAll()" disabled>✓ Verificar</button>
+</div>
+
+<script>
+// ═══ CORRECT ANSWERS ═══
+const CORRECT = { '1':'E', '2':'B', '3':'A', '4':'D', '5':'C' };
+const LABELS_A = { '1':'Terremoto','2':'Erupción volcánica','3':'Deslizamiento','4':'Inundación','5':'Riesgo sísmico' };
+const LABELS_B = { 'A':'Caso A','B':'Caso B','C':'Caso C','D':'Caso D','E':'Caso E' };
+
+let selectedA = null; // data-id of selected A item
+let pairs = {};       // { aId: bId } confirmed matches
+let matched = 0;
+
+// ── helper: get DOM element center relative to board ──
+function getCenter(el, isSide) {
+  const board = document.getElementById('board');
+  const boardRect = board.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  const x = isSide === 'right'
+    ? elRect.right - boardRect.left
+    : elRect.left - boardRect.left;
+  const y = elRect.top + elRect.height / 2 - boardRect.top;
+  return { x, y };
+}
+
+// ── draw SVG line between A dot and B dot ──
+function drawLine(aId, bId, color) {
+  const svg = document.getElementById('linesSvg');
+  const aEl = document.getElementById('a' + aId);
+  const bEl = document.getElementById('b' + bId);
+  if (!aEl || !bEl) return;
+
+  const p1 = getCenter(aEl, 'right');
+  const p2 = getCenter(bEl, 'left');
+  const cx = (p1.x + p2.x) / 2;
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  const d = `M${p1.x},${p1.y} C${cx},${p1.y} ${cx},${p2.y} ${p2.x},${p2.y}`;
+  path.setAttribute('d', d);
+  path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width', '2.5');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('class', `line-${aId}`);
+  path.setAttribute('opacity', '0');
+  path.style.transition = 'opacity .3s';
+  svg.appendChild(path);
+  requestAnimationFrame(() => { path.setAttribute('opacity','1'); });
+}
+
+function clearLines(aId) {
+  const svg = document.getElementById('linesSvg');
+  svg.querySelectorAll(`.line-${aId}`).forEach(el => el.remove());
+}
+
+function clearAllLines() {
+  document.getElementById('linesSvg').innerHTML = '';
+}
+
+// ── SELECT A ──
+function selectA(el) {
+  if (el.classList.contains('matched')) return;
+
+  // Deselect previous A
+  document.querySelectorAll('.item-a').forEach(e => e.classList.remove('selected-a'));
+
+  const id = el.dataset.id;
+
+  if (selectedA === id) {
+    selectedA = null;
+    updateStatus();
+    return;
+  }
+
+  selectedA = id;
+  el.classList.add('selected-a');
+
+  // Remove previous pending line if existed
+  clearLines(id + '_pending');
+
+  updateStatus();
+}
+
+// ── SELECT B (attempt match) ──
+function selectB(el) {
+  if (el.classList.contains('matched')) return;
+  if (!selectedA) return; // must select A first
+
+  const bId = el.dataset.id;
+
+  // Check if B is already paired
+  const existingA = Object.keys(pairs).find(a => pairs[a] === bId);
+  if (existingA) {
+    // flash wrong
+    el.classList.add('wrong-match');
+    setTimeout(() => el.classList.remove('wrong-match'), 500);
+    return;
+  }
+
+  // Remove any previous pair for this A
+  if (pairs[selectedA]) {
+    const oldB = pairs[selectedA];
+    document.getElementById('b' + oldB).classList.remove('matched','selected-b');
+    delete pairs[selectedA];
+    clearLines('conn' + selectedA);
+    matched--;
+  }
+
+  // Create pair
+  pairs[selectedA] = bId;
+
+  // Visual: mark as matched
+  const aEl = document.getElementById('a' + selectedA);
+  aEl.classList.remove('selected-a');
+  aEl.classList.add('matched');
+  el.classList.add('matched');
+
+  // Draw line
+  drawLine(selectedA, bId, 'var(--correct)');
+
+  matched++;
+  selectedA = null;
+
+  // Update progress
+  const pct = (matched / 5) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${matched} / 5 pares`;
+
+  // Enable verify when all matched
+  document.getElementById('btn-verify').disabled = matched < 5;
+  updateStatus();
+}
+
+function updateStatus() {
+  const lbl = document.getElementById('nav-lbl');
+  if (matched === 5) { lbl.textContent = 'Todos los pares conectados — ¡Verifica!'; return; }
+  if (selectedA) {
+    lbl.textContent = `"${LABELS_A[selectedA]}" seleccionado — elige un caso`;
+  } else {
+    lbl.textContent = `${matched} / 5 — Selecciona un riesgo`;
+  }
+}
+
+// ── VERIFY ──
+function verifyAll() {
+  let allCorrect = true;
+
+  Object.keys(pairs).forEach(aId => {
+    const bId = pairs[aId];
+    const isCorrect = CORRECT[aId] === bId;
+    if (!isCorrect) {
+      allCorrect = false;
+      document.getElementById('a' + aId).classList.add('wrong-match');
+      document.getElementById('b' + bId).classList.add('wrong-match');
+      setTimeout(() => {
+        document.getElementById('a' + aId).classList.remove('wrong-match','matched');
+        document.getElementById('b' + bId).classList.remove('wrong-match','matched');
+      }, 600);
+    }
+  });
+
+  if (!allCorrect) {
+    // Remove wrong pairs
+    Object.keys(pairs).forEach(aId => {
+      const bId = pairs[aId];
+      if (CORRECT[aId] !== bId) {
+        clearLines('conn' + aId);
+        delete pairs[aId];
+        matched--;
+      }
+    });
+    clearAllLines();
+    // Redraw correct ones
+    Object.keys(pairs).forEach(aId => {
+      drawLine(aId, pairs[aId], 'var(--correct)');
+    });
+    document.getElementById('prog-fill').style.width = (matched/5*100) + '%';
+    document.getElementById('prog-label').textContent = `${matched} / 5 pares`;
+    document.getElementById('btn-verify').disabled = true;
+    document.getElementById('nav-lbl').textContent = 'Algunas respuestas son incorrectas — intenta de nuevo';
+    return;
+  }
+
+  // All correct — show feedback
+  showFeedback();
+}
+
+function showFeedback() {
+  const pairsDiv = document.getElementById('feedbackPairs');
+  pairsDiv.innerHTML = Object.keys(CORRECT).map(aId => `
+    <div class="pair-chip">
+      <span>✓</span>
+      <span>${LABELS_A[aId]} → ${LABELS_B[CORRECT[aId]]}</span>
+    </div>`).join('');
+  document.getElementById('feedbackCard').classList.add('show');
+  document.getElementById('btn-verify').disabled = true;
+  document.getElementById('nav-lbl').textContent = '¡Actividad completada con éxito!';
+  setTimeout(() => {
+    document.getElementById('feedbackCard').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }, 200);
+}
+
+// ── RESET ──
+function resetActivity() {
+  pairs = {};
+  matched = 0;
+  selectedA = null;
+  clearAllLines();
+  document.querySelectorAll('.item').forEach(el => {
+    el.classList.remove('matched','selected-a','selected-b','wrong-match');
+  });
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-label').textContent = '0 / 5 pares';
+  document.getElementById('btn-verify').disabled = true;
+  document.getElementById('feedbackCard').classList.remove('show');
+  document.getElementById('feedbackPairs').innerHTML = '';
+  updateStatus();
+}
+
+// Redraw lines on resize
+window.addEventListener('resize', () => {
+  clearAllLines();
+  Object.keys(pairs).forEach(aId => {
+    drawLine(aId, pairs[aId], 'var(--correct)');
+  });
+});
+
+updateStatus();
+</script>
+</body>
+</html>
