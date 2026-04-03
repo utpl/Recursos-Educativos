@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identificación de Amenazas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-deep:   #1a3c2e;
+    --green-mid:    #2d6a4f;
+    --green-soft:   #40916c;
+    --green-light:  #74c69d;
+    --green-pale:   #d8f3dc;
+    --earth:        #6b4c2a;
+    --earth-light:  #c8a97e;
+    --cream:        #faf8f3;
+    --white:        #ffffff;
+    --text-dark:    #1a2e1f;
+    --text-mid:     #3b5249;
+    --text-light:   #6b8575;
+    --warn:         #c05621;
+    --warn-bg:      #fef3e8;
+    --correct:      #1b6b3a;
+    --correct-bg:   #eaf7ee;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    width: 800px;
+    max-width: 800px;
+    min-height: 600px;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ── decorative bg ── */
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 80% -10%, rgba(116,198,157,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at -10% 90%, rgba(45,106,79,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ══════════════════════════════════════
+     HEADER
+  ══════════════════════════════════════ */
+  .header {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 70%, var(--green-soft) 100%);
+    padding: 20px 28px 16px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .header::after {
+    content: '🏔️';
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 52px; opacity: 0.18;
+  }
+  .header-eyebrow {
+    font-size: 16px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--green-light);
+    margin-bottom: 4px;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; line-height: 1.2;
+    color: white;
+  }
+  .header .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.12); border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.85);
+    margin-top: 8px;
+  }
+
+  /* ══════════════════════════════════════
+     MAIN CONTENT AREA
+  ══════════════════════════════════════ */
+  .content-area {
+    position: relative; z-index: 1;
+    height: 550px;
+    overflow: hidden;
+  }
+
+  /* ══════════════════════════════════════
+     SLIDES
+  ══════════════════════════════════════ */
+  .slide {
+    display: none;
+    padding: 22px 28px 16px;
+    height: 100%; overflow-y: auto;
+    animation: slideIn 0.35s ease;
+  }
+  .slide.active { display: block; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SLIDE 0: PORTADA ── */
+  .case-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(26,60,46,0.10);
+    margin-bottom: 18px;
+    border-left: 5px solid var(--green-soft);
+  }
+  .case-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--green-soft);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .case-text {
+    font-size: 14px; line-height: 1.75; color: var(--text-dark);
+  }
+  .instruction-strip {
+    background: linear-gradient(90deg, var(--green-pale), #eafaf0);
+    border-radius: 10px; padding: 11px 16px;
+    font-size: 12.5px; color: var(--green-deep);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 18px; font-weight: 500;
+  }
+  .start-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-soft));
+    color: white; border: none; border-radius: 14px;
+    padding: 14px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(45,106,79,0.30);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .start-btn:hover {
+    background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(45,106,79,0.38);
+  }
+
+  /* ── QUIZ SLIDES ── */
+  .q-number {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--green-soft);
+    margin-bottom: 8px;
+  }
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; color: var(--text-dark);
+    line-height: 1.5; margin-bottom: 20px;
+    background: white; border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(26,60,46,0.07);
+  }
+
+  .options-list { display: flex; flex-direction: column; gap: 11px; margin-bottom: 16px; }
+  .option-btn {
+    background: white;
+    border: 2px solid #e0ede6;
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 13px; font-weight: 500; color: var(--text-dark);
+    cursor: pointer; text-align: left;
+    transition: all 0.22s ease;
+    display: flex; align-items: flex-start; gap: 12px;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 2px 6px rgba(26,60,46,0.05);
+    position: relative; overflow: hidden;
+  }
+  .option-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--green-pale), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .option-btn:hover { border-color: var(--green-soft); transform: translateX(4px); }
+  .option-btn:hover::before { opacity: 1; }
+  .option-btn.disabled { pointer-events: none; }
+  .option-letter {
+    width: 26px; height: 26px; min-width: 26px;
+    border-radius: 50%; background: var(--green-pale);
+    color: var(--green-deep); font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .option-btn:hover .option-letter {
+    background: var(--green-soft); color: white;
+  }
+
+  /* ── FEEDBACK CARD (carta) ── */
+  .feedback-card {
+    display: none;
+    background: white;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 6px 24px rgba(26,60,46,0.12);
+    border-top: 5px solid var(--green-soft);
+    margin-top: 4px;
+    animation: cardReveal 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative;
+  }
+  .feedback-card.show { display: block; }
+  @keyframes cardReveal {
+    from { opacity: 0; transform: scale(0.92) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .feedback-card.correct-card { border-top-color: var(--correct); }
+  .feedback-card.incorrect-card { border-top-color: var(--warn); }
+
+  .feedback-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .feedback-icon { font-size: 22px; }
+  .feedback-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--text-dark);
+  }
+  .feedback-subtitle { font-size: 11px; color: var(--text-light); }
+
+  .feedback-section { margin-bottom: 10px; }
+  .feedback-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 5px;
+  }
+  .feedback-label.correct-label { color: var(--correct); }
+  .feedback-label.incorrect-label { color: var(--warn); }
+  .feedback-body {
+    font-size: 12.5px; line-height: 1.65; color: var(--text-mid);
+    background: var(--cream);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .feedback-body.correct-bg { background: var(--correct-bg); }
+  .feedback-body.incorrect-bg { background: var(--warn-bg); }
+
+  /* ── FINAL SLIDE ── */
+  .final-slide { text-align: center; padding-top: 30px; }
+  .final-trophy { font-size: 64px; margin-bottom: 16px; animation: bounce 1s ease infinite alternate; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+  .final-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: var(--green-deep);
+    margin-bottom: 12px;
+  }
+  .final-text {
+    font-size: 13.5px; line-height: 1.75; color: var(--text-mid);
+    background: white; border-radius: 14px;
+    padding: 18px 20px; text-align: left;
+    box-shadow: 0 4px 14px rgba(26,60,46,0.09);
+    margin-bottom: 18px;
+  }
+  .score-bar {
+    display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;
+  }
+  .score-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--green-pale);
+    transition: background 0.4s;
+  }
+  .score-dot.filled { background: var(--green-soft); }
+  .restart-btn {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-soft));
+    color: white; border: none; border-radius: 12px;
+    padding: 12px 28px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(45,106,79,0.28);
+  }
+  .restart-btn:hover { transform: translateY(-2px); }
+
+  /* ══════════════════════════════════════
+     NAV BAR
+  ══════════════════════════════════════ */
+  .nav-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 28px;
+    background: white;
+    border-top: 1px solid #e0ede6;
+    position: sticky; bottom: 0; z-index: 10;
+  }
+  .nav-btn {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-soft));
+    color: white; border: none; border-radius: 20px;
+    padding: 8px 20px; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(45,106,79,0.22);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(45,106,79,0.30); }
+  .nav-btn:disabled { opacity: 0.3; pointer-events: none; }
+  .nav-btn.hidden { visibility: hidden; }
+
+  .progress-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .progress-label { font-size: 11px; color: var(--text-light); }
+  .progress-dots { display: flex; gap: 7px; }
+  .p-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green-pale); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .p-dot.active { background: var(--green-soft); transform: scale(1.35); }
+  .p-dot.done { background: var(--green-light); }
+
+  /* ══════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════ */
+  @media (max-width: 600px) {
+    body { width: 100%; }
+    .header h1 { font-size: 17px; }
+    .content-area { height: auto; }
+    .slide { height: auto; }
+    .q-text { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="header-eyebrow">⚠️ Gestión del Riesgo</div>
+  <h1>Identificación de Amenazas</h1>
+  <div class="badge">📋 Caso de Estudio &nbsp;·&nbsp; Quiz Interactivo</div>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="content-area">
+
+  <!-- SLIDE 0: PORTADA / CASO -->
+  <div class="slide active" id="slide-0">
+    <div class="instruction-strip">
+      💡 Aplique los temas estudiados al resolver el siguiente caso.
+    </div>
+    <div class="case-card">
+      <div class="case-label">🏘️ Caso planteado</div>
+      <div class="case-text">
+        Una comunidad se encuentra cerca de una ladera inestable y, además, en temporadas de lluvia intensa ha presentado afectaciones por acumulación de agua y pequeños deslizamientos. Las autoridades locales saben que la zona podría estar expuesta a amenazas naturales, pero no cuentan con suficiente información organizada ni con protocolos claros de comunicación hacia la población. Frente a esta situación, buscan definir cómo empezar un proceso adecuado de identificación y monitoreo de amenazas.
+      </div>
+    </div>
+    <button class="start-btn" onclick="goToSlide(1)">
+      🚀 Comenzar el Quiz
+    </button>
+  </div>
+
+  <!-- SLIDE 1: PREGUNTA 1 -->
+  <div class="slide" id="slide-1">
+    <div class="q-number">🔍 Pregunta 1 de 3</div>
+    <div class="q-text">Para comenzar, ¿qué acción sería más conveniente?</div>
+
+    <div class="options-list" id="opts-1">
+      <!-- options rendered by JS (shuffled) -->
+    </div>
+
+    <div class="feedback-card" id="fb-1"></div>
+  </div>
+
+  <!-- SLIDE 2: PREGUNTA 2 -->
+  <div class="slide" id="slide-2">
+    <div class="q-number">🗺️ Pregunta 2 de 3</div>
+    <div class="q-text">Una vez recopilada la información, ¿qué decisión sería más adecuada?</div>
+
+    <div class="options-list" id="opts-2"></div>
+    <div class="feedback-card" id="fb-2"></div>
+  </div>
+
+  <!-- SLIDE 3: PREGUNTA 3 -->
+  <div class="slide" id="slide-3">
+    <div class="q-number">🤝 Pregunta 3 de 3</div>
+    <div class="q-text">Si el objetivo es reducir la vulnerabilidad de la comunidad, ¿qué sería más recomendable?</div>
+
+    <div class="options-list" id="opts-3"></div>
+    <div class="feedback-card" id="fb-3"></div>
+  </div>
+
+  <!-- SLIDE 4: FINAL -->
+  <div class="slide" id="slide-4">
+    <div class="final-slide">
+      <div class="final-trophy">🏆</div>
+      <div class="final-title">¡Actividad completada!</div>
+      <div class="score-bar" id="score-bar">
+        <div class="score-dot" id="sd-0"></div>
+        <div class="score-dot" id="sd-1"></div>
+        <div class="score-dot" id="sd-2"></div>
+      </div>
+      <div class="final-text">
+        ¡Felicitaciones por completar la actividad! A través de este caso de estudio, logró analizar una situación relacionada con la identificación de amenazas naturales y reflexionar sobre decisiones orientadas a la prevención, el monitoreo y la preparación de la comunidad.
+      </div>
+      <button class="restart-btn" onclick="restartQuiz()">🔄 Reiniciar actividad</button>
+    </div>
+  </div>
+
+</div><!-- /content-area -->
+
+<!-- ── NAV BAR ── -->
+<div class="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>◀ Anterior</button>
+  <div class="progress-wrap">
+    <div class="progress-label" id="progress-label">Inicio</div>
+    <div class="progress-dots">
+      <div class="p-dot active" onclick="tryGoTo(0)"></div>
+      <div class="p-dot" onclick="tryGoTo(1)"></div>
+      <div class="p-dot" onclick="tryGoTo(2)"></div>
+      <div class="p-dot" onclick="tryGoTo(3)"></div>
+      <div class="p-dot" onclick="tryGoTo(4)"></div>
+    </div>
+  </div>
+  <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente ▶</button>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════
+const questions = [
+  {
+    id: 1,
+    options: [
+      {
+        letter: 'A',
+        text: 'Basarse únicamente en lo que recuerdan algunos habitantes sobre eventos pasados.',
+        correct: false,
+        feedback: 'La experiencia de la comunidad es valiosa, pero por sí sola puede ser insuficiente o incompleta para identificar con precisión las amenazas.'
+      },
+      {
+        letter: 'B',
+        text: 'Reunir información histórica de instituciones competentes y complementarla con el conocimiento local.',
+        correct: true,
+        feedback: 'Esta es la mejor opción, porque integrar datos históricos institucionales con información local permite construir una base más sólida para evaluar riesgos y delimitar zonas expuestas.'
+      }
+    ]
+  },
+  {
+    id: 2,
+    options: [
+      {
+        letter: 'A',
+        text: 'Elaborar mapas de riesgo y utilizarlos para orientar la planificación del territorio.',
+        correct: true,
+        feedback: 'Esta es la mejor alternativa, porque los mapas de riesgo ayudan a identificar zonas vulnerables y facilitan la toma de decisiones informadas sobre prevención y gestión territorial.'
+      },
+      {
+        letter: 'B',
+        text: 'Guardar la información solo para uso técnico, sin compartirla todavía.',
+        correct: false,
+        feedback: 'Conservar la información únicamente a nivel técnico limita su utilidad, ya que la identificación de amenazas debe servir para orientar acciones concretas y no quedarse solo en el diagnóstico.'
+      }
+    ]
+  },
+  {
+    id: 3,
+    options: [
+      {
+        letter: 'A',
+        text: 'Socializar los resultados con la población y acompañarlos con capacitación y medidas de preparación.',
+        correct: true,
+        feedback: 'Esta es la mejor opción, porque compartir la información con la comunidad y fortalecer su preparación mejora la respuesta ante posibles amenazas y favorece la resiliencia territorial.'
+      },
+      {
+        letter: 'B',
+        text: 'Esperar a que ocurra un evento mayor para luego definir acciones prioritarias.',
+        correct: false,
+        feedback: 'Esperar a que ocurra un evento incrementa la vulnerabilidad y reduce la capacidad de prevención. La gestión del riesgo requiere actuar antes, no después de una crisis.'
+      }
+    ]
+  }
+];
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let currentSlide = 0;
+const totalSlides = 5; // 0=portada, 1-3=preguntas, 4=final
+const answered = [false, false, false]; // indices 0-2 for q1-q3
+const correctAnswers = [false, false, false];
+let unlocked = 0; // highest slide reachable
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderOptions() {
+  questions.forEach((q, qi) => {
+    const container = document.getElementById('opts-' + (qi + 1));
+    const shuffled = shuffle(q.options);
+    container.innerHTML = '';
+    shuffled.forEach((opt, idx) => {
+      const letters = ['A', 'B', 'C', 'D'];
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.setAttribute('data-correct', opt.correct);
+      btn.setAttribute('data-qi', qi);
+      btn.innerHTML = `<span class="option-letter">${letters[idx]}</span><span>${opt.text}</span>`;
+      btn.onclick = () => selectOption(btn, qi, opt);
+      container.appendChild(btn);
+    });
+  });
+}
+
+renderOptions();
+
+// ══════════════════════════════════════
+//  ANSWER HANDLING
+// ══════════════════════════════════════
+function selectOption(btn, qi, opt) {
+  if (answered[qi]) return;
+  answered[qi] = true;
+  correctAnswers[qi] = opt.correct;
+
+  // Mark all buttons
+  const allBtns = document.querySelectorAll(`#opts-${qi+1} .option-btn`);
+  allBtns.forEach(b => {
+    b.classList.add('disabled');
+    const isCorrect = b.getAttribute('data-correct') === 'true';
+    b.style.border = isCorrect
+      ? '2px solid #1b6b3a'
+      : '2px solid #e0ede6';
+    if (isCorrect) {
+      b.style.background = '#eaf7ee';
+      b.querySelector('.option-letter').style.background = '#1b6b3a';
+      b.querySelector('.option-letter').style.color = 'white';
+    }
+    if (b === btn && !isCorrect) {
+      b.style.background = '#fef3e8';
+      b.style.border = '2px solid #c05621';
+      b.querySelector('.option-letter').style.background = '#c05621';
+      b.querySelector('.option-letter').style.color = 'white';
+    }
+  });
+
+  // Build feedback card
+  const fbCard = document.getElementById('fb-' + (qi + 1));
+  fbCard.innerHTML = buildFeedbackCard(qi, opt);
+  fbCard.classList.add('show');
+  fbCard.classList.add(opt.correct ? 'correct-card' : 'incorrect-card');
+
+  // Unlock next slide
+  if (unlocked < qi + 2) unlocked = qi + 2;
+  updateNav();
+
+  // Scroll feedback into view
+  setTimeout(() => {
+    fbCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 150);
+}
+
+function buildFeedbackCard(qi, chosenOpt) {
+  const q = questions[qi];
+  const isCorrect = chosenOpt.correct;
+  const correctOpt = q.options.find(o => o.correct);
+  const incorrectOpt = q.options.find(o => !o.correct);
+
+  const icon = isCorrect ? '✅' : '💡';
+  const title = isCorrect ? 'Respuesta Correcta' : 'Retroalimentación';
+  const subtitle = isCorrect ? '¡Excelente razonamiento!' : 'Revisemos las dos opciones';
+
+  let html = `
+    <div class="feedback-header">
+      <span class="feedback-icon">${icon}</span>
+      <div>
+        <div class="feedback-title">${title}</div>
+        <div class="feedback-subtitle">${subtitle}</div>
+      </div>
+    </div>`;
+
+  if (!isCorrect) {
+    html += `
+      <div class="feedback-section">
+        <div class="feedback-label incorrect-label">❌ Opción seleccionada</div>
+        <div class="feedback-body incorrect-bg">${chosenOpt.feedback}</div>
+      </div>
+      <div class="feedback-section">
+        <div class="feedback-label correct-label">✅ Mejor opción</div>
+        <div class="feedback-body correct-bg">${correctOpt.feedback}</div>
+      </div>`;
+  } else {
+    html += `
+      <div class="feedback-section">
+        <div class="feedback-label correct-label">✅ Retroalimentación opción correcta</div>
+        <div class="feedback-body correct-bg">${correctOpt.feedback}</div>
+      </div>
+      <div class="feedback-section">
+        <div class="feedback-label incorrect-label">❌ Retroalimentación opción incorrecta</div>
+        <div class="feedback-body incorrect-bg">${incorrectOpt.feedback}</div>
+      </div>`;
+  }
+
+  return html;
+}
+
+// ══════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════
+function goToSlide(n) {
+  document.getElementById('slide-' + currentSlide).classList.remove('active');
+  document.querySelectorAll('.p-dot')[currentSlide].classList.remove('active');
+  currentSlide = n;
+  document.getElementById('slide-' + currentSlide).classList.add('active');
+  updateDots();
+  updateNav();
+}
+
+function navigate(dir) {
+  const next = currentSlide + dir;
+  if (next < 0) return;
+  if (next > Math.min(unlocked, totalSlides - 1)) return;
+  goToSlide(next);
+}
+
+function tryGoTo(n) {
+  if (n <= Math.min(unlocked, totalSlides - 1)) goToSlide(n);
+}
+
+function updateNav() {
+  const maxReachable = Math.min(unlocked, totalSlides - 1);
+  document.getElementById('btn-prev').disabled = currentSlide === 0;
+  document.getElementById('btn-next').disabled = currentSlide >= maxReachable;
+
+  const labels = ['Inicio', 'Pregunta 1', 'Pregunta 2', 'Pregunta 3', 'Resultado'];
+  document.getElementById('progress-label').textContent = labels[currentSlide];
+
+  // If all answered, unlock final
+  if (answered[0] && answered[1] && answered[2] && unlocked < 4) {
+    unlocked = 4;
+    updateScoreDots();
+  }
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('.p-dot');
+  dots.forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i === currentSlide) d.classList.add('active');
+    else if (i < currentSlide) d.classList.add('done');
+  });
+}
+
+function updateScoreDots() {
+  correctAnswers.forEach((c, i) => {
+    const dot = document.getElementById('sd-' + i);
+    if (dot) dot.classList.add('filled');
+  });
+}
+
+function restartQuiz() {
+  answered.fill(false);
+  correctAnswers.fill(false);
+  unlocked = 0;
+
+  // Reset options
+  renderOptions();
+
+  // Hide feedback cards
+  for (let i = 1; i <= 3; i++) {
+    const fb = document.getElementById('fb-' + i);
+    fb.classList.remove('show', 'correct-card', 'incorrect-card');
+    fb.innerHTML = '';
+  }
+
+  // Reset score dots
+  for (let i = 0; i < 3; i++) {
+    const dot = document.getElementById('sd-' + i);
+    if (dot) dot.classList.remove('filled');
+  }
+
+  goToSlide(0);
+}
+
+// init
+updateNav();
+updateDots();
+</script>
+</body>
+</html>

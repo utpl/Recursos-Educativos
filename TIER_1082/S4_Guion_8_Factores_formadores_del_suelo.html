@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Factores formadores del suelo</title>
+<style>
+  /* ===== RESET ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f4f9f2;
+    color: #2d4a2d;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ===== WRAPPER ===== */
+  .wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 800px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: linear-gradient(135deg, #2e7d32 0%, #4caf50 60%, #81c784 100%);
+    padding: 20px 26px 16px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -35px; right: -25px;
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 80px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 5px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.25;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== INSTRUCTION ===== */
+  .instruction {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fff8e1;
+    border-left: 4px solid #fbc02d;
+    padding: 11px 18px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #6d4c00;
+  }
+  .instruction strong { font-weight: 700; }
+  .instr-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ===== ACTIVITY AREA ===== */
+  .activity {
+    flex: 1;
+    padding: 18px 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+  }
+
+  /* Column headers */
+  .col-headers {
+    display: grid;
+    grid-template-columns: 1fr 40px 2fr;
+    gap: 0;
+    margin-bottom: 2px;
+  }
+  .col-head {
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #fff;
+    background: linear-gradient(135deg, #2e7d32, #4caf50);
+    border-radius: 8px;
+    padding: 7px 10px;
+  }
+
+  /* ===== MATCHING BOARD ===== */
+  .board {
+    display: grid;
+    grid-template-columns: 1fr 80px 2fr;
+    gap: 8px 0;
+    position: relative;
+  }
+
+  /* SVG connector layer */
+  .svg-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: visible;
+  }
+
+  /* LEFT column */
+  .col-left, .col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .col-mid {
+    position: relative;
+  }
+
+  /* ===== ITEM CARDS ===== */
+  .item {
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2.5px solid #c8e6c9;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(46,125,50,0.08);
+    transition: border-color 0.2s, transform 0.18s, box-shadow 0.18s, background 0.2s;
+    position: relative;
+    user-select: none;
+    outline: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 56px;
+  }
+  .item:hover {
+    border-color: #4caf50;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(46,125,50,0.15);
+  }
+  .item:focus-visible { outline: 3px solid #4caf50; outline-offset: 2px; }
+
+  .item.selected {
+    border-color: #1976d2;
+    background: #e3f2fd;
+    box-shadow: 0 4px 16px rgba(25,118,210,0.18);
+    transform: translateY(-2px) scale(1.02);
+  }
+  .item.matched-correct {
+    border-color: #2e7d32;
+    background: #e8f5e9;
+    cursor: default;
+  }
+  .item.matched-wrong {
+    border-color: #ef5350;
+    background: #ffebee;
+    cursor: default;
+  }
+  .item.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .item-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2e7d32, #66bb6a);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .item-letter {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1565c0, #42a5f5);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .item-text { flex: 1; color: #2d4a2d; }
+
+  /* connector dots */
+  .dot-right, .dot-left {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 2.5px solid #4caf50;
+    background: #fff;
+    transition: background 0.2s, border-color 0.2s;
+    z-index: 6;
+    pointer-events: none;
+  }
+  .dot-right { right: -6px; }
+  .dot-left  { left: -6px; }
+  .item.selected .dot-right,
+  .item.selected .dot-left { background: #1976d2; border-color: #1976d2; }
+  .item.matched-correct .dot-right,
+  .item.matched-correct .dot-left { background: #2e7d32; border-color: #2e7d32; }
+  .item.matched-wrong .dot-right,
+  .item.matched-wrong .dot-left { background: #ef5350; border-color: #ef5350; }
+
+  /* ===== BUTTONS ===== */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 4px 20px 14px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 22px;
+    border-radius: 24px;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+  .btn-check  { background: linear-gradient(135deg,#2e7d32,#4caf50); color:#fff; }
+  .btn-reset  { background: #f5f5f5; color: #555; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ===== FEEDBACK MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,60,30,0.45);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: #fff;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 440px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+    transform: translateY(30px) scale(0.95);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    overflow: hidden;
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); opacity: 1; }
+  .modal-head {
+    padding: 22px 24px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+  .modal-icon-big { font-size: 52px; line-height: 1; }
+  .modal-title { font-size: 18px; font-weight: 800; }
+  .modal-body {
+    padding: 0 24px 20px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #3e5e3e;
+    text-align: center;
+  }
+  .modal-foot {
+    padding: 0 24px 22px;
+    display: flex;
+    justify-content: center;
+  }
+  .modal.success .modal-head { background: linear-gradient(135deg,#e8f5e9,#f1f8e9); }
+  .modal.success .modal-title { color: #1b5e20; }
+  .modal.partial .modal-head { background: linear-gradient(135deg,#fff8e1,#fffde7); }
+  .modal.partial .modal-title { color: #e65100; }
+
+  /* Score chips */
+  .score-chips {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 10px 0 4px;
+  }
+  .chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .chip.ok  { background: #e8f5e9; color: #1b5e20; }
+  .chip.err { background: #ffebee; color: #b71c1c; }
+
+  /* ===== REFERENCE ===== */
+  .reference {
+    text-align: center;
+    padding: 8px 20px 16px;
+    font-size: 11.5px;
+    color: #999;
+    font-style: italic;
+    border-top: 1px solid #e8f5e9;
+    margin-top: auto;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 16px; }
+    .activity { padding: 14px 12px 10px; gap: 10px; }
+    .board { grid-template-columns: 1fr 28px 1fr; }
+    .item { font-size: 11.5px; padding: 9px 10px; gap: 7px; min-height: 50px; }
+    .item-num, .item-letter { width: 24px; height: 24px; font-size: 11px; }
+    .col-head { font-size: 10px; padding: 6px 6px; }
+    .btn { font-size: 12.5px; padding: 9px 16px; }
+    .dot-right { right: -5px; }
+    .dot-left  { left:  -5px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+   
+    <h1>🪨 Factores formadores del suelo</h1>
+  </div>
+
+  <!-- INSTRUCTION -->
+  <div class="instruction">
+    <span class="instr-icon">🔗</span>
+    <span><strong>Instrucciones:</strong> Relacione cada factor formador del suelo con la situación que mejor lo describe. Haga clic en un factor de la columna A y luego en la descripción correspondiente de la columna B.</span>
+  </div>
+
+  <!-- MATCHING BOARD -->
+  <div class="activity">
+
+    <div class="col-headers">
+      <div class="col-head">Columna A · Factor</div>
+      <div></div>
+      <div class="col-head">Columna B · Descripción</div>
+    </div>
+
+    <div class="board" id="board">
+
+      <!-- SVG lines layer -->
+      <svg class="svg-layer" id="svg-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+
+      <!-- LEFT: Factors -->
+      <div class="col-left" id="col-left">
+        <div class="item" id="left-1" tabindex="0" onclick="selectLeft('1')" onkeydown="if(event.key==='Enter'||event.key===' ')selectLeft('1')" role="button" aria-label="Factor 1: Roca originaria">
+          <div class="item-num">1</div>
+          <div class="item-text">Roca originaria</div>
+          <div class="dot-right" id="dot-r-1"></div>
+        </div>
+        <div class="item" id="left-2" tabindex="0" onclick="selectLeft('2')" onkeydown="if(event.key==='Enter'||event.key===' ')selectLeft('2')" role="button" aria-label="Factor 2: Clima">
+          <div class="item-num">2</div>
+          <div class="item-text">Clima</div>
+          <div class="dot-right" id="dot-r-2"></div>
+        </div>
+        <div class="item" id="left-3" tabindex="0" onclick="selectLeft('3')" onkeydown="if(event.key==='Enter'||event.key===' ')selectLeft('3')" role="button" aria-label="Factor 3: Organismos vivos">
+          <div class="item-num">3</div>
+          <div class="item-text">Organismos vivos</div>
+          <div class="dot-right" id="dot-r-3"></div>
+        </div>
+        <div class="item" id="left-4" tabindex="0" onclick="selectLeft('4')" onkeydown="if(event.key==='Enter'||event.key===' ')selectLeft('4')" role="button" aria-label="Factor 4: Topografía">
+          <div class="item-num">4</div>
+          <div class="item-text">Topografía</div>
+          <div class="dot-right" id="dot-r-4"></div>
+        </div>
+        <div class="item" id="left-5" tabindex="0" onclick="selectLeft('5')" onkeydown="if(event.key==='Enter'||event.key===' ')selectLeft('5')" role="button" aria-label="Factor 5: Tiempo">
+          <div class="item-num">5</div>
+          <div class="item-text">Tiempo</div>
+          <div class="dot-right" id="dot-r-5"></div>
+        </div>
+      </div>
+
+      <!-- MIDDLE spacer -->
+      <div class="col-mid"></div>
+
+      <!-- RIGHT: Descriptions (shuffled: A B C D E) -->
+      <div class="col-right" id="col-right">
+        <div class="item" id="right-A" tabindex="0" onclick="selectRight('A')" onkeydown="if(event.key==='Enter'||event.key===' ')selectRight('A')" role="button" aria-label="Descripción A">
+          <div class="dot-left" id="dot-l-A"></div>
+          <div class="item-letter">A</div>
+          <div class="item-text">En este lugar, el agua de lluvia arrastra con facilidad partículas del suelo cuesta abajo, por lo que en unas zonas se acumula material y en otras se pierde.</div>
+        </div>
+        <div class="item" id="right-B" tabindex="0" onclick="selectRight('B')" onkeydown="if(event.key==='Enter'||event.key===' ')selectRight('B')" role="button" aria-label="Descripción B">
+          <div class="dot-left" id="dot-l-B"></div>
+          <div class="item-letter">B</div>
+          <div class="item-text">En esta zona, las raíces rompen pequeñas grietas, los microorganismos descomponen restos orgánicos y poco a poco el suelo adquiere nuevas características.</div>
+        </div>
+        <div class="item" id="right-C" tabindex="0" onclick="selectRight('C')" onkeydown="if(event.key==='Enter'||event.key===' ')selectRight('C')" role="button" aria-label="Descripción C">
+          <div class="dot-left" id="dot-l-C"></div>
+          <div class="item-letter">C</div>
+          <div class="item-text">En este caso, el suelo comenzó a desarrollarse a partir del material inicial disponible, por lo que sus propiedades dependen en gran parte del tipo de mineral del que proviene.</div>
+        </div>
+        <div class="item" id="right-D" tabindex="0" onclick="selectRight('D')" onkeydown="if(event.key==='Enter'||event.key===' ')selectRight('D')" role="button" aria-label="Descripción D">
+          <div class="dot-left" id="dot-l-D"></div>
+          <div class="item-letter">D</div>
+          <div class="item-text">En este ambiente, la lluvia y la temperatura aceleran o ralentizan la descomposición de las rocas y la formación del suelo.</div>
+        </div>
+        <div class="item" id="right-E" tabindex="0" onclick="selectRight('E')" onkeydown="if(event.key==='Enter'||event.key===' ')selectRight('E')" role="button" aria-label="Descripción E">
+          <div class="dot-left" id="dot-l-E"></div>
+          <div class="item-letter">E</div>
+          <div class="item-text">Aunque todos los demás factores estén presentes, este proceso requiere largos periodos para que el suelo llegue a desarrollarse y diferenciar sus horizontes.</div>
+        </div>
+      </div>
+
+    </div><!-- /board -->
+  </div><!-- /activity -->
+
+  <!-- BUTTONS -->
+  <div class="btn-row">
+    <button class="btn btn-check" id="btn-check" onclick="checkAnswers()" disabled>✅ Verificar</button>
+    <button class="btn btn-reset" id="btn-reset" onclick="resetAll()">🔄 Reiniciar</button>
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="reference">
+    Elaboración propia
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- FEEDBACK MODAL -->
+<div class="modal-overlay" id="modal-feedback" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal" id="modal-inner">
+    <div class="modal-head">
+      <div class="modal-icon-big" id="modal-emoji">🎉</div>
+      <div class="modal-title" id="modal-title">Resultado</div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="score-chips" id="score-chips" style="padding:0 24px 12px;"></div>
+    <div class="modal-foot">
+      <button class="btn btn-reset" style="background:#fff;border:2px solid #c8e6c9;color:#2e7d32;" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== STATE ====== */
+const CORRECT = { '1':'C', '2':'D', '3':'B', '4':'A', '5':'E' };
+let selectedLeft  = null;   // '1'–'5'
+let selectedRight = null;   // 'A'–'E'
+let pairs = {};             // { '1':'C', ... }
+let lines = {};             // { '1-C': svgLine }
+let done  = false;
+
+/* ====== SELECT LEFT ====== */
+function selectLeft(id) {
+  if (done) return;
+  if (pairs[id]) return;         // already matched
+
+  // deselect previous
+  if (selectedLeft) {
+    document.getElementById('left-' + selectedLeft).classList.remove('selected');
+  }
+
+  if (selectedLeft === id) {     // toggle off
+    selectedLeft = null;
+  } else {
+    selectedLeft = id;
+    document.getElementById('left-' + id).classList.add('selected');
+    if (selectedRight) tryConnect();
+  }
+  updateCheckBtn();
+}
+
+/* ====== SELECT RIGHT ====== */
+function selectRight(id) {
+  if (done) return;
+  // check if already matched
+  const alreadyMatchedBy = Object.entries(pairs).find(([,v]) => v === id);
+  if (alreadyMatchedBy) return;
+
+  if (selectedRight) {
+    document.getElementById('right-' + selectedRight).classList.remove('selected');
+  }
+  if (selectedRight === id) {
+    selectedRight = null;
+  } else {
+    selectedRight = id;
+    document.getElementById('right-' + id).classList.add('selected');
+    if (selectedLeft) tryConnect();
+  }
+  updateCheckBtn();
+}
+
+/* ====== CONNECT PAIR ====== */
+function tryConnect() {
+  const l = selectedLeft;
+  const r = selectedRight;
+  selectedLeft  = null;
+  selectedRight = null;
+
+  document.getElementById('left-'  + l).classList.remove('selected');
+  document.getElementById('right-' + r).classList.remove('selected');
+
+  // if left already had a pair, remove old line
+  if (pairs[l]) {
+    removeLine(l, pairs[l]);
+    document.getElementById('right-' + pairs[l]).classList.remove('matched-correct','matched-wrong','disabled');
+  }
+
+  pairs[l] = r;
+  drawLine(l, r);
+  updateCheckBtn();
+}
+
+/* ====== DRAW LINE ====== */
+function drawLine(l, r, color) {
+  removeLine(l, r);
+  requestAnimationFrame(() => {
+    const svg    = document.getElementById('svg-layer');
+    const board  = document.getElementById('board');
+    const br     = board.getBoundingClientRect();
+
+    const dotR = document.getElementById('dot-r-' + l);
+    const dotL = document.getElementById('dot-l-' + r);
+    if (!dotR || !dotL) return;
+
+    const drR = dotR.getBoundingClientRect();
+    const drL = dotL.getBoundingClientRect();
+
+    const x1 = drR.left + drR.width/2  - br.left;
+    const y1 = drR.top  + drR.height/2 - br.top;
+    const x2 = drL.left + drL.width/2  - br.left;
+    const y2 = drL.top  + drL.height/2 - br.top;
+
+    const cx1 = x1 + (x2-x1)*0.4;
+    const cy1 = y1;
+    const cx2 = x1 + (x2-x1)*0.6;
+    const cy2 = y2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const d    = `M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`;
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', color || '#1976d2');
+    path.setAttribute('stroke-width', '2.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    path.style.transition = 'stroke 0.3s';
+    path.id = 'line-' + l + '-' + r;
+    svg.appendChild(path);
+    lines[l+'-'+r] = path;
+  });
+}
+
+function removeLine(l, r) {
+  const key  = l + '-' + r;
+  const old  = document.getElementById('line-' + key);
+  if (old) old.remove();
+  delete lines[key];
+}
+
+/* ====== CHECK BUTTON ====== */
+function updateCheckBtn() {
+  document.getElementById('btn-check').disabled = Object.keys(pairs).length < 5;
+}
+
+/* ====== VERIFY ====== */
+function checkAnswers() {
+  done = true;
+  let correct = 0;
+  const chips = [];
+
+  Object.entries(pairs).forEach(([l, r]) => {
+    const isOk = CORRECT[l] === r;
+    const col  = isOk ? '#2e7d32' : '#ef5350';
+    const lid  = document.getElementById('left-'  + l);
+    const rid  = document.getElementById('right-' + r);
+
+    // Remove old line and redraw in correct color
+    removeLine(l, r);
+    // draw colored line immediately (not via requestAnimationFrame to keep order)
+    setTimeout(() => drawLine(l, r, col), 10);
+
+    if (isOk) {
+      lid.classList.add('matched-correct');
+      rid.classList.add('matched-correct');
+      correct++;
+    } else {
+      lid.classList.add('matched-wrong');
+      rid.classList.add('matched-wrong');
+    }
+    lid.classList.add('disabled');
+    rid.classList.add('disabled');
+
+    chips.push({ l, r, ok: isOk });
+  });
+
+  // Disable buttons area
+  document.getElementById('btn-check').disabled = true;
+
+  showModal(correct, chips);
+}
+
+/* ====== MODAL ====== */
+function showModal(correct, chips) {
+  const isAll = correct === 5;
+  const modal = document.getElementById('modal-inner');
+  modal.className = 'modal ' + (isAll ? 'success' : 'partial');
+
+  document.getElementById('modal-emoji').textContent = isAll ? '🎉' : '💡';
+  document.getElementById('modal-title').textContent  = isAll
+    ? '¡Felicitaciones!'
+    : `${correct} de 5 correctas`;
+
+  document.getElementById('modal-body').innerHTML = isAll
+    ? 'Ha completado con éxito la actividad, pudo reconocer que la formación del suelo no depende de un solo elemento, sino de la interacción entre varios factores que actúan de manera conjunta a lo largo del tiempo.'
+    : 'Algunas respuestas no son correctas. Las conexiones en <strong style="color:#2e7d32">verde</strong> están bien; las que están en <strong style="color:#ef5350">rojo</strong> necesitan revisión. Intenta de nuevo.';
+
+  const chipsEl = document.getElementById('score-chips');
+  chipsEl.innerHTML = chips.map(c =>
+    `<span class="chip ${c.ok?'ok':'err'}">${c.l} → ${c.r} ${c.ok?'✓':'✗'}</span>`
+  ).join('');
+  chipsEl.style.display = 'flex';
+
+  document.getElementById('modal-feedback').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-feedback').classList.remove('open');
+}
+
+/* ====== RESET ====== */
+function resetAll() {
+  done = false;
+  selectedLeft  = null;
+  selectedRight = null;
+
+  // Clear pairs & lines
+  Object.keys(lines).forEach(k => { const el = document.getElementById('line-'+k); if(el)el.remove(); });
+  lines = {};
+  pairs = {};
+
+  // Reset all items
+  document.querySelectorAll('.item').forEach(el => {
+    el.classList.remove('selected','matched-correct','matched-wrong','disabled');
+    el.style.pointerEvents = '';
+  });
+
+  document.getElementById('btn-check').disabled = true;
+  closeModal();
+}
+
+/* ====== CLOSE ON OVERLAY CLICK ====== */
+document.getElementById('modal-feedback').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ====== REDRAW ON RESIZE ====== */
+window.addEventListener('resize', () => {
+  // Redraw all existing lines
+  const svg = document.getElementById('svg-layer');
+  svg.innerHTML = '';
+  Object.entries(pairs).forEach(([l, r]) => {
+    const isChecked = document.getElementById('left-'+l).classList.contains('matched-correct')
+                   || document.getElementById('left-'+l).classList.contains('matched-wrong');
+    let color = '#1976d2';
+    if (isChecked) {
+      color = CORRECT[l] === r ? '#2e7d32' : '#ef5350';
+    }
+    drawLine(l, r, color);
+  });
+});
+</script>
+</body>
+</html>

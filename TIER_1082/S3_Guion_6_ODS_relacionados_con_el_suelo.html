@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ODS relacionados con el suelo</title>
+<style>
+  /* ====== RESET & BASE ====== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f4f9f2;
+    color: #2d4a2d;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ====== WRAPPER ====== */
+  .wrapper {
+    max-width: 800px;
+    min-height: 800px;
+    margin: 0 auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ====== HEADER ====== */
+  .header {
+    background: linear-gradient(135deg, #2e7d32 0%, #4caf50 60%, #81c784 100%);
+    padding: 22px 28px 18px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 60px;
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .header-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+  }
+  .header-icon {
+    font-size: 28px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  /* ====== INTRO SECTION ====== */
+  .intro {
+    background: linear-gradient(180deg, #e8f5e9 0%, #f4f9f2 100%);
+    padding: 18px 28px 14px;
+    border-bottom: 1px solid #c8e6c9;
+  }
+  .intro p {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #3e5e3e;
+  }
+
+  /* ====== INSTRUCTION ====== */
+  .instruction {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff8e1;
+    border-left: 4px solid #fbc02d;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #795548;
+  }
+  .instruction-icon { font-size: 18px; }
+
+  /* ====== GRID ====== */
+  .grid-title {
+    padding: 16px 28px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #66bb6a;
+  }
+
+  .ods-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    padding: 6px 28px 22px;
+  }
+
+  /* ====== ODS CARD ====== */
+  .ods-card {
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    box-shadow: 0 2px 10px rgba(46,125,50,0.10);
+    position: relative;
+    background: #fff;
+    border: 2.5px solid transparent;
+    outline: none;
+  }
+  .ods-card:focus-visible { outline: 3px solid #4caf50; outline-offset: 2px; }
+
+  /* Active ODS — colored */
+  .ods-card.active {
+    border-color: #4fc3f7;
+    box-shadow: 0 4px 18px rgba(79,195,247,0.30);
+  }
+  .ods-card.active .card-label { background: #4fc3f7; color: #fff; }
+
+  /* Inactive ODS — greyscale */
+  .ods-card.inactive { filter: grayscale(1) brightness(0.85); opacity: 0.6; }
+  .ods-card.inactive:hover { filter: grayscale(0.5) brightness(0.95); opacity: 0.85; }
+
+  .ods-card:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 8px 24px rgba(46,125,50,0.18); }
+
+  .card-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #f0f4f0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .ods-card:hover .card-img-wrap img { transform: scale(1.06); }
+
+  .card-label {
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 6px 4px;
+    background: #e0e0e0;
+    color: #555;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1.3;
+  }
+  .ods-card.active .card-label { background: #4fc3f7; color: #fff; }
+
+  /* Click pulse animation */
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(79,195,247,0.5); }
+    70% { box-shadow: 0 0 0 10px rgba(79,195,247,0); }
+    100% { box-shadow: 0 0 0 0 rgba(79,195,247,0); }
+  }
+  .ods-card.active { animation: pulse-ring 0.6s ease; }
+
+  /* ====== REFERENCE ====== */
+  .reference {
+    text-align: center;
+    padding: 10px 28px 18px;
+    font-size: 11.5px;
+    color: #888;
+    font-style: italic;
+    border-top: 1px solid #e8f5e9;
+  }
+
+  /* ====== MODAL ====== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,60,30,0.45);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fff;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    transform: translateY(30px) scale(0.96);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    position: relative;
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); opacity: 1; }
+
+  .modal-header {
+    padding: 0;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    position: sticky; top: 0; z-index: 2;
+  }
+  .modal-header-inner {
+    padding: 18px 22px 16px;
+    display: flex; align-items: center; gap: 14px;
+    color: #fff;
+  }
+  .modal-ods-img {
+    width: 62px; height: 62px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.4);
+  }
+  .modal-title-wrap { flex: 1; }
+  .modal-ods-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: rgba(255,255,255,0.25);
+    border: none;
+    color: #fff;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    z-index: 3;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.45); }
+
+  .modal-body {
+    padding: 20px 24px 24px;
+  }
+  .modal-body p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #3e5e3e;
+  }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 17px; }
+    .ods-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 6px 14px 18px; }
+    .intro, .grid-title, .instruction { padding-left: 14px; padding-right: 14px; }
+    .modal { max-width: 95%; }
+    .modal-title { font-size: 15px; }
+    .modal-body p { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-tag">🌱 Recurso educativo interactivo</div>
+    <h1><span class="header-icon">🌍</span>ODS relacionados con el suelo</h1>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro">
+    <p>El suelo es un recurso natural esencial para la vida, ya que sostiene la producción de alimentos, regula procesos ecológicos y contribuye al equilibrio de los ecosistemas. Relacionar su importancia con los Objetivos de Desarrollo Sostenible permite comprender su papel clave en la construcción de un futuro más sostenible.</p>
+  </div>
+
+  <!-- INSTRUCTION -->
+  <div class="instruction">
+    <span class="instruction-icon">👆</span>
+    Haga clic en los temas para visualizar la información
+  </div>
+
+  <!-- GRID LABEL -->
+  <div class="grid-title">🎯 Objetivos de Desarrollo Sostenible</div>
+
+  <!-- ODS GRID -->
+  <div class="ods-grid" role="list">
+
+
+
+    <!-- ODS 2 — Active -->
+    <div class="ods-card active" role="listitem" tabindex="0" aria-label="ODS 2 Hambre cero — haga clic para más información"
+         onclick="openModal('ods2')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('ods2')">
+      <div class="card-img-wrap">
+        <img src="/media/image5.png" alt="ODS 2 Hambre cero">
+      </div>
+      <div class="card-label">2 · Hambre cero</div>
+    </div>
+
+
+
+
+
+    <!-- ODS 6 — Active -->
+    <div class="ods-card active" role="listitem" tabindex="0" aria-label="ODS 6 Agua limpia y saneamiento — haga clic para más información"
+         onclick="openModal('ods6')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('ods6')">
+      <div class="card-img-wrap">
+        <img src="/media/image6.png" alt="ODS 6 Agua limpia y saneamiento">
+      </div>
+      <div class="card-label">6 · Agua limpia y saneamiento</div>
+    </div>
+
+  
+
+    <!-- ODS 8 — Inactive -->
+  
+
+
+    <!-- ODS 13 — Active -->
+    <div class="ods-card active" role="listitem" tabindex="0" aria-label="ODS 13 Acción por el clima — haga clic para más información"
+         onclick="openModal('ods13')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('ods13')">
+      <div class="card-img-wrap">
+        <img src="/media/image7.png" alt="ODS 13 Acción por el clima">
+      </div>
+      <div class="card-label">13 · Acción por el clima</div>
+    </div>
+
+  
+
+    <!-- ODS 15 — Active -->
+    <div class="ods-card active" role="listitem" tabindex="0" aria-label="ODS 15 Vida de ecosistemas terrestres — haga clic para más información"
+         onclick="openModal('ods15')" onkeydown="if(event.key==='Enter'||event.key===' ')openModal('ods15')">
+      <div class="card-img-wrap">
+        <img src="/media/image8.png" alt="ODS 15 Vida de ecosistemas terrestres">
+      </div>
+      <div class="card-label">15 · Vida de ecosistemas terrestres</div>
+    </div>
+
+
+  </div><!-- /grid -->
+
+  <!-- REFERENCE -->
+  <div class="reference">
+    ODS relacionados con el suelo
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- ====== MODAL: ODS 2 ====== -->
+<div class="modal-overlay" id="modal-ods2" role="dialog" aria-modal="true" aria-labelledby="title-ods2">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-inner" style="background: linear-gradient(135deg, #d4a017 0%, #f9c642 100%);">
+        <img class="modal-ods-img" src="media/Imagen 23.png" alt="ODS 2">
+        <div class="modal-title-wrap">
+          <div class="modal-ods-num">ODS 2</div>
+          <div class="modal-title" id="title-ods2">🌾 Hambre cero</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ods2')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>De acuerdo con la FAO, el suelo es un componente esencial en la erradicación del hambre, ya que la producción agrícola depende directamente de su calidad y fertilidad.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: ODS 6 ====== -->
+<div class="modal-overlay" id="modal-ods6" role="dialog" aria-modal="true" aria-labelledby="title-ods6">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-inner" style="background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);">
+        <img class="modal-ods-img" src="media/Imagen 24.png" alt="ODS 6">
+        <div class="modal-title-wrap">
+          <div class="modal-ods-num">ODS 6</div>
+          <div class="modal-title" id="title-ods6">💧 Agua limpia y saneamiento</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ods6')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>El suelo actúa como un filtro natural de gran capacidad, purificando el agua que percola hacia los acuíferos subterráneos. Además, es clave para la regulación del ciclo hidrológico, la recarga de aguas freáticas y la prevención de inundaciones y sequías.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: ODS 13 ====== -->
+<div class="modal-overlay" id="modal-ods13" role="dialog" aria-modal="true" aria-labelledby="title-ods13">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-inner" style="background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%);">
+        <img class="modal-ods-img" src="media/Imagen 25.png" alt="ODS 13">
+        <div class="modal-title-wrap">
+          <div class="modal-ods-num">ODS 13</div>
+          <div class="modal-title" id="title-ods13">🌡️ Acción por el clima</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ods13')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>La materia orgánica del suelo (principalmente carbono orgánico) puede secuestrar grandes cantidades de CO₂ atmosférico. Sin embargo, cuando los suelos se degradan, pierden su capacidad de almacenamiento de carbono, lo que contribuye al aumento de gases de efecto invernadero en la atmósfera.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: ODS 15 ====== -->
+<div class="modal-overlay" id="modal-ods15" role="dialog" aria-modal="true" aria-labelledby="title-ods15">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-inner" style="background: linear-gradient(135deg, #1b5e20 0%, #43a047 100%);">
+        <img class="modal-ods-img" src="media/Imagen 26.png" alt="ODS 15">
+        <div class="modal-title-wrap">
+          <div class="modal-ods-num">ODS 15</div>
+          <div class="modal-title" id="title-ods15">🌿 Vida de ecosistemas terrestres</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ods15')" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>La pérdida de suelos fértiles impulsa la expansión de la frontera agrícola hacia áreas naturales, como bosques y selvas, promoviendo la deforestación y la pérdida de biodiversidad. La conservación y restauración de suelos es fundamental para mantener los ecosistemas terrestres y los servicios que estos proporcionan.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ====== MODAL LOGIC ======
+  function openModal(id) {
+    const overlay = document.getElementById('modal-' + id);
+    if (!overlay) return;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // Focus close button for a11y
+    setTimeout(() => {
+      const btn = overlay.querySelector('.modal-close');
+      if (btn) btn.focus();
+    }, 320);
+  }
+
+  function closeModal(id) {
+    const overlay = document.getElementById('modal-' + id);
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Close on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(el => {
+        el.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    }
+  });
+</script>
+</body>
+</html>

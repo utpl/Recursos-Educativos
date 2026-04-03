@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identificación de los tipos de rocas</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f0ece4;
+    color: #2a1f10;
+  }
+
+  .wrapper {
+    max-width: 800px;
+    min-height: 800px;
+    margin: 0 auto;
+    background: #faf7f2;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ══════════════════════════════
+     HEADER — Textura de roca con cristales
+  ══════════════════════════════ */
+  .header {
+    position: relative;
+    height: 130px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* Fondo base: gradiente pétreo */
+  .header-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #4a3728 0%, #6b4f38 25%, #8c6e50 50%, #7a5c40 75%, #5c4030 100%);
+  }
+
+  /* Vetas de mineral (líneas diagonales SVG) */
+  .header-veins {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0.18;
+  }
+
+  /* Cristales / facetas geométricas */
+  .header-crystals {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  /* Brillo superior (luz refractada) */
+  .header-shine {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: linear-gradient(
+      160deg,
+      rgba(255,240,200,0.22) 0%,
+      rgba(255,220,150,0.12) 30%,
+      transparent 60%
+    );
+  }
+
+  /* Partículas minerales */
+  .mineral-dot {
+    position: absolute;
+    border-radius: 1px;
+    z-index: 4;
+    animation: glint 3s ease-in-out infinite alternate;
+  }
+  @keyframes glint {
+    from { opacity: 0.3; transform: scale(1); }
+    to   { opacity: 0.9; transform: scale(1.3); }
+  }
+
+  /* Texto del header */
+  .header-content {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    gap: 16px;
+  }
+
+  .header-icon-wrap {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .header-text-block h1 {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+    line-height: 1.25;
+  }
+  .header-text-block p {
+    color: white;
+    font-size: 12px;
+    margin-top: 4px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+
+  /* Distintivos de tipo en header */
+  .header-chips {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+  }
+  .hchip {
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.4px;
+    backdrop-filter: blur(4px);
+  }
+  .hchip-ig  { background: rgba(230,80,50,0.55);  color: #ffe0d0; border: 1px solid rgba(255,120,80,0.4); }
+  .hchip-se  { background: rgba(180,140,60,0.55); color: #fff8d0; border: 1px solid rgba(220,180,80,0.4); }
+  .hchip-me  { background: rgba(60,120,180,0.55); color: #d0eaff; border: 1px solid rgba(100,160,220,0.4); }
+
+  /* ══════════════════════════════
+     INSTRUCCIÓN
+  ══════════════════════════════ */
+  .instruction {
+    background: #fdf3dc;
+    border-left: 4px solid #d4a017;
+    padding: 9px 18px;
+    font-size: 12px;
+    color: #5d3e00;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════
+     LAYOUT PRINCIPAL
+  ══════════════════════════════ */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px 10px;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  .main::-webkit-scrollbar { width: 5px; }
+  .main::-webkit-scrollbar-track { background: #f0ece4; }
+  .main::-webkit-scrollbar-thumb { background: #c4a87a; border-radius: 3px; }
+
+  /* ══════════════════════════════
+     ZONA DE ARRASTRE (piezas)
+  ══════════════════════════════ */
+  .pieces-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8b6014;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pieces-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    background: #f5ede0;
+    border-radius: 14px;
+    border: 2px dashed #d4b87a;
+    min-height: 80px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .pieces-pool.drag-over {
+    background: #fef3e0;
+    border-color: #c4880a;
+  }
+
+  /* Pieza draggable */
+  .rock-piece {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    background: #fff;
+    border: 2px solid #e0c898;
+    border-radius: 12px;
+    padding: 7px 8px 6px;
+    cursor: grab;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s, opacity 0.18s;
+    user-select: none;
+    width: 100px;
+    box-shadow: 0 2px 8px rgba(150,100,20,0.1);
+  }
+  .rock-piece:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(150,100,20,0.2);
+    border-color: #c4880a;
+  }
+  .rock-piece.dragging {
+    opacity: 0.45;
+    transform: scale(0.97);
+    cursor: grabbing;
+  }
+  .rock-piece.placed {
+    opacity: 0.35;
+    pointer-events: none;
+    filter: grayscale(0.4);
+  }
+
+  .rock-piece img {
+    width: 85px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    pointer-events: none;
+    display: block;
+  }
+  .rock-piece .rock-name {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #3d2200;
+    text-align: center;
+    line-height: 1.2;
+    pointer-events: none;
+  }
+
+  /* ══════════════════════════════
+     ZONAS DE DESTINO
+  ══════════════════════════════ */
+  .drop-zones {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .drop-zone {
+    border-radius: 14px;
+    border: 2.5px dashed;
+    padding: 10px 8px 8px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .drop-zone.ignea  { border-color: #e07040; background: #fff7f4; }
+  .drop-zone.sedimentaria { border-color: #c8a030; background: #fffbf0; }
+  .drop-zone.metamorfica  { border-color: #5090c0; background: #f2f7fc; }
+
+  .drop-zone.drag-over.ignea  { background: #fde8df; border-style: solid; box-shadow: 0 0 0 3px rgba(224,112,64,0.18); }
+  .drop-zone.drag-over.sedimentaria { background: #fdf4d0; border-style: solid; box-shadow: 0 0 0 3px rgba(200,160,48,0.18); }
+  .drop-zone.drag-over.metamorfica  { background: #deeaf5; border-style: solid; box-shadow: 0 0 0 3px rgba(80,144,192,0.18); }
+
+  .zone-title {
+    font-size: 11.5px;
+    font-weight: 800;
+    text-align: center;
+    padding: 5px 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    letter-spacing: 0.3px;
+  }
+  .ignea .zone-title       { background: #fdddd0; color: #9b3010; }
+  .sedimentaria .zone-title{ background: #fdeeb8; color: #7a5000; }
+  .metamorfica .zone-title { background: #d0e4f8; color: #1a4a7a; }
+
+  .zone-items {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Mini pieza dentro de la zona */
+  .zone-rock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 6px 8px;
+    border: 1.5px solid;
+    transition: transform 0.15s;
+    cursor: grab;
+  }
+  .zone-rock:hover { transform: scale(1.02); }
+  .ignea .zone-rock       { border-color: #f0b090; }
+  .sedimentaria .zone-rock{ border-color: #e0cc80; }
+  .metamorfica .zone-rock { border-color: #90c0e8; }
+
+  .zone-rock img {
+    width: 40px; height: 32px;
+    object-fit: cover;
+    border-radius: 6px;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+  .zone-rock-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2a1800;
+    pointer-events: none;
+  }
+  .zone-rock-status {
+    margin-left: auto;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  /* Placeholder vacío */
+  .zone-placeholder {
+    text-align: center;
+    font-size: 11px;
+    color: #bba880;
+    padding: 14px 0;
+    font-style: italic;
+  }
+
+  /* ══════════════════════════════
+     BOTONES ACCIÓN
+  ══════════════════════════════ */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-check, .btn-reset {
+    border: none;
+    border-radius: 24px;
+    padding: 10px 26px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .btn-check {
+    background: linear-gradient(135deg, #6b4f38, #9a7050);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(80,50,20,0.25);
+  }
+  .btn-check:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(80,50,20,0.32); }
+  .btn-check:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+  .btn-reset {
+    background: #f0ece4;
+    color: #5a3a10;
+    border: 2px solid #d4b87a;
+  }
+  .btn-reset:hover { background: #e8dece; transform: translateY(-2px); }
+
+  /* ══════════════════════════════
+     MODAL de retroalimentación
+  ══════════════════════════════ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,15,0,0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 14px;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #faf7f2;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(60,30,0,0.32);
+    transform: scale(0.93) translateY(18px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .modal-overlay.active .modal { transform: none; }
+
+  .modal-top {
+    padding: 20px 22px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .modal-trophy { font-size: 44px; }
+  .modal-top-text {}
+  .modal-result-title { font-size: 19px; font-weight: 800; color: #3d2200; }
+  .modal-score {
+    font-size: 13px;
+    color: #7a5a20;
+    margin-top: 3px;
+  }
+  .modal-close {
+    margin-left: auto;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: #f0e8d8;
+    color: #6b4f38;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.18s;
+    align-self: flex-start;
+  }
+  .modal-close:hover { background: #e0d0b8; }
+
+  .modal-divider { height: 1px; background: #e8dece; margin: 0 22px; }
+
+  .modal-body { padding: 16px 22px 22px; display: flex; flex-direction: column; gap: 12px; }
+
+  .feedback-block {
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #2a1800;
+    border-left: 4px solid;
+  }
+  .fb-ignea       { background: #fff0eb; border-color: #e07040; }
+  .fb-sedimentaria{ background: #fffaed; border-color: #d4a830; }
+  .fb-metamorfica { background: #eef4fc; border-color: #5090c0; }
+
+  .feedback-block strong { display: block; margin-bottom: 3px; font-size: 13px; }
+
+  .modal-retry {
+    background: linear-gradient(135deg, #6b4f38, #9a7050);
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 10px 28px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: transform 0.18s, box-shadow 0.18s;
+    box-shadow: 0 4px 14px rgba(80,50,20,0.25);
+  }
+  .modal-retry:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(80,50,20,0.32); }
+
+  /* ══════════════════════════════
+     FOOTER
+  ══════════════════════════════ */
+  .footer {
+    background: #f0ece4;
+    border-top: 1px solid #e0c898;
+    padding: 8px 20px;
+    font-size: 10px;
+    color: #8b6014;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════
+     MOBILE
+  ══════════════════════════════ */
+  @media (max-width: 600px) {
+    .drop-zones { grid-template-columns: 1fr; }
+    .header-chips { display: none; }
+    .header-text-block h1 { font-size: 13.5px; }
+    .rock-piece { width: 74px; }
+    .rock-piece img { width: 58px; height: 44px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ══ HEADER — TEXTURA DE ROCA ══ -->
+  <div class="header">
+    <div class="header-bg"></div>
+
+    <!-- Vetas minerales SVG -->
+    <svg class="header-veins" viewBox="0 0 800 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Vetas diagonales irregulares como cuarzo en granito -->
+      <path d="M0,30 Q200,10 400,50 T800,20" stroke="rgba(255,220,140,0.6)" stroke-width="1.5" fill="none"/>
+      <path d="M0,65 Q150,45 300,80 T600,55 T800,75" stroke="rgba(255,200,100,0.4)" stroke-width="1" fill="none"/>
+      <path d="M0,100 Q250,85 500,110 T800,90" stroke="rgba(200,160,80,0.35)" stroke-width="1.2" fill="none"/>
+      <path d="M100,0 Q120,65 90,130" stroke="rgba(255,230,160,0.3)" stroke-width="0.8" fill="none"/>
+      <path d="M350,0 Q380,70 340,130" stroke="rgba(255,210,120,0.25)" stroke-width="0.8" fill="none"/>
+      <path d="M620,0 Q650,60 610,130" stroke="rgba(200,170,100,0.28)" stroke-width="1" fill="none"/>
+      <!-- Fracturas -->
+      <path d="M200,0 L220,40 L190,80 L210,130" stroke="rgba(80,40,0,0.25)" stroke-width="1.5" fill="none" stroke-dasharray="4,3"/>
+      <path d="M550,0 L530,50 L560,100 L545,130" stroke="rgba(80,40,0,0.2)" stroke-width="1" fill="none" stroke-dasharray="3,4"/>
+    </svg>
+
+    <!-- Cristales SVG (facetas geométricas) -->
+    <svg class="header-crystals" viewBox="0 0 800 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Cristal 1 — feldespa rosa -->
+      <polygon points="680,15 700,5 720,18 710,35 688,30" fill="rgba(255,180,160,0.28)" stroke="rgba(255,200,180,0.35)" stroke-width="0.8"/>
+      <!-- Cristal 2 — cuarzo -->
+      <polygon points="740,50 760,38 775,55 760,70 745,62" fill="rgba(255,240,200,0.22)" stroke="rgba(255,250,220,0.3)" stroke-width="0.8"/>
+      <!-- Cristal 3 — mica -->
+      <polygon points="30,80 50,70 65,85 55,100 32,95" fill="rgba(200,180,100,0.2)" stroke="rgba(220,200,120,0.28)" stroke-width="0.8"/>
+      <!-- Cristal 4 pequeño -->
+      <polygon points="460,15 475,8 485,20 476,30 463,24" fill="rgba(255,220,160,0.18)" stroke="rgba(255,240,180,0.25)" stroke-width="0.7"/>
+    </svg>
+
+    <div class="header-shine"></div>
+
+    <!-- Puntos minerales brillantes -->
+    <div class="mineral-dot" style="width:4px;height:4px;background:#ffe080;top:22%;left:18%;border-radius:50%;animation-delay:0s;"></div>
+    <div class="mineral-dot" style="width:3px;height:3px;background:#ffd060;top:60%;left:35%;border-radius:50%;animation-delay:0.8s;"></div>
+    <div class="mineral-dot" style="width:5px;height:5px;background:#fff0a0;top:35%;left:55%;border-radius:50%;animation-delay:1.5s;"></div>
+    <div class="mineral-dot" style="width:3px;height:3px;background:#ffe090;top:70%;left:72%;border-radius:50%;animation-delay:0.4s;"></div>
+    <div class="mineral-dot" style="width:4px;height:4px;background:#ffc860;top:20%;left:88%;border-radius:50%;animation-delay:2s;"></div>
+
+    <!-- Contenido -->
+    <div class="header-content">
+      <div class="header-icon-wrap">🪨</div>
+      <div class="header-text-block">
+        <h1>Identificación de los tipos de rocas</h1>
+        <p>Actividad: Arrastrar y soltar · Petrología</p>
+      </div>
+      <div class="header-chips">
+        <span class="hchip hchip-ig">🔴 Ígneas</span>
+        <span class="hchip hchip-se">🟡 Sedimentarias</span>
+        <span class="hchip hchip-me">🔵 Metamórficas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTRUCCIÓN -->
+  <div class="instruction">
+    <span>👆</span>
+    <span>Arrastre cada roca con el tipo al que pertenece: ígnea, sedimentaria o metamórfica.</span>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- Piezas disponibles -->
+    <div class="pieces-label">🪨 Rocas disponibles</div>
+    <div class="pieces-pool" id="piecesPool">
+      <!-- generadas por JS -->
+    </div>
+
+    <!-- Zonas de destino -->
+    <div class="drop-zones">
+      <div class="drop-zone ignea" id="zone-ignea" data-type="ignea">
+        <div class="zone-title">🔴 Rocas ígneas</div>
+        <div class="zone-items" id="items-ignea">
+          <div class="zone-placeholder" id="ph-ignea">Suelta aquí</div>
+        </div>
+      </div>
+      <div class="drop-zone sedimentaria" id="zone-sedimentaria" data-type="sedimentaria">
+        <div class="zone-title">🟡 Rocas sedimentarias</div>
+        <div class="zone-items" id="items-sedimentaria">
+          <div class="zone-placeholder" id="ph-sedimentaria">Suelta aquí</div>
+        </div>
+      </div>
+      <div class="drop-zone metamorfica" id="zone-metamorfica" data-type="metamorfica">
+        <div class="zone-title">🔵 Rocas metamórficas</div>
+        <div class="zone-items" id="items-metamorfica">
+          <div class="zone-placeholder" id="ph-metamorfica">Suelta aquí</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="action-row">
+      <button class="btn-check" id="btnCheck" onclick="checkAnswers()">✅ Verificar respuestas</button>
+      <button class="btn-reset" onclick="resetAll()">🔄 Reiniciar</button>
+    </div>
+
+  </div><!-- /main -->
+
+  <div class="footer">Elaboración propia</div>
+</div>
+
+<!-- MODAL RETROALIMENTACIÓN -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlay(event)">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-trophy" id="modalTrophy">🏆</div>
+      <div class="modal-top-text">
+        <div class="modal-result-title" id="modalTitle"></div>
+        <div class="modal-score" id="modalScore"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <div class="feedback-block fb-ignea">
+        <strong>🔴 Rocas ígneas</strong>
+        Se forman por el enfriamiento y solidificación del magma o la lava. Ejemplos: granito, basalto y obsidiana.
+      </div>
+      <div class="feedback-block fb-sedimentaria">
+        <strong>🟡 Rocas sedimentarias</strong>
+        Se originan por la acumulación, compactación y cementación de sedimentos. Ejemplos: arenisca, caliza y conglomerado.
+      </div>
+      <div class="feedback-block fb-metamorfica">
+        <strong>🔵 Rocas metamórficas</strong>
+        Se forman cuando otras rocas cambian por efecto de la presión y la temperatura, sin llegar a fundirse. Ejemplos: mármol, pizarra y cuarcita.
+      </div>
+      <button class="modal-retry" onclick="closeModal(); resetAll();">🔄 Intentar nuevamente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ══ DATOS ══ */
+  const rocks = [
+    { id: 'granito',       name: 'Granito',       img: 'media/Imagen 14.jpg', type: 'ignea' },
+    { id: 'basalto',       name: 'Basalto',        img: 'media/Imagen 15.jpg', type: 'ignea' },
+    { id: 'obsidiana',     name: 'Obsidiana',      img: 'media/Imagen 16.jpg', type: 'ignea' },
+    { id: 'arenisca',      name: 'Arenisca',       img: 'media/Imagen 17.jpg', type: 'sedimentaria' },
+    { id: 'caliza',        name: 'Caliza',          img: 'media/Imagen 18.jpg', type: 'sedimentaria' },
+    { id: 'conglomerado',  name: 'Conglomerado',   img: 'media/Imagen 19.jpg', type: 'sedimentaria' },
+    { id: 'marmol',        name: 'Mármol',          img: 'media/Imagen 20.jpg', type: 'metamorfica' },
+    { id: 'pizarra',       name: 'Pizarra',         img: 'media/Imagen 21.jpg', type: 'metamorfica' },
+    { id: 'cuarcita',      name: 'Cuarcita',        img: 'media/Imagen 22.jpg', type: 'metamorfica' },
+  ];
+
+  /* Estado */
+  let placements = {}; // rockId -> zoneType | null
+  let dragId = null;
+  let dragSource = null; // 'pool' | 'zone'
+
+  /* ══ SHUFFLE ══ */
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  /* ══ RENDER ══ */
+  function render() {
+    const pool = document.getElementById('piecesPool');
+    pool.innerHTML = '';
+
+    const shuffled = shuffle(rocks);
+    shuffled.forEach(rock => {
+      if (placements[rock.id]) return; // ya colocado
+      const el = createPiece(rock, 'pool');
+      pool.appendChild(el);
+    });
+
+    ['ignea','sedimentaria','metamorfica'].forEach(type => {
+      const container = document.getElementById('items-' + type);
+      const ph = document.getElementById('ph-' + type);
+      container.innerHTML = '';
+      container.appendChild(ph);
+
+      const placed = rocks.filter(r => placements[r.id] === type);
+      ph.style.display = placed.length === 0 ? 'block' : 'none';
+
+      placed.forEach(rock => {
+        const el = createZoneRock(rock, type);
+        container.appendChild(el);
+      });
+    });
+
+    // Verificar si todo está colocado
+    const allPlaced = Object.keys(placements).length === rocks.length &&
+                      Object.values(placements).every(v => v !== null);
+    document.getElementById('btnCheck').disabled = !allPlaced;
+  }
+
+  /* Pieza en el pool */
+  function createPiece(rock, source) {
+    const div = document.createElement('div');
+    div.className = 'rock-piece';
+    div.draggable = true;
+    div.dataset.id = rock.id;
+    div.dataset.source = source;
+
+    div.innerHTML = `
+      <img src="${rock.img}" alt="${rock.name}" onerror="this.style.background='#e8dece';this.style.height='52px'">
+      <span class="rock-name">${rock.name}</span>
+    `;
+
+    // Desktop drag
+    div.addEventListener('dragstart', e => {
+      dragId = rock.id;
+      dragSource = 'pool';
+      setTimeout(() => div.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+
+    // Touch (mobile)
+    addTouchDrag(div, rock.id, 'pool');
+
+    return div;
+  }
+
+  /* Pieza dentro de una zona */
+  function createZoneRock(rock, type) {
+    const div = document.createElement('div');
+    div.className = 'zone-rock';
+    div.draggable = true;
+    div.dataset.id = rock.id;
+    div.dataset.source = 'zone';
+
+    div.innerHTML = `
+      <img src="${rock.img}" alt="${rock.name}" onerror="this.style.background='#e8dece'">
+      <span class="zone-rock-name">${rock.name}</span>
+      <span class="zone-rock-status"></span>
+    `;
+
+    div.addEventListener('dragstart', e => {
+      dragId = rock.id;
+      dragSource = 'zone';
+      setTimeout(() => div.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    addTouchDrag(div, rock.id, 'zone');
+
+    return div;
+  }
+
+  /* ══ DRAG & DROP — Desktop ══ */
+  function setupDropZones() {
+    ['ignea','sedimentaria','metamorfica'].forEach(type => {
+      const zone = document.getElementById('zone-' + type);
+
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+      });
+      zone.addEventListener('dragleave', e => {
+        if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
+      });
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        if (!dragId) return;
+        placements[dragId] = type;
+        dragId = null;
+        render();
+      });
+    });
+
+    // Pool como zona de retorno
+    const pool = document.getElementById('piecesPool');
+    pool.addEventListener('dragover', e => {
+      e.preventDefault();
+      pool.classList.add('drag-over');
+    });
+    pool.addEventListener('dragleave', e => {
+      if (!pool.contains(e.relatedTarget)) pool.classList.remove('drag-over');
+    });
+    pool.addEventListener('drop', e => {
+      e.preventDefault();
+      pool.classList.remove('drag-over');
+      if (!dragId) return;
+      delete placements[dragId];
+      dragId = null;
+      render();
+    });
+  }
+
+  /* ══ TOUCH — Mobile ══ */
+  let touchClone = null;
+  let touchRockId = null;
+  let touchOffX = 0, touchOffY = 0;
+
+  function addTouchDrag(el, rockId, source) {
+    el.addEventListener('touchstart', e => {
+      e.preventDefault();
+      touchRockId = rockId;
+      const touch = e.touches[0];
+      const rect = el.getBoundingClientRect();
+      touchOffX = touch.clientX - rect.left;
+      touchOffY = touch.clientY - rect.top;
+
+      touchClone = el.cloneNode(true);
+      touchClone.style.cssText = `
+        position:fixed; z-index:9999; pointer-events:none; opacity:0.88;
+        width:${rect.width}px; transform:scale(1.08);
+        left:${rect.left}px; top:${rect.top}px;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+        transition: none;
+      `;
+      document.body.appendChild(touchClone);
+      el.style.opacity = '0.3';
+    }, { passive: false });
+
+    el.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!touchClone) return;
+      const touch = e.touches[0];
+      touchClone.style.left = (touch.clientX - touchOffX) + 'px';
+      touchClone.style.top  = (touch.clientY - touchOffY) + 'px';
+
+      // Highlight zones
+      document.querySelectorAll('.drop-zone, .pieces-pool').forEach(z => z.classList.remove('drag-over'));
+      const underEl = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (underEl) {
+        const zone = underEl.closest('.drop-zone');
+        const pool = underEl.closest('.pieces-pool');
+        if (zone) zone.classList.add('drag-over');
+        if (pool) pool.classList.add('drag-over');
+      }
+    }, { passive: false });
+
+    el.addEventListener('touchend', e => {
+      if (!touchClone || !touchRockId) return;
+      const touch = e.changedTouches[0];
+      document.querySelectorAll('.drop-zone, .pieces-pool').forEach(z => z.classList.remove('drag-over'));
+
+      const underEl = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (underEl) {
+        const zone = underEl.closest('.drop-zone');
+        const pool = underEl.closest('.pieces-pool');
+        if (zone) {
+          placements[touchRockId] = zone.dataset.type;
+        } else if (pool) {
+          delete placements[touchRockId];
+        }
+      }
+
+      touchClone.remove();
+      touchClone = null;
+      el.style.opacity = '';
+      touchRockId = null;
+      render();
+    });
+  }
+
+  /* ══ VERIFICAR ══ */
+  function checkAnswers() {
+    let correct = 0;
+    rocks.forEach(rock => {
+      if (placements[rock.id] === rock.type) correct++;
+    });
+
+    // Colorear las piezas en zonas
+    ['ignea','sedimentaria','metamorfica'].forEach(type => {
+      const container = document.getElementById('items-' + type);
+      container.querySelectorAll('.zone-rock').forEach(el => {
+        const rId = el.dataset.id;
+        const rock = rocks.find(r => r.id === rId);
+        const ok = rock && rock.type === type;
+        el.querySelector('.zone-rock-status').textContent = ok ? '✅' : '❌';
+        el.style.background = ok ? '#eaf7e8' : '#fdf0ef';
+      });
+    });
+
+    const total = rocks.length;
+    const pct = Math.round((correct / total) * 100);
+    let trophy, title;
+    if (pct === 100)    { trophy = '🏆'; title = '¡Perfecto! Todo correcto.'; }
+    else if (pct >= 66) { trophy = '🥈'; title = '¡Buen intento!'; }
+    else                { trophy = '📖'; title = 'Sigue practicando.'; }
+
+    document.getElementById('modalTrophy').textContent = trophy;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalScore').textContent = `${correct} de ${total} rocas correctamente clasificadas (${pct}%)`;
+
+    document.getElementById('modalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  /* ══ RESET ══ */
+  function resetAll() {
+    placements = {};
+    render();
+    document.getElementById('btnCheck').disabled = true;
+  }
+
+  /* ══ MODAL ══ */
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  function handleOverlay(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  /* ══ INIT ══ */
+  setupDropZones();
+  render();
+</script>
+
+</body>
+</html>

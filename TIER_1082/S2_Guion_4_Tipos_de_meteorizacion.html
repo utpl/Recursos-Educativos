@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tipos de meteorización</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f5f0e8;
+    color: #2a1f0e;
+  }
+
+  .wrapper {
+    max-width: 800px;
+    min-height: 800px;
+    margin: 0 auto;
+    background: #fdfaf5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ══════════════════════════════════════
+     HEADER — Corte transversal de suelo
+  ══════════════════════════════════════ */
+  .header {
+    position: relative;
+    height: 145px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #87CEEB; /* cielo */
+  }
+
+  /* Cielo con gradiente */
+  .sky-layer {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 52%;
+    background: linear-gradient(180deg, #b8e0f7 0%, #d4eefc 60%, #e8f7fe 100%);
+    z-index: 1;
+  }
+
+  /* Nubes */
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.85);
+    border-radius: 50px;
+    z-index: 2;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: rgba(255,255,255,0.85);
+    border-radius: 50%;
+  }
+
+  /* Capas de suelo como franjas horizontales */
+  .soil-layers {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 58%;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .soil-strip {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+  }
+
+  /* Textura punteada SVG inline para cada capa */
+  .soil-strip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.18;
+    background-image: radial-gradient(circle, #000 0.8px, transparent 0.8px);
+    background-size: 6px 6px;
+  }
+
+  .s1 { height: 30%; background: #6b8f47; } /* capa orgánica */
+  .s2 { height: 28%; background: #8b6914; } /* horizonte A */
+  .s3 { height: 24%; background: #a0784a; } /* horizonte B */
+  .s4 { height: 18%; background: #7a6048; } /* horizonte C / roca */
+
+  .soil-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    z-index: 1;
+  }
+
+  /* Partículas flotando en el suelo */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    z-index: 4;
+    animation: float 4s ease-in-out infinite alternate;
+  }
+  @keyframes float {
+    from { transform: translateY(0); opacity: 0.22; }
+    to   { transform: translateY(-4px); opacity: 0.38; }
+  }
+
+  /* Divisor ondulado entre cielo y suelo */
+  .wavy-divider {
+    position: absolute;
+    left: 0; right: 0;
+    z-index: 5;
+    bottom: calc(58% - 14px);
+    line-height: 0;
+  }
+  .wavy-divider svg { width: 100%; display: block; }
+
+  /* Texto del header */
+  .header-content {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 10;
+    padding: 14px 20px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+  }
+  .header-icon {
+    font-size: 28px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+  }
+  .header-text h1 {
+    color: #2a1200;
+    font-size: 15px;
+    font-weight: 800;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+    line-height: 1.3;
+  }
+  .header-text p {
+    color: #3d2200;
+    font-size: 11px;
+    margin-top: 3px;
+    opacity: 0.75;
+  }
+
+  /* ══════════════════════════════════════
+     INTRO
+  ══════════════════════════════════════ */
+  .intro {
+    background: linear-gradient(135deg, #fdf4e3, #fef9f0);
+    padding: 11px 20px;
+    border-bottom: 2px solid #e8d5a0;
+    font-size: 12.5px;
+    color: #3d2a00;
+    line-height: 1.6;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════════════
+     TABS de navegación
+  ══════════════════════════════════════ */
+  .tabs-bar {
+    display: flex;
+    background: #f5ede0;
+    border-bottom: 2px solid #d4b87a;
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #8b6014;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: background 0.2s, color 0.2s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    position: relative;
+  }
+  .tab-btn:hover { background: #faecd5; color: #5a3a00; }
+  .tab-btn.active {
+    background: #fdfaf5;
+    color: #5a3a00;
+    border-bottom-color: #c47a1a;
+  }
+  .tab-emoji { font-size: 15px; }
+
+  /* ══════════════════════════════════════
+     SLIDES
+  ══════════════════════════════════════ */
+  .slides-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    padding: 16px 20px 10px;
+    gap: 12px;
+    overflow-y: auto;
+    animation: fadeSlide 0.3s ease forwards;
+  }
+  .slide.active { display: flex; }
+  .slide::-webkit-scrollbar { width: 5px; }
+  .slide::-webkit-scrollbar-track { background: #fdf4e3; }
+  .slide::-webkit-scrollbar-thumb { background: #c49a5a; border-radius: 3px; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed #e8d0a0;
+  }
+  .slide-big-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .slide-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #3d2200;
+    line-height: 1.25;
+  }
+  .slide-subtitle {
+    font-size: 11px;
+    color: #8b6014;
+    margin-top: 2px;
+  }
+
+  .slide-desc {
+    font-size: 12.5px;
+    color: #4a3010;
+    line-height: 1.65;
+    background: #fdf6e3;
+    border-radius: 10px;
+    padding: 11px 14px;
+    border-left: 3px solid #d4a840;
+  }
+
+  /* Instrucción mini */
+  .items-instruction {
+    font-size: 11px;
+    color: #8b6014;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+  }
+
+  /* Grid de tarjetas clickeables */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .item-card {
+    background: #fff;
+    border: 1.5px solid #e0c898;
+    border-radius: 12px;
+    padding: 13px 13px 11px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .item-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(180,120,20,0.15);
+    border-color: #c49a3a;
+  }
+  .item-card:hover::after { opacity: 1; }
+
+  .item-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .item-card-icon { font-size: 20px; }
+  .item-card-name {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #3d2200;
+    line-height: 1.25;
+  }
+  .item-card-hint {
+    font-size: 10px;
+    color: #b08040;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  /* ══════════════════════════════════════
+     MODAL
+  ══════════════════════════════════════ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(40,20,0,0.45);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 14px;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fffdf8;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(80,40,0,0.28);
+    transform: scale(0.93) translateY(18px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .modal-overlay.active .modal { transform: none; }
+
+  .modal-header {
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .modal-icon {
+    font-size: 32px;
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .modal-head-text { flex: 1; }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #3d2200;
+    line-height: 1.25;
+  }
+  .modal-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 2px 10px;
+    margin-top: 5px;
+  }
+  .modal-close {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: none;
+    color: #8b6014;
+    background: #f5ede0;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.18s;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: #e8d5a0; }
+
+  .modal-divider { height: 1px; background: #f0e0c0; margin: 0 20px; }
+
+  .modal-body { padding: 16px 20px 20px; }
+  .modal-content-text {
+    font-size: 13px;
+    color: #3a2800;
+    line-height: 1.7;
+    background: #fdf6e3;
+    border-radius: 12px;
+    padding: 14px 16px;
+    border-left: 4px solid;
+  }
+
+  /* ══════════════════════════════════════
+     FOOTER
+  ══════════════════════════════════════ */
+  .footer {
+    background: #f5ede0;
+    border-top: 1px solid #e0c898;
+    padding: 8px 20px;
+    font-size: 10px;
+    color: #8b6014;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════════════
+     MOBILE
+  ══════════════════════════════════════ */
+  @media (max-width: 600px) {
+    .header { height: 120px; }
+    .header-text h1 { font-size: 13px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .tab-btn { font-size: 10px; padding: 8px 4px; }
+    .tab-emoji { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ══ HEADER CORTE DE SUELO ══ -->
+  <div class="header">
+
+    <!-- Cielo -->
+    <div class="sky-layer">
+      <!-- Nube 1 -->
+      <div class="cloud" style="width:70px;height:22px;top:12px;left:60px;border-radius:20px;">
+        <div style="position:absolute;width:30px;height:30px;top:-14px;left:10px;border-radius:50%;background:rgba(255,255,255,0.85);"></div>
+        <div style="position:absolute;width:20px;height:20px;top:-9px;left:28px;border-radius:50%;background:rgba(255,255,255,0.85);"></div>
+      </div>
+      <!-- Nube 2 -->
+      <div class="cloud" style="width:50px;height:16px;top:8px;left:55%;border-radius:20px;">
+        <div style="position:absolute;width:22px;height:22px;top:-12px;left:8px;border-radius:50%;background:rgba(255,255,255,0.85);"></div>
+        <div style="position:absolute;width:16px;height:16px;top:-7px;left:24px;border-radius:50%;background:rgba(255,255,255,0.85);"></div>
+      </div>
+      <!-- Sol -->
+      <div style="position:absolute;top:6px;right:30px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle,#ffe066,#ffc000);box-shadow:0 0 16px rgba(255,200,0,0.5);z-index:3;"></div>
+    </div>
+
+    <!-- Divisor ondulado -->
+    <div class="wavy-divider">
+      <svg viewBox="0 0 800 18" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,9 C80,0 160,18 240,9 C320,0 400,18 480,9 C560,0 640,18 720,9 C760,4 780,6 800,9 L800,18 L0,18 Z" fill="#6b8f47"/>
+      </svg>
+    </div>
+
+    <!-- Capas de suelo -->
+    <div class="soil-layers">
+      <div class="soil-strip s1">
+        <span class="soil-label">🌿 Horizonte O — Materia orgánica</span>
+      </div>
+      <div class="soil-strip s2">
+        <span class="soil-label">🟤 Horizonte A — Suelo superficial</span>
+      </div>
+      <div class="soil-strip s3">
+        <span class="soil-label">🪨 Horizonte B — Subsuelo</span>
+      </div>
+      <div class="soil-strip s4">
+        <span class="soil-label">⛰️ Horizonte C — Roca madre</span>
+      </div>
+    </div>
+
+    <!-- Partículas decorativas -->
+    <div class="particle" style="width:6px;height:6px;bottom:20%;left:15%;animation-delay:0s;"></div>
+    <div class="particle" style="width:4px;height:4px;bottom:35%;left:40%;animation-delay:1.2s;"></div>
+    <div class="particle" style="width:5px;height:5px;bottom:15%;left:65%;animation-delay:0.6s;"></div>
+    <div class="particle" style="width:3px;height:3px;bottom:45%;left:80%;animation-delay:1.8s;"></div>
+
+    <!-- Texto -->
+    <div class="header-content">
+      <span class="header-icon">🌦️</span>
+      <div class="header-text">
+        <h1>Tipos de meteorización</h1>
+        <p>Presentación interactiva · Geomorfología & Procesos Superficiales</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro">
+    La meteorización es un proceso natural fundamental en la transformación del relieve terrestre, ya que descompone y altera las rocas por acción de factores físicos, químicos y biológicos. Conocer sus tipos permite comprender cómo se modifica la superficie de la Tierra con el paso del tiempo.
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab(0)">
+      <span class="tab-emoji">🔨</span> Física
+    </button>
+    <button class="tab-btn" onclick="switchTab(1)">
+      <span class="tab-emoji">⚗️</span> Química
+    </button>
+    <button class="tab-btn" onclick="switchTab(2)">
+      <span class="tab-emoji">🌿</span> Biológica
+    </button>
+  </div>
+
+  <!-- SLIDES -->
+  <div class="slides-wrap">
+
+    <!-- ══ HOJA 1: Física ══ -->
+    <div class="slide active" id="slide0">
+      <div class="slide-header">
+        <div class="slide-big-icon" style="background:linear-gradient(135deg,#f5d56a,#e8a020);">🔨</div>
+        <div>
+          <div class="slide-title">Meteorización física o mecánica</div>
+          <div class="slide-subtitle">Hoja 1 de 3 · Fragmentación sin cambio químico</div>
+        </div>
+      </div>
+      <div class="slide-desc">
+        Consiste en la fragmentación de las rocas sin cambiar su composición química. Ocurre por la acción de fuerzas físicas externas sobre los minerales.
+      </div>
+      <div class="items-instruction">👆 Haga clic en los botones para visualizar la información</div>
+      <div class="cards-grid">
+        <div class="item-card" onclick="openModal('temp')" style="--accent:#e85c20;">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f5903a,#e85c20);border-radius:12px 12px 0 0;opacity:0;transition:opacity 0.2s;" class="card-top-bar"></div>
+          <div class="item-card-top">
+            <span class="item-card-icon">🌡️</span>
+            <div class="item-card-name">Cambios de temperatura</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+        <div class="item-card" onclick="openModal('hielo')">
+          <div class="item-card-top">
+            <span class="item-card-icon">🧊</span>
+            <div class="item-card-name">Hielo</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+        <div class="item-card" onclick="openModal('presion')">
+          <div class="item-card-top">
+            <span class="item-card-icon">🏋️</span>
+            <div class="item-card-name">Presión</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+        <div class="item-card" onclick="openModal('accion-bio')">
+          <div class="item-card-top">
+            <span class="item-card-icon">🌱</span>
+            <div class="item-card-name">Acción biológica</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ HOJA 2: Química ══ -->
+    <div class="slide" id="slide1">
+      <div class="slide-header">
+        <div class="slide-big-icon" style="background:linear-gradient(135deg,#80d0c0,#2e9e88);">⚗️</div>
+        <div>
+          <div class="slide-title">Meteorización química</div>
+          <div class="slide-subtitle">Hoja 2 de 3 · Reacciones que alteran minerales</div>
+        </div>
+      </div>
+      <div class="slide-desc">
+        Implica reacciones químicas que alteran los minerales de la roca. El agua, el oxígeno y el CO₂ son los principales agentes que transforman la composición mineral.
+      </div>
+      <div class="items-instruction">👆 Haga clic en los botones para visualizar la información</div>
+      <div class="cards-grid">
+        <div class="item-card" onclick="openModal('oxidacion')">
+          <div class="item-card-top">
+            <span class="item-card-icon">🦀</span>
+            <div class="item-card-name">Oxidación</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+        <div class="item-card" onclick="openModal('hidratacion')">
+          <div class="item-card-top">
+            <span class="item-card-icon">💧</span>
+            <div class="item-card-name">Hidratación</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+        <div class="item-card" onclick="openModal('disolucion')">
+          <div class="item-card-top">
+            <span class="item-card-icon">🌊</span>
+            <div class="item-card-name">Disolución</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+        <div class="item-card" onclick="openModal('carbonatacion')">
+          <div class="item-card-top">
+            <span class="item-card-icon">💨</span>
+            <div class="item-card-name">Carbonatación</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ HOJA 3: Biológica ══ -->
+    <div class="slide" id="slide2">
+      <div class="slide-header">
+        <div class="slide-big-icon" style="background:linear-gradient(135deg,#a8d878,#4e9a2a);">🌿</div>
+        <div>
+          <div class="slide-title">Meteorización biológica</div>
+          <div class="slide-subtitle">Hoja 3 de 3 · Acción de los seres vivos</div>
+        </div>
+      </div>
+      <div class="slide-desc">
+        Los seres vivos intervienen tanto física como químicamente en la descomposición de las rocas y la formación del suelo.
+      </div>
+      <div class="items-instruction">👆 Haga clic en los botones para visualizar la información</div>
+      <div class="cards-grid">
+        <div class="item-card" onclick="openModal('raices')">
+          <div class="item-card-top">
+            <span class="item-card-icon">🌳</span>
+            <div class="item-card-name">Raíces de las plantas</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+        <div class="item-card" onclick="openModal('liquenes')">
+          <div class="item-card-top">
+            <span class="item-card-icon">🦠</span>
+            <div class="item-card-name">Líquenes y bacterias</div>
+          </div>
+          <div class="item-card-hint">🔍 Ver información</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides-wrap -->
+
+  <div class="footer">Elaboración propia</div>
+</div>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlay(event)">
+  <div class="modal">
+    <div class="modal-header" id="modalHeader">
+      <div class="modal-icon" id="modalIcon"></div>
+      <div class="modal-head-text">
+        <div class="modal-title" id="modalTitle"></div>
+        <span class="modal-badge" id="modalBadge"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <div class="modal-content-text" id="modalContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ══ DATOS ══ */
+  const datos = {
+    /* FÍSICA */
+    temp: {
+      icon: '🌡️', title: 'Cambios de temperatura',
+      badge: '🔨 Meteorización Física', badgeBg: '#fff3e0', badgeColor: '#e65100',
+      borderColor: '#f5903a',
+      headerBg: 'linear-gradient(135deg,#f5d56a,#e8a020)',
+      text: 'El calor dilata las rocas y el frío las contrae, generando grietas (termoclastia). Este proceso es especialmente intenso en zonas desérticas con grandes diferencias de temperatura entre el día y la noche.'
+    },
+    hielo: {
+      icon: '🧊', title: 'Hielo',
+      badge: '🔨 Meteorización Física', badgeBg: '#e3f2fd', badgeColor: '#1565c0',
+      borderColor: '#64b5f6',
+      headerBg: 'linear-gradient(135deg,#b3e5fc,#4fc3f7)',
+      text: 'El agua penetra en fisuras, se congela y expande, rompiendo la roca (gelifracción). Al congelarse, el agua aumenta su volumen un 9%, ejerciendo una presión enorme que parte incluso las rocas más duras.'
+    },
+    presion: {
+      icon: '🏋️', title: 'Presión',
+      badge: '🔨 Meteorización Física', badgeBg: '#fce4ec', badgeColor: '#880e4f',
+      borderColor: '#f48fb1',
+      headerBg: 'linear-gradient(135deg,#f8bbd0,#e91e63)',
+      text: 'Al disminuir la presión (por erosión o extracción de materiales), las rocas se expanden y se fracturan (exfoliación). Las rocas formadas en profundidad, al quedar expuestas, liberan tensiones internas y se descascaran en láminas paralelas.'
+    },
+    'accion-bio': {
+      icon: '🌱', title: 'Acción biológica',
+      badge: '🔨 Meteorización Física', badgeBg: '#e8f5e9', badgeColor: '#1b5e20',
+      borderColor: '#81c784',
+      headerBg: 'linear-gradient(135deg,#c8e6c9,#4caf50)',
+      text: 'Las raíces de plantas o animales que excavan también pueden romper las rocas. Las raíces penetran en grietas, y al crecer ejercen presión hidráulica que amplía las fracturas de forma progresiva.'
+    },
+    /* QUÍMICA */
+    oxidacion: {
+      icon: '🦀', title: 'Oxidación',
+      badge: '⚗️ Meteorización Química', badgeBg: '#fff3e0', badgeColor: '#bf360c',
+      borderColor: '#ff8a65',
+      headerBg: 'linear-gradient(135deg,#ffccbc,#ff5722)',
+      text: 'Reacción con el oxígeno, formando óxidos (por ejemplo, herrumbre). Los minerales con hierro se transforman en óxidos de hierro, dando a muchas rocas y suelos su característico color rojizo o anaranjado.'
+    },
+    hidratacion: {
+      icon: '💧', title: 'Hidratación',
+      badge: '⚗️ Meteorización Química', badgeBg: '#e3f2fd', badgeColor: '#0d47a1',
+      borderColor: '#42a5f5',
+      headerBg: 'linear-gradient(135deg,#bbdefb,#1976d2)',
+      text: 'Incorporación de agua en la estructura mineral. Algunos minerales absorben moléculas de agua y se expanden, alterando su estructura cristalina y debilitando la cohesión de la roca.'
+    },
+    disolucion: {
+      icon: '🌊', title: 'Disolución',
+      badge: '⚗️ Meteorización Química', badgeBg: '#e0f7fa', badgeColor: '#006064',
+      borderColor: '#4dd0e1',
+      headerBg: 'linear-gradient(135deg,#b2ebf2,#00bcd4)',
+      text: 'El agua disuelve minerales solubles como la sal o la calcita. Es el proceso responsable de la formación de cuevas y paisajes kársticos, cuando el agua disuelve rocas calizas a lo largo del tiempo.'
+    },
+    carbonatacion: {
+      icon: '💨', title: 'Carbonatación',
+      badge: '⚗️ Meteorización Química', badgeBg: '#f3e5f5', badgeColor: '#4a148c',
+      borderColor: '#ce93d8',
+      headerBg: 'linear-gradient(135deg,#e1bee7,#9c27b0)',
+      text: 'El dióxido de carbono del aire disuelto en agua forma ácido carbónico, que ataca a los carbonatos (rocas calizas). Es uno de los procesos más efectivos en climas húmedos y fríos.'
+    },
+    /* BIOLÓGICA */
+    raices: {
+      icon: '🌳', title: 'Raíces de las plantas',
+      badge: '🌿 Meteorización Biológica', badgeBg: '#e8f5e9', badgeColor: '#1b5e20',
+      borderColor: '#66bb6a',
+      headerBg: 'linear-gradient(135deg,#c8e6c9,#388e3c)',
+      text: 'Las raíces de las plantas rompen rocas y sujetan el suelo en pendientes pronunciadas. Actúan como cuñas que se introducen en grietas y, al crecer, ejercen una fuerza mecánica capaz de fragmentar bloques de roca.'
+    },
+    liquenes: {
+      icon: '🦠', title: 'Líquenes y bacterias',
+      badge: '🌿 Meteorización Biológica', badgeBg: '#f9fbe7', badgeColor: '#33691e',
+      borderColor: '#aed581',
+      headerBg: 'linear-gradient(135deg,#dcedc8,#689f38)',
+      text: 'Los líquenes y bacterias producen ácidos que disuelven minerales y disgregan el suelo, adicionando además sustancias aprovechables por otras plantas. Son los primeros colonizadores de las rocas desnudas y pioneros en la formación del suelo.'
+    }
+  };
+
+  /* ══ TABS ══ */
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const slides  = document.querySelectorAll('.slide');
+
+  function switchTab(idx) {
+    tabBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+  }
+
+  /* ══ HOVER efecto barra top en cards ══ */
+  document.querySelectorAll('.item-card').forEach(card => {
+    const bar = card.querySelector('.card-top-bar');
+    if (bar) {
+      card.addEventListener('mouseenter', () => bar.style.opacity = '1');
+      card.addEventListener('mouseleave', () => bar.style.opacity = '0');
+    }
+  });
+
+  /* ══ MODAL ══ */
+  function openModal(key) {
+    const d = datos[key];
+    if (!d) return;
+
+    document.getElementById('modalIcon').textContent = d.icon;
+    document.getElementById('modalIcon').style.background = d.headerBg;
+    document.getElementById('modalTitle').textContent = d.title;
+
+    const badge = document.getElementById('modalBadge');
+    badge.textContent = d.badge;
+    badge.style.background = d.badgeBg;
+    badge.style.color = d.badgeColor;
+
+    document.getElementById('modalContent').textContent = d.text;
+    document.getElementById('modalContent').style.borderLeftColor = d.borderColor;
+
+    document.getElementById('modalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function handleOverlay(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+
+</body>
+</html>

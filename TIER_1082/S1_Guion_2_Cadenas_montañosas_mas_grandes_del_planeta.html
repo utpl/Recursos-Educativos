@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadenas montañosas más grandes del planeta</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #eef4ee;
+    color: #1c2e1c;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .wrapper {
+    max-width: 800px;
+    min-height: 800px;
+    margin: 0 auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== HEADER con silueta de montaña ===== */
+  .header {
+    position: relative;
+    height: 148px;
+    background: linear-gradient(160deg, #3d6b45 0%, #5a8a4a 40%, #7aab5e 70%, #8cbf6e 100%);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+ 
+
+  /* SVG silueta de montañas */
+  .mountain-svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 115px;
+    z-index: 1;
+  }
+
+  /* Estrellas / puntos de luz en el cielo */
+  .header-sky {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.55);
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: 0.3; } to { opacity: 0.85; } }
+
+  /* Texto del header sobre todo */
+  .header-content {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 3;
+    padding: 24px 22px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .header-icon { font-size: 70px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.35)); }
+  
+  .header-text h1 {
+    color: #fff;
+    font-size: 26px;
+    font-weight: 800;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.2);
+    line-height: 1.3;
+  }
+  .header-text p {
+    color: rgba(255,255,255,0.88);
+    font-size: 13px;
+    margin-top: 3px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  /* ===== INTRO ===== */
+  .intro {
+    background: linear-gradient(135deg, #eef6e9, #f4f9f0);
+    padding: 12px 22px;
+    border-bottom: 2px solid #c5debb;
+    font-size: 12.5px;
+    color: #3a5a3a;
+    line-height: 1.6;
+  }
+
+  /* ===== INSTRUCCIÓN ===== */
+  .instruction {
+    background: #fdf6e3;
+    border-left: 4px solid #d4a017;
+    padding: 9px 18px;
+    font-size: 12px;
+    color: #6b4a00;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  /* ===== SLIDER / CAROUSEL ===== */
+  .slider-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .slides-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: 0;
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.38s ease, transform 0.38s cubic-bezier(0.25, 0.8, 0.25, 1);
+    pointer-events: none;
+    padding: 16px 20px;
+    align-items: stretch;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+  }
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  /* Imagen de la cadena montañosa */
+  .slide-img-wrap {
+    width: 42%;
+    flex-shrink: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 22px rgba(60,90,50,0.18);
+    position: relative;
+  }
+  .slide-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+  .slide-img-wrap:hover img { transform: scale(1.04); }
+  .slide-img-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(4px);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #3d6b45;
+    border: 1.5px solid rgba(122,171,94,0.4);
+  }
+
+  /* Info panel */
+  .slide-info {
+    flex: 1;
+    padding: 0 0 0 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .slide-number {
+    font-size: 10px;
+    font-weight: 700;
+    color: #8cbf6e;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .slide-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #2d5230;
+    line-height: 1.15;
+  }
+
+  .slide-divider {
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #5a8a4a, #8cbf6e);
+    border-radius: 2px;
+  }
+
+  .slide-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .fact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f2f8ee;
+    border-radius: 10px;
+    padding: 9px 12px;
+    border-left: 3px solid #7aab5e;
+  }
+  .fact-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .fact-text { font-size: 12.5px; color: #2a4a2a; line-height: 1.45; }
+  .fact-label { font-weight: 700; color: #3d6b45; }
+
+  /* ===== NAV DOTS ===== */
+  .nav-section {
+    padding: 10px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-top: 1px solid #ddeedd;
+    background: #f7fcf4;
+  }
+
+  .nav-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 2px solid #7aab5e;
+    background: #fff;
+    color: #3d6b45;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.18s;
+    box-shadow: 0 2px 6px rgba(90,138,74,0.12);
+  }
+  .nav-btn:hover { background: #3d6b45; color: #fff; transform: scale(1.08); }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+
+  .dots-wrap { display: flex; gap: 6px; align-items: center; }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #c5debb;
+    cursor: pointer;
+    transition: background 0.22s, transform 0.22s, width 0.22s;
+    border: none;
+  }
+  .dot.active {
+    background: #3d6b45;
+    width: 22px;
+    border-radius: 4px;
+    transform: scaleY(1.1);
+  }
+  .dot:hover:not(.active) { background: #7aab5e; }
+
+  .slide-counter {
+    font-size: 11px;
+    color: #6a8e6a;
+    font-weight: 600;
+    min-width: 38px;
+    text-align: center;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    background: #eef6e9;
+    border-top: 1px solid #c5debb;
+    padding: 8px 22px;
+    font-size: 10px;
+    color: #5a7a5a;
+    text-align: center;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 55, 30, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+    padding: 14px;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fff;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    box-shadow: 0 28px 70px rgba(30,55,30,0.32);
+    transform: translateY(24px) scale(0.96);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .modal-overlay.active .modal { transform: none; }
+
+  .modal-img { width: 100%; height: 180px; object-fit: cover; display: block; }
+  .modal-body { padding: 20px; }
+  .modal-title { font-size: 20px; font-weight: 800; color: #2d5230; margin-bottom: 14px; }
+  .modal-facts { display: flex; flex-direction: column; gap: 9px; }
+  .modal-fact {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #f2f8ee;
+    border-radius: 10px;
+    padding: 10px 14px;
+    border-left: 3px solid #7aab5e;
+    font-size: 13px;
+    color: #2a4a2a;
+    line-height: 1.45;
+  }
+  .modal-close-btn {
+    display: block;
+    margin: 16px auto 0;
+    background: #3d6b45;
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 9px 32px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.18s;
+  }
+  .modal-close-btn:hover { background: #2d5230; transform: scale(1.04); }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 600px) {
+    .header { height: 120px; }
+    .header-text h1 { font-size: 13px; }
+    .slide { flex-direction: column; padding: 12px; gap: 12px; }
+    .slide-img-wrap { width: 100%; height: 150px; }
+    .slide-info { padding: 0; }
+    .slide-title { font-size: 18px; }
+    .mountain-svg { height: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- HEADER MONTAÑA -->
+  <div class="header">
+    <!-- Cielo con destellos -->
+    <div class="header-sky" id="headerSky"></div>
+
+    <!-- Silueta montañosa SVG -->
+    <svg class="mountain-svg" viewBox="0 0 800 115" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Montañas de fondo (más claras) -->
+      <polygon points="0,115 120,38 240,75 370,20 500,60 640,30 800,55 800,115" fill="rgba(100,150,80,0.35)"/>
+      <!-- Montañas medias -->
+      <polygon points="0,115 60,70 150,45 260,80 360,30 440,65 540,22 620,50 720,35 800,60 800,115" fill="rgba(75,120,58,0.55)"/>
+      <!-- Montañas delanteras (oscuras) -->
+      <polygon points="0,115 80,82 180,60 300,90 410,55 490,78 590,48 680,70 800,50 800,115" fill="rgba(50,90,40,0.72)"/>
+      <!-- Nieve en picos -->
+    </svg>
+
+    <!-- Capa de niebla -->
+    <div class="header-fog"></div>
+
+    <!-- Contenido de texto -->
+    <div class="header-content">
+      <span class="header-icon">⛰️</span>
+      <div class="header-text">
+        <h1>Cadenas montañosas más grandes del planeta</h1>
+        <p>Presentación interactiva · Geología & Geografía Física</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro">
+    Las grandes cadenas montañosas del planeta son formaciones naturales de enorme relevancia geográfica y geológica, ya que reflejan los procesos dinámicos que han modelado la superficie terrestre a lo largo del tiempo. Conocer su ubicación, extensión y características principales permite comprender mejor la diversidad del relieve de la Tierra.
+  </div>
+
+  <!-- INSTRUCCIÓN -->
+  <div class="instruction">
+    <span>👆</span>
+    <span>Haga clic en los temas para visualizar la información</span>
+  </div>
+
+  <!-- SLIDER -->
+  <div class="slider-wrapper">
+    <div class="slides-container" id="slidesContainer">
+
+      <!-- HOJA 1: Himalayas -->
+      <div class="slide active" data-index="0" onclick="openModal(0)">
+        <div class="slide-img-wrap">
+          <img src="media/Imagen 7.jpg" alt="Himalayas" onerror="this.src=''; this.parentElement.style.background='linear-gradient(135deg,#c8dfc0,#a0c090)'">
+          <span class="slide-img-badge">🗺️ Asia</span>
+        </div>
+        <div class="slide-info">
+          <div class="slide-number">Hoja 1 de 7</div>
+          <div class="slide-title">Himalayas</div>
+          <div class="slide-divider"></div>
+          <div class="slide-facts">
+            <div class="fact-item"><span class="fact-icon">📍</span><div class="fact-text"><span class="fact-label">Ubicación:</span> Asia (India, China, Nepal, Bután, Pakistán).</div></div>
+            <div class="fact-item"><span class="fact-icon">📏</span><div class="fact-text"><span class="fact-label">Extensión aprox.:</span> 2,400 km</div></div>
+            <div class="fact-item"><span class="fact-icon">🏔️</span><div class="fact-text"><span class="fact-label">Pico más alto:</span> Monte Everest (8,848 m).</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOJA 2: Andes -->
+      <div class="slide" data-index="1" onclick="openModal(1)">
+        <div class="slide-img-wrap">
+          <img src="media/Imagen 8.jpg" alt="Andes" onerror="this.src=''; this.parentElement.style.background='linear-gradient(135deg,#c8dfc0,#a0c090)'">
+          <span class="slide-img-badge">🗺️ América del Sur</span>
+        </div>
+        <div class="slide-info">
+          <div class="slide-number">Hoja 2 de 7</div>
+          <div class="slide-title">Andes</div>
+          <div class="slide-divider"></div>
+          <div class="slide-facts">
+            <div class="fact-item"><span class="fact-icon">📍</span><div class="fact-text"><span class="fact-label">Ubicación:</span> América del Sur (de Venezuela a Chile/Argentina).</div></div>
+            <div class="fact-item"><span class="fact-icon">📏</span><div class="fact-text"><span class="fact-label">Extensión aprox.:</span> 7,000 km</div></div>
+            <div class="fact-item"><span class="fact-icon">🏔️</span><div class="fact-text"><span class="fact-label">Pico más alto:</span> Aconcagua (6,961 m).</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOJA 3: Montañas Rocosas -->
+      <div class="slide" data-index="2" onclick="openModal(2)">
+        <div class="slide-img-wrap">
+          <img src="media/Imagen 9.jpg" alt="Montañas Rocosas" onerror="this.src=''; this.parentElement.style.background='linear-gradient(135deg,#c8dfc0,#a0c090)'">
+          <span class="slide-img-badge">🗺️ América del Norte</span>
+        </div>
+        <div class="slide-info">
+          <div class="slide-number">Hoja 3 de 7</div>
+          <div class="slide-title">Montañas Rocosas</div>
+          <div class="slide-divider"></div>
+          <div class="slide-facts">
+            <div class="fact-item"><span class="fact-icon">📍</span><div class="fact-text"><span class="fact-label">Ubicación:</span> América del Norte (Canadá y EE.UU.).</div></div>
+            <div class="fact-item"><span class="fact-icon">📏</span><div class="fact-text"><span class="fact-label">Extensión aprox.:</span> 4,800 km</div></div>
+            <div class="fact-item"><span class="fact-icon">🏔️</span><div class="fact-text"><span class="fact-label">Pico más alto:</span> Monte Elbert (4,401 m).</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOJA 4: Alpes -->
+      <div class="slide" data-index="3" onclick="openModal(3)">
+        <div class="slide-img-wrap">
+          <img src="media/Imagen 10.jpg" alt="Alpes" onerror="this.src=''; this.parentElement.style.background='linear-gradient(135deg,#c8dfc0,#a0c090)'">
+          <span class="slide-img-badge">🗺️ Europa Central</span>
+        </div>
+        <div class="slide-info">
+          <div class="slide-number">Hoja 4 de 7</div>
+          <div class="slide-title">Alpes</div>
+          <div class="slide-divider"></div>
+          <div class="slide-facts">
+            <div class="fact-item"><span class="fact-icon">📍</span><div class="fact-text"><span class="fact-label">Ubicación:</span> Europa central.</div></div>
+            <div class="fact-item"><span class="fact-icon">📏</span><div class="fact-text"><span class="fact-label">Extensión aprox.:</span> 1,200 km</div></div>
+            <div class="fact-item"><span class="fact-icon">🏔️</span><div class="fact-text"><span class="fact-label">Pico más alto:</span> Mont Blanc (4,809 m).</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOJA 5: Urales -->
+      <div class="slide" data-index="4" onclick="openModal(4)">
+        <div class="slide-img-wrap">
+          <img src="media/Imagen 11.jpg" alt="Urales" onerror="this.src=''; this.parentElement.style.background='linear-gradient(135deg,#c8dfc0,#a0c090)'">
+          <span class="slide-img-badge">🗺️ Rusia</span>
+        </div>
+        <div class="slide-info">
+          <div class="slide-number">Hoja 5 de 7</div>
+          <div class="slide-title">Urales</div>
+          <div class="slide-divider"></div>
+          <div class="slide-facts">
+            <div class="fact-item"><span class="fact-icon">📍</span><div class="fact-text"><span class="fact-label">Ubicación:</span> Rusia (frontera entre Europa y Asia).</div></div>
+            <div class="fact-item"><span class="fact-icon">📏</span><div class="fact-text"><span class="fact-label">Extensión aprox.:</span> 2,500 km</div></div>
+            <div class="fact-item"><span class="fact-icon">🏔️</span><div class="fact-text"><span class="fact-label">Pico más alto:</span> Narodnaya (1,895 m).</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOJA 6: Cáucaso -->
+      <div class="slide" data-index="5" onclick="openModal(5)">
+        <div class="slide-img-wrap">
+          <img src="media/Imagen 12.jpg" alt="Cáucaso" onerror="this.src=''; this.parentElement.style.background='linear-gradient(135deg,#c8dfc0,#a0c090)'">
+          <span class="slide-img-badge">🗺️ Europa–Asia</span>
+        </div>
+        <div class="slide-info">
+          <div class="slide-number">Hoja 6 de 7</div>
+          <div class="slide-title">Cáucaso</div>
+          <div class="slide-divider"></div>
+          <div class="slide-facts">
+            <div class="fact-item"><span class="fact-icon">📍</span><div class="fact-text"><span class="fact-label">Ubicación:</span> Entre Europa oriental y Asia occidental.</div></div>
+            <div class="fact-item"><span class="fact-icon">📏</span><div class="fact-text"><span class="fact-label">Extensión aprox.:</span> 1,200 km</div></div>
+            <div class="fact-item"><span class="fact-icon">🏔️</span><div class="fact-text"><span class="fact-label">Pico más alto:</span> Elbrús (5,642 m).</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOJA 7: Macizo Antártico -->
+      <div class="slide" data-index="6" onclick="openModal(6)">
+        <div class="slide-img-wrap">
+          <img src="media/Imagen 13.jpg" alt="Macizo Antártico" onerror="this.src=''; this.parentElement.style.background='linear-gradient(135deg,#c8dfc0,#a0c090)'">
+          <span class="slide-img-badge">🗺️ Antártida</span>
+        </div>
+        <div class="slide-info">
+          <div class="slide-number">Hoja 7 de 7</div>
+          <div class="slide-title">Macizo Antártico</div>
+          <div class="slide-divider"></div>
+          <div class="slide-facts">
+            <div class="fact-item"><span class="fact-icon">📍</span><div class="fact-text"><span class="fact-label">Ubicación:</span> Antártida.</div></div>
+            <div class="fact-item"><span class="fact-icon">📏</span><div class="fact-text"><span class="fact-label">Extensión aprox.:</span> N/A</div></div>
+            <div class="fact-item"><span class="fact-icon">🏔️</span><div class="fact-text"><span class="fact-label">Pico más alto:</span> Macizo Vinson (4,892 m).</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /slides-container -->
+
+    <!-- NAV -->
+    <div class="nav-section">
+      <button class="nav-btn" id="btnPrev" onclick="changeSlide(-1)" title="Anterior">&#8592;</button>
+      <div class="dots-wrap" id="dotsWrap"></div>
+      <span class="slide-counter" id="slideCounter">1 / 7</span>
+      <button class="nav-btn" id="btnNext" onclick="changeSlide(1)" title="Siguiente">&#8594;</button>
+    </div>
+  </div><!-- /slider-wrapper -->
+
+  <!-- FOOTER -->
+  <div class="footer"></div>
+
+</div><!-- /wrapper -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modalBox">
+    <img class="modal-img" id="modalImg" src="" alt="">
+    <div class="modal-body">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-facts" id="modalFacts"></div>
+      <button class="modal-close-btn" onclick="closeModal()">Cerrar ✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ===== DATOS ===== */
+  const cadenas = [
+    {
+      name: 'Himalayas',
+      img: 'media/Imagen 7.jpg',
+      ubicacion: 'Asia (India, China, Nepal, Bután, Pakistán).',
+      extension: '2,400 km',
+      pico: 'Monte Everest (8,848 m).'
+    },
+    {
+      name: 'Andes',
+      img: '/media/image5.jpeg',
+      ubicacion: 'América del Sur (de Venezuela a Chile/Argentina).',
+      extension: '7,000 km',
+      pico: 'Aconcagua (6,961 m).'
+    },
+    {
+      name: 'Montañas Rocosas',
+      img: '/media/image6.jpeg',
+      ubicacion: 'América del Norte (Canadá y EE.UU.).',
+      extension: '4,800 km',
+      pico: 'Monte Elbert (4,401 m).'
+    },
+    {
+      name: 'Alpes',
+      img: '/media/image7.jpeg',
+      ubicacion: 'Europa central.',
+      extension: '1,200 km',
+      pico: 'Mont Blanc (4,809 m).'
+    },
+    {
+      name: 'Urales',
+      img: '/media/image8.jpeg',
+      ubicacion: 'Rusia (frontera entre Europa y Asia).',
+      extension: '2,500 km',
+      pico: 'Narodnaya (1,895 m).'
+    },
+    {
+      name: 'Cáucaso',
+      img: '/media/image9.jpeg',
+      ubicacion: 'Entre Europa oriental y Asia occidental.',
+      extension: '1,200 km',
+      pico: 'Elbrús (5,642 m).'
+    },
+    {
+      name: 'Macizo Antártico',
+      img: '/media/image10.jpeg',
+      ubicacion: 'Antártida.',
+      extension: 'N/A',
+      pico: 'Macizo Vinson (4,892 m).'
+    }
+  ];
+
+  let current = 0;
+  const total = cadenas.length;
+  const slides = document.querySelectorAll('.slide');
+  const dotsWrap = document.getElementById('dotsWrap');
+  const counter = document.getElementById('slideCounter');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+
+  /* ===== DOTS ===== */
+  cadenas.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('aria-label', 'Ir a hoja ' + (i+1));
+    d.onclick = () => goTo(i);
+    dotsWrap.appendChild(d);
+  });
+
+  function getDots() { return dotsWrap.querySelectorAll('.dot'); }
+
+  /* ===== CAMBIO ===== */
+  function goTo(idx) {
+    if (idx === current) return;
+    const direction = idx > current ? 1 : -1;
+
+    slides[current].classList.remove('active');
+    slides[current].classList.add(direction > 0 ? 'exit-left' : 'exit-right');
+    setTimeout(() => slides[current < 0 ? 0 : current].classList.remove('exit-left', 'exit-right'), 380);
+
+    current = idx;
+    slides[current].classList.add('active');
+
+    getDots().forEach((d, i) => d.classList.toggle('active', i === current));
+    counter.textContent = (current + 1) + ' / ' + total;
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === total - 1;
+  }
+
+  function changeSlide(dir) { goTo(Math.max(0, Math.min(total - 1, current + dir))); }
+
+  // Init
+  btnPrev.disabled = true;
+
+  /* ===== KEYBOARD ===== */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') changeSlide(1);
+    if (e.key === 'ArrowLeft') changeSlide(-1);
+    if (e.key === 'Escape') closeModal();
+  });
+
+  /* ===== SWIPE ===== */
+  let touchStartX = 0;
+  document.getElementById('slidesContainer').addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  document.getElementById('slidesContainer').addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) changeSlide(diff > 0 ? 1 : -1);
+  });
+
+  /* ===== MODAL ===== */
+  function openModal(idx) {
+    const d = cadenas[idx];
+    document.getElementById('modalImg').src = d.img;
+    document.getElementById('modalImg').alt = d.name;
+    document.getElementById('modalTitle').textContent = d.name;
+    const facts = document.getElementById('modalFacts');
+    facts.innerHTML = `
+      <div class="modal-fact"><span>📍</span><div><strong>Ubicación:</strong> ${d.ubicacion}</div></div>
+      <div class="modal-fact"><span>📏</span><div><strong>Extensión aprox.:</strong> ${d.extension}</div></div>
+      <div class="modal-fact"><span>🏔️</span><div><strong>Pico más alto:</strong> ${d.pico}</div></div>
+    `;
+    document.getElementById('modalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  /* ===== ESTRELLAS HEADER ===== */
+  const sky = document.getElementById('headerSky');
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 1;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*55}%;
+      left:${Math.random()*100}%;
+      animation-delay:${Math.random()*3}s;
+      animation-duration:${2 + Math.random()*2}s;
+    `;
+    sky.appendChild(s);
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vulnerabilidad, Resiliencia y Planificación Territorial</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal-deep:    #1a3a3a;
+    --teal-mid:     #25645a;
+    --teal-soft:    #3a8c7e;
+    --teal-light:   #72c2b0;
+    --teal-pale:    #d4f0ea;
+    --amber:        #b06820;
+    --amber-light:  #f0c980;
+    --amber-pale:   #fef6e4;
+    --cream:        #f7f9f7;
+    --white:        #ffffff;
+    --text-dark:    #162020;
+    --text-mid:     #325050;
+    --text-light:   #678080;
+    --red-soft:     #b03030;
+    --red-bg:       #fdf0f0;
+    --green-soft:   #1f7a4a;
+    --green-bg:     #edf7f2;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    width: 800px;
+    max-width: 800px;
+    min-height: 800px;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 500px 300px at 90% 5%,  rgba(58,140,126,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 350px at 5%  95%, rgba(26,58,58,0.07)  0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ══ HEADER ══ */
+  .header {
+    background: linear-gradient(140deg, var(--teal-deep) 0%, var(--teal-mid) 55%, var(--teal-soft) 100%);
+    padding: 18px 28px 15px;
+    color: white;
+    position: relative; overflow: hidden; z-index: 1;
+  }
+  .header::after {
+    content: '🏘️';
+    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+    font-size: 54px; opacity: 0.15;
+  }
+  .header-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--teal-light); margin-bottom: 4px;
+  }
+  .header h1 {
+    font-family: 'Lora', serif;
+    font-size: 18px; font-weight: 700; line-height: 1.25; color: white;
+  }
+  .header-meta {
+    display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.13); border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.88);
+  }
+
+  /* ══ CONTENT AREA ══ */
+  .content-area {
+    position: relative; z-index: 1;
+    height: 660px; overflow: hidden;
+  }
+  .slide {
+    display: none;
+    padding: 20px 28px 14px;
+    height: 100%; overflow-y: auto;
+    animation: fadeUp 0.35s ease;
+  }
+  .slide.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ══ PORTADA ══ */
+  .instruction-strip {
+    background: linear-gradient(90deg, var(--teal-pale), #e8f8f5);
+    border-radius: 10px; padding: 10px 16px;
+    font-size: 12.5px; color: var(--teal-deep);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px; font-weight: 600;
+    border-left: 4px solid var(--teal-soft);
+  }
+  .case-card {
+    background: white; border-radius: 16px;
+    padding: 18px 20px; margin-bottom: 18px;
+    box-shadow: 0 4px 18px rgba(26,58,58,0.10);
+    border-left: 5px solid var(--teal-soft);
+  }
+  .case-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--teal-soft);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+  .case-text {
+    font-size: 13px; line-height: 1.75; color: var(--text-dark);
+  }
+  .start-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--teal-mid), var(--teal-soft));
+    color: white; border: none; border-radius: 14px;
+    padding: 14px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 16px rgba(37,100,90,0.30);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .start-btn:hover {
+    background: linear-gradient(135deg, var(--teal-deep), var(--teal-mid));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(37,100,90,0.38);
+  }
+
+  /* ══ QUESTION SLIDES ══ */
+  .q-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .q-number {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--teal-soft);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .q-pill {
+    font-size: 11px; font-weight: 600;
+    background: var(--teal-pale); color: var(--teal-deep);
+    border-radius: 20px; padding: 2px 10px;
+  }
+  .q-text {
+    font-family: 'Lora', serif;
+    font-size: 15.5px; color: var(--text-dark);
+    line-height: 1.55; margin-bottom: 18px;
+    background: white; border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 10px rgba(26,58,58,0.07);
+  }
+
+  .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .option-btn {
+    background: white;
+    border: 2px solid #dde8e6;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px; font-weight: 500; color: var(--text-dark);
+    cursor: pointer; text-align: left;
+    transition: all 0.22s ease;
+    display: flex; align-items: flex-start; gap: 12px;
+    font-family: 'Nunito', sans-serif;
+    box-shadow: 0 2px 6px rgba(26,58,58,0.05);
+    position: relative; overflow: hidden;
+  }
+  .option-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--teal-pale), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .option-btn:hover { border-color: var(--teal-soft); transform: translateX(4px); }
+  .option-btn:hover::before { opacity: 1; }
+  .option-btn.disabled { pointer-events: none; }
+  .option-letter {
+    width: 26px; height: 26px; min-width: 26px;
+    border-radius: 50%; background: var(--teal-pale);
+    color: var(--teal-deep); font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .option-btn:hover .option-letter { background: var(--teal-soft); color: white; }
+
+  /* ══ FEEDBACK CARD ══ */
+  .feedback-card {
+    display: none;
+    background: white;
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 24px rgba(26,58,58,0.12);
+    border-top: 5px solid var(--teal-soft);
+    margin-top: 4px;
+    animation: cardReveal 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .feedback-card.show { display: block; }
+  @keyframes cardReveal {
+    from { opacity: 0; transform: scale(0.93) translateY(12px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
+  }
+  .feedback-card.correct-card  { border-top-color: var(--green-soft); }
+  .feedback-card.incorrect-card { border-top-color: var(--red-soft); }
+
+  .feedback-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px; padding-bottom: 10px;
+    border-bottom: 1px solid #ecf4f2;
+  }
+  .feedback-icon { font-size: 22px; }
+  .feedback-title {
+    font-family: 'Lora', serif;
+    font-size: 15px; font-weight: 700; color: var(--text-dark);
+  }
+  .feedback-subtitle { font-size: 11px; color: var(--text-light); margin-top: 1px; }
+
+  .feedback-section { margin-bottom: 10px; }
+  .feedback-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 5px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .feedback-label.clabel { color: var(--green-soft); }
+  .feedback-label.ilabel { color: var(--red-soft); }
+  .feedback-body {
+    font-size: 12.5px; line-height: 1.65; color: var(--text-mid);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .feedback-body.cbody { background: var(--green-bg); }
+  .feedback-body.ibody { background: var(--red-bg); }
+
+  /* ══ FINAL SLIDE ══ */
+  .final-wrap { text-align: center; padding-top: 24px; }
+  .final-emoji { font-size: 60px; animation: bob 1.2s ease-in-out infinite alternate; }
+  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+  .final-title {
+    font-family: 'Lora', serif;
+    font-size: 21px; color: var(--teal-deep); margin: 14px 0 8px;
+  }
+  .score-row {
+    display: flex; justify-content: center; gap: 8px; margin-bottom: 16px;
+  }
+  .s-dot {
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--teal-pale); transition: background 0.4s;
+  }
+  .s-dot.filled { background: var(--teal-soft); }
+  .final-text {
+    font-size: 13px; line-height: 1.75; color: var(--text-mid);
+    background: white; border-radius: 14px; padding: 16px 20px;
+    box-shadow: 0 4px 14px rgba(26,58,58,0.09);
+    text-align: left; margin-bottom: 18px;
+  }
+  .restart-btn {
+    background: linear-gradient(135deg, var(--teal-mid), var(--teal-soft));
+    color: white; border: none; border-radius: 12px;
+    padding: 12px 28px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(37,100,90,0.28);
+  }
+  .restart-btn:hover { transform: translateY(-2px); }
+
+  /* ══ PROGRESS BAR ══ */
+  .progress-track {
+    height: 3px; background: #ddeee9;
+    position: relative; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--teal-mid), var(--teal-light));
+    transition: width 0.4s ease; width: 0%;
+  }
+
+  /* ══ NAV BAR ══ */
+  .nav-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 28px;
+    background: white;
+    border-top: 1px solid #ddeee9;
+    position: sticky; bottom: 0; z-index: 10;
+  }
+  .nav-btn {
+    background: linear-gradient(135deg, var(--teal-mid), var(--teal-soft));
+    color: white; border: none; border-radius: 20px;
+    padding: 8px 18px; font-size: 12.5px; font-weight: 700;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(37,100,90,0.22);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(37,100,90,0.30); }
+  .nav-btn:disabled { opacity: 0.28; pointer-events: none; }
+
+  .center-nav { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .slide-label { font-size: 11px; color: var(--text-light); font-weight: 600; }
+  .dots-row { display: flex; gap: 6px; }
+  .p-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--teal-pale); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .p-dot.active { background: var(--teal-soft); transform: scale(1.4); }
+  .p-dot.done   { background: var(--teal-light); }
+
+  @media (max-width: 600px) {
+    body { width: 100%; }
+    .header h1 { font-size: 15px; }
+    .content-area { height: auto; }
+    .slide { height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-eyebrow">🌱 Gestión del Riesgo y Territorio</div>
+  <h1>Vulnerabilidad, Resiliencia y<br>Planificación Territorial</h1>
+  <div class="header-meta">
+    <div class="badge">📋 Caso de Estudio</div>
+    <div class="badge">❓ 5 Preguntas</div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+
+<!-- CONTENT -->
+<div class="content-area">
+
+  <!-- SLIDE 0: PORTADA -->
+  <div class="slide active" id="slide-0">
+    <div class="instruction-strip">
+      💡 Aplique los temas estudiados al resolver el siguiente caso.
+    </div>
+    <div class="case-card">
+      <div class="case-label">🏘️ Caso planteado</div>
+      <div class="case-text">
+        Una comunidad se encuentra en una zona donde, durante la temporada de lluvias, suelen presentarse deslizamientos e inundaciones. Además, el crecimiento de viviendas ha ocurrido sin suficiente planificación, incluso en sectores frágiles y con poca cobertura de servicios básicos. Aunque algunas familias conocen los riesgos, no existen simulacros frecuentes, la organización comunitaria es limitada y las decisiones sobre el uso del suelo no siempre consideran la aptitud del territorio. Frente a esta realidad, autoridades y habitantes deben tomar decisiones para reducir la vulnerabilidad y fortalecer la resiliencia de la comunidad.
+      </div>
+    </div>
+    <button class="start-btn" onclick="goToSlide(1)">🚀 Comenzar el Quiz</button>
+  </div>
+
+  <!-- SLIDE 1 -->
+  <div class="slide" id="slide-1">
+    <div class="q-meta">
+      <div class="q-number">🛡️ Pregunta 1</div>
+      <div class="q-pill">1 de 5</div>
+    </div>
+    <div class="q-text">Ante esta situación, ¿qué acción aportaría más a la reducción de la vulnerabilidad?</div>
+    <div class="options-list" id="opts-1"></div>
+    <div class="feedback-card" id="fb-1"></div>
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="slide" id="slide-2">
+    <div class="q-meta">
+      <div class="q-number">🌱 Pregunta 2</div>
+      <div class="q-pill">2 de 5</div>
+    </div>
+    <div class="q-text">Si se desea fortalecer la resiliencia del territorio, ¿qué enfoque sería más conveniente?</div>
+    <div class="options-list" id="opts-2"></div>
+    <div class="feedback-card" id="fb-2"></div>
+  </div>
+
+  <!-- SLIDE 3 -->
+  <div class="slide" id="slide-3">
+    <div class="q-meta">
+      <div class="q-number">🗺️ Pregunta 3</div>
+      <div class="q-pill">3 de 5</div>
+    </div>
+    <div class="q-text">Frente al crecimiento de viviendas en zonas frágiles, ¿qué decisión sería más adecuada desde la planificación territorial?</div>
+    <div class="options-list" id="opts-3"></div>
+    <div class="feedback-card" id="fb-3"></div>
+  </div>
+
+  <!-- SLIDE 4 -->
+  <div class="slide" id="slide-4">
+    <div class="q-meta">
+      <div class="q-number">🤝 Pregunta 4</div>
+      <div class="q-pill">4 de 5</div>
+    </div>
+    <div class="q-text">Para que un plan territorial sea más sostenible y efectivo, ¿qué estrategia resulta más pertinente?</div>
+    <div class="options-list" id="opts-4"></div>
+    <div class="feedback-card" id="fb-4"></div>
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="slide" id="slide-5">
+    <div class="q-meta">
+      <div class="q-number">🌐 Pregunta 5</div>
+      <div class="q-pill">5 de 5</div>
+    </div>
+    <div class="q-text">Si la comunidad busca disminuir riesgos a largo plazo, ¿qué medida sería más conveniente?</div>
+    <div class="options-list" id="opts-5"></div>
+    <div class="feedback-card" id="fb-5"></div>
+  </div>
+
+  <!-- SLIDE 6: FINAL -->
+  <div class="slide" id="slide-6">
+    <div class="final-wrap">
+      <div class="final-emoji">🏆</div>
+      <div class="final-title">¡Actividad completada!</div>
+      <div class="score-row" id="score-row">
+        <div class="s-dot" id="sd-0"></div>
+        <div class="s-dot" id="sd-1"></div>
+        <div class="s-dot" id="sd-2"></div>
+        <div class="s-dot" id="sd-3"></div>
+        <div class="s-dot" id="sd-4"></div>
+      </div>
+      <div class="final-text">
+        ¡Felicitaciones por completar la actividad! A través de este caso de estudio, logró reflexionar sobre cómo la vulnerabilidad del territorio puede reducirse mediante la organización, la prevención y una planificación más consciente del uso del suelo. Además, fortaleció su comprensión sobre la resiliencia como una capacidad clave para adaptarse, aprender y responder de mejor manera ante las amenazas naturales.
+      </div>
+      <button class="restart-btn" onclick="restartQuiz()">🔄 Reiniciar actividad</button>
+    </div>
+  </div>
+
+</div><!-- /content-area -->
+
+<!-- NAV BAR -->
+<div class="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>◀ Anterior</button>
+  <div class="center-nav">
+    <div class="slide-label" id="slide-label">Inicio</div>
+    <div class="dots-row" id="dots-row">
+      <!-- dots injected by JS -->
+    </div>
+  </div>
+  <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente ▶</button>
+</div>
+
+<script>
+// ═══════════════════════════════
+//  DATA
+// ═══════════════════════════════
+const questions = [
+  {
+    qi: 1,
+    options: [
+      { text: 'Esperar a que ocurra una emergencia para identificar qué sectores fueron más afectados.', correct: false,
+        feedback: 'Esta alternativa reacciona al problema cuando ya ocurrió el daño, por lo que no contribuye suficientemente a disminuir la vulnerabilidad.' },
+      { text: 'Promover acciones de preparación previa, como organización comunitaria, acceso a información y participación en simulacros.', correct: true,
+        feedback: 'Esta es la mejor opción, porque la preparación previa fortalece la capacidad de respuesta de la comunidad y reduce los impactos ante posibles amenazas.' }
+    ]
+  },
+  {
+    qi: 2,
+    options: [
+      { text: 'Recuperarse después de cada evento sin modificar prácticas ni aprender de lo ocurrido.', correct: false,
+        feedback: 'Recuperarse es importante, pero si no se generan aprendizajes ni cambios, la comunidad seguirá expuesta a condiciones similares.' },
+      { text: 'Aprender de los eventos vividos para mejorar la organización, la prevención y la capacidad de respuesta futura.', correct: true,
+        feedback: 'Esta es la mejor alternativa, porque la resiliencia implica adaptarse, aprender de la experiencia y fortalecer capacidades para enfrentar mejor futuros eventos.' }
+    ]
+  },
+  {
+    qi: 3,
+    options: [
+      { text: 'Continuar ocupando cualquier espacio disponible sin evaluar sus características.', correct: false,
+        feedback: 'Esta opción incrementa la exposición al riesgo y puede generar degradación ambiental y crecimiento desordenado.' },
+      { text: 'Analizar la capacidad y aptitud del suelo antes de definir los usos del territorio.', correct: true,
+        feedback: 'Esta es la mejor respuesta, porque la planificación territorial debe considerar las características del suelo para asignar usos compatibles y reducir riesgos.' }
+    ]
+  },
+  {
+    qi: 4,
+    options: [
+      { text: 'Dejar las decisiones únicamente en manos de una sola institución.', correct: false,
+        feedback: 'Una visión limitada puede dejar fuera necesidades reales del territorio y debilitar la aplicación del plan.' },
+      { text: 'Incluir la participación de comunidades, autoridades y otros actores del territorio.', correct: true,
+        feedback: 'Esta es la mejor opción, porque una planificación participativa fortalece la legitimidad de las decisiones y mejora su sostenibilidad en el tiempo.' }
+    ]
+  },
+  {
+    qi: 5,
+    options: [
+      { text: 'Separar totalmente la planificación urbana de la rural, sin considerar su relación.', correct: false,
+        feedback: 'Tratar ambos espacios por separado puede generar desequilibrios, expansión desordenada y falta de coherencia en el uso del territorio.' },
+      { text: 'Integrar lo urbano y lo rural, junto con enfoques de gestión del riesgo y resiliencia climática.', correct: true,
+        feedback: 'Esta es la mejor alternativa, porque una visión integrada permite ordenar mejor el territorio, reducir riesgos y promover un desarrollo más equilibrado.' }
+    ]
+  }
+];
+
+const TOTAL_SLIDES = 7; // 0=portada, 1-5=preguntas, 6=final
+
+// ═══════════════════════════════
+//  STATE
+// ═══════════════════════════════
+let currentSlide = 0;
+let unlocked = 0;
+const answered = Array(5).fill(false);
+const correct   = Array(5).fill(false);
+
+// ═══════════════════════════════
+//  BUILD DOTS
+// ═══════════════════════════════
+function buildDots() {
+  const row = document.getElementById('dots-row');
+  row.innerHTML = '';
+  for (let i = 0; i < TOTAL_SLIDES; i++) {
+    const d = document.createElement('div');
+    d.className = 'p-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => tryGoTo(i);
+    row.appendChild(d);
+  }
+}
+
+// ═══════════════════════════════
+//  RENDER OPTIONS (shuffled)
+// ═══════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderOptions() {
+  questions.forEach((q, idx) => {
+    const container = document.getElementById('opts-' + q.qi);
+    const shuffled = shuffle(q.options);
+    container.innerHTML = '';
+    const letters = ['A', 'B'];
+    shuffled.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.dataset.correct = opt.correct;
+      btn.dataset.qi = idx;
+      btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt.text}</span>`;
+      btn.onclick = () => selectOption(btn, idx, opt, shuffled);
+      container.appendChild(btn);
+    });
+  });
+}
+
+// ═══════════════════════════════
+//  SELECT OPTION
+// ═══════════════════════════════
+function selectOption(btn, idx, opt, shuffled) {
+  if (answered[idx]) return;
+  answered[idx] = true;
+  correct[idx] = opt.correct;
+
+  const qi = idx + 1;
+  const allBtns = document.querySelectorAll(`#opts-${qi} .option-btn`);
+  allBtns.forEach(b => {
+    b.classList.add('disabled');
+    const isCor = b.dataset.correct === 'true';
+    if (isCor) {
+      b.style.border = '2px solid #1f7a4a';
+      b.style.background = '#edf7f2';
+      b.querySelector('.option-letter').style.background = '#1f7a4a';
+      b.querySelector('.option-letter').style.color = 'white';
+    }
+    if (b === btn && !isCor) {
+      b.style.border = '2px solid #b03030';
+      b.style.background = '#fdf0f0';
+      b.querySelector('.option-letter').style.background = '#b03030';
+      b.querySelector('.option-letter').style.color = 'white';
+    }
+  });
+
+  const correctOpt   = shuffled.find(o => o.correct);
+  const incorrectOpt = shuffled.find(o => !o.correct);
+  const fb = document.getElementById('fb-' + qi);
+  fb.innerHTML = buildFeedback(opt.correct, correctOpt, incorrectOpt);
+  fb.classList.add('show', opt.correct ? 'correct-card' : 'incorrect-card');
+
+  if (unlocked < qi + 1) unlocked = qi + 1;
+  if (answered.every(Boolean) && unlocked < 6) unlocked = 6;
+
+  updateNav();
+  setTimeout(() => fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 160);
+}
+
+function buildFeedback(isCorrect, correctOpt, incorrectOpt) {
+  const icon     = isCorrect ? '✅' : '💡';
+  const title    = isCorrect ? 'Respuesta Correcta' : 'Retroalimentación';
+  const subtitle = isCorrect ? '¡Muy bien razonado!' : 'Revisemos ambas opciones';
+
+  let html = `
+    <div class="feedback-header">
+      <span class="feedback-icon">${icon}</span>
+      <div>
+        <div class="feedback-title">${title}</div>
+        <div class="feedback-subtitle">${subtitle}</div>
+      </div>
+    </div>`;
+
+  if (isCorrect) {
+    html += `
+      <div class="feedback-section">
+        <div class="feedback-label clabel">✅ Retroalimentación opción correcta</div>
+        <div class="feedback-body cbody">${correctOpt.feedback}</div>
+      </div>
+      <div class="feedback-section">
+        <div class="feedback-label ilabel">❌ Retroalimentación opción incorrecta</div>
+        <div class="feedback-body ibody">${incorrectOpt.feedback}</div>
+      </div>`;
+  } else {
+    html += `
+      <div class="feedback-section">
+        <div class="feedback-label ilabel">❌ Opción seleccionada</div>
+        <div class="feedback-body ibody">${incorrectOpt.feedback}</div>
+      </div>
+      <div class="feedback-section">
+        <div class="feedback-label clabel">✅ Mejor opción</div>
+        <div class="feedback-body cbody">${correctOpt.feedback}</div>
+      </div>`;
+  }
+  return html;
+}
+
+// ═══════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════
+function goToSlide(n) {
+  document.getElementById('slide-' + currentSlide).classList.remove('active');
+  currentSlide = n;
+  document.getElementById('slide-' + currentSlide).classList.add('active');
+  updateDots();
+  updateNav();
+  updateProgress();
+}
+
+function navigate(dir) {
+  const next = currentSlide + dir;
+  if (next < 0 || next > Math.min(unlocked, TOTAL_SLIDES - 1)) return;
+  goToSlide(next);
+}
+
+function tryGoTo(n) {
+  if (n <= Math.min(unlocked, TOTAL_SLIDES - 1)) goToSlide(n);
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('.p-dot');
+  dots.forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i === currentSlide) d.classList.add('active');
+    else if (i < currentSlide) d.classList.add('done');
+  });
+}
+
+function updateProgress() {
+  const pct = (currentSlide / (TOTAL_SLIDES - 1)) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+const slideLabels = ['Inicio', 'Pregunta 1', 'Pregunta 2', 'Pregunta 3', 'Pregunta 4', 'Pregunta 5', 'Resultado'];
+
+function updateNav() {
+  const max = Math.min(unlocked, TOTAL_SLIDES - 1);
+  document.getElementById('btn-prev').disabled = currentSlide === 0;
+  document.getElementById('btn-next').disabled = currentSlide >= max;
+  document.getElementById('slide-label').textContent = slideLabels[currentSlide];
+
+  // show score dots on final
+  if (currentSlide === 6) {
+    correct.forEach((c, i) => {
+      const dot = document.getElementById('sd-' + i);
+      if (dot && c) dot.classList.add('filled');
+    });
+  }
+}
+
+// ═══════════════════════════════
+//  RESTART
+// ═══════════════════════════════
+function restartQuiz() {
+  answered.fill(false);
+  correct.fill(false);
+  unlocked = 0;
+
+  renderOptions();
+
+  for (let i = 1; i <= 5; i++) {
+    const fb = document.getElementById('fb-' + i);
+    fb.classList.remove('show', 'correct-card', 'incorrect-card');
+    fb.innerHTML = '';
+  }
+  for (let i = 0; i < 5; i++) {
+    const d = document.getElementById('sd-' + i);
+    if (d) d.classList.remove('filled');
+  }
+
+  goToSlide(0);
+}
+
+// ═══════════════════════════════
+//  INIT
+// ═══════════════════════════════
+buildDots();
+renderOptions();
+updateNav();
+updateProgress();
+</script>
+</body>
+</html>
