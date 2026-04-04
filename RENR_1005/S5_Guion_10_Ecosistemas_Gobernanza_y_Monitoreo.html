@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecosistemas, Gobernanza y Monitoreo – Quiz</title>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green-dark:  #1b5e20;
+  --green-mid:   #2e7d32;
+  --green-light: #43a047;
+  --green-pale:  #e8f5e9;
+  --green-xpale: #f1f8f1;
+  --teal:        #00796b;
+  --amber:       #f57f17;
+  --amber-pale:  #fff8e1;
+  --red:         #c62828;
+  --red-pale:    #ffebee;
+  --blue:        #1565c0;
+  --blue-pale:   #e3f2fd;
+  --text:        #1a2e1a;
+  --text-soft:   #4a6a4a;
+  --border:      #c8e6c9;
+  --shadow:      rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--green-xpale);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ===== WRAPPER ===== */
+.app {
+  max-width: 800px;
+  width: 100%;
+  min-height: 800px;
+  max-height: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== HEADER ===== */
+.header {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 60%, var(--green-light) 100%);
+  color: white;
+  padding: 16px 24px 12px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.header::after {
+  content:'🌿';
+  position:absolute; right:20px; top:50%; transform:translateY(-50%);
+  font-size:56px; opacity:0.12; pointer-events:none;
+}
+.header-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
+  border-radius:20px; padding:3px 10px;
+  font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  margin-bottom:5px;
+}
+.header h1 { font-size:18px; font-weight:800; line-height:1.2; }
+.header p  { font-size:12px; opacity:.85; margin-top:4px; line-height:1.4; }
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar-wrap {
+  background: rgba(255,255,255,0.18);
+  border-radius:20px; height:6px; margin-top:10px; overflow:hidden;
+}
+.progress-bar-fill {
+  height:100%; background:rgba(255,255,255,0.9);
+  border-radius:20px;
+  transition: width .5s ease;
+  width:0%;
+}
+.progress-labels {
+  display:flex; justify-content:space-between;
+  font-size:10.5px; opacity:.8; margin-top:4px;
+}
+
+/* ===== SCORE CHIPS ===== */
+.score-strip {
+  background:white; border-bottom:2px solid var(--border);
+  padding:8px 24px;
+  display:flex; align-items:center; gap:10px; flex-shrink:0;
+}
+.chip {
+  display:inline-flex; align-items:center; gap:4px;
+  background:var(--green-pale); border:1.5px solid var(--border);
+  border-radius:20px; padding:3px 10px;
+  font-size:12px; font-weight:700; color:var(--green-dark);
+}
+.chip-label { font-weight:400; opacity:.7; font-size:11px; }
+.q-counter { margin-left:auto; font-size:12px; color:var(--text-soft); font-weight:600; }
+
+/* ===== MAIN CONTENT ===== */
+.content {
+  flex:1; overflow-y:auto; padding:18px 20px;
+  display:flex; flex-direction:column; gap:14px;
+}
+.content::-webkit-scrollbar { width:4px; }
+.content::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+/* ===== QUESTION CARD ===== */
+.q-card {
+  background:white; border-radius:16px;
+  box-shadow:0 2px 10px var(--shadow);
+  overflow:hidden;
+  animation: fadeUp .4s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.q-card-header {
+  background: var(--green-pale);
+  padding:12px 18px;
+  display:flex; align-items:center; gap:10px;
+  border-bottom:1.5px solid var(--border);
+}
+.q-num {
+  min-width:32px; height:32px; border-radius:50%;
+  background:var(--green-mid); color:white;
+  font-size:13px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+.q-type-badge {
+  font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  background:white; border:1.5px solid var(--border);
+  border-radius:12px; padding:2px 8px; color:var(--text-soft);
+}
+.q-title { font-size:14px; font-weight:700; color:var(--text); line-height:1.45; padding:14px 18px 6px; }
+.q-body  { padding:6px 18px 16px; }
+
+/* ===== OPTIONS (MCQ / TF) ===== */
+.options { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+
+.option {
+  display:flex; align-items:flex-start; gap:10px;
+  background:var(--green-xpale); border:2px solid var(--border);
+  border-radius:10px; padding:10px 14px;
+  cursor:pointer; font-size:13px; line-height:1.45;
+  transition: all .2s ease;
+  user-select:none;
+}
+.option:hover:not(.locked) { border-color:var(--green-light); background:#f0faf0; transform:translateX(3px); }
+.option.selected { border-color:var(--green-mid); background:var(--green-pale); }
+.option.correct  { border-color:#2e7d32; background:#e8f5e9; }
+.option.wrong    { border-color:var(--red); background:var(--red-pale); }
+.option.locked   { cursor:default; }
+
+.opt-letter {
+  min-width:24px; height:24px; border-radius:50%;
+  background:white; border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:var(--green-dark);
+  flex-shrink:0; margin-top:1px;
+  transition: all .2s;
+}
+.option.selected .opt-letter { background:var(--green-mid); color:white; border-color:var(--green-mid); }
+.option.correct  .opt-letter { background:#2e7d32; color:white; border-color:#2e7d32; }
+.option.wrong    .opt-letter { background:var(--red); color:white; border-color:var(--red); }
+
+/* ===== TRUE / FALSE ===== */
+.tf-row { display:flex; gap:10px; margin-top:8px; }
+.tf-btn {
+  flex:1; padding:12px; border-radius:10px; border:2px solid var(--border);
+  background:var(--green-xpale); cursor:pointer;
+  font-size:14px; font-weight:700; color:var(--text);
+  transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.tf-btn:hover:not(.locked) { border-color:var(--green-light); background:#f0faf0; }
+.tf-btn.selected { border-color:var(--green-mid); background:var(--green-pale); }
+.tf-btn.correct  { border-color:#2e7d32; background:#e8f5e9; }
+.tf-btn.wrong    { border-color:var(--red); background:var(--red-pale); }
+
+/* ===== DRAG & DROP (Q3) ===== */
+.drag-wrap { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:8px; }
+.drag-panel-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-soft); margin-bottom:6px; }
+
+.drag-items { display:flex; flex-direction:column; gap:6px; }
+.drag-item {
+  background:var(--blue-pale); border:1.5px solid #90caf9;
+  border-radius:8px; padding:8px 12px;
+  font-size:12.5px; font-weight:600; color:var(--blue);
+  cursor:grab; transition:all .2s; user-select:none;
+  display:flex; align-items:center; gap:6px;
+}
+.drag-item:hover { transform:scale(1.02); box-shadow:0 3px 8px var(--shadow); }
+.drag-item.dragging { opacity:.5; cursor:grabbing; }
+.drag-item.used { opacity:.35; cursor:not-allowed; pointer-events:none; }
+
+.drop-zones { display:flex; flex-direction:column; gap:8px; }
+.drop-zone {
+  border:2px dashed #a5d6a7; border-radius:8px; padding:8px 10px;
+  min-height:58px; background:var(--green-xpale);
+  display:flex; flex-direction:column; gap:4px;
+  transition:border-color .2s, background .2s;
+}
+.drop-zone.over { border-color:var(--green-mid); background:var(--green-pale); }
+.drop-zone.correct-zone { border-color:#2e7d32; background:#e8f5e9; border-style:solid; }
+.drop-zone.wrong-zone   { border-color:var(--red); background:var(--red-pale); border-style:solid; }
+.drop-label { font-size:11.5px; font-weight:700; color:var(--text-soft); }
+.drop-slot  { font-size:12px; color:var(--text); font-style:italic; opacity:.5; }
+.dropped-chip {
+  background:var(--blue-pale); border:1.5px solid #90caf9;
+  border-radius:6px; padding:4px 8px; font-size:12px; font-weight:600; color:var(--blue);
+  display:inline-flex; align-items:center; gap:4px;
+}
+
+/* ===== ORDER (Q4) ===== */
+.order-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.order-item {
+  background:var(--amber-pale); border:1.5px solid #ffe082;
+  border-radius:10px; padding:10px 14px;
+  display:flex; align-items:center; gap:10px;
+  cursor:grab; font-size:12.5px; line-height:1.45;
+  transition:all .2s; user-select:none;
+}
+.order-item:hover { box-shadow:0 3px 10px var(--shadow); transform:translateY(-1px); }
+.order-item.dragging { opacity:.5; cursor:grabbing; }
+.order-handle { font-size:16px; opacity:.5; flex-shrink:0; }
+.order-rank {
+  min-width:26px; height:26px; border-radius:50%;
+  background:var(--amber); color:white;
+  font-size:12px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.order-item.correct-item { background:#e8f5e9; border-color:#a5d6a7; }
+.order-item.wrong-item   { background:var(--red-pale); border-color:#ef9a9a; }
+
+/* ===== FEEDBACK BOX ===== */
+.feedback-box {
+  border-radius:10px; padding:12px 14px;
+  font-size:13px; line-height:1.55;
+  margin-top:10px; display:none;
+  animation: fadeIn .3s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.feedback-box.show { display:block; }
+.feedback-box.ok   { background:#e8f5e9; border:1.5px solid #a5d6a7; color:#1b5e20; }
+.feedback-box.bad  { background:var(--red-pale); border:1.5px solid #ef9a9a; color:#b71c1c; }
+.feedback-emoji { font-size:18px; margin-right:5px; }
+.feedback-title { font-weight:800; font-size:14px; display:block; margin-bottom:4px; }
+
+/* ===== BUTTONS ===== */
+.btn-row { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+.btn {
+  padding:9px 20px; border-radius:20px; border:none;
+  font-size:13px; font-weight:700; cursor:pointer;
+  transition:all .2s; display:flex; align-items:center; gap:5px;
+}
+.btn-check {
+  background:var(--green-mid); color:white;
+}
+.btn-check:hover { background:var(--green-dark); transform:translateY(-1px); box-shadow:0 4px 12px rgba(46,125,50,.3); }
+.btn-next {
+  background:var(--green-dark); color:white;
+  display:none;
+}
+.btn-next:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(27,94,32,.35); }
+.btn-retry {
+  background:white; border:2px solid var(--green-mid); color:var(--green-mid);
+  display:none;
+}
+.btn-retry:hover { background:var(--green-pale); }
+
+/* ===== FINAL SCREEN ===== */
+.final-screen {
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:16px;
+  padding:28px 24px;
+  background:white; border-radius:16px;
+  box-shadow:0 4px 20px var(--shadow);
+  animation:fadeUp .5s ease both;
+}
+.final-screen.show { display:flex; }
+.final-trophy { font-size:64px; animation:bounce .8s ease; }
+@keyframes bounce {
+  0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)}
+}
+.final-title { font-size:22px; font-weight:800; color:var(--green-dark); }
+.final-score {
+  font-size:40px; font-weight:800;
+  background:linear-gradient(135deg,var(--green-dark),var(--green-light));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.final-msg {
+  font-size:13px; line-height:1.65; color:var(--text-soft);
+  max-width:480px;
+}
+.final-msg strong { color:var(--text); }
+.btn-restart {
+  background:var(--green-mid); color:white;
+  padding:11px 28px; border-radius:24px; border:none;
+  font-size:14px; font-weight:700; cursor:pointer;
+  transition:all .2s;
+}
+.btn-restart:hover { background:var(--green-dark); transform:translateY(-2px); box-shadow:0 6px 18px rgba(46,125,50,.35); }
+
+/* ===== FOOTER ===== */
+.footer {
+  background:var(--green-dark); color:rgba(255,255,255,.7);
+  text-align:center; padding:8px; font-size:11px; flex-shrink:0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:600px) {
+  .app { max-height:none; }
+  .drag-wrap { grid-template-columns:1fr; }
+  .tf-row { flex-direction:column; }
+  .header h1 { font-size:15px; }
+  .content { padding:12px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-badge">🌎 Quiz interactivo</div>
+    <h1>Ecosistemas, Gobernanza y Monitoreo</h1>
+    <p>Lea cuidadosamente cada enunciado, seleccione o relacione las respuestas correctas y revise la retroalimentación proporcionada al final de cada pregunta.</p>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-labels">
+      <span id="progressLabel">Pregunta 1 de 5</span>
+      <span id="progressPct">0%</span>
+    </div>
+  </div>
+
+  <!-- SCORE STRIP -->
+  <div class="score-strip">
+    <div class="chip">✅ <span class="chip-label">Correctas</span> <span id="scoreCorrect">0</span></div>
+    <div class="chip">❌ <span class="chip-label">Incorrectas</span> <span id="scoreWrong">0</span></div>
+    <div class="q-counter" id="qCounter">Pregunta 1 / 5</div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content" id="contentArea">
+
+    <!-- === PREGUNTA 1 === -->
+    <div class="q-card" id="q1">
+      <div class="q-card-header">
+        <div class="q-num">1</div>
+        <div class="q-type-badge">📋 Opción múltiple</div>
+      </div>
+      <div class="q-title">¿Cuál de las siguientes opciones describe correctamente los servicios ecosistémicos de <strong>provisión</strong>?</div>
+      <div class="q-body">
+        <div class="options" id="opts1">
+          <div class="option" data-val="a" onclick="selectOpt(1,'a')">
+            <div class="opt-letter">a</div>
+            <span>La capacidad del ecosistema para regular el clima, el ciclo del agua y la purificación del aire.</span>
+          </div>
+          <div class="option" data-val="b" onclick="selectOpt(1,'b')">
+            <div class="opt-letter">b</div>
+            <span>Los beneficios materiales que los seres humanos obtienen directamente de los ecosistemas, como agua dulce, alimentos y fibras.</span>
+          </div>
+          <div class="option" data-val="c" onclick="selectOpt(1,'c')">
+            <div class="opt-letter">c</div>
+            <span>El soporte de procesos fundamentales como la fotosíntesis, formación de suelos y ciclo de nutrientes.</span>
+          </div>
+          <div class="option" data-val="d" onclick="selectOpt(1,'d')">
+            <div class="opt-letter">d</div>
+            <span>Los valores espirituales, culturales, recreativos y estéticos que las personas obtienen de los ecosistemas.</span>
+          </div>
+        </div>
+        <div class="feedback-box" id="fb1"></div>
+        <div class="btn-row">
+          <button class="btn btn-retry" id="retry1" onclick="retryQ(1)">↩ Intentar de nuevo</button>
+          <button class="btn btn-check" id="check1" onclick="checkQ(1)">Verificar ✓</button>
+          <button class="btn btn-next" id="next1" onclick="goNext(2)">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- === PREGUNTA 2 === -->
+    <div class="q-card" id="q2" style="display:none">
+      <div class="q-card-header">
+        <div class="q-num">2</div>
+        <div class="q-type-badge">⚖️ Verdadero / Falso</div>
+      </div>
+      <div class="q-title">La gobernanza de los recursos naturales se refiere únicamente a decisiones de tipo económico, sin contemplar dimensiones sociales, ambientales ni institucionales.</div>
+      <div class="q-body">
+        <div class="tf-row" id="opts2">
+          <button class="tf-btn" id="tf2-true" onclick="selectTF(2,'true')">✔️ Verdadero</button>
+          <button class="tf-btn" id="tf2-false" onclick="selectTF(2,'false')">✖️ Falso</button>
+        </div>
+        <div class="feedback-box" id="fb2"></div>
+        <div class="btn-row">
+          <button class="btn btn-retry" id="retry2" onclick="retryQ(2)">↩ Intentar de nuevo</button>
+          <button class="btn btn-check" id="check2" onclick="checkQ(2)">Verificar ✓</button>
+          <button class="btn btn-next" id="next2" onclick="goNext(3)">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- === PREGUNTA 3 === -->
+    <div class="q-card" id="q3" style="display:none">
+      <div class="q-card-header">
+        <div class="q-num">3</div>
+        <div class="q-type-badge">🔗 Relacionar</div>
+      </div>
+      <div class="q-title">Relacione cada tipo de servicio ecosistémico con su ejemplo correcto arrastrando cada concepto a su casilla:</div>
+      <div class="q-body">
+        <div class="drag-wrap">
+          <!-- Conceptos (draggable) -->
+          <div>
+            <div class="drag-panel-title">📦 Ejemplos (arrastre)</div>
+            <div class="drag-items" id="dragItems">
+              <div class="drag-item" draggable="true" data-id="b" id="di-b"
+                   ondragstart="dragStart(event,'b')" ondragend="dragEnd(event)">
+                🦐 <span>b) El manglar sirve como criadero de camarones y peces, generando alimento y empleo.</span>
+              </div>
+              <div class="drag-item" draggable="true" data-id="a" id="di-a"
+                   ondragstart="dragStart(event,'a')" ondragend="dragEnd(event)">
+                💧 <span>a) El páramo filtra y almacena agua que abastece ciudades y controla inundaciones.</span>
+              </div>
+              <div class="drag-item" draggable="true" data-id="c" id="di-c"
+                   ondragstart="dragStart(event,'c')" ondragend="dragEnd(event)">
+                🌱 <span>c) El suelo produce nutrientes mediante la fotosíntesis y sostiene toda la cadena alimentaria.</span>
+              </div>
+              <div class="drag-item" draggable="true" data-id="d" id="di-d"
+                   ondragstart="dragStart(event,'d')" ondragend="dragEnd(event)">
+                🏞️ <span>d) Un territorio natural construye identidad, sentido de pertenencia y atractivo turístico.</span>
+              </div>
+            </div>
+          </div>
+          <!-- Zonas destino -->
+          <div>
+            <div class="drag-panel-title">🎯 Tipos de servicio</div>
+            <div class="drop-zones">
+              <div class="drop-zone" id="dz-provision" data-correct="b"
+                   ondragover="dragOver(event)" ondrop="drop(event,'provision')" ondragleave="dragLeave(event)">
+                <div class="drop-label">💧 Servicio de provisión</div>
+                <div class="drop-slot" id="slot-provision">Suelte aquí</div>
+              </div>
+              <div class="drop-zone" id="dz-regulacion" data-correct="a"
+                   ondragover="dragOver(event)" ondrop="drop(event,'regulacion')" ondragleave="dragLeave(event)">
+                <div class="drop-label">🌤️ Servicio de regulación</div>
+                <div class="drop-slot" id="slot-regulacion">Suelte aquí</div>
+              </div>
+              <div class="drop-zone" id="dz-soporte" data-correct="c"
+                   ondragover="dragOver(event)" ondrop="drop(event,'soporte')" ondragleave="dragLeave(event)">
+                <div class="drop-label">🌱 Servicio de soporte</div>
+                <div class="drop-slot" id="slot-soporte">Suelte aquí</div>
+              </div>
+              <div class="drop-zone" id="dz-cultural" data-correct="d"
+                   ondragover="dragOver(event)" ondrop="drop(event,'cultural')" ondragleave="dragLeave(event)">
+                <div class="drop-label">🎭 Servicio cultural</div>
+                <div class="drop-slot" id="slot-cultural">Suelte aquí</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="feedback-box" id="fb3"></div>
+        <div class="btn-row">
+          <button class="btn btn-retry" id="retry3" onclick="retryQ(3)">↩ Intentar de nuevo</button>
+          <button class="btn btn-check" id="check3" onclick="checkQ(3)">Verificar ✓</button>
+          <button class="btn btn-next" id="next3" onclick="goNext(4)">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- === PREGUNTA 4 === -->
+    <div class="q-card" id="q4" style="display:none">
+      <div class="q-card-header">
+        <div class="q-num">4</div>
+        <div class="q-type-badge">↕️ Ordenar</div>
+      </div>
+      <div class="q-title">Ordene las siguientes situaciones según el nivel de presión sobre un ecosistema, desde el estado de <strong>menor impacto</strong> hasta el de <strong>mayor degradación</strong>:</div>
+      <div class="q-body">
+        <div class="order-list" id="orderList4">
+          <!-- items rendered by JS -->
+        </div>
+        <div class="feedback-box" id="fb4"></div>
+        <div class="btn-row">
+          <button class="btn btn-retry" id="retry4" onclick="retryQ(4)">↩ Intentar de nuevo</button>
+          <button class="btn btn-check" id="check4" onclick="checkQ(4)">Verificar ✓</button>
+          <button class="btn btn-next" id="next4" onclick="goNext(5)">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- === PREGUNTA 5 === -->
+    <div class="q-card" id="q5" style="display:none">
+      <div class="q-card-header">
+        <div class="q-num">5</div>
+        <div class="q-type-badge">📋 Opción múltiple</div>
+      </div>
+      <div class="q-title">Según el contenido de la semana, el bienestar humano sostenido depende de la combinación de varios factores. ¿Cuál de las siguientes opciones refleja correctamente esa fórmula integradora?</div>
+      <div class="q-body">
+        <div class="options" id="opts5">
+          <div class="option" data-val="a" onclick="selectOpt(5,'a')">
+            <div class="opt-letter">a</div>
+            <span>Recurso natural + tecnología extractiva = bienestar automático.</span>
+          </div>
+          <div class="option" data-val="b" onclick="selectOpt(5,'b')">
+            <div class="opt-letter">b</div>
+            <span>Recurso + Instituciones + Tecnología + Participación + Reinversión = bienestar sostenido.</span>
+          </div>
+          <div class="option" data-val="c" onclick="selectOpt(5,'c')">
+            <div class="opt-letter">c</div>
+            <span>Abundancia de recursos no renovables + exportación = desarrollo garantizado.</span>
+          </div>
+          <div class="option" data-val="d" onclick="selectOpt(5,'d')">
+            <div class="opt-letter">d</div>
+            <span>Monitoreo ambiental + conservación total sin uso = bienestar comunitario.</span>
+          </div>
+        </div>
+        <div class="feedback-box" id="fb5"></div>
+        <div class="btn-row">
+          <button class="btn btn-retry" id="retry5" onclick="retryQ(5)">↩ Intentar de nuevo</button>
+          <button class="btn btn-check" id="check5" onclick="checkQ(5)">Verificar ✓</button>
+          <button class="btn btn-next" id="next5" onclick="showFinal()">Ver resultado final →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- === FINAL SCREEN === -->
+    <div class="final-screen" id="finalScreen">
+      <div class="final-trophy">🏆</div>
+      <div class="final-title">¡Felicidades, ha completado el quiz!</div>
+      <div class="final-score" id="finalScore">0 / 5</div>
+      <p class="final-msg">
+        Este repaso fortalece la comprensión de cómo la naturaleza sostiene el bienestar humano: desde los <strong>servicios ecosistémicos</strong> que proveen agua, alimentos y estabilidad climática, hasta las <strong>reglas de gobernanza</strong> que determinan si un recurso genera desarrollo o conflicto, y las <strong>herramientas de monitoreo</strong> que permiten actuar a tiempo. Estos conceptos son fundamentales para gestionar los recursos naturales con responsabilidad y visión de largo plazo.
+      </p>
+      <button class="btn-restart" onclick="restartQuiz()">🔄 Reiniciar quiz</button>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- FOOTER -->
+  <div class="footer">🌿 Recurso educativo interactivo &nbsp;|&nbsp; Ecosistemas, Gobernanza y Monitoreo</div>
+
+</div><!-- /app -->
+
+<script>
+/* =========================================================
+   STATE
+   ========================================================= */
+let state = {
+  current: 1,
+  scores: { correct: 0, wrong: 0 },
+  answers: {},
+  checked: {},
+  dragData: null,
+  dropMap: {}, // zone -> item_id
+  orderItems: [],
+  orderDragIdx: null,
+};
+
+const CORRECT = {
+  1: 'b',
+  2: 'false',
+  // q3: validated by drop map
+  4: ['b','c','a'],
+  5: 'b',
+};
+
+const FB = {
+  1: {
+    ok: '¡Excelente! Los servicios de provisión son los beneficios tangibles y directos que obtenemos de los ecosistemas: agua potable del páramo, alimentos del suelo fértil, madera del bosque. Son la expresión más visible de lo que la naturaleza nos entrega para sostener la vida diaria.',
+    bad: '¡Oh no! Vamos a intentarlo de nuevo.'
+  },
+  2: {
+    ok: '¡Excelente! La gobernanza integra dimensiones económicas, sociales, ambientales e institucionales. Incluye el conjunto de reglas, acuerdos y ejercicio de autoridad pública mediante políticas e instituciones. Sin estas dimensiones integradas, el recurso puede generar renta sin producir bienestar sostenido, lo que se conoce como la "doble cara" de los recursos naturales.',
+    bad: '¡Oh no! Vamos a intentarlo de nuevo.'
+  },
+  3: {
+    ok: '¡Excelente! Los cuatro tipos de servicios ecosistémicos responden a preguntas clave: ¿qué recibo? (provisión), ¿qué me protege? (regulación), ¿qué hace posible todo? (soporte) y ¿qué me conecta? (cultural). Reconocer estos servicios es el primer paso para gestionar los ecosistemas con responsabilidad.',
+    bad: '¡Oh no! Vamos a intentarlo de nuevo.'
+  },
+  4: {
+    ok: '¡Excelente! La capacidad de carga ecológica representa el nivel máximo de uso que un ecosistema puede soportar indefinidamente sin degradarse. Identificar estas tres zonas —equilibrio, presión y sobrecarga— es esencial para actuar antes de que el daño sea irreversible. Si no se mide, se llega tarde, y el costo lo paga la gente con pérdidas en salud, agua y bienestar.',
+    bad: '¡Oh no! Vamos a intentarlo de nuevo.'
+  },
+  5: {
+    ok: '¡Excelente! El bienestar no surge de forma automática por tener recursos naturales. Requiere instituciones con reglas claras, tecnología que permita medir y reducir impactos, participación ciudadana para una vigilancia legítima y reinversión que convierta la renta natural en capital humano, infraestructura e innovación. Esta "caja de herramientas" es la clave para transformar riqueza natural en bienestar real y duradero.',
+    bad: '¡Oh no! Vamos a intentarlo de nuevo.'
+  },
+};
+
+/* =========================================================
+   Q4 ORDER DATA
+   ========================================================= */
+const ORDER4_ITEMS = [
+  { id:'a', text:'El ecosistema está en sobrecarga: hay pérdida de biodiversidad, degradación de suelos y alteración de procesos naturales.' },
+  { id:'b', text:'El ecosistema está en equilibrio: el uso humano es bajo y la naturaleza se recupera sin dificultad.' },
+  { id:'c', text:'El ecosistema está cerca de su límite: hay señales de presión alta, mayor turbiedad en el agua y quejas por escasez.' },
+];
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildOrderList() {
+  state.orderItems = shuffleArray(ORDER4_ITEMS);
+  renderOrderList();
+}
+
+function renderOrderList() {
+  const list = document.getElementById('orderList4');
+  list.innerHTML = '';
+  state.orderItems.forEach((item, idx) => {
+    const el = document.createElement('div');
+    el.className = 'order-item';
+    el.draggable = true;
+    el.dataset.idx = idx;
+    el.innerHTML = `<div class="order-handle">⠿</div><div class="order-rank">${idx+1}</div><span>${item.text}</span>`;
+    el.addEventListener('dragstart', e => orderDragStart(e, idx));
+    el.addEventListener('dragover',  e => { e.preventDefault(); e.currentTarget.style.opacity='.6'; });
+    el.addEventListener('dragleave', e => { e.currentTarget.style.opacity='1'; });
+    el.addEventListener('drop',      e => orderDrop(e, idx));
+    el.addEventListener('dragend',   e => { e.currentTarget.style.opacity='1'; });
+    list.appendChild(el);
+  });
+}
+
+function orderDragStart(e, idx) {
+  state.orderDragIdx = idx;
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+
+function orderDrop(e, targetIdx) {
+  e.preventDefault();
+  if (state.orderDragIdx === null) return;
+  const from = state.orderDragIdx;
+  if (from === targetIdx) return;
+  const items = [...state.orderItems];
+  const moved = items.splice(from, 1)[0];
+  items.splice(targetIdx, 0, moved);
+  state.orderItems = items;
+  state.orderDragIdx = null;
+  renderOrderList();
+}
+
+/* =========================================================
+   MCQ
+   ========================================================= */
+function selectOpt(qNum, val) {
+  if (state.checked[qNum]) return;
+  state.answers[qNum] = val;
+  document.querySelectorAll(`#opts${qNum} .option`).forEach(o => {
+    o.classList.remove('selected');
+    if (o.dataset.val === val) o.classList.add('selected');
+  });
+}
+
+/* =========================================================
+   TRUE / FALSE
+   ========================================================= */
+function selectTF(qNum, val) {
+  if (state.checked[qNum]) return;
+  state.answers[qNum] = val;
+  document.getElementById('tf2-true').classList.remove('selected');
+  document.getElementById('tf2-false').classList.remove('selected');
+  document.getElementById(`tf2-${val}`).classList.add('selected');
+}
+
+/* =========================================================
+   DRAG & DROP (Q3)
+   ========================================================= */
+function dragStart(e, id) {
+  state.dragData = id;
+  setTimeout(() => document.getElementById(`di-${id}`).classList.add('dragging'), 0);
+}
+function dragEnd(e) {
+  document.querySelectorAll('.drag-item').forEach(el => el.classList.remove('dragging'));
+}
+function dragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('over');
+}
+function dragLeave(e) {
+  e.currentTarget.classList.remove('over');
+}
+function drop(e, zone) {
+  e.preventDefault();
+  if (state.checked[3]) return;
+  e.currentTarget.classList.remove('over');
+  const id = state.dragData;
+  if (!id) return;
+
+  // Remove from previous zone if already placed
+  Object.keys(state.dropMap).forEach(z => {
+    if (state.dropMap[z] === id) {
+      delete state.dropMap[z];
+      const slot = document.getElementById(`slot-${z}`);
+      if (slot) { slot.innerHTML = 'Suelte aquí'; slot.style.fontStyle='italic'; slot.style.opacity='.5'; }
+      const old = document.getElementById(`di-${id}`);
+      if (old) old.classList.remove('used');
+    }
+  });
+
+  state.dropMap[zone] = id;
+  const slot = document.getElementById(`slot-${zone}`);
+  const labels = { a:'💧 Ejemplo a', b:'🦐 Ejemplo b', c:'🌱 Ejemplo c', d:'🏞️ Ejemplo d' };
+  slot.innerHTML = `<div class="dropped-chip">${labels[id]}</div>`;
+  slot.style.fontStyle = 'normal'; slot.style.opacity = '1';
+  document.getElementById(`di-${id}`).classList.add('used');
+  state.dragData = null;
+}
+
+/* =========================================================
+   CHECK ANSWERS
+   ========================================================= */
+function checkQ(qNum) {
+  let correct = false;
+
+  if (qNum === 1 || qNum === 5) {
+    const ans = state.answers[qNum];
+    if (!ans) { shakeMissing(qNum); return; }
+    correct = ans === CORRECT[qNum];
+    document.querySelectorAll(`#opts${qNum} .option`).forEach(o => {
+      o.classList.add('locked');
+      if (o.dataset.val === CORRECT[qNum]) o.classList.add('correct');
+      else if (o.dataset.val === ans && !correct) o.classList.add('wrong');
+    });
+  }
+
+  if (qNum === 2) {
+    const ans = state.answers[2];
+    if (!ans) { shakeMissing(2); return; }
+    correct = ans === 'false';
+    ['true','false'].forEach(v => {
+      const btn = document.getElementById(`tf2-${v}`);
+      btn.classList.add('locked');
+      if (v === 'false') btn.classList.add('correct');
+      else if (v === ans && !correct) btn.classList.add('wrong');
+    });
+  }
+
+  if (qNum === 3) {
+    const zones = ['provision','regulacion','soporte','cultural'];
+    if (zones.some(z => !state.dropMap[z])) { showToast('Por favor relacione todos los servicios.'); return; }
+    correct = zones.every(z => {
+      const dz = document.getElementById(`dz-${z}`);
+      return state.dropMap[z] === dz.dataset.correct;
+    });
+    zones.forEach(z => {
+      const dz = document.getElementById(`dz-${z}`);
+      const ok = state.dropMap[z] === dz.dataset.correct;
+      dz.classList.add(ok ? 'correct-zone' : 'wrong-zone');
+    });
+    document.querySelectorAll('.drag-item').forEach(el => el.setAttribute('draggable','false'));
+  }
+
+  if (qNum === 4) {
+    const order = state.orderItems.map(i => i.id);
+    correct = JSON.stringify(order) === JSON.stringify(CORRECT[4]);
+    state.orderItems.forEach((item, idx) => {
+      const els = document.querySelectorAll('#orderList4 .order-item');
+      if (els[idx]) {
+        els[idx].classList.add(item.id === CORRECT[4][idx] ? 'correct-item' : 'wrong-item');
+        els[idx].setAttribute('draggable','false');
+      }
+    });
+  }
+
+  state.checked[qNum] = true;
+  if (correct) state.scores.correct++; else state.scores.wrong++;
+
+  updateScoreChips();
+  showFeedback(qNum, correct);
+
+  document.getElementById(`check${qNum}`).style.display = 'none';
+  if (correct) {
+    document.getElementById(`next${qNum}`).style.display = 'flex';
+  } else {
+    document.getElementById(`retry${qNum}`).style.display = 'flex';
+  }
+}
+
+function shakeMissing(qNum) {
+  const card = document.getElementById(`q${qNum}`);
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'shake .4s ease';
+}
+
+function showFeedback(qNum, correct) {
+  const fb = document.getElementById(`fb${qNum}`);
+  fb.className = `feedback-box show ${correct ? 'ok' : 'bad'}`;
+  fb.innerHTML = `<span class="feedback-emoji">${correct ? '🎉' : '😕'}</span><span class="feedback-title">${correct ? '¡Excelente!' : '¡Oh no!'}</span>${correct ? FB[qNum].ok : FB[qNum].bad}`;
+}
+
+function retryQ(qNum) {
+  state.checked[qNum] = false;
+  state.answers[qNum] = null;
+  if (state.scores.wrong > 0) state.scores.wrong--;
+
+  // Reset UI
+  if (qNum === 1 || qNum === 5) {
+    document.querySelectorAll(`#opts${qNum} .option`).forEach(o => {
+      o.className = 'option'; o.onclick = () => selectOpt(qNum, o.dataset.val);
+    });
+  }
+  if (qNum === 2) {
+    ['true','false'].forEach(v => {
+      const btn = document.getElementById(`tf2-${v}`);
+      btn.className = 'tf-btn';
+    });
+  }
+  if (qNum === 3) {
+    state.dropMap = {};
+    ['provision','regulacion','soporte','cultural'].forEach(z => {
+      const dz = document.getElementById(`dz-${z}`);
+      dz.className = 'drop-zone';
+      const slot = document.getElementById(`slot-${z}`);
+      slot.innerHTML = 'Suelte aquí'; slot.style.fontStyle='italic'; slot.style.opacity='.5';
+    });
+    document.querySelectorAll('.drag-item').forEach(el => {
+      el.classList.remove('used','dragging');
+      el.setAttribute('draggable','true');
+    });
+  }
+  if (qNum === 4) {
+    buildOrderList();
+  }
+
+  document.getElementById(`fb${qNum}`).className = 'feedback-box';
+  document.getElementById(`retry${qNum}`).style.display = 'none';
+  document.getElementById(`check${qNum}`).style.display = 'flex';
+  updateScoreChips();
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function goNext(nextNum) {
+  document.getElementById(`q${nextNum - 1}`).style.display = 'none';
+  state.current = nextNum;
+  document.getElementById(`q${nextNum}`).style.display = 'block';
+  if (nextNum === 4) buildOrderList();
+  updateProgress();
+  document.getElementById('contentArea').scrollTop = 0;
+}
+
+function showFinal() {
+  document.getElementById('q5').style.display = 'none';
+  document.getElementById('finalScreen').classList.add('show');
+  document.getElementById('finalScore').textContent = `${state.scores.correct} / 5`;
+  updateProgress(true);
+}
+
+function updateProgress(done = false) {
+  const pct = done ? 100 : ((state.current - 1) / 5) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  const label = done ? 'Quiz completado 🎉' : `Pregunta ${state.current} de 5`;
+  document.getElementById('progressLabel').textContent = label;
+  document.getElementById('progressPct').textContent = Math.round(pct) + '%';
+  document.getElementById('qCounter').textContent = done ? '✅ Completo' : `Pregunta ${state.current} / 5`;
+}
+
+function updateScoreChips() {
+  document.getElementById('scoreCorrect').textContent = state.scores.correct;
+  document.getElementById('scoreWrong').textContent   = state.scores.wrong;
+}
+
+function restartQuiz() {
+  state = {
+    current:1, scores:{correct:0,wrong:0},
+    answers:{}, checked:{}, dragData:null, dropMap:{}, orderItems:[], orderDragIdx:null
+  };
+  // Show q1, hide rest
+  for (let i=1;i<=5;i++) {
+    const el = document.getElementById(`q${i}`);
+    if (el) { el.style.display = i===1?'block':'none'; el.style.animation=''; }
+  }
+  document.getElementById('finalScreen').classList.remove('show');
+  // Reset all feedback/buttons
+  for (let i=1;i<=5;i++) {
+    const fb = document.getElementById(`fb${i}`);
+    if (fb) fb.className='feedback-box';
+    const ch = document.getElementById(`check${i}`);
+    if (ch) ch.style.display='flex';
+    const nx = document.getElementById(`next${i}`);
+    if (nx) nx.style.display='none';
+    const rt = document.getElementById(`retry${i}`);
+    if (rt) rt.style.display='none';
+  }
+  // Reset q1 options
+  document.querySelectorAll('#opts1 .option').forEach(o => {
+    o.className='option'; o.onclick=()=>selectOpt(1,o.dataset.val);
+  });
+  // Reset q2 TF
+  ['true','false'].forEach(v=>{ document.getElementById(`tf2-${v}`).className='tf-btn'; });
+  // Reset q3
+  state.dropMap={};
+  ['provision','regulacion','soporte','cultural'].forEach(z=>{
+    const dz=document.getElementById(`dz-${z}`);
+    if(dz){dz.className='drop-zone';}
+    const slot=document.getElementById(`slot-${z}`);
+    if(slot){slot.innerHTML='Suelte aquí';slot.style.fontStyle='italic';slot.style.opacity='.5';}
+  });
+  document.querySelectorAll('.drag-item').forEach(el=>{
+    el.className='drag-item'; el.setAttribute('draggable','true');
+  });
+  // Reset q5 options
+  document.querySelectorAll('#opts5 .option').forEach(o=>{
+    o.className='option'; o.onclick=()=>selectOpt(5,o.dataset.val);
+  });
+  updateScoreChips();
+  updateProgress();
+  document.getElementById('contentArea').scrollTop=0;
+}
+
+/* Toast helper */
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id='toast';
+    t.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;z-index:9999;transition:opacity .3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.opacity='1';
+  setTimeout(()=>{ t.style.opacity='0'; },2200);
+}
+
+/* CSS for shake animation */
+const style = document.createElement('style');
+style.textContent = '@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}';
+document.head.appendChild(style);
+
+/* Init */
+updateProgress();
+</script>
+</body>
+</html>

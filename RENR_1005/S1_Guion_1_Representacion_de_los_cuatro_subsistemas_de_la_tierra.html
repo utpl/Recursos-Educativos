@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Representación de los cuatro subsistemas de la tierra</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f0f7f4;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto; /* <--- AGREGA ESTO para centrar todo el recurso */
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+  /* ===== HEADER ===== */
+  .header {
+  background: linear-gradient(135deg, #1a5c3a 0%, #2e8b57 50%, #3aaa6e 100%);
+  color: white;
+  text-align: center;
+  padding: 14px 20px 10px;
+  position: relative;
+  box-shadow: 0 4px 18px rgba(30,90,55,0.25);
+  margin-bottom: 20px; /* <--- AGREGA ESTO para dar aire entre header e imagen */
+  z-index: 20; /* Asegura que el sombreado quede sobre la imagen */
+}
+  .header h1 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .header .subtitle {
+    font-size: 12px;
+    opacity: 0.88;
+    margin-top: 4px;
+    font-style: italic;
+  }
+  .header .instruction {
+    margin-top: 8px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 20px;
+    padding: 5px 14px;
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ===== IMAGE CONTAINER ===== */
+  .image-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #e8f5ee;
+    overflow: hidden;
+  }
+  .image-wrapper img.bg-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 520px;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  /* ===== HOTSPOT BUTTONS ===== */
+  .hotspots {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  .btn-hotspot {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(240,255,248,0.95));
+    border: 2.5px solid #2e8b57;
+    border-radius: 30px;
+    padding: 7px 15px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1a5c3a;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 16px rgba(46,139,87,0.35), 0 0 0 3px rgba(46,139,87,0.12);
+    transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    text-shadow: none;
+    transform-origin: center center;
+    animation: pulse-glow 2.8s ease-in-out infinite;
+  }
+  .btn-hotspot:nth-child(2) { animation-delay: 0.7s; }
+  .btn-hotspot:nth-child(3) { animation-delay: 1.4s; }
+  .btn-hotspot:nth-child(4) { animation-delay: 2.1s; }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 4px 16px rgba(46,139,87,0.35), 0 0 0 3px rgba(46,139,87,0.12); }
+    50%       { box-shadow: 0 4px 22px rgba(46,139,87,0.55), 0 0 0 6px rgba(46,139,87,0.18); }
+  }
+
+  .btn-hotspot:hover {
+    transform: scale(1.12) translateY(-2px);
+    background: linear-gradient(135deg, #2e8b57, #3aaa6e);
+    color: white;
+    border-color: #1a5c3a;
+    box-shadow: 0 8px 28px rgba(46,139,87,0.5);
+    animation: none;
+  }
+  .btn-hotspot .icon { font-size: 16px; line-height: 1; }
+  .btn-hotspot .dot {
+    width: 8px; height: 8px;
+    background: #ff6b35;
+    border-radius: 50%;
+    display: inline-block;
+    animation: blink 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+
+  /* === POSICIONES DE BOTONES (% relativos a imagen) === */
+  /* Geósfera → zona inferior/central (montañas/suelo) */
+  #btn-geosfera   { top: 29%; left: 30%; transform: translateX(-50%); }
+  /* Hidrósfera → zona central/derecha (agua) */
+  #btn-hidrosfera { top: 50%; right: 18%; }
+  /* Atmósfera → zona superior (cielo/nubes) */
+  #btn-atmosfera  { 
+  top: 6%; /* <--- CAMBIA DE 5% A 10% para que no choque con el borde superior */
+  left: 50%; 
+  transform: translateX(-50%); 
+}
+  /* Biósfera → zona izquierda (vegetación/vida) */
+  #btn-biosfera   { bottom: 34%; right: 42%; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 11.5px;
+    color: #5a7a6a;
+    background: #e8f5ee;
+    border-top: 1px solid #cde8d8;
+  }
+
+  /* ===== MODAL OVERLAY ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 40, 25, 0.55);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal-box {
+    background: white;
+    border-radius: 20px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.28), 0 0 0 1px rgba(46,139,87,0.15);
+    overflow: hidden;
+    animation: slideUp 0.28s cubic-bezier(0.34,1.3,0.64,1);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px 16px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .modal-header .modal-icon {
+    font-size: 36px;
+    line-height: 1;
+  }
+  .modal-header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.5px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: rgba(255,255,255,0.25);
+    border: none;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.18s;
+    font-weight: bold;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.45); }
+
+  .modal-body {
+    padding: 20px 24px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .modal-body p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #2a4a38;
+  }
+  .modal-body .modal-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .modal-divider {
+    height: 3px;
+    border-radius: 2px;
+    margin: 14px 0;
+  }
+  .modal-fact {
+    background: #f0faf5;
+    border-left: 4px solid #2e8b57;
+    border-radius: 0 10px 10px 0;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #1a5c3a;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .modal-fact strong { font-style: normal; }
+
+  /* ===== COLORES POR SUBSISTEMA ===== */
+  /* Geósfera */
+  .geo .modal-header  { background: linear-gradient(135deg, #8B4513, #c1763a); }
+  .geo .modal-tag     { background: #f5e6d6; color: #8B4513; }
+  .geo .modal-divider { background: linear-gradient(90deg, #8B4513, transparent); }
+  .geo .modal-fact    { border-color: #8B4513; color: #6b3410; background: #fdf5ee; }
+  #btn-geosfera       { border-color: #c1763a; color: #6b3410; }
+  #btn-geosfera:hover { background: linear-gradient(135deg,#8B4513,#c1763a); color:white; border-color:#8B4513; }
+  #btn-geosfera .dot  { background: #c1763a; }
+  @keyframes pulse-geo {
+    0%,100% { box-shadow: 0 4px 16px rgba(139,69,19,0.35), 0 0 0 3px rgba(139,69,19,0.12); }
+    50%     { box-shadow: 0 4px 22px rgba(139,69,19,0.55), 0 0 0 6px rgba(139,69,19,0.18); }
+  }
+  #btn-geosfera { animation-name: pulse-geo; border-color: #c1763a; }
+
+  /* Hidrósfera */
+  .hidro .modal-header  { background: linear-gradient(135deg, #005f8a, #0099cc); }
+  .hidro .modal-tag     { background: #e0f4fc; color: #005f8a; }
+  .hidro .modal-divider { background: linear-gradient(90deg, #005f8a, transparent); }
+  .hidro .modal-fact    { border-color: #005f8a; color: #004466; background: #eaf7fd; }
+  #btn-hidrosfera        { border-color: #0099cc; color: #004a6e; }
+  #btn-hidrosfera:hover  { background: linear-gradient(135deg,#005f8a,#0099cc); color:white; border-color:#005f8a; }
+  #btn-hidrosfera .dot   { background: #0099cc; }
+  @keyframes pulse-hidro {
+    0%,100% { box-shadow: 0 4px 16px rgba(0,95,138,0.35), 0 0 0 3px rgba(0,95,138,0.12); }
+    50%     { box-shadow: 0 4px 22px rgba(0,95,138,0.55), 0 0 0 6px rgba(0,95,138,0.18); }
+  }
+  #btn-hidrosfera { animation-name: pulse-hidro; }
+
+  /* Atmósfera */
+  .atmo .modal-header  { background: linear-gradient(135deg, #3a6fa8, #6aa3d5); }
+  .atmo .modal-tag     { background: #e8f0fa; color: #3a6fa8; }
+  .atmo .modal-divider { background: linear-gradient(90deg, #3a6fa8, transparent); }
+  .atmo .modal-fact    { border-color: #3a6fa8; color: #2a4f80; background: #eef4fb; }
+  #btn-atmosfera        { border-color: #6aa3d5; color: #2a4f80; }
+  #btn-atmosfera:hover  { background: linear-gradient(135deg,#3a6fa8,#6aa3d5); color:white; border-color:#3a6fa8; }
+  #btn-atmosfera .dot   { background: #6aa3d5; }
+  @keyframes pulse-atmo {
+    0%,100% { box-shadow: 0 4px 16px rgba(58,111,168,0.35), 0 0 0 3px rgba(58,111,168,0.12); }
+    50%     { box-shadow: 0 4px 22px rgba(58,111,168,0.55), 0 0 0 6px rgba(58,111,168,0.18); }
+  }
+  #btn-atmosfera { animation-name: pulse-atmo; }
+
+  /* Biósfera */
+  .bio .modal-header  { background: linear-gradient(135deg, #2e6b1a, #52b830); }
+  .bio .modal-tag     { background: #e6f7df; color: #2e6b1a; }
+  .bio .modal-divider { background: linear-gradient(90deg, #2e6b1a, transparent); }
+  .bio .modal-fact    { border-color: #2e6b1a; color: #1c4410; background: #edfae4; }
+  #btn-biosfera        { border-color: #52b830; color: #1c4410; }
+  #btn-biosfera:hover  { background: linear-gradient(135deg,#2e6b1a,#52b830); color:white; border-color:#2e6b1a; }
+  #btn-biosfera .dot   { background: #52b830; }
+  @keyframes pulse-bio {
+    0%,100% { box-shadow: 0 4px 16px rgba(46,107,26,0.35), 0 0 0 3px rgba(46,107,26,0.12); }
+    50%     { box-shadow: 0 4px 22px rgba(46,107,26,0.55), 0 0 0 6px rgba(46,107,26,0.18); }
+  }
+  #btn-biosfera { animation-name: pulse-bio; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 13px; }
+    .header .instruction { font-size: 11px; }
+
+    .btn-hotspot { font-size: 11px; padding: 5px 10px; gap: 4px; }
+    .btn-hotspot .icon { font-size: 13px; }
+
+    /* Reposicionar botones en móvil si es necesario */
+    #btn-geosfera   { bottom: 6%; left: 35%; }
+    #btn-hidrosfera { top: 50%; right: 2%; }
+    #btn-atmosfera  { top: 3%; left: 50%; }
+    #btn-biosfera   { top: 44%; left: 1%; }
+
+    .modal-box { border-radius: 14px; margin: 10px; }
+    .modal-header { padding: 16px 18px 12px; }
+    .modal-header h2 { font-size: 17px; }
+    .modal-body { padding: 16px 18px 20px; }
+    .modal-body p { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>🌍 Representación de los cuatro subsistemas de la tierra</h1>
+  <div class="subtitle">Ciencias de la Tierra</div>
+  <div class="instruction">👆 Explore el contenido haciendo clic en los botones</div>
+</div>
+
+<!-- IMAGEN DE FONDO CON HOTSPOTS -->
+<div class="image-wrapper">
+  <!-- Imagen principal (Imagen 1 / image4.png del docx) -->
+  <img class="bg-image" src="media/Imagen 1.png" alt="Representación de los cuatro subsistemas de la tierra" />
+
+  <!-- HOTSPOT BUTTONS -->
+  <div class="hotspots">
+
+    <!-- Atmósfera (parte superior – cielo/nubes) -->
+    <button class="btn-hotspot" id="btn-atmosfera" onclick="openModal('atmosfera')">
+      <span class="icon">🌬️</span>
+      Atmósfera
+      <span class="dot"></span>
+    </button>
+
+    <!-- Hidrósfera (parte derecha – agua/océano) -->
+    <button class="btn-hotspot" id="btn-hidrosfera" onclick="openModal('hidrosfera')">
+      <span class="icon">💧</span>
+      Hidrósfera
+      <span class="dot"></span>
+    </button>
+
+    <!-- Biósfera (parte izquierda – vegetación/vida) -->
+    <button class="btn-hotspot" id="btn-biosfera" onclick="openModal('biosfera')">
+      <span class="icon">🌿</span>
+      Biósfera
+      <span class="dot"></span>
+    </button>
+
+    <!-- Geósfera (parte inferior – suelo/montañas) -->
+    <button class="btn-hotspot" id="btn-geosfera" onclick="openModal('geosfera')">
+      <span class="icon">🪨</span>
+      Geósfera
+      <span class="dot"></span>
+    </button>
+
+  </div>
+</div>
+
+<!-- FOOTER REFERENCIA -->
+<div class="footer">
+  🌍 Representación de los cuatro subsistemas de la tierra
+</div>
+
+
+<!-- ===== MODALES ===== -->
+
+<!-- MODAL GEÓSFERA -->
+<div class="modal-overlay" id="modal-geosfera" onclick="closeOnOverlay(event, 'geosfera')">
+  <div class="modal-box geo">
+    <div class="modal-header">
+      <span class="modal-icon">🪨</span>
+      <h2>Geósfera</h2>
+      <button class="modal-close" onclick="closeModal('geosfera')">✕</button>
+    </div>
+    <div class="modal-body">
+      <span class="modal-tag">Subsistema Sólido</span>
+      <div class="modal-divider"></div>
+      <p>Conformada por las rocas, montañas, suelos, volcanes. Es la base física sobre la que todo se sostiene.</p>
+      <div class="modal-fact">
+        <strong>🗻 Elementos:</strong> rocas · montañas · suelos · volcanes
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HIDRÓSFERA -->
+<div class="modal-overlay" id="modal-hidrosfera" onclick="closeOnOverlay(event, 'hidrosfera')">
+  <div class="modal-box hidro">
+    <div class="modal-header">
+      <span class="modal-icon">💧</span>
+      <h2>Hidrósfera</h2>
+      <button class="modal-close" onclick="closeModal('hidrosfera')">✕</button>
+    </div>
+    <div class="modal-body">
+      <span class="modal-tag">Subsistema Acuático</span>
+      <div class="modal-divider"></div>
+      <p>Constituye todo lo que es el agua en su estado líquido y gaseoso (ríos, lagos, océanos, nubes y el agua subterránea). Es el vehículo que mueve materia y energía en el planeta.</p>
+      <div class="modal-fact">
+        <strong>🌊 Elementos:</strong> ríos · lagos · océanos · nubes · agua subterránea
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ATMÓSFERA -->
+<div class="modal-overlay" id="modal-atmosfera" onclick="closeOnOverlay(event, 'atmosfera')">
+  <div class="modal-box atmo">
+    <div class="modal-header">
+      <span class="modal-icon">🌬️</span>
+      <h2>Atmósfera</h2>
+      <button class="modal-close" onclick="closeModal('atmosfera')">✕</button>
+    </div>
+    <div class="modal-body">
+      <span class="modal-tag">Subsistema Gaseoso</span>
+      <div class="modal-divider"></div>
+      <p>Conformada por el aire que envuelve la Tierra (mezcla de gases). Es el mensajero del clima: reparte calor, humedad y partículas.</p>
+      <div class="modal-fact">
+        <strong>☁️ Función:</strong> reparte calor · humedad · partículas — mensajero del clima
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BIÓSFERA -->
+<div class="modal-overlay" id="modal-biosfera" onclick="closeOnOverlay(event, 'biosfera')">
+  <div class="modal-box bio">
+    <div class="modal-header">
+      <span class="modal-icon">🌿</span>
+      <h2>Biósfera</h2>
+      <button class="modal-close" onclick="closeModal('biosfera')">✕</button>
+    </div>
+    <div class="modal-body">
+      <span class="modal-tag">Subsistema Vivo</span>
+      <div class="modal-divider"></div>
+      <p>Hace referencia la vida misma establecida en los organismos, por ejemplo; las plantas, animales, microbios, personas etc. Es el motor ecológico que transforma energía y materiales.</p>
+      <div class="modal-fact">
+        <strong>🌱 Elementos:</strong> plantas · animales · microbios · personas
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // ===== MODAL LOGIC =====
+  function openModal(id) {
+    const overlay = document.getElementById('modal-' + id);
+    if (overlay) {
+      // Close any open modal first
+      document.querySelectorAll('.modal-overlay.active').forEach(el => {
+        el.classList.remove('active');
+      });
+      overlay.classList.add('active');
+      // Trap focus on close button
+      setTimeout(() => {
+        const closeBtn = overlay.querySelector('.modal-close');
+        if (closeBtn) closeBtn.focus();
+      }, 80);
+    }
+  }
+
+  function closeModal(id) {
+    const overlay = document.getElementById('modal-' + id);
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  function closeOnOverlay(event, id) {
+    if (event.target === event.currentTarget) closeModal(id);
+  }
+
+  // Close with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.active').forEach(el => {
+        el.classList.remove('active');
+      });
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clasificación de los Recursos Naturales por Tipo</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #f4f1ec;
+  --paper:    #ffffff;
+  --ink:      #1c1c2e;
+  --muted:    #787270;
+  --border:   rgba(0,0,0,0.09);
+
+  /* per-type accent colors */
+  --en-dark:  #7a3c10;
+  --en-mid:   #c05e1a;
+  --en-light: #f2934a;
+  --en-pale:  #fdf0e4;
+
+  --hi-dark:  #0e5276;
+  --hi-mid:   #1a7daf;
+  --hi-light: #4db3e8;
+  --hi-pale:  #e4f4fc;
+
+  --fo-dark:  #2a5e1e;
+  --fo-mid:   #3d8c2a;
+  --fo-light: #6abf50;
+  --fo-pale:  #e8f6e2;
+
+  --mi-dark:  #4a3510;
+  --mi-mid:   #7a5a1e;
+  --mi-light: #c49a3a;
+  --mi-pale:  #faf3df;
+
+  --pa-dark:  #3a1e6e;
+  --pa-mid:   #6240a8;
+  --pa-light: #9b76e0;
+  --pa-pale:  #f0ebfc;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  max-width: 800px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink);
+}
+
+/* ==============================
+   HEADER
+============================== */
+.header {
+  background: var(--ink);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* decorative horizontal color bands */
+.header-bands {
+  height: 4px;
+  display: flex;
+  width: 100%;
+}
+.header-bands span {
+  flex: 1;
+  display: block;
+}
+.header-bands span:nth-child(1) { background: var(--en-mid); }
+.header-bands span:nth-child(2) { background: var(--hi-mid); }
+.header-bands span:nth-child(3) { background: var(--fo-mid); }
+.header-bands span:nth-child(4) { background: var(--mi-mid); }
+.header-bands span:nth-child(5) { background: var(--pa-mid); }
+
+.header-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 22px 18px;
+}
+
+.header-emblem {
+  width: 54px; height: 54px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #3d8c2a, #1a7daf);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+.header-text {}
+.header-kicker {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+  font-family: 'Courier New', monospace;
+  margin-bottom: 4px;
+}
+.header-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+}
+.header-desc {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 5px;
+  line-height: 1.5;
+  max-width: 580px;
+}
+
+/* ==============================
+   HINT + REFS BAR
+============================== */
+.topbar {
+  background: linear-gradient(90deg, #e8f2ec, var(--bg));
+  border-bottom: 1px solid rgba(61,140,42,0.18);
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.topbar-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-style: italic;
+  display: flex; align-items: center; gap: 7px;
+}
+.btn-refs {
+  background: var(--ink);
+  color: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+  transition: background 0.18s, transform 0.15s;
+  flex-shrink: 0;
+}
+.btn-refs:hover { background: #3a3a5a; transform: scale(1.04); }
+
+/* ==============================
+   TYPE TABS — horizontal pill nav
+============================== */
+.tabs-wrap {
+  padding: 14px 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs-wrap::-webkit-scrollbar { display: none; }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  min-width: max-content;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: 2px solid transparent;
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.22s cubic-bezier(0.34,1.3,0.64,1);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  white-space: nowrap;
+  user-select: none;
+}
+.tab .tab-letter {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+  background: rgba(0,0,0,0.08);
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.22s;
+}
+.tab:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+
+/* active states per type */
+.tab.active[data-type="en"] { background: var(--en-pale); border-color: var(--en-mid); color: var(--en-dark); }
+.tab.active[data-type="en"] .tab-letter { background: var(--en-mid); color: white; }
+.tab.active[data-type="hi"] { background: var(--hi-pale); border-color: var(--hi-mid); color: var(--hi-dark); }
+.tab.active[data-type="hi"] .tab-letter { background: var(--hi-mid); color: white; }
+.tab.active[data-type="fo"] { background: var(--fo-pale); border-color: var(--fo-mid); color: var(--fo-dark); }
+.tab.active[data-type="fo"] .tab-letter { background: var(--fo-mid); color: white; }
+.tab.active[data-type="mi"] { background: var(--mi-pale); border-color: var(--mi-mid); color: var(--mi-dark); }
+.tab.active[data-type="mi"] .tab-letter { background: var(--mi-mid); color: white; }
+.tab.active[data-type="pa"] { background: var(--pa-pale); border-color: var(--pa-mid); color: var(--pa-dark); }
+.tab.active[data-type="pa"] .tab-letter { background: var(--pa-mid); color: white; }
+
+/* ==============================
+   CONTENT PANELS
+============================== */
+.panels { padding: 14px 16px 16px; }
+
+.panel { display: none; animation: fadeSlide 0.3s ease; }
+.panel.active { display: block; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* panel header strip */
+.panel-header {
+  border-radius: 16px 16px 0 0;
+  padding: 18px 22px 16px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.ph-icon { font-size: 40px; line-height: 1; }
+.ph-text {}
+.ph-kicker {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  opacity: 0.72;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 3px;
+}
+.ph-title { font-size: 19px; font-weight: 800; line-height: 1.2; }
+
+/* color per type */
+[data-panel="en"] .panel-header { background: linear-gradient(135deg, var(--en-dark), var(--en-light)); }
+[data-panel="hi"] .panel-header { background: linear-gradient(135deg, var(--hi-dark), var(--hi-light)); }
+[data-panel="fo"] .panel-header { background: linear-gradient(135deg, var(--fo-dark), var(--fo-light)); }
+[data-panel="mi"] .panel-header { background: linear-gradient(135deg, var(--mi-dark), var(--mi-light)); }
+[data-panel="pa"] .panel-header { background: linear-gradient(135deg, var(--pa-dark), var(--pa-light)); }
+
+/* panel body */
+.panel-body {
+  background: var(--paper);
+  border-radius: 0 0 16px 16px;
+  padding: 0 22px 22px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+}
+
+/* section blocks inside panel */
+.pblock { padding-top: 20px; }
+.pblock-label {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+[data-panel="en"] .pblock-label { color: var(--en-mid); }
+[data-panel="hi"] .pblock-label { color: var(--hi-mid); }
+[data-panel="fo"] .pblock-label { color: var(--fo-mid); }
+[data-panel="mi"] .pblock-label { color: var(--mi-mid); }
+[data-panel="pa"] .pblock-label { color: var(--pa-mid); }
+
+.pblock-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.pblock p {
+  font-size: 13.5px;
+  line-height: 1.78;
+  color: #2a2520;
+}
+.pblock p strong { font-weight: 700; }
+.pblock p a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* academic highlight box */
+.academic-box {
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 4px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #2a2520;
+}
+.academic-box .ab-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+[data-panel="en"] .academic-box { background: var(--en-pale); border-left: 4px solid var(--en-mid); }
+[data-panel="hi"] .academic-box { background: var(--hi-pale); border-left: 4px solid var(--hi-mid); }
+[data-panel="fo"] .academic-box { background: var(--fo-pale); border-left: 4px solid var(--fo-mid); }
+[data-panel="mi"] .academic-box { background: var(--mi-pale); border-left: 4px solid var(--mi-mid); }
+[data-panel="pa"] .academic-box { background: var(--pa-pale); border-left: 4px solid var(--pa-mid); }
+
+/* image figure */
+.fig-wrap {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #fafafa;
+}
+.fig-caption {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 8px 14px;
+  background: #f4f4f4;
+  border-bottom: 1px solid var(--border);
+}
+.fig-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 260px;
+  object-fit: contain;
+  object-position: center;
+  padding: 10px;
+}
+.fig-note {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 6px 14px 10px;
+  font-style: italic;
+}
+
+/* link chip */
+.link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ink);
+  color: rgba(255,255,255,0.88);
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 10px;
+  transition: background 0.18s, transform 0.15s;
+}
+.link-chip:hover { background: #3a3a5a; transform: translateY(-1px); }
+
+/* question callout */
+.question-box {
+  background: #f0f0f8;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.68;
+  color: #2a2a4a;
+  font-style: italic;
+  margin-top: 10px;
+  border-left: 4px solid #7a7aaa;
+}
+
+/* ==============================
+   FOOTER
+============================== */
+.footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.35);
+  font-size: 10.5px;
+  padding: 10px 22px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+/* ==============================
+   MODAL BASE
+============================== */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(10,10,20,0.65);
+  backdrop-filter: blur(8px);
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.overlay.open { display: flex; }
+
+.mbox {
+  background: var(--paper);
+  border-radius: 20px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 36px 90px rgba(0,0,0,0.32);
+  animation: zoomIn 0.28s cubic-bezier(0.34,1.3,0.64,1);
+}
+@keyframes zoomIn {
+  from { opacity:0; transform:scale(0.86) translateY(28px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.mhead {
+  padding: 20px 22px 18px;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.mhead-icon { font-size: 36px; line-height: 1; }
+.mhead-text {}
+.mhead-kicker {
+  font-size: 10px; letter-spacing: 2.5px;
+  text-transform: uppercase; color: rgba(255,255,255,0.7);
+  font-family: 'Courier New', monospace; margin-bottom: 4px;
+}
+.mhead-title { font-size: 18px; font-weight: 800; color: white; }
+.mclose {
+  position: absolute; top: 14px; right: 16px;
+  background: rgba(255,255,255,0.2);
+  border: none; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 50%;
+  color: white; font-size: 15px; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.18s;
+}
+.mclose:hover { background: rgba(255,255,255,0.38); }
+
+.mbody {
+  overflow-y: auto;
+  flex: 1;
+  padding: 20px 24px 26px;
+}
+
+/* ==============================
+   REFS MODAL specific
+============================== */
+.refs-mhead { background: linear-gradient(135deg, #1c1c2e, #3a3a5a); }
+
+.ref-item {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  background: #fafafa;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: #2a2520;
+  transition: box-shadow 0.18s;
+}
+.ref-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+.ref-item:last-child { margin-bottom: 0; }
+.ref-author {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.ref-detail { color: #444; }
+.ref-detail em { font-style: italic; }
+.ref-link {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #1a7daf;
+  text-decoration: none;
+  word-break: break-all;
+  font-family: 'Courier New', monospace;
+}
+.ref-link:hover { text-decoration: underline; }
+
+/* ==============================
+   RESPONSIVE
+============================== */
+@media (max-width: 600px) {
+  .header-body { padding: 12px 16px 14px; gap: 10px; }
+  .header-emblem { width: 42px; height: 42px; font-size: 22px; }
+  .header-title { font-size: 14px; }
+  .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .panel-header { padding: 14px 16px 12px; gap: 10px; }
+  .ph-title { font-size: 16px; }
+  .panel-body { padding: 0 16px 18px; }
+  .mbox { border-radius: 14px; }
+  .mbody { padding: 16px 18px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-bands">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div class="header-body">
+    <div class="header-emblem">🌍</div>
+    <div class="header-text">
+      
+      <div class="header-title">Clasificación de los recursos naturales por tipo</div>
+      <div class="header-desc">Explore y conozca los principales tipos de recursos naturales: energéticos, hídricos, forestales, minerales y paisajísticos. Cada sección presenta su definición, inventario visual y respaldo académico.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <div class="topbar-hint">👆 Seleccione un tipo de recurso para explorar su contenido</div>
+  <button class="btn-refs" onclick="openRefs()">📚 Referencias</button>
+</div>
+
+<!-- ===== TABS ===== -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab active" data-type="en" onclick="switchTab('en')">
+      <span class="tab-letter">A</span> Energéticos
+    </div>
+    <div class="tab" data-type="hi" onclick="switchTab('hi')">
+      <span class="tab-letter">B</span> Hídricos
+    </div>
+    <div class="tab" data-type="fo" onclick="switchTab('fo')">
+      <span class="tab-letter">C</span> Forestales
+    </div>
+    <div class="tab" data-type="mi" onclick="switchTab('mi')">
+      <span class="tab-letter">D</span> Minerales
+    </div>
+    <div class="tab" data-type="pa" onclick="switchTab('pa')">
+      <span class="tab-letter">E</span> Paisajísticos
+    </div>
+  </div>
+</div>
+
+<!-- ===== PANELS ===== -->
+<div class="panels">
+
+  <!-- A. ENERGÉTICOS -->
+  <div class="panel active" data-panel="en">
+    <div class="panel-header">
+      <div class="ph-icon">⚡</div>
+      <div class="ph-text">
+        <div class="ph-kicker">Tipo A · Recursos</div>
+        <div class="ph-title">Recursos Energéticos</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="pblock">
+        <div class="pblock-label">📖 Definición</div>
+        <p>Este tipo de recursos permiten generar energía y sostener la actividad económica de los países (agua, viento, sol, biomasa). En la transición energética, el uso de fuentes limpias incrementa la demanda de minerales críticos, por lo que es fundamental gestionar toda la cadena de valor bajo principios de economía circular (UNECE, 2024).</p>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🖼️ Inventario Visual</div>
+        <p>Pozos petroleros, minas de carbón, parques eólicos, paneles solares. A manera de práctica rápida, explore la plataforma interactiva de atlas mundial del viento; en la siguiente figura se muestra una captura de pantalla de esta herramienta. Busque su provincia/cantón e identifique: ¿hay zonas con viento fuerte? ¿Qué condición territorial lo explica (altura, relieve, corredores)?</p>
+        <div class="fig-wrap">
+          <div class="fig-caption">Vista de la página web del atlas mundial del viento</div>
+          <img src="media/Imagen 5.png" alt="Atlas mundial del viento" loading="lazy">
+          <div class="fig-note">Nota. Elaboración propia.</div>
+        </div>
+        <a class="link-chip" href="https://globalwindatlas.info/en/" target="_blank" rel="noopener">
+          🌐 Explorar atlas mundial del viento →
+        </a>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🎓 Perspectiva Académica</div>
+        <div class="academic-box">
+          <div class="ab-icon">📘</div>
+          <div>Según Jeon (2022), este grupo de recursos energéticos es el motor del crecimiento económico. Se divide funcionalmente en fuentes que generan externalidades negativas (fósiles) y fuentes de "costo operativo cero" pero alta inversión inicial (renovables).</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- B. HÍDRICOS -->
+  <div class="panel" data-panel="hi">
+    <div class="panel-header">
+      <div class="ph-icon">💧</div>
+      <div class="ph-text">
+        <div class="ph-kicker">Tipo B · Recursos</div>
+        <div class="ph-title">Recursos Hídricos</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="pblock">
+        <div class="pblock-label">📖 Definición</div>
+        <p>El agua es un recurso dual: es un insumo productivo y un soporte de vida. Abastece ciudades y riega suelos, pero también regula el clima local y mantiene ríos y humedales. Su función depende del <em>ciclo del agua</em> y de infraestructuras que no deben sobrecargarse.</p>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🖼️ Inventario Visual</div>
+        <p>A continuación, en la figura se pueden observar los tipos de recursos hídricos. Le invito a identificar cuáles son y anotarlos en su cuaderno digital.</p>
+        <div class="fig-wrap">
+          <div class="fig-caption">Ejemplos de recursos hídricos</div>
+          <img src="media/Imagen 6.png" alt="Ejemplos de recursos hídricos" loading="lazy">
+        </div>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🎓 Perspectiva Académica</div>
+        <div class="academic-box">
+          <div class="ab-icon">📘</div>
+          <div>Bain (2007) clasifica el agua junto con la tierra y los recursos biológicos como un activo natural fundamental. Su gestión oscila entre su rol renovable (ciclo hidrológico) y su agotamiento local por sobreuso o contaminación.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- C. FORESTALES -->
+  <div class="panel" data-panel="fo">
+    <div class="panel-header">
+      <div class="ph-icon">🌲</div>
+      <div class="ph-text">
+        <div class="ph-kicker">Tipo C · Recursos</div>
+        <div class="ph-title">Recursos Forestales</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="pblock">
+        <div class="pblock-label">📖 Definición</div>
+        <p>Un bosque no es "solo madera": son fábricas biológicas que capturan carbono, conservan suelos, regulan escorrentías y sostienen culturas. La evidencia académica insiste en que los ecosistemas proveen múltiples beneficios esenciales para el bienestar (Boesing et al., 2020). Por lo tanto, los recursos forestales se consideran todos los bienes y servicios que provienen de los bosques y tierras boscosas, incluyendo productos maderables (madera, leña, carbón) y no maderables (alimentos, medicinas, resinas), así como los servicios ecosistémicos cruciales como la regulación del clima, la conservación del suelo y agua, y el soporte a la biodiversidad (fauna y flora silvestre).</p>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🖼️ Inventario Visual</div>
+        <p>La siguiente figura ilustra algunos ejemplos de este tipo de recursos: plantaciones forestales (monocultivos), madera, frutos, semillas, miel, etc.</p>
+        <div class="fig-wrap">
+          <div class="fig-caption">Ejemplos de un inventario visual de recursos forestales.</div>
+          <img src="media/Imagen 7.png" alt="Inventario visual de recursos forestales" loading="lazy">
+        </div>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🎓 Perspectiva Académica</div>
+        <div class="academic-box">
+          <div class="ab-icon">📘</div>
+          <div>Aznar-Márquez y Ruiz-Tamarit (2005) destacan que el bosque es un activo que crece. Su función es doble: proveer bienes privados (madera) y generar externalidades positivas públicas (servicios ecosistémicos).</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- D. MINERALES -->
+  <div class="panel" data-panel="mi">
+    <div class="panel-header">
+      <div class="ph-icon">⛏️</div>
+      <div class="ph-text">
+        <div class="ph-kicker">Tipo D · Recursos</div>
+        <div class="ph-title">Recursos Minerales</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="pblock">
+        <div class="pblock-label">📖 Definición</div>
+        <p>Los recursos minerales se definen como depósitos minerales que contienen concentraciones útiles de minerales valiosos, cuya extracción puede o no ser económicamente viable. Se clasifican como reservas minerales o de mina cuando su explotación es rentable según los procesos tecnológicos y las condiciones del mercado. Estos proveen la base material de la civilización y la economía (construcción, tecnologías). En la transición, los <em>minerales críticos</em> son un insumo clave; su extracción debe equilibrar beneficios y riesgos socioambientales, planificando cierre, reutilización y reciclaje (UNECE, 2024).</p>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🖼️ Inventario Visual</div>
+        <p>Ejemplos de estos se pueden encontrar en la siguiente figura (canteras, minas a cielo abierto, escombreras). Identifique cuáles son.</p>
+        <div class="fig-wrap">
+          <div class="fig-caption">Prototipos de recursos minerales</div>
+          <img src="media/Imagen 8.png" alt="Prototipos de recursos minerales" loading="lazy">
+        </div>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🎓 Perspectiva Académica</div>
+        <div class="academic-box">
+          <div class="ab-icon">📘</div>
+          <div>Hart (2016) explica que estos recursos son heterogéneos; no todas las minas son iguales. Se caracterizan por la disminución de la calidad (ley mineral) conforme se explotan, lo que requiere más energía para obtener la misma cantidad de material.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- E. PAISAJÍSTICOS -->
+  <div class="panel" data-panel="pa">
+    <div class="panel-header">
+      <div class="ph-icon">🏔️</div>
+      <div class="ph-text">
+        <div class="ph-kicker">Tipo E · Recursos</div>
+        <div class="ph-title">Recursos Paisajísticos</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="pblock">
+        <div class="pblock-label">📖 Definición</div>
+        <p>Ahora veremos que nuestro entorno natural tiene un valor estético y ecológico del territorio. Aportan identidad, bienestar y oportunidades económicas como el turismo. Aunque no se extraen, pueden degradarse si se pierde su calidad ecológica o su acceso.</p>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🖼️ Inventario Visual</div>
+        <p>Aquí se pueden identificar parques nacionales, zonas turísticas, cascadas, etc., observe la siguiente figura. ¿Qué elementos puede reconocer?</p>
+        <div class="fig-wrap">
+          <div class="fig-caption">Ejemplo de un inventario visual de los recursos paisajísticos</div>
+          <img src="media/Imagen 9.png" alt="Inventario visual de recursos paisajísticos" loading="lazy">
+        </div>
+      </div>
+
+      <div class="pblock">
+        <div class="pblock-label">🎓 Perspectiva Académica</div>
+        <div class="academic-box">
+          <div class="ab-icon">📘</div>
+          <div>Aunque no se "extraen", se pueden "dañar". Gala et al. (2009) introducen el concepto de hábitat y servicios ecológicos como <em>endpoints</em> de evaluación. Un daño al paisaje (<em>injury</em>) es una pérdida medible de su calidad física o viabilidad biológica.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /panels -->
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">Sesión 4 · Módulo Didáctico · Recursos Naturales</div>
+
+
+<!-- ==============================
+     MODAL REFERENCIAS
+============================== -->
+<div class="overlay" id="overlay-refs" onclick="closeOnBg(event,'overlay-refs')">
+  <div class="mbox">
+    <div class="mhead refs-mhead">
+      <div class="mhead-icon">📚</div>
+      <div class="mhead-text">
+        <div class="mhead-kicker">Bibliografía · APA 7</div>
+        <div class="mhead-title">Referencias</div>
+      </div>
+      <button class="mclose" onclick="closeOverlay('overlay-refs')">✕</button>
+    </div>
+    <div class="mbody">
+
+      <div class="ref-item">
+        <div class="ref-author">Aznar-Márquez, J., &amp; Ruiz-Tamarit, J. R. (2005).</div>
+        <div class="ref-detail">Renewable natural resources and endogenous growth. <em>Macroeconomic Dynamics</em>, 9(2), 170–197.</div>
+        <a class="ref-link" href="https://doi.org/10.1017/S1365100505040149" target="_blank" rel="noopener">https://doi.org/10.1017/S1365100505040149</a>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-author">Bain, D. (2007).</div>
+        <div class="ref-detail">Depletion of renewable environmental resources [Documento de trabajo]. 12th Meeting of the London Group on Environmental Accounting, Roma, Italia.</div>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-author">Boesing, A. L., Hofstad, E., &amp; Liersch, S. (2020).</div>
+        <div class="ref-detail">Ecosystem services at risk: Integrating spatiotemporal dynamics of supply and demand to promote long-term provision. <em>One Earth</em>, 3(6), 704–713.</div>
+        <a class="ref-link" href="https://doi.org/10.1016/j.oneear.2020.11.003" target="_blank" rel="noopener">https://doi.org/10.1016/j.oneear.2020.11.003</a>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-author">Gala, W., Lipton, J., Cernera, P., Ginn, T., Haddad, R., Henning, M., Jahn, K., Landis, W., Mancini, E., Nicoll, J., Peters, V., &amp; Peterson, J. (2009).</div>
+        <div class="ref-detail">Ecological risk assessment and natural resource damage assessment: Synthesis of assessment procedures. <em>Integrated Environmental Assessment and Management</em>, 5(4), 515–522.</div>
+        <a class="ref-link" href="https://doi.org/10.1897/IEAM_2009-011.1" target="_blank" rel="noopener">https://doi.org/10.1897/IEAM_2009-011.1</a>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-author">Hart, R. (2016).</div>
+        <div class="ref-detail">Non-renewable resources in the long run. <em>Journal of Economic Dynamics &amp; Control</em>, 71, 1–20.</div>
+        <a class="ref-link" href="https://doi.org/10.1016/j.jedc.2016.07.006" target="_blank" rel="noopener">https://doi.org/10.1016/j.jedc.2016.07.006</a>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-author">Jeon, H. (2022).</div>
+        <div class="ref-detail">Renewable versus non-renewable: The role of electricity generation to economic growth. <em>The Electricity Journal</em>, 35(5), 107140.</div>
+        <a class="ref-link" href="https://doi.org/10.1016/j.tej.2022.107140" target="_blank" rel="noopener">https://doi.org/10.1016/j.tej.2022.107140</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ── TABS ── */
+function switchTab(type) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab[data-type="${type}"]`).classList.add('active');
+  document.querySelector(`.panel[data-panel="${type}"]`).classList.add('active');
+}
+
+/* ── MODALS ── */
+function openRefs() {
+  document.getElementById('overlay-refs').classList.add('open');
+}
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function closeOnBg(e, id) {
+  if (e.target === e.currentTarget) closeOverlay(id);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+  }
+});
+</script>
+</body>
+</html>

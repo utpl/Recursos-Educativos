@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conceptos clave para ver con lentes funcionales</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #f2ede6;
+  --paper:    #ffffff;
+  --ink:      #1e1a14;
+  --muted:    #8a7f72;
+  --border:   rgba(0,0,0,0.09);
+
+  --c1: #1d6b4a; --c1l: #e6f5ee; --c1b: #4aad7a;   /* Potencial natural   */
+  --c2: #1a5a8a; --c2l: #e4f0fa; --c2b: #4aa0d8;   /* Capacidad de carga  */
+  --c3: #7a3c10; --c3l: #fdf0e4; --c3b: #d47a3a;   /* Inventario visual   */
+  --c4: #5a1e7a; --c4l: #f2ebfc; --c4b: #9b5ad4;   /* Clasificación func. */
+
+  --success: #1d6b4a;
+  --error:   #b03a2a;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  max-width: 800px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink);
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--ink);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+.header-stripe {
+  height: 4px;
+  background: linear-gradient(90deg, var(--c1b) 0%, var(--c2b) 33%, var(--c3b) 66%, var(--c4b) 100%);
+}
+.header-inner {
+  padding: 16px 22px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+.header-badge {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.header-kicker {
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); font-family: 'Courier New', monospace;
+  margin-bottom: 4px;
+}
+.header-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.25; }
+.header-sub   { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+/* big decorative text */
+.header::after {
+  content: '🔬';
+  position: absolute; right: 16px; top: 10px;
+  font-size: 72px; opacity: 0.06; pointer-events: none;
+}
+
+/* ── INSTRUCTION ── */
+.instruction {
+  background: linear-gradient(135deg, #e8f2ec, #f2ede6);
+  border-bottom: 1px solid rgba(29,107,74,0.18);
+  padding: 14px 22px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.instruction-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+.instruction-text { font-size: 13px; line-height: 1.7; color: var(--ink); }
+.instruction-text strong { color: var(--c1); }
+
+/* ── SCORE BAR ── */
+.scorebar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 22px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+.score-dots { display: flex; gap: 6px; }
+.score-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.12);
+  border: 1.5px solid rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+.score-dot.correct { background: var(--success); border-color: var(--success); }
+.score-dot.wrong   { background: var(--error);   border-color: var(--error); }
+
+.btn-reset {
+  font-family: 'Courier New', monospace;
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  background: none; border: 1.5px solid rgba(0,0,0,0.2);
+  border-radius: 20px; padding: 5px 14px; cursor: pointer;
+  color: var(--muted); transition: all 0.18s;
+  display: flex; align-items: center; gap: 5px;
+}
+.btn-reset:hover { background: var(--ink); color: white; border-color: var(--ink); }
+
+/* ── MAIN GAME LAYOUT ── */
+.game {
+  padding: 16px 16px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* CONCEPTS column */
+.col-label {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  font-family: 'Courier New', monospace; font-weight: 700;
+  color: var(--muted); margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+.concept-card {
+  border-radius: 14px;
+  padding: 13px 15px;
+  margin-bottom: 8px;
+  cursor: grab;
+  user-select: none;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border: 2px solid transparent;
+  transition: transform 0.2s cubic-bezier(0.34,1.4,0.64,1),
+              box-shadow 0.2s ease, opacity 0.2s;
+  position: relative;
+  -webkit-touch-callout: none;
+}
+.concept-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 22px rgba(0,0,0,0.14); }
+.concept-card.dragging { opacity: 0.45; transform: scale(0.97); cursor: grabbing; }
+.concept-card.placed   { opacity: 0.35; cursor: default; pointer-events: none; }
+.concept-card.placed:hover { transform: none; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
+.concept-card[data-id="1"] { background: var(--c1l); border-color: rgba(29,107,74,0.25); }
+.concept-card[data-id="2"] { background: var(--c2l); border-color: rgba(26,90,138,0.25); }
+.concept-card[data-id="3"] { background: var(--c3l); border-color: rgba(122,60,16,0.25); }
+.concept-card[data-id="4"] { background: var(--c4l); border-color: rgba(90,30,122,0.25); }
+
+.concept-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: white;
+  flex-shrink: 0;
+}
+.concept-card[data-id="1"] .concept-num { background: var(--c1); }
+.concept-card[data-id="2"] .concept-num { background: var(--c2); }
+.concept-card[data-id="3"] .concept-num { background: var(--c3); }
+.concept-card[data-id="4"] .concept-num { background: var(--c4); }
+
+.concept-name { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.concept-card[data-id="1"] .concept-name { color: var(--c1); }
+.concept-card[data-id="2"] .concept-name { color: var(--c2); }
+.concept-card[data-id="3"] .concept-name { color: var(--c3); }
+.concept-card[data-id="4"] .concept-name { color: var(--c4); }
+
+.drag-hint {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; opacity: 0.35;
+}
+
+/* DESCRIPTIONS column */
+.drop-zone {
+  border-radius: 14px;
+  border: 2px dashed rgba(0,0,0,0.16);
+  background: rgba(255,255,255,0.6);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  min-height: 72px;
+  transition: all 0.22s ease;
+  position: relative;
+}
+.drop-zone.drag-over {
+  border-color: #4aad7a;
+  background: #e6f5ee;
+  transform: scale(1.01);
+  box-shadow: 0 0 0 3px rgba(74,173,122,0.2);
+}
+.drop-zone.correct {
+  border-style: solid;
+  border-color: var(--success);
+  background: #eaf7f0;
+}
+.drop-zone.wrong {
+  border-style: solid;
+  border-color: var(--error);
+  background: #fcecea;
+  animation: shake 0.4s ease;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  60%      { transform: translateX(6px); }
+}
+
+.drop-letter {
+  font-size: 10px; letter-spacing: 1.5px; font-family: 'Courier New', monospace;
+  font-weight: 700; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 5px;
+}
+.drop-text {
+  font-size: 12.5px; line-height: 1.65; color: #333;
+}
+
+/* status icon on drop zone */
+.drop-status {
+  position: absolute; top: 10px; right: 12px;
+  font-size: 16px; opacity: 0;
+  transition: opacity 0.25s;
+}
+.drop-zone.correct .drop-status,
+.drop-zone.wrong   .drop-status { opacity: 1; }
+.drop-zone.correct .drop-status::after { content: '✅'; }
+.drop-zone.wrong   .drop-status::after { content: '❌'; }
+
+/* placed chip inside drop zone */
+.placed-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 12px; font-weight: 700; color: white;
+  margin-top: 8px;
+}
+
+/* ── CHECK BUTTON ── */
+.check-wrap {
+  padding: 14px 16px;
+  display: flex; justify-content: center;
+}
+.btn-check {
+  background: var(--ink);
+  color: white; border: none;
+  border-radius: 28px;
+  padding: 13px 36px;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.2);
+  transition: all 0.2s cubic-bezier(0.34,1.3,0.64,1);
+}
+.btn-check:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 8px 26px rgba(0,0,0,0.25); }
+.btn-check:active { transform: scale(0.97); }
+.btn-check:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+/* ── FEEDBACK MODAL ── */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(10,10,20,0.6); backdrop-filter: blur(8px);
+  justify-content: center; align-items: center; padding: 20px;
+}
+.overlay.open { display: flex; }
+
+.feedback-box {
+  background: var(--paper); border-radius: 22px;
+  max-width: 500px; width: 100%;
+  box-shadow: 0 36px 90px rgba(0,0,0,0.3);
+  overflow: hidden;
+  animation: popIn 0.32s cubic-bezier(0.34,1.3,0.64,1);
+}
+@keyframes popIn {
+  from { opacity:0; transform:scale(0.82) translateY(30px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.fb-header {
+  padding: 28px 28px 22px;
+  text-align: center;
+  background: linear-gradient(135deg, #1d6b4a, #2da870);
+  color: white;
+}
+.fb-trophy { font-size: 58px; line-height: 1; display: block; margin-bottom: 10px; }
+.fb-title  { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.fb-sub    { font-size: 13px; opacity: 0.82; }
+
+.fb-body { padding: 22px 26px 26px; }
+.fb-text {
+  font-size: 13.5px; line-height: 1.78; color: #2a2520;
+  background: #f5fff9; border-radius: 12px; padding: 16px;
+  border-left: 4px solid var(--c1);
+  margin-bottom: 20px;
+}
+.fb-answers {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-bottom: 20px;
+}
+.fb-pair {
+  background: #f8f8f8; border-radius: 10px; padding: 10px 12px;
+  font-size: 12px; line-height: 1.5;
+  border: 1px solid var(--border);
+}
+.fb-pair .fp-num { font-weight: 700; color: var(--c1); margin-bottom: 2px; }
+.fb-pair .fp-ans { color: var(--muted); }
+
+.btn-close-fb {
+  width: 100%; padding: 13px;
+  background: var(--ink); color: white; border: none;
+  border-radius: 14px; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background 0.18s;
+  letter-spacing: 0.5px;
+}
+.btn-close-fb:hover { background: #3a3a5a; }
+
+/* ── MOBILE FALLBACK — click-to-assign ── */
+.concept-card.selected {
+  box-shadow: 0 0 0 3px #4aad7a !important;
+  transform: scale(1.04) !important;
+}
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.3);
+  font-size: 10.5px; padding: 10px 22px;
+  text-align: center; font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+@media (max-width: 580px) {
+  .game { grid-template-columns: 1fr; gap: 0; }
+  .col-concepts { order: 1; }
+  .col-descriptions { order: 2; margin-top: 12px; }
+  .concept-card { margin-bottom: 7px; }
+  .drop-zone { margin-bottom: 7px; }
+  .fb-answers { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-stripe"></div>
+  <div class="header-inner">
+    <div class="header-badge">🔬</div>
+    <div>
+      <div class="header-kicker">Sesión 4 · Actividad interactiva</div>
+      <div class="header-title">Conceptos clave para ver con lentes funcionales</div>
+      <div class="header-sub">Juego de Arrastrar y Soltar</div>
+    </div>
+  </div>
+</div>
+
+<!-- INSTRUCTION -->
+<div class="instruction">
+  <div class="instruction-icon">📋</div>
+  <div class="instruction-text">
+    Relacione cada concepto con su descripción correspondiente, <strong>arrastrando y soltando</strong> los elementos en el lugar correcto. Lea con atención y verifique que cada relación refleje lo aprendido durante la semana.
+  </div>
+</div>
+
+<!-- SCORE BAR -->
+<div class="scorebar">
+  <span>Progreso:</span>
+  <div class="score-dots">
+    <div class="score-dot" id="dot-1"></div>
+    <div class="score-dot" id="dot-2"></div>
+    <div class="score-dot" id="dot-3"></div>
+    <div class="score-dot" id="dot-4"></div>
+  </div>
+  <button class="btn-reset" onclick="resetGame()">↺ Reiniciar</button>
+</div>
+
+<!-- GAME BOARD -->
+<div class="game">
+
+  <!-- LEFT: Concepts -->
+  <div class="col-concepts">
+    <div class="col-label">Conceptos</div>
+
+    <div class="concept-card" data-id="1" draggable="true">
+      <div class="concept-num">1</div>
+      <div class="concept-name">Potencial natural</div>
+      <span class="drag-hint">⠿</span>
+    </div>
+
+    <div class="concept-card" data-id="2" draggable="true">
+      <div class="concept-num">2</div>
+      <div class="concept-name">Capacidad de carga</div>
+      <span class="drag-hint">⠿</span>
+    </div>
+
+    <div class="concept-card" data-id="3" draggable="true">
+      <div class="concept-num">3</div>
+      <div class="concept-name">Inventario visual</div>
+      <span class="drag-hint">⠿</span>
+    </div>
+
+    <div class="concept-card" data-id="4" draggable="true">
+      <div class="concept-num">4</div>
+      <div class="concept-name">Clasificación funcional</div>
+      <span class="drag-hint">⠿</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: Descriptions / Drop zones -->
+  <div class="col-descriptions">
+    <div class="col-label">Descripciones</div>
+
+    <div class="drop-zone" data-letter="A" data-correct="3">
+      <div class="drop-letter">Descripción A</div>
+      <div class="drop-text">Permite registrar cuatro elementos clave de un recurso a partir de evidencias básicas, respondiendo qué es, para qué sirve y qué lo sostiene.</div>
+      <div class="drop-status"></div>
+    </div>
+
+    <div class="drop-zone" data-letter="B" data-correct="1">
+      <div class="drop-letter">Descripción B</div>
+      <div class="drop-text">Corresponde a la tasa máxima de regeneración de un recurso en condiciones ideales; aprovecharla equivale a vivir de los "intereses" del capital natural sin consumirlo.</div>
+      <div class="drop-status"></div>
+    </div>
+
+    <div class="drop-zone" data-letter="C" data-correct="4">
+      <div class="drop-letter">Descripción C</div>
+      <div class="drop-text">Categoriza los recursos según su uso económico y ecosistémico dominante, distinguiendo tipos como energéticos, hídricos, forestales, minerales y paisajísticos.</div>
+      <div class="drop-status"></div>
+    </div>
+
+    <div class="drop-zone" data-letter="D" data-correct="2">
+      <div class="drop-letter">Descripción D</div>
+      <div class="drop-text">Define el umbral máximo que un sistema puede sostener sin degradarse; superarlo expone al ecosistema a un riesgo real de colapso.</div>
+      <div class="drop-status"></div>
+    </div>
+  </div>
+
+</div><!-- /game -->
+
+<!-- CHECK BUTTON -->
+<div class="check-wrap">
+  <button class="btn-check" id="btn-check" onclick="checkAnswers()" disabled>
+    ✔️ Verificar respuestas
+  </button>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">Sesión 4 · Conceptos clave · Recursos Naturales</div>
+
+
+<!-- FEEDBACK MODAL -->
+<div class="overlay" id="overlay-feedback">
+  <div class="feedback-box">
+    <div class="fb-header">
+      <span class="fb-trophy">🏆</span>
+      <div class="fb-title">¡Felicidades, ha completado con éxito el reto!</div>
+      <div class="fb-sub">Todas las relaciones son correctas</div>
+    </div>
+    <div class="fb-body">
+      <div class="fb-text">
+        Ha demostrado comprender los conceptos fundamentales para analizar los recursos naturales con una mirada funcional. Al relacionar correctamente el potencial natural, la capacidad de carga, el inventario visual y la clasificación funcional, confirmó que estos conceptos le permiten identificar no solo qué recursos existen, sino para qué sirven y cuáles son sus límites ecológicos. ¡Siga aplicando esta mirada sistémica y fortalecerá su capacidad para tomar decisiones informadas sobre el manejo sostenible del territorio!
+      </div>
+      <div class="fb-answers">
+        <div class="fb-pair"><div class="fp-num">1 → Potencial natural</div><div class="fp-ans">Descripción B ✅</div></div>
+        <div class="fb-pair"><div class="fp-num">2 → Capacidad de carga</div><div class="fp-ans">Descripción D ✅</div></div>
+        <div class="fb-pair"><div class="fp-num">3 → Inventario visual</div><div class="fp-ans">Descripción A ✅</div></div>
+        <div class="fb-pair"><div class="fp-num">4 → Clasificación funcional</div><div class="fp-ans">Descripción C ✅</div></div>
+      </div>
+      <button class="btn-close-fb" onclick="closeFeedback()">Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================
+   STATE
+================================================ */
+const CORRECT = { A: 3, B: 1, C: 4, D: 2 };   // letter → concept id
+const NAMES   = { 1:'Potencial natural', 2:'Capacidad de carga', 3:'Inventario visual', 4:'Clasificación funcional' };
+const COLORS  = { 1:'var(--c1)', 2:'var(--c2)', 3:'var(--c3)', 4:'var(--c4)' };
+
+let placements = {};   // letter → concept id placed there
+let locked     = {};   // letter → true once correct
+let dragging   = null; // concept id being dragged
+let selected   = null; // for mobile tap-to-assign
+
+/* ================================================
+   DRAG & DROP — desktop
+================================================ */
+document.querySelectorAll('.concept-card').forEach(card => {
+  card.addEventListener('dragstart', e => {
+    const id = parseInt(card.dataset.id);
+    if (card.classList.contains('placed')) { e.preventDefault(); return; }
+    dragging = id;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+  });
+
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    dragging = null;
+  });
+
+  /* mobile: tap to select, then tap drop zone */
+  card.addEventListener('click', () => {
+    if (card.classList.contains('placed')) return;
+    // deselect others
+    document.querySelectorAll('.concept-card.selected').forEach(c => c.classList.remove('selected'));
+    if (selected === parseInt(card.dataset.id)) { selected = null; return; }
+    selected = parseInt(card.dataset.id);
+    card.classList.add('selected');
+  });
+});
+
+document.querySelectorAll('.drop-zone').forEach(zone => {
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!locked[zone.dataset.letter]) zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const letter = zone.dataset.letter;
+    if (locked[letter]) return;
+    const id = parseInt(e.dataTransfer.getData('text/plain'));
+    placeCard(letter, id);
+  });
+
+  /* mobile: tap drop zone to assign selected card */
+  zone.addEventListener('click', () => {
+    const letter = zone.dataset.letter;
+    if (locked[letter]) return;
+    if (selected === null) return;
+    placeCard(letter, selected);
+    document.querySelectorAll('.concept-card.selected').forEach(c => c.classList.remove('selected'));
+    selected = null;
+  });
+});
+
+/* ================================================
+   PLACE CARD
+================================================ */
+function placeCard(letter, conceptId) {
+  const zone = document.querySelector(`.drop-zone[data-letter="${letter}"]`);
+
+  // if a chip was already here, un-place the old concept
+  if (placements[letter] !== undefined) {
+    const oldId = placements[letter];
+    const oldCard = document.querySelector(`.concept-card[data-id="${oldId}"]`);
+    if (oldCard) oldCard.classList.remove('placed');
+  }
+
+  // if this concept was placed elsewhere, free that zone
+  for (const [l, cid] of Object.entries(placements)) {
+    if (cid === conceptId && l !== letter) {
+      delete placements[l];
+      const oldZone = document.querySelector(`.drop-zone[data-letter="${l}"]`);
+      removeChip(oldZone);
+      oldZone.classList.remove('correct', 'wrong');
+    }
+  }
+
+  placements[letter] = conceptId;
+
+  // mark concept as placed
+  const card = document.querySelector(`.concept-card[data-id="${conceptId}"]`);
+  card.classList.add('placed');
+
+  // render chip in drop zone
+  removeChip(zone);
+  const chip = document.createElement('div');
+  chip.className = 'placed-chip';
+  chip.style.background = COLORS[conceptId];
+  chip.innerHTML = `<span>${conceptId}</span><span>${NAMES[conceptId]}</span>`;
+  chip.style.cursor = 'pointer';
+  chip.title = 'Haga clic para remover';
+  chip.addEventListener('click', e => {
+    e.stopPropagation();
+    if (locked[letter]) return;
+    card.classList.remove('placed');
+    delete placements[letter];
+    removeChip(zone);
+    zone.classList.remove('correct', 'wrong');
+    updateCheckButton();
+    updateDots();
+  });
+  zone.appendChild(chip);
+
+  updateCheckButton();
+  updateDots();
+}
+
+function removeChip(zone) {
+  const chip = zone.querySelector('.placed-chip');
+  if (chip) chip.remove();
+}
+
+/* ================================================
+   CHECK
+================================================ */
+function checkAnswers() {
+  let allCorrect = true;
+
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    const letter = zone.dataset.letter;
+    if (locked[letter]) return;
+    const placed = placements[letter];
+    if (placed === undefined) return;
+
+    zone.classList.remove('correct', 'wrong');
+    if (placed === CORRECT[letter]) {
+      zone.classList.add('correct');
+      locked[letter] = true;
+      // keep card placed + darken chip
+    } else {
+      zone.classList.add('wrong');
+      allCorrect = false;
+      // shake + return card after delay
+      setTimeout(() => {
+        const card = document.querySelector(`.concept-card[data-id="${placed}"]`);
+        card.classList.remove('placed');
+        delete placements[letter];
+        removeChip(zone);
+        zone.classList.remove('wrong');
+        updateCheckButton();
+        updateDots();
+      }, 900);
+    }
+  });
+
+  updateDots();
+
+  if (allCorrect && Object.keys(placements).length === 4 &&
+      Object.keys(locked).length === 4) {
+    setTimeout(() => {
+      document.getElementById('overlay-feedback').classList.add('open');
+    }, 500);
+  }
+}
+
+function updateCheckButton() {
+  const filled = Object.keys(placements).length + Object.keys(locked).length;
+  document.getElementById('btn-check').disabled = filled < 4;
+}
+
+function updateDots() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    // find if concept i is correctly locked
+    let correct = false;
+    for (const [l, cid] of Object.entries(locked)) {
+      if (cid === i) { correct = true; break; }
+    }
+    // or wrongly placed
+    let placed = false;
+    for (const [l, cid] of Object.entries(placements)) {
+      if (cid === i) { placed = true; break; }
+    }
+    dot.classList.remove('correct', 'wrong');
+    if (correct) dot.classList.add('correct');
+  }
+}
+
+/* ================================================
+   RESET
+================================================ */
+function resetGame() {
+  placements = {};
+  locked     = {};
+  selected   = null;
+
+  document.querySelectorAll('.concept-card').forEach(c => {
+    c.classList.remove('placed', 'selected', 'dragging');
+  });
+  document.querySelectorAll('.drop-zone').forEach(z => {
+    z.classList.remove('correct', 'wrong', 'drag-over');
+    removeChip(z);
+  });
+  document.querySelectorAll('.score-dot').forEach(d => {
+    d.classList.remove('correct', 'wrong');
+  });
+  document.getElementById('btn-check').disabled = true;
+  document.getElementById('overlay-feedback').classList.remove('open');
+}
+
+/* ================================================
+   FEEDBACK MODAL
+================================================ */
+function closeFeedback() {
+  document.getElementById('overlay-feedback').classList.remove('open');
+}
+
+document.getElementById('overlay-feedback').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeFeedback();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeFeedback();
+});
+</script>
+</body>
+</html>

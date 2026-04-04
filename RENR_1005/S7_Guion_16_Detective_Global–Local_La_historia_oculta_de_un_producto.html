@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Semana 7 – Detective Global–Local: Autoevaluación</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:#d6dde8;
+      --accent:#0f172a;
+      --accent2:#2563eb;
+      --ok:#1b8f3a;
+      --bad:#c62828;
+      --warn:#b45309;
+      --shadow: 0 1px 0 rgba(15,23,42,.04);
+      --r:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:22px;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{max-width:1100px;margin:0 auto}
+    header{
+      background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+      padding:18px 18px 14px; box-shadow:var(--shadow);
+    }
+    h1{margin:0 0 6px;font-size:18px}
+    .subtitle{margin:0;color:var(--muted);line-height:1.5}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{
+      font-size:12px; color:#0f172a;
+      border:1px solid var(--border); background:#f8fafc;
+      padding:6px 10px;border-radius:999px;
+    }
+    .layout{display:grid;grid-template-columns: 1.2fr .8fr;gap:16px;margin-top:16px}
+    @media (max-width: 980px){ .layout{grid-template-columns:1fr} }
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+      padding:14px; box-shadow:var(--shadow);
+    }
+    h2{margin:0 0 10px;font-size:14px}
+    .note{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px dashed #94a3b8;
+      background:#f8fafc;
+      color:#0f172a;
+      line-height:1.45;
+      font-size:13px;
+    }
+
+    /* Form */
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    input[type="text"], select, textarea{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+      background:#fff;
+    }
+    textarea{min-height:90px;resize:vertical;line-height:1.45}
+    input[type="text"]:focus, select:focus, textarea:focus{
+      box-shadow: inset 0 0 0 2px rgba(37,99,235,.18);
+      border-color: rgba(37,99,235,.45);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+    }
+    @media (max-width: 780px){ .grid{grid-template-columns:1fr} }
+
+    .tile{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+    }
+    .tile .top{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:8px;
+    }
+    .badge{
+      font-size:12px;font-weight:800;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--border);
+      background:#f8fafc;
+    }
+    .mini{font-size:12px;color:var(--muted);line-height:1.45;margin:0}
+    .small{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+    .inline{
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px
+    }
+    .btn{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:700;
+      color:#0f172a;
+    }
+    .btn.primary{
+      background:var(--accent);
+      border-color:var(--accent);
+      color:#fff;
+    }
+    .btn:active{transform:translateY(1px)}
+    .scoreBox{
+      display:grid;gap:10px;margin-top:12px;
+      border:1px solid var(--border);border-radius:16px;padding:12px;background:#f8fafc;
+    }
+    .meter{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      font-size:13px;color:var(--muted);
+    }
+    .bar{
+      height:10px;border-radius:999px;background:#e2e8f0;overflow:hidden;
+      border:1px solid var(--border);
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: var(--accent2);
+      transition: width .25s ease;
+    }
+    .feedback{
+      padding:10px 12px;border-radius:16px;border:1px solid var(--border);background:#fff;
+      line-height:1.45;font-size:13px;color:#0f172a;
+    }
+    .feedback.ok{border-color: rgba(27,143,58,.35); box-shadow: inset 0 0 0 2px rgba(27,143,58,.10)}
+    .feedback.warn{border-color: rgba(180,83,9,.35); box-shadow: inset 0 0 0 2px rgba(180,83,9,.10)}
+    .feedback.bad{border-color: rgba(198,40,40,.35); box-shadow: inset 0 0 0 2px rgba(198,40,40,.10)}
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:10px;
+      padding:2px 6px;
+    }
+
+    /* Print */
+    @media print{
+      body{background:#fff;padding:0}
+      .btn,.chips,.note{display:none !important}
+      header,.card,.tile{box-shadow:none}
+      .layout{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Detective Global–Local: La historia oculta de un producto</h1>
+      <p class="subtitle">
+        Autoevaluación Semana 7 (10–15 min). Elige un producto real que uses y arma tu “expediente” en 4 tarjetas:
+        <b>Driver</b> → <b>Patrón</b> → <b>Shock</b> → <b>Impacto local</b>. Cierra con una prueba y 4 líneas metacognitivas.
+      </p>
+      <div class="chips" aria-label="Tipo y enfoque">
+        <span class="chip">Gamificación (caso detective)</span>
+        <span class="chip">Tarjetas digitales</span>
+        <span class="chip">Conexión Global–Local</span>
+        <span class="chip">Evidencia rápida</span>
+      </div>
+      <div class="note">
+        <b>Recuerda:</b> esto es <b>autoevaluación</b>. No se trata de “tener la razón”, sino de comprobar si puedes pensar con conexión global–local.
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- FORM PRINCIPAL -->
+      <section class="card" aria-label="Actividad interactiva">
+        <h2>1) Tu expediente (completa y comprueba)</h2>
+
+        <div class="grid">
+          <div>
+            <label for="studentName">Tu nombre y apellido</label>
+            <input id="studentName" type="text" placeholder="Ej.: Juan Pérez" />
+          </div>
+          <div>
+            <label for="product">Tu caso (producto + marca/tipo si aplica)</label>
+            <input id="product" type="text" placeholder="Ej.: CAFÉ MOLIDO (marca X) / BATERÍA RECARGABLE AA" />
+            <div class="small">Tip: escribe tal como lo usarías en tu diapositiva de Slides.</div>
+          </div>
+        </div>
+
+        <label for="proofText">Prueba (elige una opción)</label>
+        <div class="grid">
+          <div class="tile">
+            <div class="top">
+              <span class="badge">Opción A</span>
+              <span class="mini">Foto de etiqueta/origen/material (se guarda local)</span>
+            </div>
+            <input id="proofPhoto" type="file" accept="image/*" />
+            <div class="small">Se muestra aquí como vista previa. No se sube a ningún servidor.</div>
+            <div id="previewBox" class="small" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="tile">
+            <div class="top">
+              <span class="badge">Opción B</span>
+              <span class="mini">Prueba textual (si no puedes subir foto)</span>
+            </div>
+            <textarea id="proofText" placeholder='Ej.: "Etiqueta dice: Hecho en ___ / Material: ___"'></textarea>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:12px;">
+          <!-- Tarjeta 1 -->
+          <div class="tile" aria-label="Tarjeta 1">
+            <div class="top">
+              <span class="badge">Tarjeta 1 – Driver global (La “ola”)</span>
+              <span class="mini">Elige solo 1</span>
+            </div>
+            <label for="driverSelect">Driver</label>
+            <select id="driverSelect">
+              <option value="">Selecciona…</option>
+              <option>URBANIZACION</option>
+              <option>CRECIMIENTO DE CLASE MEDIA</option>
+              <option>CADENAS GLOBALES</option>
+              <option>TRANSICION ENERGETICA</option>
+            </select>
+            <label for="driverText">Explicación (2–3 líneas, 1 idea por línea)</label>
+            <textarea id="driverText" placeholder="Driver: ____. Empuja demanda porque ____ (1 causa concreta)."></textarea>
+          </div>
+
+          <!-- Tarjeta 2 -->
+          <div class="tile" aria-label="Tarjeta 2">
+            <div class="top">
+              <span class="badge">Tarjeta 2 – Patrón (El “modo de uso”)</span>
+              <span class="mini">Elige solo 1</span>
+            </div>
+            <label for="patternSelect">Patrón</label>
+            <select id="patternSelect">
+              <option value="">Selecciona…</option>
+              <option>INTENSIFICACION</option>
+              <option>SUSTITUCION</option>
+              <option>EFECTO REBOTE</option>
+            </select>
+            <label for="patternText">Explicación (2–3 líneas)</label>
+            <textarea id="patternText" placeholder="Patrón: ____. En este caso se nota cuando ____." ></textarea>
+            <div class="small">
+              Recordatorio: <b>SUSTITUCION</b> = cambias material/energía. <b>EFECTO REBOTE</b> = eficiencia baja costo y terminas usando más.
+            </div>
+          </div>
+
+          <!-- Tarjeta 3 -->
+          <div class="tile" aria-label="Tarjeta 3">
+            <div class="top">
+              <span class="badge">Tarjeta 3 – Shock posible (El “golpe”)</span>
+              <span class="mini">Elige 1</span>
+            </div>
+            <label for="shockSelect">Shock</label>
+            <select id="shockSelect">
+              <option value="">Selecciona…</option>
+              <option>SEQUIA / INUNDACION</option>
+              <option>INCENDIOS</option>
+              <option>DISRUPCION LOGISTICA</option>
+              <option>ALZA DE PRECIOS</option>
+              <option>CONTAMINACION TRANSFRONTERIZA</option>
+              <option>CONFLICTO / PLAGA</option>
+            </select>
+            <label for="shockText">Efecto (2–3 líneas)</label>
+            <textarea id="shockText" placeholder="Shock: ____. Podría causar ____ (escasez / alza de precio / cambio de proveedor)."></textarea>
+          </div>
+
+          <!-- Tarjeta 4 -->
+          <div class="tile" aria-label="Tarjeta 4">
+            <div class="top">
+              <span class="badge">Tarjeta 4 – Impacto local (El “aterrizaje”)</span>
+              <span class="mini">Usa la cadena completa</span>
+            </div>
+            <label for="localSelect">Componente local</label>
+            <select id="localSelect">
+              <option value="">Selecciona…</option>
+              <option>AGUA</option>
+              <option>SUELO</option>
+              <option>BOSQUE</option>
+              <option>AIRE</option>
+              <option>COMUNIDAD</option>
+            </select>
+            <label for="chainText">Cadena (3 líneas recomendadas)</label>
+            <textarea id="chainText" placeholder="Driver global: ____.
+Camino (cadena): ____.
+Efecto local: ____ en ____ (agua/suelo/bosque/aire/comunidad)."></textarea>
+            <div class="small">
+              Clave: <b>tendencia (driver) → cadena → presión → efecto local</b>.
+            </div>
+          </div>
+        </div>
+
+        <div class="tile" style="margin-top:12px;" aria-label="Cierre metacognitivo">
+          <div class="top">
+            <span class="badge">Cierre tipo “informe detective” (4 líneas)</span>
+            <span class="mini">Breve y honesto</span>
+          </div>
+          <textarea id="metaText">Lo que ya puedo explicar: ____
+Lo que aún no entiendo: ____
+1 conexión global–local que me sorprendió: ____
+1 duda potente: ____</textarea>
+          <div class="inline">
+            <button class="btn primary" id="btnCheck" type="button">Comprobar mi autoevaluación</button>
+            <button class="btn" id="btnExport" type="button">Exportar expediente (TXT)</button>
+            <button class="btn" id="btnReset" type="button">Reiniciar</button>
+          </div>
+        </div>
+
+        <div class="scoreBox" aria-label="Resultado de autoevaluación">
+          <div class="meter">
+            <span><b>Progreso</b> (campos clave completos)</span>
+            <span id="progressLabel">0%</span>
+          </div>
+          <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
+          <div id="feedback" class="feedback">
+            Completa tus tarjetas y pulsa <b>Comprobar</b>. Si logras la Tarjeta 4 con la cadena completa, ya estás pensando de forma sistémica.
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL DERECHO: INSTRUCCIONES + RÚBRICA + TIPS -->
+      <aside class="card" aria-label="Guía rápida">
+        <h2>2) Instrucciones (A–F) en versión rápida</h2>
+        <div class="note" style="margin-top:0">
+          <b>A.</b> Crea 1 diapositiva en Slides con 4 tarjetas + espacio “Prueba”.<br>
+          <b>B.</b> Elige 1 producto real que uses.<br>
+          <b>C.</b> Añade tu prueba (foto o texto).<br>
+          <b>D.</b> Completa tarjetas (2–3 líneas c/u).<br>
+          <b>E.</b> Cierre metacognitivo (4 líneas).<br>
+          <b>F.</b> Exporta en PDF o comparte enlace (permiso “ver”).
+        </div>
+
+        <h2 style="margin-top:14px;">3) Criterios (rúbrica exprés)</h2>
+        <div class="note" style="border-style:solid">
+          <b>Excelente:</b> driver/patrón/shock coherentes; impacto local conectado con cadena
+          <b>tendencia → cadena → presión → efecto</b>; prueba incluida; duda significativa.<br><br>
+          <b>Aceptable:</b> tarjetas completas y mayormente coherentes; conexión entendible; prueba presente; cierre completo.<br><br>
+          <b>Por mejorar:</b> respuestas vagas; confundes patrones; no construyes cadena a lo local; falta prueba o cierre.
+        </div>
+
+        <h2 style="margin-top:14px;">4) Mensajes para ayudarte</h2>
+        <div class="note" style="border-style:solid">
+          Si te pierdes en teoría, simplifica con 3 preguntas: <b>qué driver empuja</b>, <b>qué shock golpea</b>,
+          y <b>qué le pasa al agua/suelo/bosque/aire/comunidad</b> en tu territorio.
+        </div>
+
+        <div class="note" style="border-style:solid">
+          Para no confundir conceptos:
+          <b>sustitución</b> = cambias material/energía;
+          <b>efecto rebote</b> = la eficiencia baja el costo y terminas usando más.
+        </div>
+
+        <div class="note">
+          Accesibilidad: funciona en móvil. Con baja conectividad, hazlo en Docs (tabla 4 filas) y pega la foto cuando tengas señal.
+          Si no puedes subir foto: escribe prueba textual.
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // ==========================
+    //  Detector Global–Local (auto-check)
+    // ==========================
+
+    const el = (id) => document.getElementById(id);
+
+    const fields = {
+      studentName: el("studentName"),
+      product: el("product"),
+      proofPhoto: el("proofPhoto"),
+      proofText: el("proofText"),
+      driverSelect: el("driverSelect"),
+      driverText: el("driverText"),
+      patternSelect: el("patternSelect"),
+      patternText: el("patternText"),
+      shockSelect: el("shockSelect"),
+      shockText: el("shockText"),
+      localSelect: el("localSelect"),
+      chainText: el("chainText"),
+      metaText: el("metaText"),
+      barFill: el("barFill"),
+      progressLabel: el("progressLabel"),
+      feedback: el("feedback"),
+      previewBox: el("previewBox")
+    };
+
+    const KEY_TOTAL = 10; // campos clave para progreso
+    // Claves: nombre, producto, (prueba: foto o texto), driver sel, driver txt, patrón sel, patrón txt, shock sel, shock txt, tarjeta4 (local sel + cadena + cierre)
+    function hasText(v){ return (v || "").trim().length > 0; }
+
+    function countProgress(){
+      let done = 0;
+
+      if(hasText(fields.studentName.value)) done++;
+      if(hasText(fields.product.value)) done++;
+
+      const hasProof = (fields.proofPhoto.files && fields.proofPhoto.files[0]) || hasText(fields.proofText.value);
+      if(hasProof) done++;
+
+      if(hasText(fields.driverSelect.value)) done++;
+      if(hasText(fields.driverText.value)) done++;
+
+      if(hasText(fields.patternSelect.value)) done++;
+      if(hasText(fields.patternText.value)) done++;
+
+      if(hasText(fields.shockSelect.value)) done++;
+      if(hasText(fields.shockText.value)) done++;
+
+      // Tarjeta 4 + cierre (los contamos juntos como 1 para no inflar)
+      const hasCard4 = hasText(fields.localSelect.value) && hasText(fields.chainText.value);
+      const hasMeta = hasText(fields.metaText.value) && fields.metaText.value.includes(":");
+      if(hasCard4 && hasMeta) done++;
+
+      const pct = Math.round((done / KEY_TOTAL) * 100);
+      return {done, pct};
+    }
+
+    function setProgressUI(){
+      const {done, pct} = countProgress();
+      fields.progressLabel.textContent = `${pct}%`;
+      fields.barFill.style.width = `${pct}%`;
+      if(pct >= 90) fields.barFill.style.background = "var(--ok)";
+      else if(pct >= 70) fields.barFill.style.background = "var(--accent2)";
+      else fields.barFill.style.background = "var(--warn)";
+    }
+
+    function analyzeQuality(){
+      // Heurísticas simples (no califican “verdad”; evalúan estructura y conexión)
+      const msgs = [];
+      const issues = [];
+
+      // Reglas de forma: 2-3 líneas por tarjeta (aprox)
+      function lineCount(text){
+        return (text || "").split("\n").map(s=>s.trim()).filter(Boolean).length;
+      }
+
+      // Tarjeta 4: buscar cadena (palabras clave mínimas)
+      const chain = fields.chainText.value || "";
+      const hasDriverWord = /DRIVER/i.test(chain) || /Driver global/i.test(chain);
+      const hasCaminoWord = /CAMINO/i.test(chain) || /CADENA/i.test(chain);
+      const hasEfectoWord = /EFECTO/i.test(chain);
+      const local = (fields.localSelect.value || "").trim();
+      const mentionsLocal = local && new RegExp(local, "i").test(chain);
+
+      // Coherencia mínima: selección hecha y texto no vacío
+      const missing = [];
+      if(!hasText(fields.driverSelect.value)) missing.push("Driver");
+      if(!hasText(fields.patternSelect.value)) missing.push("Patrón");
+      if(!hasText(fields.shockSelect.value)) missing.push("Shock");
+      if(!hasText(fields.localSelect.value)) missing.push("Componente local");
+
+      if(missing.length) issues.push(`Te falta seleccionar: ${missing.join(", ")}.`);
+
+      // Líneas recomendadas
+      const dL = lineCount(fields.driverText.value);
+      const pL = lineCount(fields.patternText.value);
+      const sL = lineCount(fields.shockText.value);
+      const cL = lineCount(fields.chainText.value);
+
+      if(dL && (dL < 2 || dL > 4)) issues.push("Tarjeta 1: intenta dejarla en 2–3 líneas (1 idea por línea).");
+      if(pL && (pL < 2 || pL > 4)) issues.push("Tarjeta 2: intenta dejarla en 2–3 líneas claras.");
+      if(sL && (sL < 2 || sL > 4)) issues.push("Tarjeta 3: intenta dejarla en 2–3 líneas con 1 efecto concreto.");
+      if(cL && cL < 3) issues.push("Tarjeta 4: usa 3 líneas (Driver / Camino / Efecto local).");
+
+      // Cadena completa (estructura)
+      if(hasText(fields.chainText.value)){
+        if(!(hasDriverWord && hasCaminoWord && hasEfectoWord)){
+          issues.push("Tarjeta 4: asegúrate de escribir explícitamente la cadena: Driver global → Camino (cadena) → Efecto local.");
+        }
+        if(local && !mentionsLocal){
+          issues.push(`Tarjeta 4: menciona explícitamente el componente local (${local}) en la última línea del efecto local.`);
+        }
+      }
+
+      // Prueba
+      const hasProof = (fields.proofPhoto.files && fields.proofPhoto.files[0]) || hasText(fields.proofText.value);
+      if(!hasProof) issues.push("Falta la prueba (foto o prueba textual).");
+
+      // Meta: 4 líneas
+      const metaLines = (fields.metaText.value || "").split("\n").map(s=>s.trim()).filter(Boolean);
+      if(metaLines.length < 4) issues.push("Cierre metacognitivo: completa las 4 líneas.");
+      const hasDuda = metaLines.some(l => /duda/i.test(l)) && metaLines.some(l => l.split(":")[1]?.trim().length);
+      if(!hasDuda) issues.push("Cierre: agrega una duda potente (una pregunta que guíe tu próxima lectura).");
+
+      // Mensajes positivos
+      if(hasDriverWord && hasCaminoWord && hasEfectoWord && local && mentionsLocal){
+        msgs.push("✅ Tu Tarjeta 4 muestra la cadena completa (tendencia → cadena → presión → efecto local). Estás pensando de forma sistémica.");
+      }
+      if(hasText(fields.patternSelect.value)){
+        const pat = fields.patternSelect.value;
+        if(pat.includes("SUSTITUCION")) msgs.push("Tip rápido: en Sustitución, aclara qué material/energía reemplaza a cuál.");
+        if(pat.includes("EFECTO REBOTE")) msgs.push("Tip rápido: en Efecto rebote, menciona cómo la eficiencia baja el costo y aumenta el uso total.");
+      }
+
+      return {msgs, issues};
+    }
+
+    function setFeedback(type, html){
+      fields.feedback.className = "feedback " + type;
+      fields.feedback.innerHTML = html;
+    }
+
+    function check(){
+      setProgressUI();
+      const {pct} = countProgress();
+      const {msgs, issues} = analyzeQuality();
+
+      if(pct >= 90 && issues.length === 0){
+        setFeedback("ok",
+          `<b>Excelente (autoevaluación bien armada).</b><br>
+           ${msgs.length ? msgs.join("<br>") : "Tus tarjetas están completas, concretas y conectan bien lo global con lo local."}<br><br>
+           Siguiente paso: exporta en PDF (Slides) o comparte el enlace con permiso “ver” y súbelo al LMS.`
+        );
+        return;
+      }
+      if(pct >= 70){
+        setFeedback("warn",
+          `<b>Aceptable (ya se entiende, falta afinar).</b><br>
+           Revisa estas mejoras puntuales:<br>
+           <ul style="margin:8px 0 0 18px;color:#0f172a">
+             ${issues.slice(0,6).map(x=>`<li>${x}</li>`).join("")}
+           </ul>
+           <div style="margin-top:10px;color:#0f172a">
+             ${msgs.length ? msgs.join("<br>") : "Si te pierdes en teoría: qué driver empuja, qué shock golpea, y qué le pasa a tu componente local."}
+           </div>`
+        );
+        return;
+      }
+      setFeedback("bad",
+        `<b>Por mejorar (aún incompleto o muy vago).</b><br>
+         Prioriza este orden: <b>Producto</b> → <b>Prueba</b> → <b>Driver</b> → <b>Patrón</b> → <b>Shock</b> → <b>Tarjeta 4 con cadena</b> → <b>Cierre</b>.<br><br>
+         Lista rápida de pendientes:<br>
+         <ul style="margin:8px 0 0 18px;color:#0f172a">
+           ${issues.slice(0,8).map(x=>`<li>${x}</li>`).join("")}
+         </ul>`
+      );
+    }
+
+    function resetAll(){
+      fields.studentName.value = "";
+      fields.product.value = "";
+      fields.proofText.value = "";
+      fields.driverSelect.value = "";
+      fields.driverText.value = "";
+      fields.patternSelect.value = "";
+      fields.patternText.value = "";
+      fields.shockSelect.value = "";
+      fields.shockText.value = "";
+      fields.localSelect.value = "";
+      fields.chainText.value = "";
+      fields.metaText.value = `Lo que ya puedo explicar: ____
+Lo que aún no entiendo: ____
+1 conexión global–local que me sorprendió: ____
+1 duda potente: ____`;
+      fields.proofPhoto.value = "";
+      fields.previewBox.innerHTML = "";
+      setProgressUI();
+      setFeedback("", "Completa tus tarjetas y pulsa <b>Comprobar</b>.");
+    }
+
+    function exportTXT(){
+      const hasPhoto = fields.proofPhoto.files && fields.proofPhoto.files[0];
+      const proof = hasPhoto ? `[FOTO] ${fields.proofPhoto.files[0].name}` : (fields.proofText.value || "").trim();
+
+      const content =
+`SEMANA 7 – DETECTIVE GLOBAL–LOCAL
+Nombre: ${fields.studentName.value.trim()}
+Caso (producto): ${fields.product.value.trim()}
+
+PRUEBA:
+${proof || "(sin prueba)"}
+
+TARJETA 1 – DRIVER GLOBAL:
+Driver: ${fields.driverSelect.value || "(sin seleccionar)"}
+${(fields.driverText.value || "").trim()}
+
+TARJETA 2 – PATRON:
+Patrón: ${fields.patternSelect.value || "(sin seleccionar)"}
+${(fields.patternText.value || "").trim()}
+
+TARJETA 3 – SHOCK:
+Shock: ${fields.shockSelect.value || "(sin seleccionar)"}
+${(fields.shockText.value || "").trim()}
+
+TARJETA 4 – IMPACTO LOCAL:
+Componente: ${fields.localSelect.value || "(sin seleccionar)"}
+${(fields.chainText.value || "").trim()}
+
+CIERRE METACOGNITIVO:
+${(fields.metaText.value || "").trim()}
+`;
+
+      const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      const safeName = (fields.studentName.value || "ESTUDIANTE").trim().replace(/\s+/g,"_");
+      a.download = `Semana7_DetectiveGlobalLocal_${safeName}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    }
+
+    // Vista previa de imagen (local)
+    fields.proofPhoto.addEventListener("change", ()=>{
+      const f = fields.proofPhoto.files && fields.proofPhoto.files[0];
+      if(!f){ fields.previewBox.innerHTML = ""; setProgressUI(); return; }
+      const url = URL.createObjectURL(f);
+      fields.previewBox.innerHTML = `
+        <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+          <img src="${url}" alt="Prueba del producto" style="display:block;width:100%;max-height:220px;object-fit:cover;">
+        </div>
+        <div class="small">Archivo: <b>${f.name}</b></div>
+      `;
+      setProgressUI();
+    });
+
+    // Auto-progreso al escribir
+    [
+      "studentName","product","proofText",
+      "driverSelect","driverText",
+      "patternSelect","patternText",
+      "shockSelect","shockText",
+      "localSelect","chainText","metaText"
+    ].forEach(id=>{
+      el(id).addEventListener("input", setProgressUI);
+      el(id).addEventListener("change", setProgressUI);
+    });
+
+    // Botones
+    el("btnCheck").addEventListener("click", check);
+    el("btnReset").addEventListener("click", resetAll);
+    el("btnExport").addEventListener("click", exportTXT);
+
+    // Init
+    setProgressUI();
+  </script>
+</body>
+</html>
