@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crucigrama – Territorio, actores y normas</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --ink:#16120a;
+  --cream:#faf7f0;
+  --parch:#f0e8d5;
+  --gold:#c8922a;
+  --gold-l:#e8c060;
+  --teal-d:#1a3838;
+  --teal:#1e6b6b;
+  --teal-l:#2a9494;
+  --teal-p:#e8f5f5;
+  --border:#d4c4a0;
+  --shadow:rgba(22,18,10,.12);
+  --ok:#2e7d32;
+  --bad:#c62828;
+  --cell:42px;
+}
+
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);overflow-x:hidden}
+
+.app{max-width:800px;width:100%;height:800px;max-height:800px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;background:var(--cream)}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--teal-d) 0%,var(--teal) 55%,var(--teal-l) 100%);color:var(--cream);padding:13px 22px 11px;flex-shrink:0;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 12px);pointer-events:none}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-l),var(--gold))}
+.badge{display:inline-flex;align-items:center;gap:5px;background:rgba(200,146,42,.22);border:1px solid rgba(200,146,42,.38);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gold-l);margin-bottom:4px}
+.header h1{font-family:'Playfair Display',serif;font-size:19px;font-weight:900;line-height:1.2}
+.header p{font-size:11.5px;opacity:.8;margin-top:3px;line-height:1.4}
+
+/* SCORE ROW */
+.srow{background:var(--parch);border-bottom:2px solid var(--border);padding:6px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:4px;background:white;border:1.5px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:700;color:var(--ink)}
+.chip span{font-weight:400;opacity:.6;font-size:10.5px}
+.pw{flex:1;height:6px;background:var(--border);border-radius:10px;overflow:hidden}
+.pf{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .5s;width:0%}
+.bhint{background:transparent;border:1.5px solid var(--gold);color:var(--gold);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.bhint:hover{background:var(--gold);color:white}
+
+/* MAIN */
+.main{flex:1;display:grid;grid-template-columns:1fr 220px;overflow:hidden;min-height:0}
+
+/* GRID */
+.gp{overflow:auto;padding:14px 10px 14px 16px;display:flex;align-items:flex-start;justify-content:center}
+.gp::-webkit-scrollbar{width:4px;height:4px}
+.gp::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.cw{display:grid;gap:2px;flex-shrink:0}
+
+/* CELLS */
+.cell{width:var(--cell);height:var(--cell);position:relative}
+.cell.blk{background:var(--ink);border-radius:3px}
+.cell.wht{background:white;border:2px solid #c8b890;border-radius:4px;box-shadow:0 1px 3px var(--shadow);transition:border-color .15s,background .15s}
+.cell.wht.whi{background:#f0fafa;border-color:rgba(30,107,107,.4)}
+.cell.wht.act{background:var(--teal-p);border-color:var(--teal);z-index:2}
+.cell.wht.kok{background:#edf7ee;border-color:#81c784}
+.cell.wht.kbad{background:#fdecea;border-color:#e57373;animation:shk .3s ease}
+.cell.wht.rev{background:#fff8e6;border-color:var(--gold)}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+.cn{position:absolute;top:2px;left:3px;font-size:7.5px;font-weight:800;color:var(--teal);line-height:1;pointer-events:none;font-family:'DM Sans',sans-serif}
+
+.cell input{position:absolute;inset:0;width:100%;height:100%;border:none;outline:none;background:transparent;text-align:center;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--ink);caret-color:var(--teal);text-transform:uppercase;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cell.kok  input{color:var(--ok)}
+.cell.kbad input{color:var(--bad)}
+.cell.rev  input{color:var(--gold)}
+
+/* CLUES */
+.cp{border-left:2px solid var(--border);background:var(--parch);display:flex;flex-direction:column;overflow:hidden}
+.ctabs{display:flex;border-bottom:2px solid var(--border);flex-shrink:0}
+.ctab{flex:1;padding:8px 4px;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;opacity:.5;border-bottom:3px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
+.ctab.on{opacity:1;border-bottom-color:var(--teal);color:var(--teal)}
+.cl{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.cl::-webkit-scrollbar{width:3px}
+.cl::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.ci{background:white;border:1.5px solid var(--border);border-radius:8px;padding:7px 9px;cursor:pointer;transition:all .2s;display:flex;gap:7px;align-items:flex-start}
+.ci:hover,.ci.on{border-color:var(--teal);background:var(--teal-p)}
+.ci.sv{border-color:#81c784;background:#edf7ee}
+.cin{min-width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ci.sv .cin{background:var(--ok)}
+.cit{font-size:11.5px;line-height:1.4;color:var(--ink)}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(22,18,10,.6);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all .3s;padding:16px}
+.ov.show{opacity:1;visibility:visible}
+.modal{background:var(--cream);border-radius:20px;max-width:440px;width:100%;display:flex;flex-direction:column;transform:translateY(18px) scale(.95);transition:transform .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 30px 70px rgba(22,18,10,.4);border:2px solid var(--gold);overflow:hidden}
+.ov.show .modal{transform:translateY(0) scale(1)}
+.mh{background:linear-gradient(135deg,var(--teal-d),var(--teal));padding:22px 24px 16px;color:white;text-align:center;position:relative;flex-shrink:0}
+.mtr{font-size:52px;display:block;margin-bottom:8px;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.mt{font-family:'Playfair Display',serif;font-size:22px;font-weight:900}
+.mx{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.3);color:white;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;line-height:1}
+.mx:hover{background:rgba(255,255,255,.35)}
+.mb{padding:20px 24px 24px;display:flex;flex-direction:column;gap:12px}
+.ms{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;text-align:center;color:var(--teal)}
+.msl{text-align:center;font-size:12px;color:var(--teal);opacity:.7;margin-top:-8px}
+.mm{font-size:13px;line-height:1.7;color:var(--ink);text-align:center;background:var(--parch);border-radius:12px;padding:14px 16px;border:1.5px solid var(--border)}
+.br{display:block;width:100%;background:var(--teal);color:white;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.br:hover{background:var(--teal-d);transform:translateY(-1px)}
+
+.footer{background:var(--teal-d);color:rgba(250,247,240,.6);text-align:center;padding:7px;font-size:11px;flex-shrink:0}
+
+@media(max-width:600px){
+  :root{--cell:32px}
+  .app{height:auto;max-height:none}
+  .main{grid-template-columns:1fr}
+  .cp{border-left:none;border-top:2px solid var(--border);max-height:200px}
+  .header h1{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="badge">✏️ Crucigrama interactivo</div>
+    <h1>Territorio, actores y normas</h1>
+    <p>Complete el crucigrama. Escriba todas las respuestas en MAYÚSCULAS y SIN TILDES.</p>
+  </div>
+
+  <div class="srow">
+    <div class="chip">✅ <span>Palabras</span> <b id="sc">0</b>/10</div>
+    <div class="pw"><div class="pf" id="pf"></div></div>
+    <button class="bhint" onclick="reveal()">💡 Revelar</button>
+  </div>
+
+  <div class="main">
+    <div class="gp"><div class="cw" id="cw"></div></div>
+    <div class="cp">
+      <div class="ctabs">
+        <button class="ctab on" id="tv" onclick="tab('V')">↕ Verticales</button>
+        <button class="ctab"    id="th" onclick="tab('H')">↔ Horizontales</button>
+      </div>
+      <div class="cl" id="cl"></div>
+    </div>
+  </div>
+
+  <div class="footer">✏️ Recurso educativo interactivo &nbsp;|&nbsp; Territorio, actores y normas</div>
+</div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)close_()">
+  <div class="modal">
+    <div class="mh">
+      <button class="mx" onclick="close_()">✕</button>
+      <span class="mtr">🏆</span>
+      <div class="mt">¡Felicitaciones!</div>
+    </div>
+    <div class="mb">
+      <div class="ms" id="mscore">10/10</div>
+      <div class="msl">palabras completadas</div>
+      <div class="mm">¡Felicitaciones por completar el crucigrama! Ha demostrado un sólido conocimiento de los conceptos fundamentales de gestión territorial: territorio urbano, rural e indígena, actores, gobernanza, licencia, permiso, área, conflicto y alianza. ¡Excelente trabajo!</div>
+      <button class="br" onclick="restart()">🔄 Jugar de nuevo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── WORD DATA (fully validated – zero letter conflicts) ───
+   Grid 10 cols × 11 rows.
+   Confirmed intersections:
+     (8,1) H6:O  = V8:O   GOBERNANZA[1]=O , CONFLICTO[8]=O  ✓
+     (8,3) H6:E  = V4:E   GOBERNANZA[3]=E , ACTORES[5]=E    ✓
+     (8,5) H6:N  = V1:N   GOBERNANZA[5]=N , URBANO[4]=N     ✓
+     (8,6) H6:A  = V7:A   GOBERNANZA[6]=A , AREA[3]=A       ✓
+     (8,7) H6:N  = V10:N  GOBERNANZA[7]=N , ALIANZA[4]=N    ✓
+     (8,9) H6:A  = V2:A   GOBERNANZA[9]=A , LICENCIA[7]=A   ✓
+     (10,7)H9:A  = V10:A  INDIGENA[7]=A   , ALIANZA[6]=A    ✓
+*/
+const W=[
+  {id:'H6', w:'GOBERNANZA',d:'H',col:0,row:8, n:6, c:'Coordinación de reglas, instituciones y actores para manejar recursos y conflictos.'},
+  {id:'H3', w:'RURAL',     d:'H',col:2,row:2, n:3, c:'Contexto donde el agua se relaciona con riego, cosecha y subsistencia.'},
+  {id:'H5', w:'PERMISO',   d:'H',col:2,row:1, n:5, c:'Aprobación administrativa para realizar una actividad bajo condiciones específicas.'},
+  {id:'H9', w:'INDIGENA',  d:'H',col:0,row:10,n:9, c:'Contexto donde el recurso se entiende como territorio–cultura–vida y requiere acuerdos y legitimidad.'},
+  {id:'V8', w:'CONFLICTO', d:'V',col:1,row:0, n:8, c:'Tensión cuando compiten usos o intereses por un mismo recurso.'},
+  {id:'V4', w:'ACTORES',   d:'V',col:3,row:3, n:4, c:'Personas e instituciones con intereses y poder de decisión sobre un recurso.'},
+  {id:'V1', w:'URBANO',    d:'V',col:5,row:4, n:1, c:'Contexto donde el agua segura y el verde urbano sostienen salud y bienestar.'},
+  {id:'V7', w:'AREA',      d:'V',col:6,row:5, n:7, c:'Primera palabra de "área protegida": espacio gestionado para conservación.'},
+  {id:'V10',w:'ALIANZA',   d:'V',col:7,row:4, n:10,c:'Cooperación entre actores para prevenir riesgos o mejorar gestión.'},
+  {id:'V2', w:'LICENCIA',  d:'V',col:9,row:1, n:2, c:'Instrumento ambiental para proyectos con impactos relevantes y obligaciones de control/seguimiento.'},
+];
+
+const COLS=10,ROWS=11;
+let gd={},ug={},solved=new Set(),aw=null,dt='V';
+const K=(r,c)=>`${r},${c}`;
+
+function build(){
+  W.forEach(x=>{
+    for(let i=0;i<x.w.length;i++){
+      const r=x.d==='V'?x.row+i:x.row, c=x.d==='H'?x.col+i:x.col, k=K(r,c);
+      if(!gd[k])gd[k]={l:'',ids:[],num:null};
+      gd[k].l=x.w[i]; gd[k].ids.push(x.id);
+      if(i===0)gd[k].num=x.n;
+      if(!ug[k])ug[k]='';
+    }
+  });
+}
+
+function renderGrid(){
+  const el=document.getElementById('cw');
+  el.style.gridTemplateColumns=`repeat(${COLS},var(--cell))`;
+  el.style.gridTemplateRows=`repeat(${ROWS},var(--cell))`;
+  el.innerHTML='';
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const k=K(r,c),d=document.createElement('div');
+      d.className='cell'; d.id=`C${r}_${c}`;
+      if(gd[k]){
+        d.classList.add('wht');
+        if(gd[k].num){const n=document.createElement('div');n.className='cn';n.textContent=gd[k].num;d.appendChild(n);}
+        const inp=document.createElement('input');
+        inp.type='text';inp.maxLength=2;inp.autocomplete='off';
+        inp.dataset.r=r;inp.dataset.c=c;
+        inp.value=ug[k]||'';
+        inp.addEventListener('focus',()=>onF(r,c));
+        inp.addEventListener('keydown',e=>onK(e,r,c));
+        inp.addEventListener('input',e=>onI(e,r,c));
+        d.appendChild(inp);
+        applyStyle(r,c);
+      }else{d.classList.add('blk');}
+      el.appendChild(d);
+    }
+  }
+  hilight();
+}
+
+function onF(r,c){
+  const ids=gd[K(r,c)]?.ids||[];
+  if(!ids.length)return;
+  const sd=ids.find(id=>id.startsWith(dt));
+  let p=sd||ids[0];
+  if(p===aw&&ids.length>1)p=ids.find(id=>id!==aw)||p;
+  setAW(p);syncTab(p);scrollCI(p);
+}
+function setAW(id){aw=id;hilight();}
+function hilight(){
+  document.querySelectorAll('.cell.wht').forEach(e=>{e.classList.remove('act','whi');});
+  if(!aw)return;
+  wCells(aw).forEach(({r,c})=>{const e=document.getElementById(`C${r}_${c}`);if(e)e.classList.add('whi');});
+}
+function wCells(id){
+  const x=W.find(w=>w.id===id);if(!x)return[];
+  return Array.from({length:x.w.length},(_,i)=>({r:x.d==='V'?x.row+i:x.row,c:x.d==='H'?x.col+i:x.col}));
+}
+function fi(r,c){const e=document.querySelector(`#C${r}_${c} input`);if(e)e.focus();}
+
+function onI(e,r,c){
+  const inp=e.target;
+  let v=inp.value.toUpperCase().replace(/[^A-Z]/g,'');
+  if(v.length>1)v=v[v.length-1];
+  inp.value=v; ug[K(r,c)]=v;
+  applyStyle(r,c); chkW(aw);
+  if(v)adv(r,c);
+}
+function onK(e,r,c){
+  if(e.key==='Backspace'){
+    const k=K(r,c);
+    if(ug[k]){ug[k]='';const i=document.querySelector(`#C${r}_${c} input`);if(i)i.value='';applyStyle(r,c);}
+    else ret(r,c);
+    e.preventDefault();return;
+  }
+  const mv={ArrowRight:[0,1],ArrowLeft:[0,-1],ArrowDown:[1,0],ArrowUp:[-1,0]};
+  if(mv[e.key]){mv_(r,c,...mv[e.key]);e.preventDefault();}
+}
+function adv(r,c){const x=W.find(w=>w.id===aw);if(!x)return;fi(x.d==='V'?r+1:r,x.d==='H'?c+1:c);}
+function ret(r,c){const x=W.find(w=>w.id===aw);if(!x)return;fi(x.d==='V'?r-1:r,x.d==='H'?c-1:c);}
+function mv_(r,c,dr,dc){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&gd[K(nr,nc)])fi(nr,nc);}
+
+function applyStyle(r,c){
+  const k=K(r,c),e=document.getElementById(`C${r}_${c}`);if(!e)return;
+  e.classList.remove('kok','kbad','rev');
+  const v=ug[k];if(!v)return;
+  e.classList.add(v===gd[k].l?'kok':'kbad');
+}
+function chkW(id){
+  if(!id)return;
+  const done=wCells(id).every(({r,c})=>ug[K(r,c)]===gd[K(r,c)].l);
+  const was=solved.has(id);
+  if(done&&!was){solved.add(id);updS();updCI(id);if(solved.size===W.length)setTimeout(showFin,600);}
+  else if(!done&&was){solved.delete(id);updS();updCI(id);}
+}
+function updS(){
+  document.getElementById('sc').textContent=solved.size;
+  document.getElementById('pf').style.width=(solved.size/10*100)+'%';
+}
+
+function renderCl(){
+  const list=document.getElementById('cl');list.innerHTML='';
+  W.filter(w=>w.d===dt).forEach(w=>{
+    const d=document.createElement('div');
+    d.className='ci'+(solved.has(w.id)?' sv':'')+(aw===w.id?' on':'');
+    d.id=`CI_${w.id}`;
+    d.innerHTML=`<div class="cin">${w.n}</div><div class="cit">${w.c}</div>`;
+    d.onclick=()=>{setAW(w.id);dt=w.d;updTabs();fi(w.row,w.col);scrollCI(w.id);};
+    list.appendChild(d);
+  });
+}
+function syncTab(id){const x=W.find(w=>w.id===id);if(x&&x.d!==dt){dt=x.d;updTabs();renderCl();}else renderCl();}
+function updTabs(){document.getElementById('tv').classList.toggle('on',dt==='V');document.getElementById('th').classList.toggle('on',dt==='H');}
+function updCI(id){const e=document.getElementById(`CI_${id}`);if(e)e.classList.toggle('sv',solved.has(id));}
+function scrollCI(id){
+  document.querySelectorAll('.ci').forEach(e=>e.classList.remove('on'));
+  const e=document.getElementById(`CI_${id}`);if(e){e.classList.add('on');e.scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
+function tab(d){dt=d;updTabs();renderCl();}
+
+function reveal(){
+  if(!aw)return;
+  const x=W.find(w=>w.id===aw);
+  wCells(aw).forEach(({r,c},i)=>{
+    const k=K(r,c);ug[k]=x.w[i];
+    const inp=document.querySelector(`#C${r}_${c} input`);if(inp)inp.value=x.w[i];
+    const el=document.getElementById(`C${r}_${c}`);if(el){el.classList.remove('kok','kbad');el.classList.add('rev');}
+  });
+  chkW(aw);
+}
+
+function showFin(){
+  document.getElementById('mscore').textContent=`${solved.size}/10`;
+  document.getElementById('ov').classList.add('show');
+}
+function close_(){document.getElementById('ov').classList.remove('show');}
+
+function restart(){
+  ug={};Object.keys(gd).forEach(k=>ug[k]='');
+  solved.clear();aw=null;
+  close_();updS();renderGrid();renderCl();
+}
+
+build();renderGrid();renderCl();
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close_();});
+</script>
+</body>
+</html>
