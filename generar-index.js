@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+#!/usr/bin/env node
+
+/**
+ * Generador de index.html - Crea página dinámica del catálogo
+ * Los recursos se cargan automáticamente desde el JSON generado por scanner.js
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+function generateIndexHtml() {
+    const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -353,25 +364,25 @@
                 const section = document.createElement('div');
                 section.className = 'folder-section';
                 
-                section.innerHTML = `
+                section.innerHTML = \`
                     <div class="folder-header">
-                        <h2>${folder}</h2>
+                        <h2>\${folder}</h2>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="folder-count">${resources.length}</span>
+                            <span class="folder-count">\${resources.length}</span>
                             <span class="toggle-icon">▶</span>
                         </div>
                     </div>
                     <div class="resources-list">
-                        ${resources.map(r => `
+                        \${resources.map(r => \`
                             <div class="resource-item">
                                 <span class="resource-icon">📄</span>
-                                <a href="${r.ruta}" class="resource-link" title="${r.nombre}">
-                                    ${r.nombre.replace(/_/g, ' ')}
+                                <a href="\${r.ruta}" class="resource-link" title="\${r.nombre}">
+                                    \${r.nombre.replace(/_/g, ' ')}
                                 </a>
                             </div>
-                        `).join('')}
+                        \`).join('')}
                     </div>
-                `;
+                \`;
 
                 section.querySelector('.folder-header').addEventListener('click', () => {
                     section.classList.toggle('collapsed');
@@ -420,4 +431,20 @@
         document.addEventListener('DOMContentLoaded', loadResources);
     </script>
 </body>
-</html>
+</html>`;
+
+    try {
+        fs.writeFileSync('index.html', html);
+        console.log('✅ index.html generado exitosamente');
+        return true;
+    } catch (error) {
+        console.error('Error generando index.html:', error);
+        return false;
+    }
+}
+
+if (require.main === module) {
+    generateIndexHtml();
+}
+
+module.exports = { generateIndexHtml };

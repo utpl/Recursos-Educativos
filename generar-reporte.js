@@ -1,4 +1,14 @@
-<!DOCTYPE html>
+#!/usr/bin/env node
+
+/**
+ * Generador de reporte.html - Página de análisis y estadísticas
+ * Incluye sección formal de entrega del proyecto
+ */
+
+const fs = require('fs');
+
+function generateReporteHtml() {
+    const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -393,27 +403,27 @@
             // Top carpetas
             const sortedByCount = [...counts].sort((a, b) => b.count - a.count).slice(0, 10);
             const topContainer = document.getElementById('topCarpetas');
-            topContainer.innerHTML = sortedByCount.map(item => `
+            topContainer.innerHTML = sortedByCount.map(item => \`
                 <div class="bar-item">
-                    <div class="bar-label">${item.folder}</div>
+                    <div class="bar-label">\${item.folder}</div>
                     <div class="bar-container">
-                        <div class="bar-fill" style="width: ${(item.count / maxCount) * 100}%">
-                            ${item.count}
+                        <div class="bar-fill" style="width: \${(item.count / maxCount) * 100}%">
+                            \${item.count}
                         </div>
                     </div>
                 </div>
-            `).join('');
+            \`).join('');
 
             // Tabla
             const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = counts.map((item, index) => `
+            tableBody.innerHTML = counts.map((item, index) => \`
                 <tr>
-                    <td><strong>${index + 1}</strong></td>
-                    <td>${item.folder}</td>
-                    <td>${item.count}</td>
-                    <td>${((item.count / total) * 100).toFixed(1)}%</td>
+                    <td><strong>\${index + 1}</strong></td>
+                    <td>\${item.folder}</td>
+                    <td>\${item.count}</td>
+                    <td>\${((item.count / total) * 100).toFixed(1)}%</td>
                 </tr>
-            `).join('');
+            \`).join('');
 
             // Fecha
             const today = new Date();
@@ -424,4 +434,20 @@
         document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
-</html>
+</html>`;
+
+    try {
+        fs.writeFileSync('reporte.html', html);
+        console.log('✅ reporte.html generado exitosamente');
+        return true;
+    } catch (error) {
+        console.error('Error generando reporte.html:', error);
+        return false;
+    }
+}
+
+if (require.main === module) {
+    generateReporteHtml();
+}
+
+module.exports = { generateReporteHtml };
