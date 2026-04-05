@@ -208,6 +208,50 @@ function generateReporteHtml() {
             margin-top: 30px;
         }
 
+        .btn-excel {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #0E2D52 0%, #1a4d7f 100%);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(14, 45, 82, 0.2);
+        }
+
+        .btn-excel:hover {
+            background: linear-gradient(135deg, #174a84 0%, #2a5a9a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(14, 45, 82, 0.3);
+        }
+
+        .btn-excel:active {
+            transform: translateY(0);
+        }
+
+        .download-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f3f8 0%, #f5f7fa 100%);
+            border-radius: 12px;
+            border: 1px solid #667eea20;
+        }
+
+        .download-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
         .delivery-title {
             font-family: 'Poppins', sans-serif;
             font-size: 1.3em;
@@ -271,6 +315,14 @@ function generateReporteHtml() {
         </div>
 
         <div class="content">
+            <!-- Sección de Descarga Excel -->
+            <div class="download-section">
+                <p class="download-title">📥 Descargar Reporte</p>
+                <a href="recursos.xlsx" download class="btn-excel">
+                    📊 Descargar reporte en Excel
+                </a>
+            </div>
+
             <!-- Sección 1: Resumen General -->
             <div class="section">
                 <h2 class="section-title">Resumen General</h2>
