@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acotaciones en CAD</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #1a73e8;
+    --primary-dark: #1557b0;
+    --accent: #00bcd4;
+    --accent2: #ff6f00;
+    --bg: #f0f4ff;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(26,115,232,0.10);
+    --shadow-hover: 0 8px 32px rgba(26,115,232,0.18);
+  }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    width: 800px;
+    max-width: 800px;
+    min-height: 800px;
+    overflow-x: hidden;
+    font-size: 13px;
+  }
+
+  /* ── HEADER ── */
+  .main-header {
+    background: linear-gradient(135deg, #1a73e8 0%, #00bcd4 60%, #1557b0 100%);
+    color: #fff;
+    padding: 22px 28px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .main-header::before {
+    content:'';
+    position:absolute; top:-40px; right:-40px;
+    width:180px; height:180px;
+    border-radius:50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .main-header::after {
+    content:'';
+    position:absolute; bottom:-30px; left:60px;
+    width:120px; height:120px;
+    border-radius:50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .header-icon {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .header-text h1 {
+    font-size: 22px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .header-text p {
+    font-size: 12px; opacity: 0.85; margin-top: 2px;
+  }
+
+  /* ── NAV TABS ── */
+  .nav-tabs {
+    display: flex;
+    background: #fff;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 0 16px;
+    gap: 2px;
+  }
+  .nav-tab {
+    padding: 11px 18px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.25s;
+    white-space: nowrap;
+    background: none; border-top: none; border-left: none; border-right: none;
+    outline: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-tab:hover { color: var(--primary); }
+  .nav-tab.active {
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+  }
+
+  /* ── VIEWS ── */
+  .view { display: none; padding: 20px 20px 16px; animation: fadeIn 0.3s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: 12px 12px 0 0;
+    color: #fff;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+    letter-spacing: 0.3px;
+  }
+  .section-body {
+    background: #fff;
+    border-radius: 0 0 12px 12px;
+    padding: 16px 18px;
+    border: 1.5px solid #e2e8f0;
+    border-top: none;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 18px 16px 14px;
+    border: 1.5px solid #e8eeff;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    text-align: center;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+  }
+  .card-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .card h3 { font-size: 13px; font-weight: 700; color: var(--text); }
+  .card p { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .card-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    background: var(--bg); color: var(--primary);
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+  }
+
+  /* ── COMPARISON BOX ── */
+  .compare-box {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-top: 16px;
+  }
+  .compare-card {
+    border-radius: var(--radius);
+    border: 2px solid;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.22s, box-shadow 0.22s;
+  }
+  .compare-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+  .compare-card.no-cota { border-color: #94a3b8; }
+  .compare-card.con-cota { border-color: var(--primary); }
+  .compare-header {
+    padding: 10px 14px;
+    font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; gap: 7px;
+    color: #fff;
+  }
+  .compare-card.no-cota .compare-header { background: #64748b; }
+  .compare-card.con-cota .compare-header { background: var(--primary); }
+  .compare-body { padding: 12px 14px; background: #fff; font-size: 12px; color: var(--muted); }
+  .compare-img { width: 100%; border-radius: 0; display: block; }
+
+  /* ── GIF SECTION ── */
+  .gif-wrapper {
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 2px solid #e8eeff;
+    margin-top: 14px;
+    text-align: center;
+    background: #f8faff;
+  }
+  .gif-wrapper img { width: 100%; max-height: 300px; object-fit: contain; display: block; }
+  .tip-box {
+    background: linear-gradient(90deg, #fff8e1 0%, #fff3cd 100%);
+    border-left: 4px solid var(--accent2);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .tip-box strong { color: var(--accent2); font-size: 13px; }
+  .instr-box {
+    background: linear-gradient(90deg, #e8f4fd 0%, #d0eafc 100%);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #0d5e8c;
+  }
+
+  /* ── DRAG & DROP ACTIVITY ── */
+  .activity-instructions {
+    background: linear-gradient(90deg, #e8f4fd 0%, #d0eafc 100%);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    color: #0d5e8c;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .sentence-block {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 2.2;
+    color: var(--text);
+  }
+  .drop-zone {
+    display: inline-block;
+    min-width: 130px;
+    border-bottom: 2.5px dashed var(--primary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f0f4ff;
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--primary);
+    transition: background 0.2s, border-color 0.2s;
+    vertical-align: middle;
+    min-height: 24px;
+    font-size: 12px;
+  }
+  .drop-zone.filled {
+    background: #e0f7fa;
+    border-bottom-color: var(--accent);
+    color: #007c91;
+    border-bottom-style: solid;
+  }
+  .drop-zone.correct { background: #e6ffed; border-bottom-color: #22c55e; color: #166534; }
+  .drop-zone.wrong { background: #fff0f0; border-bottom-color: #ef4444; color: #991b1b; }
+  .drop-zone.drag-over { background: #dbeafe; border-bottom-color: var(--primary); }
+
+  .words-bank {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 14px 0;
+    padding: 12px 16px;
+    background: #f8faff;
+    border-radius: 10px;
+    border: 1.5px dashed #c7d2fe;
+    min-height: 48px;
+  }
+  .word-chip {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: grab;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(26,115,232,0.2);
+  }
+  .word-chip:hover { transform: scale(1.05); box-shadow: 0 4px 14px rgba(26,115,232,0.3); }
+  .word-chip.dragging { opacity: 0.4; }
+  .word-chip.used { display: none; }
+
+  .activity-actions {
+    display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 9px 20px;
+    border-radius: 25px;
+    border: none; cursor: pointer;
+    font-size: 12.5px; font-weight: 700;
+    transition: all 0.2s;
+    outline: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(26,115,232,0.25);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(26,115,232,0.3); }
+  .btn-secondary {
+    background: #f1f5f9; color: var(--muted);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .btn-secondary:hover { background: #e2e8f0; color: var(--text); }
+
+  .feedback-box {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-top: 12px;
+    display: none;
+    align-items: center; gap: 8px;
+  }
+  .feedback-box.show { display: flex; }
+  .feedback-box.success { background: #e6ffed; color: #166534; border: 1.5px solid #86efac; }
+  .feedback-box.error { background: #fff0f0; color: #991b1b; border: 1.5px solid #fca5a5; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15,23,42,0.55);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 20px;
+    width: min(580px, 94vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    animation: slideUp 0.28s cubic-bezier(.22,1,.36,1);
+    position: relative;
+  }
+  @keyframes slideUp { from { transform: translateY(30px); opacity:0; } to { transform:none; opacity:1; } }
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: #fff;
+    padding: 18px 22px;
+    border-radius: 20px 20px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .modal-header h2 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .modal-close {
+    background: rgba(255,255,255,0.2); border: none; cursor: pointer;
+    color: #fff; font-size: 18px; width: 32px; height: 32px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.35); }
+  .modal-body { padding: 22px; font-size: 13px; line-height: 1.7; color: var(--text); }
+  .modal-body img { width: 100%; border-radius: 10px; margin: 12px 0; box-shadow: var(--shadow); }
+  .modal-body p { margin-bottom: 10px; }
+  .modal-body ul { padding-left: 18px; }
+  .modal-body ul li { margin-bottom: 6px; }
+  .highlight { background: #e8f4fd; border-radius: 6px; padding: 10px 14px; margin: 10px 0; border-left: 3px solid var(--accent); }
+
+  /* ── REFERENCE ── */
+  .ref-box {
+    background: #f8faff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .ref-box strong { color: var(--primary); }
+
+  /* ── PROGRESS DOTS ── */
+  .progress-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; transition: background 0.3s; }
+  .dot.active { background: var(--primary); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    body { width: 100%; }
+    .cards-grid, .compare-box { grid-template-columns: 1fr; }
+    .main-header h1 { font-size: 17px; }
+    .nav-tab { padding: 8px 11px; font-size: 11px; }
+    .modal { border-radius: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="main-header">
+  <div class="header-icon">📐</div>
+  <div class="header-text">
+    <h1>Acotaciones en CAD</h1>
+    <p>Aprende a cotar dibujos técnicos con precisión 🖊️</p>
+  </div>
+</div>
+
+<!-- ── NAVIGATION ── -->
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="switchTab('vista1', this)">🏠 Inicio</button>
+  <button class="nav-tab" onclick="switchTab('vista2', this)">📏 Acotaciones</button>
+  <button class="nav-tab" onclick="switchTab('vista3', this)">🎬 Procedimiento</button>
+  <button class="nav-tab" onclick="switchTab('vista4', this)">✏️ Actividad</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     VISTA 1 — INICIO
+══════════════════════════════════════════════ -->
+<div class="view active" id="vista1">
+  <div class="section-header">🎯 ¿Qué aprenderás hoy?</div>
+  <div class="section-body">
+    <p style="color:var(--muted); font-size:12.5px; line-height:1.6;">Haz clic en cada tarjeta para explorar los conceptos clave sobre <strong>Acotaciones en CAD</strong>.</p>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card" onclick="openModal('m-comparar')">
+      <div class="card-icon" style="background:#e8f4fd;">📌</div>
+      <h3>Sin acotación vs. Acotada</h3>
+      <p>Diferencias visuales entre un dibujo sin cotas y uno con cotas aplicadas.</p>
+      <span class="card-badge">Ver diferencias →</span>
+    </div>
+    <div class="card" onclick="openModal('m-procedimiento')">
+      <div class="card-icon" style="background:#fff8e1;">🔄</div>
+      <h3>Procedimiento de cambio de ángulo de cota</h3>
+      <p>Paso a paso para cambiar el ángulo de acotación en un dibujo 2D/3D.</p>
+      <span class="card-badge">Explorar →</span>
+    </div>
+    <div class="card" onclick="openModal('m-tolerancias')">
+      <div class="card-icon" style="background:#f0fdf4;">📐</div>
+      <h3>Tolerancias GD&T</h3>
+      <p>Márgenes definidos y normativa ASME Y14.5M para tolerancias geométricas.</p>
+      <span class="card-badge">Conocer más →</span>
+    </div>
+    <div class="card" onclick="switchTab('vista4', document.querySelectorAll(\'.nav-tab\')[3])">
+      <div class="card-icon" style="background:#fce4ec;">🧩</div>
+      <h3>Actividad Interactiva</h3>
+      <p>Arrastre y suelte las palabras para completar el texto sobre tolerancias.</p>
+      <span class="card-badge">¡Practicar! →</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     VISTA 2 — ACOTACIONES
+══════════════════════════════════════════════ -->
+<div class="view" id="vista2">
+  <div class="section-header">📏 Sin acotación vs. Acotada</div>
+  <div class="section-body">
+    <p style="font-size:12.5px; color:var(--muted); line-height:1.6;">Desde el eje central puede <strong>abrir o cerrar la figura, de izquierda a derecha</strong> para que denote la diferencia entre un dibujo sin cotas y otro con cotas.</p>
+  </div>
+
+  <div class="compare-box" style="margin-top:14px;">
+    <div class="compare-card no-cota" onclick="openModal('m-sin-cota')">
+      <div class="compare-header">❌ Sin acotación</div>
+      <div class="compare-body">
+        <img src="media/Imagen 112.png" alt="Sin acotación" class="compare-img" onerror="this.style.display='none'">
+        <p style="margin-top:8px;">Dibujo técnico sin dimensiones anotadas. Haz clic para ampliar. 🔍</p>
+      </div>
+    </div>
+    <div class="compare-card con-cota" onclick="openModal('m-con-cota')">
+      <div class="compare-header">✅ Acotada</div>
+      <div class="compare-body">
+        <img src="media/Imagen 113.png" alt="Acotada" class="compare-img" onerror="this.style.display='none'">
+        <p style="margin-top:8px;">Dibujo técnico con cotas y dimensiones. Haz clic para ampliar. 🔍</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ref-box">
+    <strong>Referencia:</strong> Elaboración propia.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     VISTA 3 — PROCEDIMIENTO
+══════════════════════════════════════════════ -->
+<div class="view" id="vista3">
+  <div class="section-header">🎬 Procedimiento de cambio de ángulo de cota</div>
+  <div class="section-body">
+    <p style="font-size:12.5px; color:var(--muted); line-height:1.6;">Animación del proceso de cambio de una <em>acotación oblicua</em> en un dibujo 2D.</p>
+  </div>
+
+  <div class="gif-wrapper">
+    <img src="media/Imagen 114.gif" alt="Procedimiento cambio de ángulo de cota" onerror="this.outerHTML='<div style=\'padding:40px;text-align:center;color:#94a3b8;\'>📽️ Animación: Imagen 114.gif</div>'">
+  </div>
+
+  <div class="tip-box">
+    <strong>💡 TIP —</strong> Realice el proceso de cambio de una <em>acotación oblicua</em> de un dibujo en lienzo 2D, aunque posee líneas que simulan 3D. Para ello, se usa un segmento de referencia desde un punto inicial hasta su proyección determinada. <strong>¡Mírelo varias veces!</strong>
+  </div>
+
+  <div class="instr-box">
+    📌 <strong>Instrucción:</strong> Desde el eje central puede abrir o cerrar la figura, de izquierda a derecha para que denote la diferencia entre un dibujo sin cotas y otro con cotas.
+  </div>
+
+  <div class="ref-box">
+    <strong>Referencia:</strong> Elaboración propia.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     VISTA 4 — ACTIVIDAD INTERACTIVA
+══════════════════════════════════════════════ -->
+<div class="view" id="vista4">
+  <div class="section-header">🧩 Actividad: Arrastrar y soltar</div>
+  <div class="section-body">
+    <div class="activity-instructions">
+      🖱️ Arrastre cada palabra y colóquela donde corresponda para completar la información.
+    </div>
+
+    <!-- BANCO DE PALABRAS -->
+    <div class="words-bank" id="wordBank">
+      <div class="word-chip" draggable="true" data-word="márgenes definidos" id="chip-1">márgenes definidos</div>
+      <div class="word-chip" draggable="true" data-word="no varíe el funcionamiento" id="chip-2">no varíe el funcionamiento</div>
+      <div class="word-chip" draggable="true" data-word="GD&T" id="chip-3">GD&amp;T</div>
+      <div class="word-chip" draggable="true" data-word="ASME Y14.5M" id="chip-4">ASME Y14.5M</div>
+      <div class="word-chip" draggable="true" data-word="tamaño, forma y" id="chip-5">tamaño, forma y</div>
+      <div class="word-chip" draggable="true" data-word="gráficas avanzadas" id="chip-6">gráficas avanzadas</div>
+    </div>
+
+    <!-- ORACION -->
+    <div class="sentence-block">
+      Las tolerancias son
+      <span class="drop-zone" data-answer="márgenes definidos" id="dz1" onclick="handleZoneClick(this)">__________</span>
+      en los cuales la dimensión de un objeto puede variar, siempre y cuando
+      <span class="drop-zone" data-answer="no varíe el funcionamiento" id="dz2" onclick="handleZoneClick(this)">___________</span>
+      eficiente y correcto del sistema. Se conoce como
+      <span class="drop-zone" data-answer="GD&T" id="dz3" onclick="handleZoneClick(this)">________</span>
+      que traducido significa Tolerancias en Dimensiones Geométricas dentro de la norma
+      <span class="drop-zone" data-answer="ASME Y14.5M" id="dz4" onclick="handleZoneClick(this)">___________</span>
+      para especificar
+      <span class="drop-zone" data-answer="tamaño, forma y" id="dz5" onclick="handleZoneClick(this)">__________</span>
+      orientación de tolerancias
+      <span class="drop-zone" data-answer="gráficas avanzadas" id="dz6" onclick="handleZoneClick(this)">_______________</span>
+      y se divide en tolerancia por límites y por requerimiento normativo.
+    </div>
+
+    <div class="activity-actions">
+      <button class="btn btn-primary" onclick="checkAnswers()">✅ Verificar respuestas</button>
+      <button class="btn btn-secondary" onclick="resetActivity()">🔄 Reiniciar</button>
+    </div>
+
+    <div class="feedback-box" id="feedbackBox"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODALES
+══════════════════════════════════════════════ -->
+
+<!-- Modal: Comparar -->
+<div class="modal-overlay" id="m-comparar">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📌 Sin acotación vs. Acotada</h2>
+      <button class="modal-close" onclick="closeModal('m-comparar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Un dibujo técnico <strong>sin acotación</strong> muestra la geometría del objeto pero carece de dimensiones numéricas, lo que impide fabricar la pieza con precisión.</p>
+      <p>Un dibujo <strong>acotado</strong> incorpora líneas de cota, valores numéricos y símbolos que especifican longitudes, ángulos y tolerancias.</p>
+      <div class="highlight">📌 Desde el eje central puede abrir o cerrar la figura, de izquierda a derecha para que denote la diferencia entre un dibujo sin cotas y otro con cotas.</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+        <div>
+          <p style="font-weight:700; color:#64748b; font-size:12px; margin-bottom:4px;">❌ Sin acotación</p>
+          <img src="media/Imagen 112.png" alt="Sin acotación" onerror="this.style.display='none'">
+        </div>
+        <div>
+          <p style="font-weight:700; color:var(--primary); font-size:12px; margin-bottom:4px;">✅ Acotada</p>
+          <img src="media/Imagen 113.png" alt="Acotada" onerror="this.style.display='none'">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Sin cota -->
+<div class="modal-overlay" id="m-sin-cota">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>❌ Sin acotación</h2>
+      <button class="modal-close" onclick="closeModal('m-sin-cota')">✕</button>
+    </div>
+    <div class="modal-body">
+      <img src="media/Imagen 112.png" alt="Sin acotación" onerror="this.style.display='none'">
+      <p>Dibujo técnico <strong>sin acotación</strong>: muestra la geometría del objeto pero no incluye las dimensiones necesarias para su fabricación.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Con cota -->
+<div class="modal-overlay" id="m-con-cota">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>✅ Acotada</h2>
+      <button class="modal-close" onclick="closeModal('m-con-cota')">✕</button>
+    </div>
+    <div class="modal-body">
+      <img src="media/Imagen 113.png" alt="Acotada" onerror="this.style.display='none'">
+      <p>Dibujo técnico <strong>acotado</strong>: incluye líneas de cota, valores numéricos y símbolos que especifican con exactitud las dimensiones del objeto.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Procedimiento -->
+<div class="modal-overlay" id="m-procedimiento">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🔄 Procedimiento de cambio de ángulo de cota</h2>
+      <button class="modal-close" onclick="closeModal('m-procedimiento')">✕</button>
+    </div>
+    <div class="modal-body">
+      <img src="media/Imagen 114.gif" alt="Procedimiento" onerror="this.style.display='none'">
+      <div class="highlight">
+        <strong>💡 TIP:</strong> Realice el proceso de cambio de una <em>acotación oblicua</em> de un dibujo en lienzo 2D, aunque posee líneas que simulan 3D. Para ello, se usa un segmento de referencia desde un punto inicial hasta su proyección determinada. <strong>¡Mírelo varias veces!</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tolerancias -->
+<div class="modal-overlay" id="m-tolerancias">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📐 Tolerancias GD&T</h2>
+      <button class="modal-close" onclick="closeModal('m-tolerancias')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Las tolerancias son <strong>márgenes definidos</strong> en los cuales la dimensión de un objeto puede variar, siempre y cuando <strong>no varíe el funcionamiento</strong> eficiente y correcto del sistema.</p>
+      <p>Se conoce como <strong>GD&T</strong> que traducido significa Tolerancias en Dimensiones Geométricas dentro de la norma <strong>ASME Y14.5M</strong> para especificar <strong>tamaño, forma y</strong> orientación de tolerancias <strong>gráficas avanzadas</strong> y se divide en tolerancia por límites y por requerimiento normativo.</p>
+      <div class="highlight">
+        <ul>
+          <li>📏 <strong>Tolerancia por límites:</strong> dimensiones con valores máximo y mínimo.</li>
+          <li>📋 <strong>Tolerancia por requerimiento normativo:</strong> según norma ASME Y14.5M.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TAB NAVIGATION ──
+function switchTab(viewId, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ── MODAL ──
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+});
+
+// ── DRAG & DROP ──
+const answers = {
+  dz1: 'márgenes definidos',
+  dz2: 'no varíe el funcionamiento',
+  dz3: 'GD&T',
+  dz4: 'ASME Y14.5M',
+  dz5: 'tamaño, forma y',
+  dz6: 'gráficas avanzadas'
+};
+let draggedChip = null;
+let selectedChip = null;
+
+document.querySelectorAll('.word-chip').forEach(chip => {
+  chip.addEventListener('dragstart', e => {
+    draggedChip = chip;
+    setTimeout(() => chip.classList.add('dragging'), 0);
+  });
+  chip.addEventListener('dragend', () => {
+    chip.classList.remove('dragging');
+    draggedChip = null;
+  });
+  chip.addEventListener('click', () => {
+    if (selectedChip) selectedChip.style.outline = '';
+    selectedChip = chip;
+    chip.style.outline = '3px solid #ff6f00';
+  });
+});
+
+document.querySelectorAll('.drop-zone').forEach(zone => {
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (!draggedChip) return;
+    placeWord(zone, draggedChip);
+  });
+});
+
+function handleZoneClick(zone) {
+  if (selectedChip && !selectedChip.classList.contains('used')) {
+    placeWord(zone, selectedChip);
+    selectedChip.style.outline = '';
+    selectedChip = null;
+  }
+}
+
+function placeWord(zone, chip) {
+  // Return existing chip if zone already filled
+  const existingWord = zone.getAttribute('data-placed');
+  if (existingWord) {
+    const existingChip = document.querySelector(`.word-chip[data-word="${existingWord}"]`);
+    if (existingChip) existingChip.classList.remove('used');
+  }
+  zone.textContent = chip.getAttribute('data-word') === 'GD&T' ? 'GD&T' : chip.getAttribute('data-word');
+  zone.setAttribute('data-placed', chip.getAttribute('data-word'));
+  zone.classList.add('filled');
+  zone.classList.remove('correct', 'wrong');
+  chip.classList.add('used');
+}
+
+function checkAnswers() {
+  let allCorrect = true;
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    const placed = zone.getAttribute('data-placed') || '';
+    const expected = zone.getAttribute('data-answer');
+    if (placed === expected) {
+      zone.classList.add('correct'); zone.classList.remove('wrong');
+    } else {
+      zone.classList.add('wrong'); zone.classList.remove('correct');
+      allCorrect = false;
+    }
+  });
+  const fb = document.getElementById('feedbackBox');
+  fb.classList.add('show');
+  if (allCorrect) {
+    fb.className = 'feedback-box show success';
+    fb.innerHTML = '🎉 ¡Excelente! Todas las respuestas son correctas.';
+  } else {
+    fb.className = 'feedback-box show error';
+    fb.innerHTML = '❌ Hay respuestas incorrectas. Revisa los espacios marcados en rojo e intenta de nuevo.';
+  }
+}
+
+function resetActivity() {
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.textContent = '__________';
+    zone.removeAttribute('data-placed');
+    zone.className = 'drop-zone';
+  });
+  document.querySelectorAll('.word-chip').forEach(chip => {
+    chip.classList.remove('used', 'dragging');
+    chip.style.outline = '';
+  });
+  const fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box';
+  fb.innerHTML = '';
+  selectedChip = null;
+}
+</script>
+</body>
+</html>

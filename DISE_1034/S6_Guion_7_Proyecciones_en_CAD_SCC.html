@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyecciones en CAD</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f0f4ff;
+    min-height: 100vh;
+    color: #1a1f3c;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .hero {
+    background: linear-gradient(135deg, #1a237e 0%, #1565c0 45%, #0288d1 100%);
+    padding: 22px 24px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 10%;
+    width: 280px; height: 280px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 11px;
+    color: #e3f2fd;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hero h1 {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .hero p {
+    color: #b3d9ff;
+    font-size: 12.5px;
+  }
+  .hero-icon {
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    opacity: 0.15;
+    font-size: 72px;
+    z-index: 0;
+  }
+
+  /* ===== NAV TABS ===== */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px 0;
+    background: #fff;
+    border-bottom: 2px solid #e3e8f8;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: #6b7aab;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: #eef2ff; color: #1a237e; }
+  .tab-btn.active {
+    background: #1a237e;
+    color: #fff;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .content-wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    min-height: calc(100vh - 180px);
+  }
+
+  .tab-panel { display: none; padding: 16px; }
+  .tab-panel.active { display: block; }
+
+  /* ===== SECTION TITLE ===== */
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a237e;
+  }
+  .section-header p {
+    font-size: 11.5px;
+    color: #6b7aab;
+    margin-top: 1px;
+  }
+
+  /* ===== CARDS GRID ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 12px rgba(26,35,126,0.07);
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-color, #1565c0);
+    border-radius: 14px 14px 0 0;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--card-color, #1565c0);
+    box-shadow: 0 8px 24px rgba(26,35,126,0.14);
+  }
+  .card-emoji { font-size: 28px; margin-bottom: 8px; display: block; }
+  .card h3 { font-size: 13px; font-weight: 700; color: #1a1f3c; margin-bottom: 4px; }
+  .card p { font-size: 11.5px; color: #6b7aab; line-height: 1.5; }
+  .card-arrow {
+    position: absolute; bottom: 12px; right: 12px;
+    width: 24px; height: 24px;
+    background: var(--card-color, #1565c0);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card:hover .card-arrow { opacity: 1; }
+
+  /* ===== QUIZ STYLES ===== */
+  .quiz-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 12px rgba(26,35,126,0.07);
+    border-left: 4px solid #1565c0;
+  }
+  .quiz-instruction {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1565c0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .quiz-question {
+    font-size: 13px;
+    color: #1a1f3c;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .options-list {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .option-btn {
+    padding: 8px 14px;
+    background: #f0f4ff;
+    border: 2px solid #e3e8f8;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #1a1f3c;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .option-btn:hover { background: #e3e8f8; border-color: #1565c0; }
+  .option-btn.correct { background: #e8f5e9; border-color: #2e7d32; color: #1b5e20; }
+  .option-btn.wrong { background: #fce4ec; border-color: #c62828; color: #b71c1c; }
+  .option-btn.revealed { background: #e8f5e9; border-color: #2e7d32; color: #1b5e20; }
+
+  .show-answer-btn {
+    background: linear-gradient(135deg, #1565c0, #0288d1);
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .show-answer-btn:hover { opacity: 0.88; transform: scale(1.02); }
+
+  .answer-box {
+    display: none;
+    margin-top: 12px;
+    padding: 12px;
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    border-radius: 10px;
+    border-left: 4px solid #2e7d32;
+  }
+  .answer-box.show { display: block; animation: fadeIn 0.3s; }
+  .answer-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #2e7d32;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+  }
+  .answer-text {
+    font-size: 12.5px;
+    color: #1a1f3c;
+    line-height: 1.6;
+  }
+
+  .feedback-box {
+    display: none;
+    margin-top: 8px;
+    padding: 12px;
+    background: #e3f2fd;
+    border-radius: 10px;
+    border-left: 4px solid #0288d1;
+  }
+  .feedback-box.show { display: block; animation: fadeIn 0.3s; }
+  .feedback-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0277bd;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+  }
+  .feedback-text {
+    font-size: 12px;
+    color: #1a1f3c;
+    line-height: 1.6;
+  }
+
+  /* ===== IMAGE GALLERY ===== */
+  .img-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .img-thumb {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(26,35,126,0.1);
+    cursor: pointer;
+    transition: all 0.25s;
+    border: 2px solid transparent;
+  }
+  .img-thumb:hover {
+    transform: scale(1.03);
+    border-color: #1565c0;
+    box-shadow: 0 6px 20px rgba(21,101,192,0.2);
+  }
+  .img-thumb img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    display: block;
+  }
+  .img-thumb-label {
+    padding: 6px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1a237e;
+    text-align: center;
+  }
+
+  /* ===== HATCH CARDS ===== */
+  .hatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .hatch-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(26,35,126,0.07);
+    transition: all 0.25s;
+    border-top: 3px solid var(--hc, #1565c0);
+  }
+  .hatch-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(26,35,126,0.14); }
+  .hatch-card .hc-icon { font-size: 30px; margin-bottom: 8px; }
+  .hatch-card h3 { font-size: 13px; font-weight: 700; color: #1a1f3c; margin-bottom: 3px; }
+  .hatch-card .sub { font-size: 11px; color: #6b7aab; margin-bottom: 6px; }
+  .hatch-card p { font-size: 12px; color: #374270; line-height: 1.5; }
+
+  /* ===== FILL IN THE BLANK ===== */
+  .fill-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(26,35,126,0.07);
+    border-left: 4px solid #7b1fa2;
+  }
+  .word-banks {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 12px 0;
+  }
+  .word-chip {
+    padding: 5px 12px;
+    background: #f3e5f5;
+    border: 2px solid #ce93d8;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6a1b9a;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .word-chip:hover { background: #ce93d8; color: #fff; }
+
+  .blank-text {
+    font-size: 13px;
+    line-height: 2;
+    color: #1a1f3c;
+    margin-bottom: 12px;
+  }
+  .blank {
+    display: inline-block;
+    min-width: 120px;
+    border-bottom: 2px dashed #7b1fa2;
+    color: #7b1fa2;
+    font-weight: 700;
+    padding: 0 4px;
+  }
+
+  /* ===== PROJECTION TYPES ===== */
+  .proj-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .proj-cell {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(26,35,126,0.07);
+    border: 2px solid transparent;
+    transition: all 0.25s;
+  }
+  .proj-cell:hover { border-color: #1565c0; transform: scale(1.02); }
+  .proj-cell .pj-emoji { font-size: 24px; margin-bottom: 6px; }
+  .proj-cell h4 { font-size: 12.5px; font-weight: 700; color: #1a237e; margin-bottom: 2px; }
+  .proj-cell p { font-size: 11px; color: #6b7aab; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,15,50,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.25s; }
+
+  .modal-box {
+    background: #fff;
+    border-radius: 18px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(10,15,50,0.3);
+    animation: slideUp 0.3s ease;
+    scrollbar-width: thin;
+  }
+  .modal-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #e3e8f8;
+    background: linear-gradient(135deg, #1a237e 0%, #1565c0 100%);
+    border-radius: 18px 18px 0 0;
+    position: relative;
+  }
+  .modal-header h2 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    padding-right: 36px;
+  }
+  .modal-header p {
+    color: #b3d9ff;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.4);
+    background: transparent;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.2); }
+  .modal-body { padding: 20px; }
+  .modal-body img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 14px rgba(26,35,126,0.1);
+  }
+  .modal-body p {
+    font-size: 13px;
+    color: #374270;
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+  .modal-body strong { color: #1a237e; }
+  .modal-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+  .tag-blue { background: #e3f2fd; color: #0277bd; }
+  .tag-green { background: #e8f5e9; color: #2e7d32; }
+  .tag-purple { background: #f3e5f5; color: #6a1b9a; }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 17px; }
+    .tab-btn { padding: 7px 10px; font-size: 10.5px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .proj-grid { grid-template-columns: 1fr; }
+    .hatch-grid { grid-template-columns: 1fr; }
+    .img-gallery { grid-template-columns: repeat(2, 1fr); }
+    .hero-icon { display: none; }
+  }
+
+  /* scrollbar */
+  .modal-box::-webkit-scrollbar { width: 5px; }
+  .modal-box::-webkit-scrollbar-track { background: #f0f4ff; }
+  .modal-box::-webkit-scrollbar-thumb { background: #b3c5f8; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO HEADER ===== -->
+<div class="hero">
+  <div class="hero-icon">📐</div>
+  <div class="hero-inner">
+    <div class="hero-badge">📘 Sesión 6 · Guión 7</div>
+    <h1>Proyecciones en CAD</h1>
+    <p>Actividades interactivas · Axonometría · HATCH · Secciones · Vistas</p>
+  </div>
+</div>
+
+<!-- ===== NAV TABS ===== -->
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="switchTab('proyecciones')">📐 Proyecciones</button>
+  <button class="tab-btn" onclick="switchTab('hatch')">🎨 HATCH</button>
+  <button class="tab-btn" onclick="switchTab('secciones')">✂️ Secciones</button>
+  <button class="tab-btn" onclick="switchTab('quiz')">🧠 Quiz</button>
+  <button class="tab-btn" onclick="switchTab('galeria')">🖼️ Galería</button>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="content-wrap">
+
+  <!-- TAB 1: PROYECCIONES -->
+  <div id="tab-proyecciones" class="tab-panel active">
+    <div class="section-header">
+      <div class="section-icon" style="background:#e3f2fd;">📐</div>
+      <div>
+        <h2>Tipos de Proyecciones Axonométricas</h2>
+        <p>Haz clic en cada tarjeta para ver su representación gráfica</p>
+      </div>
+    </div>
+
+    <!-- Instrucción al estudiante -->
+    <div class="quiz-card" style="border-left-color:#7b1fa2; margin-bottom:14px;">
+      <div class="quiz-instruction">📋 Instrucciones al estudiante</div>
+      <div class="quiz-question">Arrastre cada representación gráfica y colóquela en el tipo de proyección que corresponda.</div>
+    </div>
+
+    <div class="proj-grid">
+      <div class="proj-cell" onclick="openModal('iso1')">
+        <div class="pj-emoji">🔷</div>
+        <h4>Isometría #1</h4>
+        <p>Tres ejes iguales · 120°</p>
+      </div>
+      <div class="proj-cell" onclick="openModal('iso2')">
+        <div class="pj-emoji">🔶</div>
+        <h4>Isometría #2</h4>
+        <p>Tres ejes iguales · 120°</p>
+      </div>
+      <div class="proj-cell" onclick="openModal('dim1')">
+        <div class="pj-emoji">🟦</div>
+        <h4>Dimetría #1</h4>
+        <p>Dos ejes iguales</p>
+      </div>
+      <div class="proj-cell" onclick="openModal('dim2')">
+        <div class="pj-emoji">🟧</div>
+        <h4>Dimetría #2</h4>
+        <p>Dos ejes iguales</p>
+      </div>
+      <div class="proj-cell" onclick="openModal('trim1')">
+        <div class="pj-emoji">🟩</div>
+        <h4>Trimetría #1</h4>
+        <p>Tres ejes distintos</p>
+      </div>
+      <div class="proj-cell" onclick="openModal('trim2')">
+        <div class="pj-emoji">🟥</div>
+        <h4>Trimetría #2</h4>
+        <p>Tres ejes distintos</p>
+      </div>
+    </div>
+
+    <!-- Respuesta correcta -->
+    <div style="margin-top:10px;">
+      <button class="show-answer-btn" onclick="toggleAnswer('resp-proj')">📋 Ver Respuesta Correcta</button>
+      <div class="answer-box" id="resp-proj">
+        <div class="answer-label">✅ Respuesta</div>
+        <div class="answer-text">
+          <strong>Tipo de proyección → Representación gráfica:</strong><br>
+          • Isometría #1<br>
+          • Isometría #2<br>
+          • Dimetría #1<br>
+          • Dimetría #2<br>
+          • Trimetría #1<br>
+          • Trimetría #2
+        </div>
+      </div>
+    </div>
+
+    <!-- Ángulos axonométricas quiz -->
+    <div class="quiz-card" style="margin-top:14px; border-left-color:#e65100;">
+      <div class="quiz-instruction">🎯 Seleccione las dos opciones de ángulos usados en proyecciones axonométricas (Norma ISO):</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkOption(this, false)">a. 105°, 120° y 135°</button>
+        <button class="option-btn" onclick="checkOption(this, false)">b. 131°, 131° y 97°</button>
+        <button class="option-btn" onclick="checkOption(this, true)">c. 360° / 3</button>
+        <button class="option-btn" onclick="checkOption(this, false)">d. Dos ángulos iguales</button>
+        <button class="option-btn" onclick="checkOption(this, true)">e. 120°, 120°, 120°</button>
+      </div>
+      <button class="show-answer-btn" onclick="toggleFeedback('fb-angulos')">💡 Ver Retroalimentación</button>
+      <div class="feedback-box" id="fb-angulos">
+        <div class="feedback-label">💡 Retroalimentación</div>
+        <div class="feedback-text">La proyección isométrica (parte de las axonométricas bajo norma ISO) se basa en la división equitativa del espacio visual. Al dividir el círculo completo de 360° entre 3, obtenemos los 120° que separan a los tres ejes principales (X, Y, Z). Esta disposición garantiza que las dimensiones se representen en una misma escala sobre los tres ejes, facilitando la interpretación volumétrica.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: HATCH -->
+  <div id="tab-hatch" class="tab-panel">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fce4ec;">🎨</div>
+      <div>
+        <h2>Revise las tarjetas acerca de HATCH</h2>
+        <p>Haz clic en cada tarjeta para ampliar la información</p>
+      </div>
+    </div>
+
+    <div class="hatch-grid">
+      <div class="hatch-card" style="--hc:#1565c0;" onclick="openModal('hatch-relleno')">
+        <div class="hc-icon">🪣</div>
+        <h3>Rellenos / Selección</h3>
+        <div class="sub">Boundaries / pattern</div>
+        <p>Grupo de comandos con acciones de inserción por cliqueo de puntos internos, selección de objetos y tipos de rellenos.</p>
+      </div>
+      <div class="hatch-card" style="--hc:#6a1b9a;" onclick="openModal('hatch-prop')">
+        <div class="hc-icon">⚙️</div>
+        <h3>Propiedades</h3>
+        <div class="sub">Grupo de comandos / properties</div>
+        <p>Grupo de comandos que editan propiedades como escala, transparencia, ángulos y color.</p>
+      </div>
+      <div class="hatch-card" style="--hc:#e65100;" onclick="openModal('hatch-edicion')">
+        <div class="hc-icon">✏️</div>
+        <h3>Edición avanzada</h3>
+        <div class="sub">Options / origin / close</div>
+        <p>Grupo de comandos con acciones de selección de punto de origen, copia de propiedades y anotaciones con información dimensional.</p>
+      </div>
+    </div>
+
+    <!-- Quiz atajos HATCH -->
+    <div class="quiz-card" style="margin-top:16px; border-left-color:#1565c0;">
+      <div class="quiz-instruction">⌨️ Seleccione la o las respuestas correctas</div>
+      <div class="quiz-question"><strong>Escoja los dos atajos para relleno y edición (hatch / edit):</strong></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkOption(this, false)">a. EDIT H.</button>
+        <button class="option-btn" onclick="checkOption(this, true)">b. HE.</button>
+        <button class="option-btn" onclick="checkOption(this, false)">c. HACH.</button>
+        <button class="option-btn" onclick="checkOption(this, true)">d. H.</button>
+        <button class="option-btn" onclick="checkOption(this, false)">e. HACH EDIT.</button>
+      </div>
+      <button class="show-answer-btn" onclick="toggleFeedback('fb-hatch')">💡 Ver Retroalimentación</button>
+      <div class="feedback-box" id="fb-hatch">
+        <div class="feedback-label">💡 Retroalimentación</div>
+        <div class="feedback-text">En el entorno CAD, el comando <strong>H</strong> activa la función <em>Hatch</em> para crear sombreados o rellenos de texturas en áreas cerradas. Por otro lado, el comando <strong>HE</strong> (<em>Hatch Edit</em>) permite modificar un sombreado ya existente sin necesidad de borrarlo y recrearlo, optimizando el flujo de trabajo técnico.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: SECCIONES -->
+  <div id="tab-secciones" class="tab-panel">
+    <div class="section-header">
+      <div class="section-icon" style="background:#e8f5e9;">✂️</div>
+      <div>
+        <h2>Secciones en CAD</h2>
+        <p>Tipos de sección y planos de corte</p>
+      </div>
+    </div>
+
+    <!-- Quiz sección -->
+    <div class="quiz-card" style="border-left-color:#2e7d32; margin-bottom:14px;">
+      <div class="quiz-instruction">🔍 Seleccione el enunciado que describa correctamente el tipo de sección ilustrada</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkOption(this, false)">a. Sección integral</button>
+        <button class="option-btn" onclick="checkOption(this, true)">b. Sección transversal</button>
+        <button class="option-btn" onclick="checkOption(this, true)">c. Sección longitudinal</button>
+      </div>
+      <button class="show-answer-btn" onclick="toggleFeedback('fb-seccion')">💡 Ver Retroalimentación</button>
+      <div class="feedback-box" id="fb-seccion">
+        <div class="feedback-label">💡 Retroalimentación</div>
+        <div class="feedback-text">
+          <strong>Sección transversal:</strong> El plano de corte se sitúa de forma perpendicular al eje de mayor longitud de la pieza, permitiendo visualizar su sección interna más estrecha.<br><br>
+          <strong>Sección longitudinal:</strong> El plano de corte se orienta de forma paralela al eje de mayor longitud de la pieza. Esta vista es fundamental en ingeniería para analizar la disposición interna de los componentes a lo largo de toda su extensión estructural.
+        </div>
+      </div>
+    </div>
+
+    <!-- Fill in the blank -->
+    <div class="fill-card">
+      <div class="quiz-instruction" style="color:#7b1fa2;">✍️ Instrucción al estudiante: Arrastre cada palabra a su lugar correcto para completar la información.</div>
+      <div class="blank-text" style="margin-top:10px;">
+        Para indicar la sección cortada se usa un <span class="blank">__________</span> que debe contener símbolos o figuras de <span class="blank">__________</span> sobre una línea entrecortada de <span class="blank">__________</span> es decir, que se alejan en los bordes curvos. Se verifica si existen agujeros u objetos ocultos, pues se representan con <span class="blank">__________</span> con plumas o rapidografos <span class="blank">__________</span>.
+      </div>
+      <div class="word-banks">
+        <span class="word-chip">0.1</span>
+        <span class="word-chip">Línea entrecortada fina.</span>
+        <span class="word-chip">Líneas con sucesión paralela.</span>
+        <span class="word-chip">Flechas.</span>
+        <span class="word-chip">Plano de corte.</span>
+      </div>
+      <button class="show-answer-btn" onclick="toggleAnswer('resp-fill')">📋 Ver Respuesta</button>
+      <div class="answer-box" id="resp-fill">
+        <div class="answer-label">✅ Respuesta Correcta</div>
+        <div class="answer-text">
+          Para indicar la sección cortada, se usa un <strong>plano de corte</strong> que debe contener símbolos o figuras de <strong>flechas</strong> sobre una línea entrecortada de <strong>líneas con sucesión paralela,</strong> es decir, que se alejan en los bordes curvos. Se verifica si existen agujeros u objetos ocultos, pues se representan con <strong>línea entrecortada fina</strong> con plumas o rapidografos <strong>0.1</strong>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Imágenes de secciones -->
+    <div style="margin-top:14px;">
+      <div class="quiz-instruction" style="color:#374270; font-size:12px; margin-bottom:10px;">🖼️ Referencias visuales de secciones (Imágenes 23–26)</div>
+      <div class="img-gallery">
+        <div class="img-thumb" onclick="openImgModal('media/Imagen 23.jpg','Sección - Imagen 23')">
+          <img src="media/Imagen 23.jpg" alt="Imagen 23" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'130\'><rect fill=\'%23e3e8f8\' width=\'200\' height=\'130\'/><text x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236b7aab\' font-size=\'13\'>Imagen 23</text></svg>'">
+          <div class="img-thumb-label">Imagen 23</div>
+        </div>
+        <div class="img-thumb" onclick="openImgModal('media/Imagen 24.jpg','Sección - Imagen 24')">
+          <img src="media/Imagen 24.jpg" alt="Imagen 24" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'130\'><rect fill=\'%23e3e8f8\' width=\'200\' height=\'130\'/><text x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236b7aab\' font-size=\'13\'>Imagen 24</text></svg>'">
+          <div class="img-thumb-label">Imagen 24</div>
+        </div>
+        <div class="img-thumb" onclick="openImgModal('media/Imagen 25.jpg','Sección - Imagen 25')">
+          <img src="media/Imagen 25.jpg" alt="Imagen 25" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'130\'><rect fill=\'%23e3e8f8\' width=\'200\' height=\'130\'/><text x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236b7aab\' font-size=\'13\'>Imagen 25</text></svg>'">
+          <div class="img-thumb-label">Imagen 25</div>
+        </div>
+        <div class="img-thumb" onclick="openImgModal('media/Imagen 26.jpg','Sección - Imagen 26')">
+          <img src="media/Imagen 26.jpg" alt="Imagen 26" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'130\'><rect fill=\'%23e3e8f8\' width=\'200\' height=\'130\'/><text x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%236b7aab\' font-size=\'13\'>Imagen 26</text></svg>'">
+          <div class="img-thumb-label">Imagen 26</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: QUIZ -->
+  <div id="tab-quiz" class="tab-panel">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fff3e0;">🧠</div>
+      <div>
+        <h2>Preguntas de Repaso</h2>
+        <p>Pon a prueba tu conocimiento</p>
+      </div>
+    </div>
+
+    <!-- Quiz vistas en plano -->
+    <div class="quiz-card" style="border-left-color:#f57c00;">
+      <div class="quiz-instruction">📐 ¿Cuántas vistas se presentan en un plano para piezas dentro de la ingeniería?</div>
+      <div class="quiz-question">Puedes seleccionar más de una respuesta.</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkOption(this, false)">a. Frontal, posterior y planta.</button>
+        <button class="option-btn" onclick="checkOption(this, false)">b. Alzado+Planta+Corte.</button>
+        <button class="option-btn" onclick="checkOption(this, false)">c. Elevación frontal, Lateral, Posterior, Planta.</button>
+        <button class="option-btn" onclick="checkOption(this, true)">d. Elevación frontal, Lateral, Posterior, Planta.</button>
+        <button class="option-btn" onclick="checkOption(this, true)">e. Dos alzados + planta + Volumetría.</button>
+      </div>
+      <button class="show-answer-btn" onclick="toggleFeedback('fb-vistas')">💡 Ver Retroalimentación</button>
+      <div class="feedback-box" id="fb-vistas">
+        <div class="feedback-label">💡 Retroalimentación</div>
+        <div class="feedback-text">En la ingeniería, el número de vistas depende de la complejidad de la pieza. Un plano técnico profesional suele incluir el sistema de vistas principales (diédricas) para definir la geometría exacta. Además, es común integrar una volumetría o perspectiva para facilitar la visualización tridimensional del objeto a partir de sus proyecciones planas.</div>
+      </div>
+    </div>
+
+    <!-- Resumen de respuestas correctas -->
+    <div class="quiz-card" style="margin-top:14px; border-left-color:#00897b;">
+      <div class="quiz-instruction">📋 Resumen de Respuestas Correctas</div>
+      <div class="cards-grid" style="margin-top:10px;">
+        <div class="card" style="--card-color:#1565c0; cursor:default;" onclick="void(0)">
+          <span class="card-emoji">📐</span>
+          <h3>Ángulos Axonométricos</h3>
+          <p><strong>c.</strong> 360° / 3 &nbsp;&nbsp; <strong>e.</strong> 120°, 120°, 120°</p>
+        </div>
+        <div class="card" style="--card-color:#2e7d32; cursor:default;" onclick="void(0)">
+          <span class="card-emoji">✂️</span>
+          <h3>Tipos de Sección</h3>
+          <p><strong>b.</strong> Sección transversal &nbsp;&nbsp; <strong>c.</strong> Sección longitudinal</p>
+        </div>
+        <div class="card" style="--card-color:#6a1b9a; cursor:default;" onclick="void(0)">
+          <span class="card-emoji">⌨️</span>
+          <h3>Atajos HATCH</h3>
+          <p><strong>b.</strong> HE. &nbsp;&nbsp; <strong>d.</strong> H.</p>
+        </div>
+        <div class="card" style="--card-color:#e65100; cursor:default;" onclick="void(0)">
+          <span class="card-emoji">📏</span>
+          <h3>Vistas en Plano</h3>
+          <p><strong>d.</strong> Elev. frontal, Lateral, Posterior, Planta &nbsp;&nbsp; <strong>e.</strong> Dos alzados + planta + Volumetría</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: GALERÍA -->
+  <div id="tab-galeria" class="tab-panel">
+    <div class="section-header">
+      <div class="section-icon" style="background:#e8f5e9;">🖼️</div>
+      <div>
+        <h2>Galería de Imágenes</h2>
+        <p>Imágenes 13 al 30 · Haz clic para ampliar</p>
+      </div>
+    </div>
+    <div class="img-gallery" id="gallery-grid"></div>
+  </div>
+
+</div><!-- end content-wrap -->
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="modal-title">Título</h2>
+      <p id="modal-subtitle"></p>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Image modal -->
+<div class="modal-overlay" id="img-modal" onclick="closeImgModal(event)">
+  <div class="modal-box" style="max-width:700px;">
+    <div class="modal-header">
+      <h2 id="img-modal-title">Imagen</h2>
+      <button class="modal-close" onclick="document.getElementById('img-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <img id="img-modal-src" src="" alt="" style="width:100%;border-radius:10px;">
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== TAB SWITCHING =====
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== QUIZ LOGIC =====
+function checkOption(btn, isCorrect) {
+  const wasAlreadyMarked = btn.classList.contains('correct') || btn.classList.contains('wrong');
+  if (wasAlreadyMarked) return;
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  if (isCorrect) btn.textContent = '✅ ' + btn.textContent;
+  else btn.textContent = '❌ ' + btn.textContent;
+}
+
+function toggleAnswer(id) {
+  const box = document.getElementById(id);
+  box.classList.toggle('show');
+}
+
+function toggleFeedback(id) {
+  const box = document.getElementById(id);
+  box.classList.toggle('show');
+}
+
+// ===== MODALS =====
+const modalData = {
+  'iso1': {
+    title: 'Isometría #1',
+    sub: 'Proyección Axonométrica · Norma ISO',
+    body: `<img src="media/Imagen 13.jpg" alt="Isometría 1" onerror="this.style.display='none'">
+    <p><strong>Isometría:</strong> Tipo de proyección axonométrica donde los tres ejes principales forman ángulos de <strong>120°</strong> entre sí (resultado de dividir 360° entre 3). Las dimensiones se representan en la misma escala sobre los tres ejes X, Y, Z.</p>
+    <span class="modal-tag tag-blue">📐 360° / 3 = 120°</span>
+    <span class="modal-tag tag-green">✅ Norma ISO</span>`
+  },
+  'iso2': {
+    title: 'Isometría #2',
+    sub: 'Proyección Axonométrica · Norma ISO',
+    body: `<img src="media/Imagen 14.jpg" alt="Isometría 2" onerror="this.style.display='none'">
+    <p><strong>Isometría:</strong> Segunda representación. Los tres ejes están igualmente inclinados y separados 120°. Esta disposición garantiza que las dimensiones se representen en una misma escala sobre los tres ejes, facilitando la interpretación volumétrica.</p>
+    <span class="modal-tag tag-blue">🔷 Tres ejes iguales</span>
+    <span class="modal-tag tag-green">✅ 120°, 120°, 120°</span>`
+  },
+  'dim1': {
+    title: 'Dimetría #1',
+    sub: 'Proyección Axonométrica',
+    body: `<img src="media/Imagen 15.jpg" alt="Dimetría 1" onerror="this.style.display='none'">
+    <p><strong>Dimetría:</strong> Proyección axonométrica en la que <strong>dos de los tres ejes</strong> tienen la misma escala, mientras el tercero es diferente. Se usa cuando se desea enfatizar dos de las tres dimensiones del objeto.</p>
+    <span class="modal-tag tag-purple">🟦 Dos ejes iguales</span>`
+  },
+  'dim2': {
+    title: 'Dimetría #2',
+    sub: 'Proyección Axonométrica',
+    body: `<img src="media/Imagen 16.jpg" alt="Dimetría 2" onerror="this.style.display='none'">
+    <p><strong>Dimetría:</strong> Segunda variante de la proyección dimétrica. Dos ejes comparten la misma escala de representación, permitiendo una vista volumétrica con énfasis en dos dimensiones principales.</p>
+    <span class="modal-tag tag-purple">🟧 Dos ejes iguales</span>`
+  },
+  'trim1': {
+    title: 'Trimetría #1',
+    sub: 'Proyección Axonométrica',
+    body: `<img src="media/Imagen 17.jpg" alt="Trimetría 1" onerror="this.style.display='none'">
+    <p><strong>Trimetría:</strong> Proyección axonométrica en la que los <strong>tres ejes tienen escalas diferentes</strong> entre sí. Es la representación más general y compleja dentro de las proyecciones axonométricas.</p>
+    <span class="modal-tag tag-blue">🟩 Tres escalas distintas</span>`
+  },
+  'trim2': {
+    title: 'Trimetría #2',
+    sub: 'Proyección Axonométrica',
+    body: `<img src="media/Imagen 18.jpg" alt="Trimetría 2" onerror="this.style.display='none'">
+    <p><strong>Trimetría:</strong> Segunda variante de la proyección trimétrica. Los tres ejes poseen escalas distintas, lo que permite representar con mayor realismo objetos con proporciones irregulares en las tres dimensiones.</p>
+    <span class="modal-tag tag-blue">🟥 Tres escalas distintas</span>`
+  },
+  'hatch-relleno': {
+    title: 'Rellenos / Selección',
+    sub: 'Boundaries / pattern · Grupo HATCH',
+    body: `<img src="media/Imagen 19.jpg" alt="HATCH Relleno" onerror="this.style.display='none'">
+    <p><strong>Rellenos / Selección</strong> — Boundaries / pattern</p>
+    <p>Grupo de comandos con acciones de inserción por cliqueo de puntos internos, selección de objetos y tipos de rellenos.</p>
+    <span class="modal-tag tag-blue">🪣 Cliqueo de puntos</span>
+    <span class="modal-tag tag-green">📦 Selección de objetos</span>
+    <span class="modal-tag tag-purple">🎨 Tipos de relleno</span>`
+  },
+  'hatch-prop': {
+    title: 'Propiedades',
+    sub: 'Grupo de comandos / properties',
+    body: `<img src="media/Imagen 20.jpg" alt="HATCH Propiedades" onerror="this.style.display='none'">
+    <p><strong>Propiedades</strong> — Grupo de comandos / properties</p>
+    <p>Grupo de comandos que editan propiedades como escala, transparencia, ángulos y color.</p>
+    <span class="modal-tag tag-blue">📏 Escala</span>
+    <span class="modal-tag tag-green">🌫️ Transparencia</span>
+    <span class="modal-tag tag-purple">📐 Ángulos</span>
+    <span class="modal-tag tag-blue">🎨 Color</span>`
+  },
+  'hatch-edicion': {
+    title: 'Edición Avanzada',
+    sub: 'Options / origin / close',
+    body: `<img src="media/Imagen 21.jpg" alt="HATCH Edición" onerror="this.style.display='none'">
+    <p><strong>Edición avanzada</strong> — Options / origin / close</p>
+    <p>Grupo de comandos con acciones de selección de punto de origen, copia de propiedades y anotaciones con información dimensional.</p>
+    <span class="modal-tag tag-blue">📍 Punto de origen</span>
+    <span class="modal-tag tag-green">📋 Copia de propiedades</span>
+    <span class="modal-tag tag-purple">📝 Anotaciones dimensionales</span>`
+  }
+};
+
+function openModal(key) {
+  const data = modalData[key];
+  if (!data) return;
+  document.getElementById('modal-title').textContent = data.title;
+  document.getElementById('modal-subtitle').textContent = data.sub || '';
+  document.getElementById('modal-body').innerHTML = data.body;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+function closeModalDirect() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function openImgModal(src, title) {
+  document.getElementById('img-modal-src').src = src;
+  document.getElementById('img-modal-title').textContent = title;
+  document.getElementById('img-modal').classList.add('open');
+}
+function closeImgModal(e) {
+  if (e.target === document.getElementById('img-modal')) {
+    document.getElementById('img-modal').classList.remove('open');
+  }
+}
+
+// ===== GENERATE GALLERY =====
+(function buildGallery() {
+  const grid = document.getElementById('gallery-grid');
+  for (let i = 13; i <= 30; i++) {
+    const src = `media/Imagen ${i}.jpg`;
+    const label = `Imagen ${i}`;
+    const div = document.createElement('div');
+    div.className = 'img-thumb';
+    div.onclick = () => openImgModal(src, label);
+    div.innerHTML = `<img src="${src}" alt="${label}" onerror="this.src='data:image/svg+xml,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'200\\' height=\\'130\\'><rect fill=\\'%23e3e8f8\\' width=\\'200\\' height=\\'130\\'></rect><text x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\' fill=\\'%236b7aab\\' font-size=\\'13\\'>${label}</text></svg>'">
+    <div class="img-thumb-label">${label}</div>`;
+    grid.appendChild(div);
+  }
+})();
+
+// Close modal on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('modal').classList.remove('open');
+    document.getElementById('img-modal').classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>
