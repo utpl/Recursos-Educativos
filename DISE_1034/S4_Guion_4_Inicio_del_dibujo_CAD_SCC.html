@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inicio del Dibujo CAD</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    width: 800px;
+    max-width: 100%;
+    min-height: 800px;
+    overflow-x: hidden;
+    color: #1a237e;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 3px 12px rgba(26,35,126,0.3);
+  }
+  .header-icon {
+    width: 42px; height: 42px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .header-text h1 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .header-text p {
+    color: rgba(255,255,255,0.75);
+    font-size: 11px;
+    margin-top: 1px;
+  }
+  .badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    white-space: nowrap;
+  }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    background: #fff;
+    border-bottom: 2px solid #e8eaf6;
+    padding: 0 12px;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #78909c;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: #3949ab; }
+  .tab.active {
+    color: #1a237e;
+    border-bottom-color: #1a237e;
+    font-weight: 700;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main { display: none; padding: 0; }
+  .main.active { display: block; }
+
+  /* ===== TAB 1: INTERFAZ CAD ===== */
+  .map-container {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(180deg, #1a1f3a 0%, #283593 100%);
+    overflow: hidden;
+    min-height: 600px;
+  }
+  
+  /* Fallback visual cuando no hay imagen */
+  .map-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    text-align: center;
+  }
+  .map-fallback .cad-mockup {
+    width: 90%;
+    max-width: 700px;
+    background: #0f1428;
+    border-radius: 12px;
+    border: 2px solid #3949ab;
+    padding: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  .cad-mockup .title-bar {
+    background: linear-gradient(90deg, #1a237e, #3949ab);
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cad-mockup .ribbon {
+    background: #1e2a4a;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .cad-mockup .ribbon-item {
+    background: #3949ab;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 9px;
+    color: #fff;
+  }
+  .cad-mockup .workspace {
+    background: #0a0e1a;
+    border: 1px dashed #546e7a;
+    border-radius: 8px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #78909c;
+    font-size: 12px;
+  }
+  .cad-mockup .status-bar {
+    background: #1e2a4a;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: flex;
+    gap: 12px;
+    font-size: 9px;
+    color: #90a4ae;
+  }
+  .map-fallback .instruction {
+    color: #90caf9;
+    font-size: 13px;
+    font-weight: 500;
+    background: rgba(57,73,171,0.2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #3949ab;
+  }
+
+  /* Hotspots sobre la interfaz */
+  .hotspot {
+    position: absolute;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: rgba(57,73,171,0.9);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 3px rgba(57,73,171,0.5), 0 4px 12px rgba(0,0,0,0.4);
+    transition: transform 0.2s, background 0.2s;
+    z-index: 10;
+    animation: pulse 2s infinite;
+  }
+  .hotspot:hover {
+    transform: scale(1.15);
+    background: #1a237e;
+    box-shadow: 0 0 0 5px rgba(57,73,171,0.6), 0 6px 18px rgba(0,0,0,0.5);
+    animation: none;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 3px rgba(57,73,171,0.4), 0 4px 12px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(57,73,171,0.2), 0 4px 12px rgba(0,0,0,0.4); }
+  }
+  .hs-label {
+    position: absolute;
+    background: #1a237e;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateX(-50%);
+    bottom: -22px;
+    left: 50%;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .hotspot:hover .hs-label { opacity: 1; }
+
+  .map-hint {
+    background: #fff;
+    padding: 10px 16px;
+    font-size: 11px;
+    color: #546e7a;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid #e8eaf6;
+  }
+
+  /* ===== TAB 2: INFOGRAFÍA ===== */
+  .infografia-wrap {
+    padding: 16px;
+    background: #f0f4f8;
+    min-height: 700px;
+  }
+  .info-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a237e;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #c5cae9;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .info-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 10px rgba(26,35,126,0.08);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .info-card:hover {
+    border-color: #3949ab;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(57,73,171,0.15);
+  }
+  .ic-head {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ic-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .ic-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a237e;
+  }
+  .ic-sub {
+    font-size: 11px;
+    color: #78909c;
+    font-style: italic;
+  }
+  .ic-preview {
+    font-size: 11px;
+    color: #546e7a;
+    line-height: 1.5;
+  }
+  .ic-more {
+    font-size: 10px;
+    color: #3949ab;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  /* ===== TAB 3: QUIZ ===== */
+  .quiz-wrap {
+    padding: 16px;
+    background: #f0f4f8;
+    min-height: 700px;
+  }
+  .quiz-header {
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #fff;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .qh-icon { font-size: 28px; }
+  .quiz-header h2 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .quiz-header p { font-size: 11px; opacity: 0.8; }
+  
+  .quiz-progress {
+    display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .q-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #c5cae9;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #78909c;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .q-dot.active { background: #3949ab; color: #fff; border-color: #3949ab; }
+  .q-dot.correct { background: #43a047; color: #fff; border-color: #43a047; }
+  .q-dot.wrong { background: #e53935; color: #fff; border-color: #e53935; }
+  
+  .question-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(26,35,126,0.08);
+    display: none;
+  }
+  .question-card.active { display: block; }
+  
+  .q-num { font-size: 11px; color: #90a4ae; font-weight: 600; margin-bottom: 6px; }
+  .q-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a237e;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  
+  /* Opciones de respuesta */
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f5f7ff;
+    border: 2px solid #e8eaf6;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #37474f;
+    line-height: 1.4;
+    transition: all 0.2s;
+  }
+  .q-opt:hover:not(.disabled) { border-color: #3949ab; background: #ede7f6; }
+  .q-opt.selected { border-color: #3949ab; background: #e8eaf6; }
+  .q-opt.correct { border-color: #43a047; background: #e8f5e9; color: #1b5e20; }
+  .q-opt.wrong { border-color: #e53935; background: #ffebee; color: #b71c1c; }
+  .q-opt .opt-letter {
+    min-width: 22px; height: 22px;
+    background: #c5cae9;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+    color: #1a237e;
+    flex-shrink: 0;
+  }
+  .q-opt.correct .opt-letter { background: #43a047; color: #fff; }
+  .q-opt.wrong .opt-letter { background: #e53935; color: #fff; }
+  
+  /* Feedback */
+  .q-feedback {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    display: none;
+  }
+  .q-feedback.correct-fb {
+    background: #e8f5e9;
+    border-left: 4px solid #43a047;
+    color: #1b5e20;
+    display: block;
+  }
+  .q-feedback.wrong-fb {
+    background: #fff3e0;
+    border-left: 4px solid #fb8c00;
+    color: #bf360c;
+    display: block;
+  }
+  
+  .q-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .btn {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: #3949ab; color: #fff; }
+  .btn-primary:hover { background: #1a237e; transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Score screen */
+  .score-screen {
+    display: none;
+    text-align: center;
+    padding: 30px 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(26,35,126,0.08);
+  }
+  .score-screen.show { display: block; }
+  .score-emoji { font-size: 50px; margin-bottom: 12px; }
+  .score-num { font-size: 36px; font-weight: 800; color: #1a237e; margin-bottom: 6px; }
+  .score-txt { font-size: 13px; color: #546e7a; margin-bottom: 20px; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,15,50,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-header {
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .mh-icon {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .mh-text h3 { color: #fff; font-size: 15px; font-weight: 700; }
+  .mh-text p { color: rgba(255,255,255,0.75); font-size: 11px; margin-top: 2px; }
+  .modal-close {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.35); }
+  .modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .modal-body img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .modal-body p {
+    font-size: 13px;
+    color: #37474f;
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .modal-body strong { color: #1a237e; }
+  .modal-body .tag {
+    display: inline-block;
+    background: #e8eaf6;
+    color: #3949ab;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin: 2px 2px 8px;
+  }
+  .modal-body .section-divider {
+    border: none;
+    border-top: 2px solid #e8eaf6;
+    margin: 14px 0;
+  }
+  .modal-body .highlight-box {
+    background: #e8eaf6;
+    border-left: 4px solid #3949ab;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #1a237e;
+    line-height: 1.5;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    body { width: 100%; }
+    .info-grid { grid-template-columns: 1fr; }
+    .header-text h1 { font-size: 13px; }
+    .badge { display: none; }
+    .hotspot { width: 26px; height: 26px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">🖥️</div>
+  <div class="header-text">
+    <h1>Inicio del Dibujo CAD</h1>
+    <p>Interfaz, comandos y atajos esenciales</p>
+  </div>
+  <div class="badge">📐 Sesión 4</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('interfaz', this)">🗺️ Interfaz CAD</button>
+  <button class="tab" onclick="switchTab('infografia', this)">📊 Infografía</button>
+  <button class="tab" onclick="switchTab('quiz', this)">✏️ Quiz</button>
+</div>
+
+<!-- ====== TAB 1: INTERFAZ CAD ====== -->
+<div id="tab-interfaz" class="main active">
+  <div class="map-container">
+    
+    <!-- Fallback visual profesional (se muestra siempre, con imagen opcional encima) -->
+    <div class="map-fallback">
+      <div class="cad-mockup">
+        <div class="title-bar">🖥️ AutoCAD - Espacio de trabajo 2D</div>
+        <div class="ribbon">
+          <span class="ribbon-item">Home</span>
+          <span class="ribbon-item">Insert</span>
+          <span class="ribbon-item">Annotate</span>
+          <span class="ribbon-item">Parametric</span>
+          <span class="ribbon-item">View</span>
+          <span class="ribbon-item">Manage</span>
+        </div>
+        <div class="workspace">
+          📐 Área de dibujo — Haz clic en los números para explorar
+        </div>
+        <div class="status-bar">
+          <span>ORTHO</span>
+          <span>OSNAP</span>
+          <span>Command: █</span>
+        </div>
+      </div>
+      <div class="instruction">
+        💡 <strong>Instrucción:</strong> Haga clic en los botones numerados (1-10) para ver la explicación de cada elemento de la interfaz CAD
+      </div>
+    </div>
+
+    <!-- HOTSPOTS - posicionados sobre el fallback -->
+    <button class="hotspot" style="top:8%;left:48%;" onclick="openModal('workspace')">
+      1<span class="hs-label">Espacio de trabajo</span>
+    </button>
+    <button class="hotspot" style="top:14%;left:30%;" onclick="openModal('ribbon')">
+      2<span class="hs-label">Ribbon</span>
+    </button>
+    <button class="hotspot" style="top:14%;left:62%;" onclick="openModal('propiedades')">
+      3<span class="hs-label">Propiedades</span>
+    </button>
+    <button class="hotspot" style="top:20%;left:20%;" onclick="openModal('capas')">
+      4<span class="hs-label">Capas</span>
+    </button>
+    <button class="hotspot" style="top:20%;left:75%;" onclick="openModal('modify')">
+      5<span class="hs-label">Modificar</span>
+    </button>
+    <button class="hotspot" style="top:50%;left:50%;" onclick="openModal('lienzo')">
+      6<span class="hs-label">Área de dibujo</span>
+    </button>
+    <button class="hotspot" style="top:88%;left:35%;" onclick="openModal('ortho')">
+      7<span class="hs-label">ORTHO F8</span>
+    </button>
+    <button class="hotspot" style="top:88%;left:50%;" onclick="openModal('comandos')">
+      8<span class="hs-label">Comandos</span>
+    </button>
+    <button class="hotspot" style="top:88%;left:65%;" onclick="openModal('osnap')">
+      9<span class="hs-label">OSNAP F3</span>
+    </button>
+    <button class="hotspot" style="top:30%;left:88%;" onclick="openModal('viewcube')">
+      10<span class="hs-label">ViewCube</span>
+    </button>
+  </div>
+  
+  <div class="map-hint">
+    <span>📋</span> 
+    <span><strong>Objetivo:</strong> Reconocer los elementos principales de la interfaz de AutoCAD para iniciar el dibujo técnico</span>
+  </div>
+</div>
+
+<!-- ====== TAB 2: INFOGRAFÍA ====== -->
+<div id="tab-infografia" class="main">
+  <div class="infografia-wrap">
+    <div class="info-title">📐 Parámetros dimensionales y simbología técnica</div>
+    <div class="info-grid">
+
+      <div class="info-card" onclick="openModal('inf-propiedades')">
+        <div class="ic-head">
+          <div class="ic-icon" style="background:#e8eaf6;">⚙️</div>
+          <div>
+            <div class="ic-title">Propiedades</div>
+            <div class="ic-sub">Match properties</div>
+          </div>
+        </div>
+        <div class="ic-preview">Barra superior donde puede observar color, tipos de línea, grosor y propiedades de los objetos y editarlos.</div>
+        <div class="ic-more">Ver más →</div>
+      </div>
+
+      <div class="info-card" onclick="openModal('inf-modify')">
+        <div class="ic-head">
+          <div class="ic-icon" style="background:#fce4ec;">🔧</div>
+          <div>
+            <div class="ic-title">Modificar</div>
+            <div class="ic-sub">Grupo de comandos Modify</div>
+          </div>
+        </div>
+        <div class="ic-preview">Mover, rotar, copiar, recortar, simetrías, redondeo, escala, estrechar, matrices, entre otros.</div>
+        <div class="ic-more">Ver más →</div>
+      </div>
+
+      <div class="info-card" onclick="openModal('inf-capas')">
+        <div class="ic-head">
+          <div class="ic-icon" style="background:#e3f2fd;">🗂️</div>
+          <div>
+            <div class="ic-title">Capas</div>
+            <div class="ic-sub">Layers o capas</div>
+          </div>
+        </div>
+        <div class="ic-preview">Grupo de comandos que permiten crear, editar y activar capas dentro del lienzo de dibujo.</div>
+        <div class="ic-more">Ver más →</div>
+      </div>
+
+      <div class="info-card" onclick="openModal('inf-imagenes')">
+        <div class="ic-head">
+          <div class="ic-icon" style="background:#f3e5f5;">🖼️</div>
+          <div>
+            <div class="ic-title">Galería de referencias</div>
+            <div class="ic-sub">Imágenes del documento</div>
+          </div>
+        </div>
+        <div class="ic-preview">Visualiza las capturas de la interfaz y comandos CAD del guion de la sesión 4.</div>
+        <div class="ic-more">Ver más →</div>
+      </div>
+
+      <div class="info-card" onclick="openModal('inf-atajos')">
+        <div class="ic-head">
+          <div class="ic-icon" style="background:#e8f5e9;">⌨️</div>
+          <div>
+            <div class="ic-title">Atajos esenciales</div>
+            <div class="ic-sub">Comandos rápidos CAD</div>
+          </div>
+        </div>
+        <div class="ic-preview">POL, EL, U, SC, M, P y más atajos para optimizar el flujo de trabajo técnico.</div>
+        <div class="ic-more">Ver más →</div>
+      </div>
+
+      <div class="info-card" onclick="openModal('inf-rectangulo')">
+        <div class="ic-head">
+          <div class="ic-icon" style="background:#fff8e1;">📏</div>
+          <div>
+            <div class="ic-title">Dibujo de rectángulo</div>
+            <div class="ic-sub">Proceso paso a paso</div>
+          </div>
+        </div>
+        <div class="ic-preview">Clic izq. en punto de inicio → símbolo @ → dimensiones x=2.5, y=1.0 → Enter → verificar con Di.</div>
+        <div class="ic-more">Ver más →</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ====== TAB 3: QUIZ ====== -->
+<div id="tab-quiz" class="main">
+  <div class="quiz-wrap">
+    <div class="quiz-header">
+      <div class="qh-icon">🧠</div>
+      <div>
+        <h2>Quiz: Inicio del Dibujo CAD</h2>
+        <p>Responde las 5 preguntas sobre comandos y atajos CAD</p>
+      </div>
+    </div>
+
+    <div class="quiz-progress" id="qProgress"></div>
+
+    <!-- Pregunta 3: Selección Crossing -->
+    <div class="question-card active" id="qcard-0">
+      <div class="q-num">Pregunta 1 de 5</div>
+      <div class="q-text">Al realizar una selección de derecha a izquierda en CAD (ventana de color verde con borde discontinuo), ¿cuál es el comportamiento del software respecto a los objetos tocados por el cursor?</div>
+      <div class="q-options">
+        <div class="q-opt" onclick="selectOpt(this, 0, false)"><span class="opt-letter">a</span>No selecciona porque no lo rodea</div>
+        <div class="q-opt" onclick="selectOpt(this, 0, false)"><span class="opt-letter">b</span>Selecciona lo que está dentro de su marco</div>
+        <div class="q-opt" onclick="selectOpt(this, 0, true)"><span class="opt-letter">c</span>Selecciona todo lo que contiene</div>
+      </div>
+      <div class="q-feedback" id="qfb-0"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="qbtn-0" onclick="nextQ(0)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- Pregunta 4: Completar proceso de rectángulo (WORD EXACTO) -->
+    <div class="question-card" id="qcard-1">
+      <div class="q-num">Pregunta 2 de 5</div>
+      <div class="q-text"><strong>Complete el proceso de dibujo de un rectángulo:</strong><br><br>
+      Se hace clic izq. en un <u>__________</u>, luego se coloca el símbolo de <u>__________</u> que ayuda a dibujar en unidades, para luego, escribir la dimensión en x = <u>__________</u> y en y = <u>__________</u> para al final cerrar con un <u>__________</u>. Se verifica usando el comando <u>__________</u> que mide distancia diagonal y ortogonal.</div>
+      
+      <div style="background:#f5f7ff;padding:12px;border-radius:8px;margin:10px 0;font-size:11px;color:#546e7a;">
+        <strong>Opciones:</strong> ① Punto de inicio ② Enter ③ Di ④ 1.0 ⑤ @ ⑥ 2.5
+      </div>
+      
+      <div class="q-options">
+        <div class="q-opt" onclick="selectOpt(this, 1, true)">
+          <span class="opt-letter">✓</span>
+          <span>Punto de inicio, @, 2.5, 1.0, Enter, Di</span>
+        </div>
+        <div class="q-opt" onclick="selectOpt(this, 1, false)">
+          <span class="opt-letter">✗</span>
+          <span>Origen, #, 1.0, 2.5, Espacio, Medir</span>
+        </div>
+        <div class="q-opt" onclick="selectOpt(this, 1, false)">
+          <span class="opt-letter">✗</span>
+          <span>Centro, $, 2.0, 1.5, Enter, Distancia</span>
+        </div>
+      </div>
+      <div class="q-feedback" id="qfb-1"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="qbtn-1" onclick="nextQ(1)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- Pregunta 5: Atajos POL y EL -->
+    <div class="question-card" id="qcard-2">
+      <div class="q-num">Pregunta 3 de 5</div>
+      <div class="q-text">Escoja los <strong>dos atajos</strong> para polígono y elipse (polygon and ellipse):</div>
+      <div class="q-options">
+        <div class="q-opt" onclick="selectOptMulti(this, 2, false)"><span class="opt-letter">a</span>ELY</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 2, false)"><span class="opt-letter">b</span>POLY</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 2, true)"><span class="opt-letter">c</span>EL</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 2, false)"><span class="opt-letter">d</span>ELP</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 2, true)"><span class="opt-letter">e</span>POL</div>
+      </div>
+      <div style="font-size:10px;color:#90a4ae;margin-top:6px;">💡 Seleccione EXACTAMENTE 2 opciones</div>
+      <div class="q-feedback" id="qfb-2"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="qbtn-2" onclick="nextQ(2)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- Pregunta 6: Atajos U y SC -->
+    <div class="question-card" id="qcard-3">
+      <div class="q-num">Pregunta 4 de 5</div>
+      <div class="q-text">Escoja los <strong>dos atajos</strong> para regresar (undo) y escalar (scale):</div>
+      <div class="q-options">
+        <div class="q-opt" onclick="selectOptMulti(this, 3, false)"><span class="opt-letter">a</span>ANT</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 3, false)"><span class="opt-letter">b</span>REG</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 3, false)"><span class="opt-letter">c</span>ESC</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 3, true)"><span class="opt-letter">d</span>SC</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 3, true)"><span class="opt-letter">e</span>U</div>
+      </div>
+      <div style="font-size:10px;color:#90a4ae;margin-top:6px;">💡 Seleccione EXACTAMENTE 2 opciones</div>
+      <div class="q-feedback" id="qfb-3"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="qbtn-3" onclick="nextQ(3)" style="display:none">Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- Pregunta 7: Atajos M y P -->
+    <div class="question-card" id="qcard-4">
+      <div class="q-num">Pregunta 5 de 5</div>
+      <div class="q-text">Escoja los <strong>dos atajos</strong> para mover (move) y desplazar la vista (pan):</div>
+      <div class="q-options">
+        <div class="q-opt" onclick="selectOptMulti(this, 4, false)"><span class="opt-letter">a</span>PA</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 4, true)"><span class="opt-letter">b</span>M</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 4, true)"><span class="opt-letter">c</span>P</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 4, false)"><span class="opt-letter">d</span>MOV</div>
+        <div class="q-opt" onclick="selectOptMulti(this, 4, false)"><span class="opt-letter">e</span>DSP</div>
+      </div>
+      <div style="font-size:10px;color:#90a4ae;margin-top:6px;">💡 Seleccione EXACTAMENTE 2 opciones</div>
+      <div class="q-feedback" id="qfb-4"></div>
+      <div class="q-actions">
+        <button class="btn btn-primary" id="qbtn-4" onclick="showScore()" style="display:none">Ver resultados 🏆</button>
+      </div>
+    </div>
+
+    <!-- Pantalla de puntaje -->
+    <div class="score-screen" id="scoreScreen">
+      <div class="score-emoji" id="scoreEmoji">🎉</div>
+      <div class="score-num" id="scoreNum">0/5</div>
+      <div class="score-txt" id="scoreTxt"></div>
+      <button class="btn btn-primary" onclick="resetQuiz()">🔄 Intentar de nuevo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL OVERLAY ====== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="mh-icon" id="modalIcon">🖥️</div>
+      <div class="mh-text">
+        <h3 id="modalTitle">Título</h3>
+        <p id="modalSubtitle">Subtítulo</p>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ===== TABS ===== */
+function switchTab(id, btn) {
+  document.querySelectorAll('.main').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ===== MODAL DATA - Contenido EXACTO del Word ===== */
+const modalData = {
+  workspace: {
+    icon: '🔄', title: 'Espacio de trabajo',
+    subtitle: 'Se cambia de 2D a 3D',
+    body: `
+      <p><strong>Función:</strong> Permite alternar entre el entorno 2D (Drafting & Annotation) y el entorno 3D (3D Modeling).</p>
+      <div class="highlight-box">💡 Haga clic en el ícono de engranaje en la barra de estado para cambiar de espacio de trabajo.</div>
+    `
+  },
+  ribbon: {
+    icon: '📋', title: 'Ribbon / Cinta de herramientas',
+    subtitle: 'Barra donde se modela o generan láminas',
+    body: `
+      <p><strong>Función:</strong> Organiza los comandos en pestañas y paneles para facilitar el acceso a herramientas de dibujo, modificación y anotación.</p>
+      <div class="highlight-box">📌 Pestañas: Home, Insert, Annotate, Parametric, View, Manage, Output.</div>
+    `
+  },
+  propiedades: {
+    icon: '⚙️', title: 'Propiedades — Match Properties',
+    subtitle: 'Barra superior de propiedades',
+    body: `
+      <p><strong>Función:</strong> Barra superior donde puede observar color, tipos de línea, grosor y propiedades de los objetos y editarlos.</p>
+      <div class="highlight-box">⌨️ Atajo: <strong>MA</strong> — Match Properties (copiar propiedades)</div>
+    `
+  },
+  capas: {
+    icon: '🗂️', title: 'Capas — Layers',
+    subtitle: 'Gestión de capas',
+    body: `
+      <p><strong>Función:</strong> Grupo de comandos que permiten crear, editar y activar capas dentro del lienzo.</p>
+      <div class="highlight-box">⌨️ Atajo: <strong>LA</strong> — Layer Manager</div>
+    `
+  },
+  modify: {
+    icon: '🔧', title: 'Modificar — Modify',
+    subtitle: 'Grupo de comandos de edición',
+    body: `
+      <p><strong>Función:</strong> Comandos para mover, rotar, copiar, recortar, simetrías, redondeo, escala, estrechar, matrices, entre otros.</p>
+      <hr class="section-divider">
+      <span class="tag">M — Mover</span><span class="tag">RO — Rotar</span><span class="tag">CO — Copiar</span>
+      <span class="tag">TR — Recortar</span><span class="tag">MI — Simetría</span><span class="tag">F — Redondeo</span>
+      <span class="tag">SC — Escala</span><span class="tag">S — Estrechar</span><span class="tag">AR — Matrices</span>
+    `
+  },
+  lienzo: {
+    icon: '📐', title: 'Área de dibujo (Lienzo)',
+    subtitle: 'Espacio de trabajo principal',
+    body: `
+      <p><strong>Función:</strong> Zona central donde se realizan todos los trazados técnicos con sistema de coordenadas cartesianas (X, Y, Z).</p>
+      <div class="highlight-box">🖱️ Rueda: Zoom | Clic central + arrastre: Pan</div>
+    `
+  },
+  ortho: {
+    icon: '📏', title: 'Función Ortogonal — ORTHO',
+    subtitle: 'Dibujar a 90° exactos',
+    body: `
+      <p><strong>Función:</strong> Restringe el movimiento del cursor a direcciones horizontales y verticales exactas (0°, 90°, 180°, 270°).</p>
+      <div class="highlight-box">⌨️ Tecla: <strong>F8</strong> — Activa/desactiva Ortho</div>
+    `
+  },
+  comandos: {
+    icon: '💬', title: 'Barra de Comandos',
+    subtitle: 'Puedo escribir atajos',
+    body: `
+      <p><strong>Función:</strong> Interfaz de texto para escribir comandos y atajos directamente. Muestra opciones y solicita datos.</p>
+      <div class="highlight-box">💡 Escriba el atajo + <strong>Enter</strong> o <strong>Espacio</strong> para ejecutar</div>
+    `
+  },
+  osnap: {
+    icon: '🎯', title: 'OSNAP — Referencia a objetos',
+    subtitle: 'Función de generar referencias',
+    body: `
+      <p><strong>Función:</strong> Ancla el cursor a puntos específicos: punto final, medio, centro, cuadrante, intersección, perpendicular, tangente.</p>
+      <div class="highlight-box">⌨️ Tecla: <strong>F3</strong> — Activa/desactiva OSNAP</div>
+    `
+  },
+  viewcube: {
+    icon: '🎲', title: 'ViewCube',
+    subtitle: 'Visualizar caras/vistas',
+    body: `
+      <p><strong>Función:</strong> Herramienta de navegación para cambiar entre vistas estándar (Top, Front, Right, Isometric) con un clic.</p>
+      <div class="highlight-box">🖱️ Clic en cara/arista/esquina para orientar | Arrastre para rotar libremente</div>
+    `
+  },
+  
+  /* INFOGRAFÍA */
+  'inf-propiedades': {
+    icon: '⚙️', title: 'Propiedades',
+    subtitle: 'Match properties',
+    body: `<p>Barra superior donde puede observar color, tipos de línea, grosor y propiedades de los objetos y editarlos.</p>`
+  },
+  'inf-modify': {
+    icon: '🔧', title: 'Modificar',
+    subtitle: 'Grupo de comandos Modify',
+    body: `<p>Mover, rotar, copiar, recortar, simetrías, redondeo, escala, estrechar, matrices, entre otros.</p>`
+  },
+  'inf-capas': {
+    icon: '🗂️', title: 'Capas',
+    subtitle: 'Layers o capas',
+    body: `<p>Grupo de comandos que permiten crear, editar y activar capas dentro del lienzo.</p>`
+  },
+  'inf-imagenes': {
+    icon: '🖼️', title: 'Galería de referencias',
+    subtitle: 'Imágenes del documento',
+    body: `<p>Visualiza las capturas de la interfaz y comandos CAD del guion de la sesión 4.</p>`
+  },
+  'inf-atajos': {
+    icon: '⌨️', title: 'Atajos esenciales',
+    subtitle: 'Comandos rápidos CAD',
+    body: `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="highlight-box"><strong>POL</strong> — Polígono</div>
+        <div class="highlight-box"><strong>EL</strong> — Elipse</div>
+        <div class="highlight-box"><strong>U</strong> — Deshacer (Undo)</div>
+        <div class="highlight-box"><strong>SC</strong> — Escalar (Scale)</div>
+        <div class="highlight-box"><strong>M</strong> — Mover (Move)</div>
+        <div class="highlight-box"><strong>P</strong> — Desplazar (Pan)</div>
+        <div class="highlight-box"><strong>MA</strong> — Match Properties</div>
+        <div class="highlight-box"><strong>LA</strong> — Capas (Layer)</div>
+      </div>
+    `
+  },
+  'inf-rectangulo': {
+    icon: '📏', title: 'Dibujo de rectángulo',
+    subtitle: 'Proceso paso a paso',
+    body: `
+      <p><strong>Proceso exacto:</strong></p>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="highlight-box">1️⃣ Clic izquierdo en <strong>punto de inicio</strong></div>
+        <div class="highlight-box">2️⃣ Escribir símbolo <strong>@</strong> (coordenadas relativas)</div>
+        <div class="highlight-box">3️⃣ Ingresar: x = <strong>2.5</strong>, y = <strong>1.0</strong></div>
+        <div class="highlight-box">4️⃣ Presionar <strong>Enter</strong> para cerrar</div>
+        <div class="highlight-box">5️⃣ Verificar con comando <strong>Di</strong> (distancia)</div>
+      </div>
+    `
+  }
+};
+
+/* ===== MODAL FUNCTIONS ===== */
+function openModal(key) {
+  const d = modalData[key];
+  if (!d) return;
+  document.getElementById('modalIcon').textContent = d.icon;
+  document.getElementById('modalTitle').textContent = d.title;
+  document.getElementById('modalSubtitle').textContent = d.subtitle;
+  document.getElementById('modalBody').innerHTML = d.body;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ===== QUIZ LOGIC ===== */
+let scores = [null, null, null, null, null];
+let multiSelected = {2: [], 3: [], 4: []};
+
+const feedbacks = [
+  { c: 'La selección por captura (Crossing Selection) selecciona automáticamente cualquier objeto que el marco toque o contenga.', w: 'La selección verde (Crossing) selecciona todo lo que toca o contiene.' },
+  { c: 'Proceso correcto: punto de inicio → @ → x=2.5, y=1.0 → Enter → verificar con Di.', w: 'Recuerda: @ para coordenadas relativas, dimensiones x=2.5 y y=1.0, comando Di para verificar.' },
+  { c: 'POL ejecuta polígono y EL activa el trazado de elipses. Son abreviaciones lógicas en inglés.', w: 'Los atajos correctos son: EL (elipse) y POL (polígono).' },
+  { c: 'U (Undo) deshace la última acción y SC (Scale) modifica el factor de proporcionalidad.', w: 'Los atajos correctos son: SC (Scale) y U (Undo).' },
+  { c: 'M (Move) traslada objetos con precisión y P (Pan) desplaza la vista sin alterar coordenadas.', w: 'Los atajos correctos son: M (Move) y P (Pan).' }
+];
+
+function buildProgress() {
+  const c = document.getElementById('qProgress');
+  c.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    d.className = 'q-dot' + (i === 0 ? ' active' : '');
+    d.textContent = i + 1;
+    d.onclick = () => goToQ(i);
+    c.appendChild(d);
+  }
+}
+buildProgress();
+
+function goToQ(idx) {
+  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('qcard-' + idx)?.classList.add('active');
+  document.querySelectorAll('.q-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx && scores[i] === null);
+  });
+}
+
+/* Single select (preguntas 0 y 1) */
+function selectOpt(el, qIdx, isCorrect) {
+  if (scores[qIdx] !== null) return;
+  scores[qIdx] = isCorrect;
+
+  el.closest('.q-options').querySelectorAll('.q-opt').forEach(o => {
+    o.classList.add('disabled');
+    o.style.pointerEvents = 'none';
+  });
+
+  if (isCorrect) {
+    el.classList.add('correct');
+    el.querySelector('.opt-letter').style.background = '#43a047';
+    el.querySelector('.opt-letter').style.color = '#fff';
+  } else {
+    el.classList.add('wrong');
+    el.querySelector('.opt-letter').style.background = '#e53935';
+    el.querySelector('.opt-letter').style.color = '#fff';
+    el.closest('.q-options').querySelectorAll('.q-opt').forEach(o => {
+      if (o.getAttribute('onclick')?.includes('true')) o.classList.add('correct');
+    });
+  }
+
+  const fb = document.getElementById('qfb-' + qIdx);
+  fb.className = 'q-feedback ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
+  fb.innerHTML = (isCorrect ? '✅ <strong>¡Correcto!</strong> ' : '❌ ') + feedbacks[qIdx][isCorrect ? 'c' : 'w'];
+
+  document.querySelectorAll('.q-dot')[qIdx].classList.remove('active');
+  document.querySelectorAll('.q-dot')[qIdx].classList.add(isCorrect ? 'correct' : 'wrong');
+  document.getElementById('qbtn-' + qIdx).style.display = 'inline-flex';
+}
+
+/* Multi select (preguntas 2, 3, 4) */
+function selectOptMulti(el, qIdx, isCorrect) {
+  if (scores[qIdx] !== null) return;
+  
+  const card = document.getElementById('qcard-' + qIdx);
+  const allOpts = card.querySelectorAll('.q-opt');
+  
+  // Toggle selection
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    multiSelected[qIdx] = multiSelected[qIdx].filter(opt => opt !== el);
+  } else {
+    if (multiSelected[qIdx].length >= 2) {
+      const first = multiSelected[qIdx].shift();
+      first.classList.remove('selected');
+    }
+    el.classList.add('selected');
+    multiSelected[qIdx].push(el);
+  }
+  
+  // Check if 2 selected
+  if (multiSelected[qIdx].length === 2) {
+    const bothCorrect = multiSelected[qIdx].every(opt => {
+      const onclick = opt.getAttribute('onclick');
+      return onclick && onclick.includes('true');
+    });
+    
+    // Disable all
+    allOpts.forEach(o => { o.classList.add('disabled'); o.style.pointerEvents = 'none'; });
+    
+    // Mark results
+    multiSelected[qIdx].forEach(opt => {
+      const onclick = opt.getAttribute('onclick');
+      const correct = onclick && onclick.includes('true');
+      opt.classList.add(correct ? 'correct' : 'wrong');
+      opt.querySelector('.opt-letter').style.background = correct ? '#43a047' : '#e53935';
+      opt.querySelector('.opt-letter').style.color = '#fff';
+    });
+    
+    // Show correct ones if wrong
+    if (!bothCorrect) {
+      allOpts.forEach(o => {
+        if (o.getAttribute('onclick')?.includes('true') && !o.classList.contains('selected')) {
+          o.classList.add('correct');
+          o.style.opacity = '0.6';
+        }
+      });
+    }
+    
+    scores[qIdx] = bothCorrect;
+    
+    const fb = document.getElementById('qfb-' + qIdx);
+    fb.className = 'q-feedback ' + (bothCorrect ? 'correct-fb' : 'wrong-fb');
+    fb.innerHTML = (bothCorrect ? '✅ <strong>¡Correcto!</strong> ' : '❌ ') + feedbacks[qIdx][bothCorrect ? 'c' : 'w'];
+    
+    document.querySelectorAll('.q-dot')[qIdx].classList.remove('active');
+    document.querySelectorAll('.q-dot')[qIdx].classList.add(bothCorrect ? 'correct' : 'wrong');
+    document.getElementById('qbtn-' + qIdx).style.display = 'inline-flex';
+  }
+}
+
+function nextQ(qIdx) {
+  const next = qIdx + 1;
+  if (next < 5) {
+    document.getElementById('qcard-' + qIdx).classList.remove('active');
+    document.getElementById('qcard-' + next).classList.add('active');
+    const dots = document.querySelectorAll('.q-dot');
+    if (scores[next] === null) dots[next].classList.add('active');
+  }
+}
+
+function showScore() {
+  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+  const correct = scores.filter(s => s === true).length;
+  const screen = document.getElementById('scoreScreen');
+  screen.classList.add('show');
+  document.getElementById('scoreNum').textContent = correct + '/5';
+  
+  let emoji, txt;
+  if (correct === 5) { emoji = '🏆'; txt = '¡Perfecto! Dominas los comandos y atajos CAD.'; }
+  else if (correct >= 3) { emoji = '👍'; txt = '¡Bien hecho! Repasa los atajos que fallaste.'; }
+  else { emoji = '📚'; txt = 'Sigue practicando. Revisa la infografía y vuelve a intentarlo.'; }
+  
+  document.getElementById('scoreEmoji').textContent = emoji;
+  document.getElementById('scoreTxt').textContent = txt;
+}
+
+function resetQuiz() {
+  scores = [null, null, null, null, null];
+  multiSelected = {2: [], 3: [], 4: []};
+  document.getElementById('scoreScreen').classList.remove('show');
+  
+  for (let i = 0; i < 5; i++) {
+    const card = document.getElementById('qcard-' + i);
+    card.classList.remove('active');
+    card.querySelectorAll('.q-opt').forEach(o => {
+      o.className = 'q-opt';
+      o.style.pointerEvents = '';
+      o.style.opacity = '';
+      const letter = o.querySelector('.opt-letter');
+      if (letter) { letter.style.background = ''; letter.style.color = ''; }
+    });
+    const fb = document.getElementById('qfb-' + i);
+    fb.className = 'q-feedback';
+    fb.textContent = '';
+    const btn = document.getElementById('qbtn-' + i);
+    if (btn) btn.style.display = 'none';
+  }
+  
+  buildProgress();
+  document.getElementById('qcard-0').classList.add('active');
+  document.querySelectorAll('.q-dot')[0].classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vistas, cortes y secciones en componentes energéticos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #38bdf8;
+            --accent: #06b6d4;
+            --energy: #f97316;
+            --energy-light: #fb923c;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f0f9ff;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border: #cbd5e1;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fff7ed 100%);
+            color: var(--text-primary);
+            width: 100%;
+            max-width: 800px;
+            max-height: 800px;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .app-container {
+            width: 100%;
+            height: 100%;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-icon {
+            font-size: 26px;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .progress-indicator {
+            display: flex;
+            gap: 5px;
+        }
+
+        .progress-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: white;
+            transform: scale(1.3);
+            box-shadow: 0 0 8px rgba(255,255,255,0.6);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slides-container {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide {
+            min-width: 100%;
+            max-width: 100%;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-1px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .card-number {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Interactive Image Section */
+        .instruction-box {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            border-left: 4px solid var(--energy);
+            padding: 12px 16px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+
+        .instruction-box strong {
+            color: #c2410c;
+        }
+
+        .image-frame {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+        }
+
+        .image-frame img {
+            max-width: 100%;
+            max-height: 240px;
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .image-caption {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* Interactive Buttons Grid */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .interactive-btn {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-decoration-color: var(--accent);
+            text-decoration-thickness: 2px;
+            text-underline-offset: 3px;
+            line-height: 1.3;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interactive-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .interactive-btn:hover::before {
+            transform: scaleX(1);
+        }
+
+        .interactive-btn:hover {
+            border-color: var(--primary-light);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            color: var(--primary-dark);
+        }
+
+        /* Quiz Styles */
+        .quiz-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .quiz-question {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.4;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-light);
+            background: #f0f9ff;
+            transform: translateX(4px);
+        }
+
+        .quiz-option.selected-correct {
+            border-color: var(--success);
+            background: #ecfdf5;
+        }
+
+        .quiz-option.selected-wrong {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .quiz-option .letter {
+            width: 28px;
+            height: 28px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-primary);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option.selected-correct .letter {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .quiz-option.selected-wrong .letter {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .quiz-option .text {
+            line-height: 1.4;
+        }
+
+        .reveal-btn {
+            margin-top: 4px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--energy) 0%, #ea580c 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+
+        .reveal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: white;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .nav-btn.next {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+
+        .nav-btn.next:hover:not(:disabled) {
+            box-shadow: 0 6px 16px rgba(14, 165, 233, 0.4);
+        }
+
+        .slide-counter {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            max-width: 680px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            transform: scale(0.92) translateY(16px);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.35);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+
+        .modal-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-section {
+            margin-bottom: 16px;
+        }
+
+        .modal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Feedback in modal */
+        .feedback-box {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-left: 4px solid var(--success);
+            padding: 14px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 12px;
+        }
+
+        .feedback-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #047857;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feedback-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #064e3b;
+        }
+
+        /* Welcome */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px 20px;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fff7ed 100%);
+        }
+
+        .welcome-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(14, 165, 233, 0.3));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .welcome-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--energy) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            max-width: 420px;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .start-btn {
+            padding: 14px 40px;
+            font-size: 15px;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.35);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(14, 165, 233, 0.45);
+        }
+
+        .reference-text {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: linear-gradient(135deg, var(--energy) 0%, #ea580c 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        /* Results Screen */
+        .results-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px 20px;
+            height: 100%;
+            gap: 16px;
+        }
+
+        .results-icon {
+            font-size: 64px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 8px 16px rgba(16, 185, 129, 0.3));
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .results-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) calc(var(--score-percent, 0) * 1%), #e2e8f0 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            animation: scaleIn 0.5s ease 0.2s both;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .score-text {
+            position: relative;
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--success);
+            z-index: 1;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .results-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            max-width: 380px;
+            line-height: 1.6;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .results-btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .results-btn.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+        }
+
+        .results-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+        }
+
+        .results-btn.secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .results-btn.secondary:hover {
+            border-color: var(--primary);
+            background: #f0f9ff;
+            color: var(--primary-dark);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .slide {
+                padding: 12px 14px;
+                gap: 10px;
+            }
+
+            .buttons-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 14px;
+            }
+
+            .image-frame img {
+                max-height: 180px;
+            }
+
+            .quiz-card {
+                padding: 14px;
+            }
+
+            .modal {
+                max-height: 90vh;
+            }
+
+            .results-icon {
+                font-size: 52px;
+            }
+
+            .score-circle {
+                width: 120px;
+                height: 120px;
+            }
+
+            .score-circle::before {
+                width: 94px;
+                height: 94px;
+            }
+
+            .score-text {
+                font-size: 30px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <span class="header-icon">⚡</span>
+                <div>
+                    <h1>Vistas, cortes y secciones<br>en componentes energéticos</h1>
+                </div>
+            </div>
+            <div class="progress-indicator" id="progressIndicator">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="slides-container" id="slidesContainer">
+
+                <!-- Slide 0: Welcome -->
+                <div class="slide">
+                    <div class="welcome-screen">
+                        <div class="welcome-icon">🔍</div>
+                        <h2 class="welcome-title">Exploración Técnica Interactiva</h2>
+                        <p class="welcome-subtitle">
+                            Explore y conozca como un mismo objeto puede leerse desde distintas vistas y cómo los cortes y secciones revelan información que no puede verse desde el exterior.
+                        </p>
+                        <button class="start-btn" onclick="nextSlide()">
+                            Iniciar Recorrido →
+                        </button>
+                        <p class="reference-text">Elaboración propia</p>
+                    </div>
+                </div>
+
+                <!-- Slide 1: Interactive Image -->
+                <div class="slide">
+                    <div class="instruction-box">
+                        <strong>🔍 Instrucción:</strong> Explore la imagen interactiva. Haga clic en cada botón para conocer el concepto técnico asociado a las vistas, cortes y secciones del componente energético.
+                    </div>
+
+                    <div class="image-frame">
+                        <img src="media/Imagen 31.jpg" alt="Vistas, cortes y secciones en componentes energéticos - Imagen interactiva">
+                        <div class="image-caption">Figura interactiva: Componente energético con vistas ortogonales, planos de corte y secciones</div>
+                    </div>
+
+                    <div class="buttons-grid">
+                        <button class="interactive-btn" onclick="openModal('modal_vista_isometrica')">Vista isométrica</button>
+                        <button class="interactive-btn" onclick="openModal('modal_vista_frontal')">Vista frontal o alzado</button>
+                        <button class="interactive-btn" onclick="openModal('modal_planta')">Planta</button>
+                        <button class="interactive-btn" onclick="openModal('modal_perfil')">Perfil</button>
+                        <button class="interactive-btn" onclick="openModal('modal_plano_corte')">Plano de corte</button>
+                        <button class="interactive-btn" onclick="openModal('modal_seccion_transversal')">Sección transversal</button>
+                        <button class="interactive-btn" onclick="openModal('modal_seccion_longitudinal')">Sección longitudinal</button>
+                        <button class="interactive-btn" onclick="openModal('modal_hachurado')">Hachurado</button>
+                        <button class="interactive-btn" onclick="openModal('modal_elemento_oculto')">Elemento oculto / interior</button>
+                        <button class="interactive-btn" onclick="openModal('modal_aplicacion_energia')">Aplicación en energía</button>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Quiz Pregunta 1 -->
+                <div class="slide" data-quiz="1">
+                    <div class="status-badge">Quiz - Pregunta 1 de 4</div>
+                    <div class="quiz-card">
+                        <div class="quiz-question">¿Qué vista permite comprender mejor la forma general del objeto antes de analizar el plano técnico?</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="selectOption(this, false, 1)">
+                                <span class="letter">a</span>
+                                <span class="text">Vista de planta.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, true, 1)">
+                                <span class="letter">b</span>
+                                <span class="text">Vista isométrica.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, false, 1)">
+                                <span class="letter">c</span>
+                                <span class="text">Vista lateral derecha.</span>
+                            </div>
+                        </div>
+                        <button class="reveal-btn" onclick="showFeedback(1)">Ver retroalimentación</button>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Quiz Pregunta 2 -->
+                <div class="slide" data-quiz="2">
+                    <div class="status-badge">Quiz - Pregunta 2 de 4</div>
+                    <div class="quiz-card">
+                        <div class="quiz-question">¿Qué elemento indica por dónde se imagina el corte del objeto?</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="selectOption(this, true, 2)">
+                                <span class="letter">a</span>
+                                <span class="text">El plano de corte.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, false, 2)">
+                                <span class="letter">b</span>
+                                <span class="text">La línea de contorno.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, false, 2)">
+                                <span class="letter">c</span>
+                                <span class="text">El indicador de cota.</span>
+                            </div>
+                        </div>
+                        <button class="reveal-btn" onclick="showFeedback(2)">Ver retroalimentación</button>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Quiz Pregunta 3 -->
+                <div class="slide" data-quiz="3">
+                    <div class="status-badge">Quiz - Pregunta 3 de 4</div>
+                    <div class="quiz-card">
+                        <div class="quiz-question">¿Qué recurso gráfico muestra el material atravesado por el plano secante?</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="selectOption(this, false, 3)">
+                                <span class="letter">a</span>
+                                <span class="text">El sombreado sólido.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, false, 3)">
+                                <span class="letter">b</span>
+                                <span class="text">La línea de trazos.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, true, 3)">
+                                <span class="letter">c</span>
+                                <span class="text">El hachurado.</span>
+                            </div>
+                        </div>
+                        <button class="reveal-btn" onclick="showFeedback(3)">Ver retroalimentación</button>
+                    </div>
+                </div>
+
+                <!-- Slide 5: Quiz Pregunta 4 -->
+                <div class="slide" data-quiz="4">
+                    <div class="status-badge">Quiz - Pregunta 4 de 4</div>
+                    <div class="quiz-card">
+                        <div class="quiz-question">¿Qué sección elegiría para estudiar el interior a lo largo del eje principal del componente?</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="selectOption(this, false, 4)">
+                                <span class="letter">a</span>
+                                <span class="text">Sección transversal.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, true, 4)">
+                                <span class="letter">b</span>
+                                <span class="text">Sección longitudinal.</span>
+                            </div>
+                            <div class="quiz-option" onclick="selectOption(this, false, 4)">
+                                <span class="letter">c</span>
+                                <span class="text">Sección quebrada.</span>
+                            </div>
+                        </div>
+                        <button class="reveal-btn" onclick="showFeedback(4)">Ver retroalimentación</button>
+                    </div>
+                </div>
+
+                <!-- Slide 6: Results -->
+                <div class="slide">
+                    <div class="results-screen" id="resultsScreen">
+                        <div class="results-icon" id="resultsIcon">🏆</div>
+                        <h2 class="results-title">¡Quiz completado!</h2>
+                        
+                        <div class="score-circle" id="scoreCircle" style="--score-percent: 0;">
+                            <span class="score-text" id="scoreText">0/4</span>
+                        </div>
+                        <div class="score-label">Respuestas correctas</div>
+                        
+                        <div class="results-message" id="resultsMessage">
+                            Completa todas las preguntas para ver tu puntuación final.
+                        </div>
+                        
+                        <div class="results-actions">
+                            <button class="results-btn primary" onclick="restartQuiz()">
+                                🔄 Reiniciar Quiz
+                            </button>
+                            <button class="results-btn secondary" onclick="goHome()">
+                                🏠 Volver al inicio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
+                ← Anterior
+            </button>
+            <span class="slide-counter" id="slideCounter">1 / 7</span>
+            <button class="nav-btn next" id="nextBtn" onclick="nextSlide()">
+                Siguiente →
+            </button>
+        </nav>
+    </div>
+
+    <!-- ========== MODALS ========== -->
+
+    <!-- Modal: Vista isométrica -->
+    <div class="modal-overlay" id="modal_vista_isometrica">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">📐 Vista isométrica</div>
+                <button class="modal-close" onclick="closeModal('modal_vista_isometrica')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">Esta representación muestra el objeto en tres dimensiones y facilita comprender su forma general. No sustituye las vistas técnicas, pero ayuda a anticipar cómo se traducirá el componente en planta, alzado y perfil.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Vista frontal o alzado -->
+    <div class="modal-overlay" id="modal_vista_frontal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">▪️ Vista frontal o alzado</div>
+                <button class="modal-close" onclick="closeModal('modal_vista_frontal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">El alzado representa el objeto visto de frente. Permite reconocer altura, ancho y detalles visibles principales. Es una de las vistas ortogonales más utilizadas en la lectura técnica.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Planta -->
+    <div class="modal-overlay" id="modal_planta">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">⬇️ Planta</div>
+                <button class="modal-close" onclick="closeModal('modal_planta')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">La planta muestra el objeto desde arriba. Esta vista es clave para comprender ubicación, distribución y relación espacial entre elementos, especialmente en instalaciones energéticas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Perfil -->
+    <div class="modal-overlay" id="modal_perfil">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">◀️ Perfil</div>
+                <button class="modal-close" onclick="closeModal('modal_perfil')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">El perfil complementa la información del alzado y de la planta. Permite identificar profundidades, espesores y relaciones laterales que no siempre son visibles en otras vistas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Plano de corte -->
+    <div class="modal-overlay" id="modal_plano_corte">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">✂️ Plano de corte</div>
+                <button class="modal-close" onclick="closeModal('modal_plano_corte')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">El plano de corte indica por dónde se imagina que el objeto ha sido "atravesado" para revelar su interior. Las flechas muestran la dirección desde la cual se observa la sección resultante.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Sección transversal -->
+    <div class="modal-overlay" id="modal_seccion_transversal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">🔲 Sección transversal</div>
+                <button class="modal-close" onclick="closeModal('modal_seccion_transversal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">La sección transversal se obtiene al cortar el objeto perpendicularmente a su eje principal. Sirve para mostrar el interior del componente y comprender espesores, vacíos o conductos internos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Sección longitudinal -->
+    <div class="modal-overlay" id="modal_seccion_longitudinal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">📏 Sección longitudinal</div>
+                <button class="modal-close" onclick="closeModal('modal_seccion_longitudinal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">La sección longitudinal sigue el eje mayor del objeto. Es útil para analizar continuidad interna, ensamblajes, trayectorias o recorridos dentro de sistemas técnicos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Hachurado -->
+    <div class="modal-overlay" id="modal_hachurado">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">〰️ Hachurado</div>
+                <button class="modal-close" onclick="closeModal('modal_hachurado')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">El hachurado identifica la superficie del material que ha sido cortada por el plano secante. Su función es indicar que se está observando una zona seccionada y no solamente una vista exterior.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Elemento oculto / interior -->
+    <div class="modal-overlay" id="modal_elemento_oculto">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">👁️ Elemento oculto / interior</div>
+                <button class="modal-close" onclick="closeModal('modal_elemento_oculto')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">Algunas características del componente no son visibles desde el exterior. Las secciones permiten comunicar esta información con claridad y evitar interpretaciones ambiguas en fabricación, instalación o mantenimiento.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Aplicación en energía -->
+    <div class="modal-overlay" id="modal_aplicacion_energia">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">⚡ Aplicación en energía</div>
+                <button class="modal-close" onclick="closeModal('modal_aplicacion_energia')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text">En sistemas energéticos, las vistas y secciones permiten representar conexiones internas, alojamientos, conductos, espacios de ventilación, rutas de mantenimiento y zonas críticas del sistema.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal for Quiz -->
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal">
+            <div class="modal-header" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                <div class="modal-title" id="feedbackModalTitle">💡 Retroalimentación</div>
+                <button class="modal-close" onclick="closeModal('feedbackModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p class="modal-text" id="feedbackModalText"></p>
+                </div>
+                <div class="feedback-box" id="feedbackBox">
+                    <div class="feedback-title">✅ Respuesta correcta</div>
+                    <p class="feedback-text" id="feedbackCorrectAnswer"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 7;
+        const totalQuestions = 4;
+
+        const quizData = {
+            1: {
+                correct: 'b',
+                text: 'La vista isométrica ofrece una representación tridimensional que permite visualizar la profundidad, altura y anchura de forma simultánea. Es el recurso ideal para una comprensión espacial rápida e inequívoca de la volumetría del objeto antes de profundizar en las proyecciones ortogonales.',
+                correctText: 'Opción correcta: b. Vista isométrica.'
+            },
+            2: {
+                correct: 'a',
+                text: 'El plano de corte es el elemento conceptual y gráfico que define la trayectoria de la sección. Su correcta señalización mediante flechas y letras es fundamental para orientar al lector sobre la ubicación exacta de la disección técnica.',
+                correctText: 'Opción correcta: a. El plano de corte.'
+            },
+            3: {
+                correct: 'c',
+                text: 'El hachurado (o rayado técnico) se utiliza para diferenciar las áreas sólidas que han sido interceptadas por el corte. Según la norma, el patrón empleado puede indicar incluso el tipo de material, garantizando que la interpretación del interior del componente sea técnica y clara.',
+                correctText: 'Opción correcta: c. El hachurado.'
+            },
+            4: {
+                correct: 'b',
+                text: 'La sección longitudinal se realiza siguiendo la mayor dimensión del objeto o su eje principal. Es esencial para analizar la disposición de componentes internos a lo largo de toda la estructura, asegurando una visión integral de la mecánica o arquitectura del sistema.',
+                correctText: 'Opción correcta: b. Sección longitudinal.'
+            }
+        };
+
+        let selectedAnswers = {};
+
+        function updateSlide() {
+            const container = document.getElementById('slidesContainer');
+            container.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentSlide === totalSlides - 1) {
+                nextBtn.disabled = true;
+                nextBtn.textContent = 'Fin ✓';
+            } else {
+                nextBtn.disabled = false;
+                nextBtn.textContent = 'Siguiente →';
+            }
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Si llegamos a la pantalla de resultados, calcular puntuación
+            if (currentSlide === totalSlides - 1) {
+                calculateScore();
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function selectOption(element, isCorrect, questionNum) {
+            const slide = element.closest('.slide');
+            const options = slide.querySelectorAll('.quiz-option');
+            
+            options.forEach(opt => {
+                opt.classList.remove('selected-correct', 'selected-wrong');
+                opt.style.pointerEvents = 'none';
+            });
+
+            if (isCorrect) {
+                element.classList.add('selected-correct');
+            } else {
+                element.classList.add('selected-wrong');
+                options.forEach(opt => {
+                    if (opt.onclick.toString().includes('true')) {
+                        opt.classList.add('selected-correct');
+                    }
+                });
+            }
+
+            selectedAnswers[questionNum] = isCorrect;
+        }
+
+        function showFeedback(questionNum) {
+            const data = quizData[questionNum];
+            document.getElementById('feedbackModalText').textContent = data.text;
+            document.getElementById('feedbackCorrectAnswer').textContent = data.correctText;
+            openModal('feedbackModal');
+        }
+
+        function calculateScore() {
+            let correctCount = 0;
+            for (let i = 1; i <= totalQuestions; i++) {
+                if (selectedAnswers[i] === true) {
+                    correctCount++;
+                }
+            }
+
+            const percent = (correctCount / totalQuestions) * 100;
+            document.getElementById('scoreText').textContent = `${correctCount}/${totalQuestions}`;
+            document.getElementById('scoreCircle').style.setProperty('--score-percent', percent);
+
+            const iconEl = document.getElementById('resultsIcon');
+            const msgEl = document.getElementById('resultsMessage');
+
+            if (correctCount === totalQuestions) {
+                iconEl.textContent = '🏆';
+                msgEl.innerHTML = '<strong>¡Excelente!</strong> Dominas a la perfección los conceptos de vistas, cortes y secciones en componentes energéticos.';
+            } else if (correctCount >= totalQuestions / 2) {
+                iconEl.textContent = '⭐';
+                msgEl.innerHTML = '<strong>¡Muy bien!</strong> Tienes una buena comprensión, pero aún puedes reforzar algunos conceptos revisando la imagen interactiva.';
+            } else {
+                iconEl.textContent = '📚';
+                msgEl.innerHTML = '<strong>Sigue practicando.</strong> Te recomendamos revisar nuevamente la imagen interactiva y las retroalimentaciones para reforzar tus conocimientos.';
+            }
+        }
+
+        function restartQuiz() {
+            // Limpiar respuestas
+            selectedAnswers = {};
+            
+            // Resetear todas las opciones de quiz
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected-correct', 'selected-wrong');
+                opt.style.pointerEvents = '';
+            });
+
+            // Ir a la primera pregunta (slide 2)
+            currentSlide = 2;
+            updateSlide();
+        }
+
+        function goHome() {
+            // Limpiar respuestas
+            selectedAnswers = {};
+            
+            // Resetear todas las opciones de quiz
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected-correct', 'selected-wrong');
+                opt.style.pointerEvents = '';
+            });
+
+            // Ir a bienvenida
+            currentSlide = 0;
+            updateSlide();
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
