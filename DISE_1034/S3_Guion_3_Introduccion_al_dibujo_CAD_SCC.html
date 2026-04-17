@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introducción al Dibujo CAD - Recurso Interactivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --accent: #06b6d4;
+            --accent-light: #22d3ee;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            max-width: 800px;
+            max-height: 800px;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            width: 100%;
+            height: 800px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-icon {
+            font-size: 28px;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-subtitle {
+            font-size: 11px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .progress-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        .slides-container {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+        }
+        
+        .slide {
+            min-width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .card-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+        
+        /* Activity Cards */
+        .activity-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .activity-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .activity-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .activity-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .activity-icon {
+            font-size: 24px;
+        }
+        
+        .activity-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .activity-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* Images */
+        .image-container {
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin: 12px 0;
+            background: white;
+            border: 1px solid var(--border);
+        }
+        
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-container:hover img {
+            transform: scale(1.02);
+        }
+        
+        .image-caption {
+            padding: 8px 12px;
+            background: var(--bg);
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+        }
+        
+        /* Interactive Elements */
+        .interactive-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .interactive-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .interactive-item:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            transform: scale(1.02);
+        }
+        
+        .interactive-item .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .interactive-item .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.23);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: white;
+            border-top: 1px solid var(--border);
+            gap: 12px;
+        }
+        
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .nav-btn.next {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+        
+        .slide-counter {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .modal-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .modal-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .modal-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+        
+        .answer-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .answer-list li {
+            padding: 10px 14px;
+            background: var(--bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            border-left: 3px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .answer-list li::before {
+            content: '✓';
+            width: 20px;
+            height: 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        /* Word Fill Activity */
+        .word-fill {
+            background: #f1f5f9;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .word-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .word-chip {
+            padding: 6px 12px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Info Cards Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .info-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .info-item .number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .info-item .text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* Quiz Options */
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .quiz-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--primary-light);
+            background: #eff6ff;
+        }
+        
+        .quiz-option .letter {
+            width: 28px;
+            height: 28px;
+            background: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-primary);
+            flex-shrink: 0;
+        }
+        
+        .quiz-option .text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+        
+        /* Retroalimentación */
+        .feedback-box {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid var(--success);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .feedback-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feedback-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+        
+        /* Matching Activity */
+        .matching-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .matching-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .matching-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .matching-item:hover {
+            border-color: var(--accent);
+            background: #ecfeff;
+        }
+        
+        .matching-image {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border-radius: 6px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .interactive-grid,
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .matching-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .slide {
+                padding: 12px;
+            }
+            
+            .header h1 {
+                font-size: 16px;
+            }
+            
+            .modal {
+                max-height: 90vh;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .welcome-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            max-width: 400px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        
+        .start-btn {
+            padding: 16px 48px;
+            font-size: 16px;
+            border-radius: 30px;
+        }
+        
+        /* ISO Standards List */
+        .iso-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .iso-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        
+        .iso-badge {
+            padding: 4px 10px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .iso-text {
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <span class="header-icon">📐</span>
+                <div>
+                    <h1>Introducción al Dibujo CAD</h1>
+                    <div class="header-subtitle">Recurso Educativo Interactivo</div>
+                </div>
+            </div>
+            <div class="progress-indicator" id="progressIndicator">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="slides-container" id="slidesContainer">
+                
+                <!-- Slide 0: Welcome -->
+                <div class="slide">
+                    <div class="welcome-screen">
+                        <div class="welcome-icon">🎮</div>
+                        <h2 class="welcome-title">¡Bienvenido al Juego!</h2>
+                        <p class="welcome-subtitle">
+                            Explora el fascinante mundo del dibujo técnico asistido por computadora. 
+                            Completa las 6 actividades interactivas y demuestra tus conocimientos sobre CAD.
+                        </p>
+                        <button class="btn btn-primary start-btn" onclick="nextSlide()">
+                            Comenzar Aventura 🚀
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Slide 1: Tipos de Línea -->
+                <div class="slide">
+                    <div class="activity-card" onclick="openModal('modal1')">
+                        <div class="activity-header">
+                            <span class="activity-icon">📏</span>
+                            <span class="activity-title">Actividad 1: Tipos de Línea</span>
+                        </div>
+                        <p class="activity-desc">
+                            Ordene las respuestas acordes al tipo de línea o relleno del gráfico.
+                        </p>
+                        <div class="image-container">
+                            <img src="media/Imagen 1.jpg" alt="Tipos de línea en dibujo técnico">
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="number">4</span>
+                            <span class="text">Línea gruesa</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="number">3</span>
+                            <span class="text">Línea oblicua de relleno</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="number">2</span>
+                            <span class="text">Fina de trazos y doble punto</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="number">1</span>
+                            <span class="text">Fina de trazos y puntos</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 2: Doblaje A1 -->
+                <div class="slide">
+                    <div class="activity-card" onclick="openModal('modal2')">
+                        <div class="activity-header">
+                            <span class="activity-icon">📄</span>
+                            <span class="activity-title">Actividad 2: Doblaje de Plano A1</span>
+                        </div>
+                        <p class="activity-desc">
+                            Ordena los pasos correctos para el proceso de doblar un plano A1.
+                        </p>
+                        <div class="image-container">
+                            <img src="media/Imagen 2.jpg" alt="Proceso de doblaje de plano A1">
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-number">✓</div>
+                            <div class="card-title">Orden Correcto</div>
+                        </div>
+                        <ol class="answer-list">
+                            <li>Doblaje de la lámina A1 al lado mayor.</li>
+                            <li>Doblaje a la mitad del lado inferior.</li>
+                            <li>Considerando la medida A4, se dobla para formar un acordeón o zigzag.</li>
+                            <li>En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <!-- Slide 3: Historia AutoCAD -->
+                <div class="slide">
+                    <div class="activity-card" onclick="openModal('modal3')">
+                        <div class="activity-header">
+                            <span class="activity-icon">💻</span>
+                            <span class="activity-title">Actividad 3: Inicios de AutoCAD</span>
+                        </div>
+                        <p class="activity-desc">
+                            Completa las frases arrastrando las palabras correctas sobre los inicios de AutoCAD.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-number">📝</div>
+                            <div class="card-title">Texto Completado</div>
+                        </div>
+                        <div class="modal-text" style="line-height: 1.8;">
+                            El software de <span class="word-fill">AutoCAD versión 1.0</span> tenía un procesador 286 en el sistema <span class="word-fill">DOS</span>. En la figura 19 de la guía indica que AutoCAD Draw y <span class="word-fill">Modify</span> como barras de herramientas verticales a la izquierda. Además, se denotaba una flecha cruzada en forma de "L" denominada en inglés <span class="word-fill">Coordinate Axis</span>, alusiva al sistema de coordenadas.
+                            <br><br>
+                            <span class="word-fill">CAD</span> son las siglas para denominar a Computer Aided Design, que evoluciona a procesos de fabricación, 3D, simulación y análisis, llamándose <span class="word-fill">CAE/CAM</span>.
+                        </div>
+                        <div class="word-options">
+                            <span class="word-chip">CAD</span>
+                            <span class="word-chip">AutoCAD versión 1.0</span>
+                            <span class="word-chip">DOS</span>
+                            <span class="word-chip">CAE/CAM</span>
+                            <span class="word-chip">Modify</span>
+                            <span class="word-chip">Coordinate Axis</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 4: Zonas del Plano -->
+                <div class="slide">
+                    <div class="activity-card" onclick="openModal('modal4')">
+                        <div class="activity-header">
+                            <span class="activity-icon">🎯</span>
+                            <span class="activity-title">Actividad 4: Zonas del Plano</span>
+                        </div>
+                        <p class="activity-desc">
+                            Arrastre cada elemento con su descripción correspondiente.
+                        </p>
+                    </div>
+                    
+                    <div class="interactive-grid">
+                        <div class="interactive-item" onclick="showImageDetail('Imagen 3.jpg', 'Área superior derecha')">
+                            <span class="icon">↗️</span>
+                            <span class="label">Área superior derecha</span>
+                        </div>
+                        <div class="interactive-item" onclick="showImageDetail('Imagen 4.jpg', 'Esquina superior derecha')">
+                            <span class="icon">⬆️</span>
+                            <span class="label">Esquina superior derecha</span>
+                        </div>
+                        <div class="interactive-item" onclick="showImageDetail('Imagen 5.jpg', 'Área central izquierda')">
+                            <span class="icon">⬅️</span>
+                            <span class="label">Área central izquierda</span>
+                        </div>
+                        <div class="interactive-item" onclick="showImageDetail('Imagen 6.jpg', 'Esquina inferior derecha')">
+                            <span class="icon">↘️</span>
+                            <span class="label">Esquina inferior derecha</span>
+                        </div>
+                        <div class="interactive-item" onclick="showImageDetail('Imagen 7.jpg', 'Área inferior izquierda')">
+                            <span class="icon">⬇️</span>
+                            <span class="label">Área inferior izquierda</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 5: Normas ISO -->
+                <div class="slide">
+                    <div class="activity-card" onclick="openModal('modal5')">
+                        <div class="activity-header">
+                            <span class="activity-icon">📋</span>
+                            <span class="activity-title">Actividad 5: Normas para Aprobación de Planos</span>
+                        </div>
+                        <p class="activity-desc">
+                            Arrastra la palabra correcta para completar la información sobre normas ISO.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-number">📊</div>
+                            <div class="card-title">Normas ISO Aplicadas</div>
+                        </div>
+                        <div class="iso-list">
+                            <div class="iso-item">
+                                <span class="iso-badge">ISO 128/5457</span>
+                                <span class="iso-text">Archivo de entrega: dwg/dxf</span>
+                            </div>
+                            <div class="iso-item">
+                                <span class="iso-badge">ISO 7200/9431</span>
+                                <span class="iso-text">Cajetín y formato de planos</span>
+                            </div>
+                            <div class="iso-item">
+                                <span class="iso-badge">ISO 128</span>
+                                <span class="iso-text">Líneas, vistas y cortes</span>
+                            </div>
+                            <div class="iso-item">
+                                <span class="iso-badge">ISO 129</span>
+                                <span class="iso-text">Acotaciones y dimensionamiento</span>
+                            </div>
+                            <div class="iso-item">
+                                <span class="iso-badge">ISO 3098</span>
+                                <span class="iso-text">Rotulación y escritura técnica</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 6: Ubicación/Implantación -->
+                <div class="slide">
+                    <div class="activity-card" onclick="openModal('modal6')">
+                        <div class="activity-header">
+                            <span class="activity-icon">🗺️</span>
+                            <span class="activity-title">Actividad 6: Ubicación/Implantación</span>
+                        </div>
+                        <p class="activity-desc">
+                            ¿De qué trata la ubicación/implantación como información en un plano?
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-number">✓</div>
+                            <div class="card-title">Respuesta Correcta</div>
+                        </div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" style="border-color: var(--success); background: #ecfdf5;">
+                                <span class="letter" style="background: var(--success); color: white;">a</span>
+                                <span class="text">Se trata de un croquis que describe las calles, dirección de un predio, complementado por un norte.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="feedback-box">
+                            <div class="feedback-title">
+                                💡 Retroalimentación
+                            </div>
+                            <p class="feedback-text">
+                                La ubicación e implantación permiten situar el proyecto de manera <strong>inequívoca</strong> en su contexto urbano. Para que esta información sea técnicamente válida, debe incluir la identificación de las vías circundantes, la dirección exacta del predio y la orientación mediante el <strong>norte</strong>, eliminando cualquier ambigüedad o incertidumbre sobre la localización y disposición espacial de la obra.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </main>
+        
+        <!-- Navigation -->
+        <nav class="nav-buttons">
+            <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
+                ← Anterior
+            </button>
+            <span class="slide-counter" id="slideCounter">1 / 7</span>
+            <button class="nav-btn next" id="nextBtn" onclick="nextSlide()">
+                Siguiente →
+            </button>
+        </nav>
+    </div>
+    
+    <!-- Modals -->
+    
+    <!-- Modal 1: Tipos de Línea -->
+    <div class="modal-overlay" id="modal1">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    📏 Actividad 1: Tipos de Línea
+                </div>
+                <button class="modal-close" onclick="closeModal('modal1')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 Instrucción</div>
+                    <p class="modal-text">
+                        Ordene las respuestas acordes al tipo de línea o relleno del gráfico.
+                    </p>
+                </div>
+                <div class="image-container">
+                    <img src="media/Imagen 1.jpg" alt="Tipos de línea">
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">✅ Respuesta Correcta</div>
+                    <ol class="answer-list">
+                        <li>Fina de trazos y puntos</li>
+                        <li>Fina de trazos y doble punto</li>
+                        <li>Línea oblicua de relleno</li>
+                        <li>Línea gruesa</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 2: Doblaje A1 -->
+    <div class="modal-overlay" id="modal2">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    📄 Actividad 2: Doblaje de Plano A1
+                </div>
+                <button class="modal-close" onclick="closeModal('modal2')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 Instrucción</div>
+                    <p class="modal-text">
+                        Ordena los pasos correctos, arrastrándolos de arriba hacia abajo, para el proceso de doblar un plano A1.
+                    </p>
+                </div>
+                <div class="image-container">
+                    <img src="media/Imagen 2.jpg" alt="Doblaje de plano A1">
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">✅ Orden Correcto</div>
+                    <ol class="answer-list">
+                        <li>Doblaje de la lámina A1 al lado mayor.</li>
+                        <li>Doblaje a la mitad del lado inferior.</li>
+                        <li>Considerando la medida A4, se dobla para formar un acordeón o zigzag.</li>
+                        <li>En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 3: Historia AutoCAD -->
+    <div class="modal-overlay" id="modal3">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    💻 Actividad 3: Inicios de AutoCAD
+                </div>
+                <button class="modal-close" onclick="closeModal('modal3')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 Instrucción</div>
+                    <p class="modal-text">
+                        Arrastre las palabras para dar sentido a las frases acerca de inicios de AutoCAD.
+                    </p>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">🔤 Palabras Disponibles</div>
+                    <div class="word-options">
+                        <span class="word-chip">CAD</span>
+                        <span class="word-chip">AutoCAD versión 1.0</span>
+                        <span class="word-chip">DOS</span>
+                        <span class="word-chip">CAE/CAM</span>
+                        <span class="word-chip">Modify</span>
+                        <span class="word-chip">Coordinate Axis</span>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">✅ Texto Completado</div>
+                    <p class="modal-text" style="line-height: 2;">
+                        El software de <span class="word-fill">AutoCAD versión 1.0</span> tenía un procesador 286 en el sistema <span class="word-fill">DOS</span>. En la figura 19 de la guía indica que AutoCAD Draw y <span class="word-fill">Modify</span> como barras de herramientas verticales a la izquierda. Además, se denotaba una flecha cruzada en forma de "L" denominada en inglés <span class="word-fill">Coordinate Axis</span>, alusiva al sistema de coordenadas.
+                        <br><br>
+                        <span class="word-fill">CAD</span> son las siglas para denominar a Computer Aided Design, que evoluciona a procesos de fabricación, 3D, simulación y análisis, llamándose <span class="word-fill">CAE/CAM</span>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 4: Zonas del Plano -->
+    <div class="modal-overlay" id="modal4">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    🎯 Actividad 4: Zonas del Plano
+                </div>
+                <button class="modal-close" onclick="closeModal('modal4')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 Instrucción</div>
+                    <p class="modal-text">
+                        Arrastre cada elemento con su descripción correspondiente.
+                    </p>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">✅ Respuesta Correcta</div>
+                    <div class="matching-container">
+                        <div class="matching-column">
+                            <div class="matching-item">
+                                <strong>Área superior derecha</strong>
+                            </div>
+                            <div class="matching-item">
+                                <strong>Esquina superior derecha</strong>
+                            </div>
+                            <div class="matching-item">
+                                <strong>Área central izquierda</strong>
+                            </div>
+                            <div class="matching-item">
+                                <strong>Esquina inferior derecha</strong>
+                            </div>
+                            <div class="matching-item">
+                                <strong>Área inferior izquierda</strong>
+                            </div>
+                        </div>
+                        <div class="matching-column">
+                            <div class="matching-item">
+                                <img src="media/Imagen 3.jpg" class="matching-image" alt="Área superior derecha">
+                            </div>
+                            <div class="matching-item">
+                                <img src="media/Imagen 4.jpg" class="matching-image" alt="Esquina superior derecha">
+                            </div>
+                            <div class="matching-item">
+                                <img src="media/Imagen 5.jpg" class="matching-image" alt="Área central izquierda">
+                            </div>
+                            <div class="matching-item">
+                                <img src="media/Imagen 6.jpg" class="matching-image" alt="Esquina inferior derecha">
+                            </div>
+                            <div class="matching-item">
+                                <img src="media/Imagen 7.jpg" class="matching-image" alt="Área inferior izquierda">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 5: Normas ISO -->
+    <div class="modal-overlay" id="modal5">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    📋 Actividad 5: Normas para Aprobación de Planos
+                </div>
+                <button class="modal-close" onclick="closeModal('modal5')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 Instrucción</div>
+                    <p class="modal-text">
+                        Arrastre la palabra correcta para completar la información sobre normas ISO.
+                    </p>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">🔤 Palabras Disponibles</div>
+                    <div class="word-options">
+                        <span class="word-chip">dwg/dxf</span>
+                        <span class="word-chip">128/5457</span>
+                        <span class="word-chip">7200/9431</span>
+                        <span class="word-chip">128</span>
+                        <span class="word-chip">129</span>
+                        <span class="word-chip">3098</span>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">✅ Normas para Aprobación de Planos</div>
+                    <p class="modal-text" style="line-height: 2;">
+                        El archivo de entrega es <span class="word-fill">dwg/dxf</span> por medio de la norma ISO <span class="word-fill">128/5457</span>. El cajetín, de acuerdo con la norma ISO <span class="word-fill">7200/9431</span>. Para las líneas, vistas y cortes, la norma ISO <span class="word-fill">128</span>, ya que las acotaciones o dimensionamiento conforme a la norma ISO <span class="word-fill">129</span>, finalmente, la rotulación se basa en la norma ISO <span class="word-fill">3098</span>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 6: Ubicación/Implantación -->
+    <div class="modal-overlay" id="modal6">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    🗺️ Actividad 6: Ubicación/Implantación
+                </div>
+                <button class="modal-close" onclick="closeModal('modal6')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 Pregunta</div>
+                    <p class="modal-text">
+                        ¿De qué trata la ubicación/implantación como información en un plano?
+                    </p>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 Opciones</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" style="border-color: var(--success); background: #ecfdf5;">
+                            <span class="letter" style="background: var(--success); color: white;">a</span>
+                            <span class="text">Se trata de un croquis que describe las calles, dirección de un predio, complementado por un norte.</span>
+                        </div>
+                        <div class="quiz-option">
+                            <span class="letter">b</span>
+                            <span class="text">Solamente una brújula que indique el norte; desde ahí se consigue la dirección y calles.</span>
+                        </div>
+                        <div class="quiz-option">
+                            <span class="letter">c</span>
+                            <span class="text">Se trata de un croquis que describe las calles, cotas y niveles del predio, complementado por un Norte.</span>
+                        </div>
+                        <div class="quiz-option">
+                            <span class="letter">d</span>
+                            <span class="text">Se trata de un croquis que describe las calles, dirección de un predio; no necesita norte.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="feedback-box">
+                    <div class="feedback-title">
+                        💡 Retroalimentación
+                    </div>
+                    <p class="feedback-text">
+                        La ubicación e implantación permiten situar el proyecto de manera <strong>inequívoca</strong> en su contexto urbano. Para que esta información sea técnicamente válida, debe incluir la identificación de las vías circundantes, la dirección exacta del predio y la orientación mediante el <strong>norte</strong>, eliminando cualquier ambigüedad o incertidumbre sobre la localización y disposición espacial de la obra.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Detail Modal -->
+    <div class="modal-overlay" id="imageModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="modal-title" id="imageModalTitle">
+                    📷 Detalle de Imagen
+                </div>
+                <button class="modal-close" onclick="closeModal('imageModal')">×</button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <img id="imageModalImg" src="" alt="Detalle" style="width: 100%; display: block;">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 7;
+        
+        function updateSlide() {
+            const container = document.getElementById('slidesContainer');
+            container.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            // Update progress dots
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+            
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            
+            // Update next button text for last slide
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentSlide === totalSlides - 1) {
+                nextBtn.textContent = 'Fin ✓';
+            } else {
+                nextBtn.textContent = 'Siguiente →';
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function showImageDetail(imageSrc, title) {
+            document.getElementById('imageModalImg').src = 'media/' + imageSrc;
+            document.getElementById('imageModalTitle').innerHTML = '📷 ' + title;
+            openModal('imageModal');
+        }
+        
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>
