@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyecciones y vistas - Recurso Interactivo</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary:#6366f1; --primary-dark:#4f46e5; --primary-light:#818cf8; --accent:#06b6d4;
+  --energy:#f59e0b; --success:#10b981; --bg:#f8fafc; --card-bg:#ffffff;
+  --text-primary:#1e293b; --text-secondary:#64748b; --border:#e2e8f0;
+  --shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --radius:12px; --radius-lg:16px;
+}
+body {
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:linear-gradient(135deg,#f5f3ff 0%,#e0e7ff 50%,#f0f9ff 100%);
+  color:var(--text-primary); width:100%; max-width:800px; max-height:800px;
+  height:100vh; overflow:hidden; margin:0 auto;
+}
+.app-container { width:100%; height:100%; max-height:800px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
+.header {
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white;
+  padding:14px 20px; display:flex; align-items:center; justify-content:space-between;
+  box-shadow:var(--shadow); z-index:100; flex-shrink:0;
+}
+.header-title { display:flex; align-items:center; gap:10px; }
+.header-icon { font-size:26px; }
+.header h1 { font-size:16px; font-weight:700; letter-spacing:-0.3px; line-height:1.2; }
+.progress-indicator { display:flex; gap:5px; }
+.progress-dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.3s ease; }
+.progress-dot.active { background:white; transform:scale(1.3); box-shadow:0 0 8px rgba(255,255,255,0.6); }
+.main-content { flex:1; overflow:hidden; position:relative; }
+.slides-container { display:flex; height:100%; transition:transform 0.5s cubic-bezier(0.4,0,0.2,1); }
+.slide { min-width:100%; max-width:100%; padding:16px 20px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; overflow-x:hidden; height:100%; }
+.card { background:var(--card-bg); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); border:1px solid var(--border); transition:all 0.3s ease; }
+.card:hover { box-shadow:var(--shadow-lg); transform:translateY(-1px); }
+.card-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:2px solid #e2e8f0; }
+.card-number { width:32px; height:32px; background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0; }
+.card-title { font-size:15px; font-weight:700; color:var(--text-primary); }
+.instruction-box { background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%); border-left:4px solid var(--energy); padding:12px 16px; border-radius:0 var(--radius) var(--radius) 0; font-size:13px; color:var(--text-primary); line-height:1.5; }
+.instruction-box strong { color:#b45309; }
+.image-frame { background:white; border-radius:var(--radius-lg); padding:12px; box-shadow:var(--shadow); border:1px solid var(--border); text-align:center; }
+.image-frame img { max-width:100%; max-height:200px; width:auto; height:auto; border-radius:8px; display:block; margin:0 auto; }
+.image-caption { margin-top:8px; font-size:12px; color:var(--text-secondary); font-weight:600; }
+.internal-slider { position:relative; overflow:hidden; border-radius:var(--radius-lg); background:white; box-shadow:var(--shadow); border:1px solid var(--border); }
+.internal-slides { display:flex; transition:transform 0.4s ease; }
+.internal-slide { min-width:100%; padding:16px; text-align:center; }
+.internal-slide img { max-width:100%; max-height:180px; width:auto; height:auto; border-radius:8px; }
+.internal-nav { display:flex; justify-content:center; align-items:center; gap:12px; padding:10px; background:#f8fafc; border-top:1px solid var(--border); }
+.internal-btn { width:32px; height:32px; border-radius:50%; border:none; background:white; color:var(--primary); font-size:16px; cursor:pointer; box-shadow:var(--shadow); transition:all 0.3s ease; display:flex; align-items:center; justify-content:center; }
+.internal-btn:hover { background:var(--primary); color:white; transform:scale(1.1); }
+.internal-dots { display:flex; gap:6px; }
+.internal-dot { width:8px; height:8px; border-radius:50%; background:#cbd5e1; cursor:pointer; transition:all 0.3s ease; }
+.internal-dot.active { background:var(--primary); transform:scale(1.2); }
+.thumbnails-strip { display:flex; gap:8px; overflow-x:auto; padding:8px 4px; scrollbar-width:thin; }
+.thumbnail { min-width:60px; height:60px; border-radius:8px; overflow:hidden; border:2px solid transparent; cursor:pointer; transition:all 0.3s ease; opacity:0.6; }
+.thumbnail:hover,.thumbnail.active { border-color:var(--primary); opacity:1; transform:scale(1.05); }
+.thumbnail img { width:100%; height:100%; object-fit:cover; }
+.pairs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.pair-card { background:white; border:2px solid var(--border); border-radius:var(--radius); padding:10px; text-align:center; cursor:pointer; transition:all 0.3s ease; }
+.pair-card:hover { border-color:var(--primary-light); transform:translateY(-2px); box-shadow:var(--shadow); }
+.pair-card img { max-width:100%; max-height:60px; margin-bottom:6px; }
+.pair-label { font-size:11px; font-weight:600; color:var(--text-primary); }
+.projection-tabs { display:flex; gap:8px; margin-bottom:12px; }
+.proj-tab { flex:1; padding:10px; background:white; border:2px solid var(--border); border-radius:var(--radius); text-align:center; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.3s ease; }
+.proj-tab:hover,.proj-tab.active { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; border-color:var(--primary); }
+.projection-content { display:none; }
+.projection-content.active { display:block; }
+.word-fill-text { font-size:14px; line-height:1.8; color:var(--text-primary); background:white; padding:16px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow); }
+.word-fill { background:#e0e7ff; padding:2px 8px; border-radius:4px; font-weight:700; color:var(--primary-dark); border-bottom:2px solid var(--primary); }
+.word-options { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.word-chip { padding:6px 14px; background:white; border:2px solid var(--border); border-radius:20px; font-size:12px; font-weight:600; color:var(--text-primary); box-shadow:var(--shadow); }
+.welcome-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px 20px; height:100%; background:linear-gradient(135deg,#f5f3ff 0%,#e0e7ff 50%,#f0f9ff 100%); }
+.welcome-icon { font-size:72px; margin-bottom:16px; animation:float 3s ease-in-out infinite; filter:drop-shadow(0 10px 20px rgba(99,102,241,0.3)); }
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+.welcome-title { font-size:24px; font-weight:800; margin-bottom:10px; background:linear-gradient(135deg,var(--primary-dark) 0%,var(--accent) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.welcome-subtitle { font-size:14px; color:var(--text-secondary); max-width:420px; line-height:1.6; margin-bottom:28px; }
+.start-btn { padding:14px 40px; font-size:15px; border-radius:30px; border:none; background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; font-weight:700; cursor:pointer; transition:all 0.3s ease; box-shadow:0 8px 20px rgba(99,102,241,0.35); }
+.start-btn:hover { transform:translateY(-3px); box-shadow:0 12px 28px rgba(99,102,241,0.45); }
+.nav-bar { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; background:white; border-top:1px solid var(--border); flex-shrink:0; gap:12px; }
+.nav-btn { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:all 0.3s ease; border:none; background:#f1f5f9; color:var(--text-primary); }
+.nav-btn:hover:not(:disabled) { background:var(--primary); color:white; }
+.nav-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.nav-btn.next { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; box-shadow:0 4px 12px rgba(99,102,241,0.3); }
+.slide-counter { font-size:12px; color:var(--text-secondary); font-weight:600; min-width:50px; text-align:center; }
+.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; visibility:hidden; transition:all 0.3s ease; padding:16px; }
+.modal-overlay.active { opacity:1; visibility:visible; }
+.modal { background:white; border-radius:var(--radius-lg); max-width:600px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35); transform:scale(0.92) translateY(16px); transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+.modal-overlay.active .modal { transform:scale(1) translateY(0); }
+.modal-header { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.modal-close { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.2); border:none; color:white; font-size:18px; cursor:pointer; transition:all 0.3s ease; display:flex; align-items:center; justify-content:center; }
+.modal-close:hover { background:rgba(255,255,255,0.35); transform:rotate(90deg); }
+.modal-body { padding:20px; }
+.modal-text { font-size:14px; line-height:1.7; color:var(--text-primary); }
+@media(max-width:600px){
+  .slide { padding:12px 14px; gap:10px; }
+  .pairs-grid { grid-template-columns:repeat(2,1fr); }
+  .header h1 { font-size:14px; }
+  .thumbnail { min-width:50px; height:50px; }
+  .modal { max-height:90vh; }
+}
+</style>
+</head>
+<body>
+<div class="app-container">
+  <header class="header">
+    <div class="header-title">
+      <span class="header-icon">📦</span>
+      <div><h1>Proyecciones y vistas</h1></div>
+    </div>
+    <div class="progress-indicator" id="progressIndicator">
+      <div class="progress-dot active"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div><div class="progress-dot"></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="slides-container" id="slidesContainer">
+
+      <!-- Slide 0: Welcome -->
+      <div class="slide">
+        <div class="welcome-screen">
+          <div class="welcome-icon">📐</div>
+          <h2 class="welcome-title">Proyecciones y Vistas</h2>
+          <p class="welcome-subtitle">Aprende el proceso de despliegue de un objeto para diferenciar los nombres de las caras, los sistemas de proyección ortogonal y la identificación de vistas en piezas industriales.</p>
+          <button class="start-btn" onclick="nextSlide()">Comenzar →</button>
+          <p style="font-size:10px;color:var(--text-secondary);margin-top:20px;font-style:italic;">Elaboración propia</p>
+        </div>
+      </div>
+
+      <!-- Slide 1: Despliegue de la caja -->
+      <div class="slide">
+        <div class="instruction-box"><strong>Instrucción:</strong> Desde la parte superior puede navegar para observar el proceso de despliegue de una caja (objeto) para diferenciar los nombres de las caras.</div>
+        <div class="internal-slider" id="deploySlider">
+          <div class="internal-slides" id="deploySlides">
+            <div class="internal-slide"><img src="media/Imagen 32.jpg" alt="Objeto en vista de planta"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Objeto en vista de planta</div></div>
+            <div class="internal-slide"><img src="media/Imagen 33.jpg" alt="Objeto en vista isométrica"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Objeto en vista isométrica</div></div>
+            <div class="internal-slide"><img src="media/Imagen 34.jpg" alt="Despliegue de cara frontal"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara frontal</div></div>
+            <div class="internal-slide"><img src="media/Imagen 35.jpg" alt="Despliegue de cara lateral izquierda"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara lateral izquierda</div></div>
+            <div class="internal-slide"><img src="media/Imagen 36.jpg" alt="Despliegue de cara lateral derecha"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara lateral derecha</div></div>
+            <div class="internal-slide"><img src="media/Imagen 37.jpg" alt="Despliegue de cara superior"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara superior</div></div>
+            <div class="internal-slide"><img src="media/Imagen 38.jpg" alt="Despliegue de cara posterior"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara posterior</div></div>
+            <div class="internal-slide"><img src="media/Imagen 39.jpg" alt="Despliegue total del objeto (vista plana)"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue total del objeto (vista plana)</div></div>
+          </div>
+          <div class="thumbnails-strip" id="deployThumbs">
+            <div class="thumbnail active" onclick="goToDeploy(0)"><img src="media/Imagen 32.jpg" alt=""></div>
+            <div class="thumbnail" onclick="goToDeploy(1)"><img src="media/Imagen 33.jpg" alt=""></div>
+            <div class="thumbnail" onclick="goToDeploy(2)"><img src="media/Imagen 34.jpg" alt=""></div>
+            <div class="thumbnail" onclick="goToDeploy(3)"><img src="media/Imagen 35.jpg" alt=""></div>
+            <div class="thumbnail" onclick="goToDeploy(4)"><img src="media/Imagen 36.jpg" alt=""></div>
+            <div class="thumbnail" onclick="goToDeploy(5)"><img src="media/Imagen 37.jpg" alt=""></div>
+            <div class="thumbnail" onclick="goToDeploy(6)"><img src="media/Imagen 38.jpg" alt=""></div>
+            <div class="thumbnail" onclick="goToDeploy(7)"><img src="media/Imagen 39.jpg" alt=""></div>
+          </div>
+          <div class="internal-nav">
+            <button class="internal-btn" onclick="prevDeploy()">◀</button>
+            <div class="internal-dots" id="deployDots">
+              <div class="internal-dot active"></div><div class="internal-dot"></div><div class="internal-dot"></div><div class="internal-dot"></div>
+              <div class="internal-dot"></div><div class="internal-dot"></div><div class="internal-dot"></div><div class="internal-dot"></div>
+            </div>
+            <button class="internal-btn" onclick="nextDeploy()">▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Actividad iconos y comandos -->
+      <div class="slide">
+        <div class="instruction-box"><strong>Instrucción:</strong> Arrastre cada ícono al comando que corresponde.</div>
+        <div class="image-frame" style="margin-bottom:8px;"><img src="media/Imagen 40.png" alt="Esquema comando e ícono" style="max-height:160px;"><div class="image-caption">Esquema de referencia: Comandos e íconos</div></div>
+        <div class="pairs-grid" id="pairsGrid">
+          <div class="pair-card" onclick="showPairModal(1)"><img src="media/Imagen 41.png" alt="Comando"><div class="pair-label">Comando 1</div></div>
+          <div class="pair-card" onclick="showPairModal(2)"><img src="media/Imagen 42.png" alt="Ícono"><div class="pair-label">Ícono 1</div></div>
+          <div class="pair-card" onclick="showPairModal(3)"><img src="media/Imagen 43.png" alt="Comando"><div class="pair-label">Comando 2</div></div>
+          <div class="pair-card" onclick="showPairModal(4)"><img src="media/Imagen 44.png" alt="Ícono"><div class="pair-label">Ícono 2</div></div>
+          <div class="pair-card" onclick="showPairModal(5)"><img src="media/Imagen 45.png" alt="Comando"><div class="pair-label">Comando 3</div></div>
+          <div class="pair-card" onclick="showPairModal(6)"><img src="media/Imagen 46.png" alt="Ícono"><div class="pair-label">Ícono 3</div></div>
+          <div class="pair-card" onclick="showPairModal(7)"><img src="media/Imagen 47.png" alt="Comando"><div class="pair-label">Comando 4</div></div>
+          <div class="pair-card" onclick="showPairModal(8)"><img src="media/Imagen 48.png" alt="Ícono"><div class="pair-label">Ícono 4</div></div>
+          <div class="pair-card" onclick="showPairModal(9)"><img src="media/Imagen 49.png" alt="Comando"><div class="pair-label">Comando 5</div></div>
+          <div class="pair-card" onclick="showPairModal(10)"><img src="media/Imagen 50.png" alt="Ícono"><div class="pair-label">Ícono 5</div></div>
+          <div class="pair-card" onclick="showPairModal(11)"><img src="media/Imagen 51.png" alt="Comando"><div class="pair-label">Comando 6</div></div>
+          <div class="pair-card" onclick="showPairModal(12)"><img src="media/Imagen 52.png" alt="Ícono"><div class="pair-label">Ícono 6</div></div>
+        </div>
+        <div style="text-align:center; margin-top:8px;">
+          <button class="start-btn" style="padding:10px 24px; font-size:13px; border-radius:8px;" onclick="openModal('modal_respuestas_pares')">Ver emparejamiento correcto</button>
+        </div>
+      </div>
+
+      <!-- Slide 3: Sistemas de proyecciones ortogonales -->
+      <div class="slide">
+        <div class="card">
+          <div class="card-header"><div class="card-number">📊</div><div class="card-title">Sistemas de proyecciones ortogonales</div></div>
+          <div class="projection-tabs">
+            <div class="proj-tab active" onclick="switchProj('europeo',this)">Modelo Europeo</div>
+            <div class="proj-tab" onclick="switchProj('americano',this)">Modelo Americano</div>
+          </div>
+          <div class="projection-content active" id="proj-europeo">
+            <div class="image-frame"><img src="media/Imagen 53.gif" alt="Modelo Europeo - despliegue"><div class="image-caption">Se despliega desde la parte posterior</div></div>
+            <p class="modal-text" style="margin-top:10px; font-size:13px;">En este modelo hay que distinguir que los nombres cambian, pues la cara posterior es ahora la vista FRONTAL. Y las demás caras giran en función de sus aristas.</p>
+            <div class="image-frame" style="margin-top:10px;"><img src="media/Imagen 54.gif" alt="Objeto original modelo europeo"><div class="image-caption">Objeto original - fijarse en los colores de las caras vistas</div></div>
+            <p class="modal-text" style="margin-top:10px; font-size:13px;">El objeto original te da la información del objeto armado para comparar con el despliegue posterior.</p>
+          </div>
+          <div class="projection-content" id="proj-americano">
+            <div class="image-frame"><img src="media/Imagen 55.gif" alt="Modelo Americano - despliegue"><div class="image-caption">Se despliega desde la parte frontal</div></div>
+            <p class="modal-text" style="margin-top:10px; font-size:13px;">En el modelo americano, la cara frontal sigue siendo la vista FRONTAL en el plano. Las demás caras giran en función de sus aristas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: Pieza industrial - Vistas -->
+      <div class="slide">
+        <div class="instruction-box"><strong>Instrucción:</strong> Observa una pieza industrial, en la cual se deben reconocer las VISTAS O CARAS. Compare la pieza original con giros; de la pieza completa y también recortada. ¡Mírelo las veces que desee!</div>
+        <div class="image-frame"><img src="media/Imagen 56.jpg" alt="Pieza industrial original"><div class="image-caption">Pieza industrial - Vista original</div></div>
+        <div class="image-frame"><img src="media/Imagen 57.gif" alt="Pieza completa con giros"><div class="image-caption">Pieza completa con giros</div></div>
+        <div class="image-frame"><img src="media/Imagen 58.gif" alt="Pieza recortada con giros"><div class="image-caption">Pieza recortada con giros</div></div>
+      </div>
+
+      <!-- Slide 5: Completar microrred -->
+      <div class="slide">
+        <div class="instruction-box"><strong>Instrucción:</strong> Arrastre las palabras para completar la información.</div>
+        <div class="word-fill-text">
+          En una microrred se debe ubicar <span class="word-fill">el equipo a usar</span> sin olvidar colocar su <span class="word-fill">orientación</span> por medio de <span class="word-fill">flechas,</span> además de elementos de <span class="word-fill">interconexión</span> y <span class="word-fill">accesibilidad</span>. Verificar, ubicar alzados, <span class="word-fill">secciones y detalles</span> con la escala de dibujo, acotaciones y simbología.
+        </div>
+        <div class="word-options">
+          <span class="word-chip">Flechas</span><span class="word-chip">Interconexión</span><span class="word-chip">Secciones y detalles</span>
+          <span class="word-chip">Accesibilidad</span><span class="word-chip">Orientación</span><span class="word-chip">El equipo a usar</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <nav class="nav-bar">
+    <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 6</span>
+    <button class="nav-btn next" id="nextBtn" onclick="nextSlide()">Siguiente →</button>
+  </nav>
+</div>
+
+<!-- Modal: Respuestas pares -->
+<div class="modal-overlay" id="modal_respuestas_pares">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">✅ Emparejamiento correcto</div><button class="modal-close" onclick="closeModal('modal_respuestas_pares')">×</button></div>
+    <div class="modal-body">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; text-align:center;">
+        <div><img src="media/Imagen 41.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
+        <div><img src="media/Imagen 42.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
+        <div><img src="media/Imagen 43.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
+        <div><img src="media/Imagen 44.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
+        <div><img src="media/Imagen 45.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
+        <div><img src="media/Imagen 46.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
+        <div><img src="media/Imagen 47.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
+        <div><img src="media/Imagen 48.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
+        <div><img src="media/Imagen 49.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
+        <div><img src="media/Imagen 50.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
+        <div><img src="media/Imagen 51.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
+        <div><img src="media/Imagen 52.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Generic pair modal -->
+<div class="modal-overlay" id="pairModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="pairModalTitle">💡 Información</div><button class="modal-close" onclick="closeModal('pairModal')">×</button></div>
+    <div class="modal-body"><div id="pairModalContent"></div></div>
+  </div>
+</div>
+
+<script>
+let currentSlide=0;
+const totalSlides=6;
+let deployIndex=0;
+const deployTotal=8;
+
+function updateSlide(){
+  document.getElementById('slidesContainer').style.transform='translateX(-'+currentSlide*100+'%)';
+  document.querySelectorAll('.progress-dot').forEach((d,i)=>d.classList.toggle('active',i===currentSlide));
+  document.getElementById('prevBtn').disabled=currentSlide===0;
+  const nb=document.getElementById('nextBtn');
+  if(currentSlide===totalSlides-1){nb.disabled=true; nb.textContent='Fin ✓';}
+  else{nb.disabled=false; nb.textContent='Siguiente →';}
+  document.getElementById('slideCounter').textContent=(currentSlide+1)+' / '+totalSlides;
+}
+function nextSlide(){if(currentSlide<totalSlides-1){currentSlide++; updateSlide();}}
+function prevSlide(){if(currentSlide>0){currentSlide--; updateSlide();}}
+
+function goToDeploy(i){deployIndex=i; updateDeploy();}
+function nextDeploy(){if(deployIndex<deployTotal-1){deployIndex++; updateDeploy();}}
+function prevDeploy(){if(deployIndex>0){deployIndex--; updateDeploy();}}
+function updateDeploy(){
+  document.getElementById('deploySlides').style.transform='translateX(-'+deployIndex*100+'%)';
+  document.querySelectorAll('#deployThumbs .thumbnail').forEach((t,i)=>t.classList.toggle('active',i===deployIndex));
+  document.querySelectorAll('#deployDots .internal-dot').forEach((d,i)=>d.classList.toggle('active',i===deployIndex));
+}
+
+function switchProj(id,el){
+  document.querySelectorAll('.projection-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('proj-'+id).classList.add('active');
+  document.querySelectorAll('.proj-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openModal(id){document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+function showPairModal(n){
+  const titles=['','Comando 1 + Ícono 1','Comando 2 + Ícono 2','Comando 3 + Ícono 3','Comando 4 + Ícono 4','Comando 5 + Ícono 5','Comando 6 + Ícono 6'];
+  document.getElementById('pairModalTitle').innerHTML='💡 '+titles[Math.ceil(n/2)]||'Elemento '+n;
+  let imgs='';
+  if(n%2===1){imgs='<div style="text-align:center;"><img src="media/Imagen '+('4'+(n))+'" style="max-height:120px;"><div style="margin-top:8px;font-weight:700;">Comando</div></div>';}
+  else{imgs='<div style="text-align:center;"><img src="media/Imagen '+('4'+(n))+'" style="max-height:120px;"><div style="margin-top:8px;font-weight:700;">Ícono</div></div>';}
+  document.getElementById('pairModalContent').innerHTML=imgs;
+  openModal('pairModal');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight') nextSlide();
+  if(e.key==='ArrowLeft') prevSlide();
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+});
+updateSlide();
+</script>
+</body>
+</html>
