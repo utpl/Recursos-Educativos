@@ -638,7 +638,7 @@
         @media(max-width:600px) {
 
             body,
-            
+
             .wrap {
                 width: 100vw;
                 height: 100vh
@@ -883,7 +883,7 @@
                     <div class="concl">Si el primer número es menor que el segundo, hay reducción; si es mayor, hay
                         aumento.</div>
                 </div>
-                <div class="ref">Elaboración propia</div>
+           
             </div>
         </div>
     </div>
@@ -1121,22 +1121,99 @@
     </div>
 
     <script>
+        /**
+         * GESTIÓN DE MODALES
+         */
         function openM(id) {
             const ov = document.getElementById('m-' + id);
+            if (!ov) return;
+    
             ov.classList.add('show');
-            setTimeout(() => { const b = ov.querySelector('.m-close'); if (b) b.focus(); }, 60);
-            document.addEventListener('keydown', escL);
+            document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+    
+            // Accesibilidad: Foco automático al botón de cerrar
+            setTimeout(() => {
+                const closeBtn = ov.querySelector('.m-close');
+                if (closeBtn) closeBtn.focus();
+            }, 100);
+    
+            document.addEventListener('keydown', escListener);
         }
+    
         function closeM(id) {
-            document.getElementById('m-' + id).classList.remove('show');
-            document.removeEventListener('keydown', escL);
+            const ov = document.getElementById('m-' + id);
+            if (!ov) return;
+    
+            ov.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            document.removeEventListener('keydown', escListener);
         }
-        function closeIf(e, id) { if (e.target.classList.contains('modal-ov')) closeM(id); }
-        function escL(e) {
+    
+        function closeIf(e, id) {
+            // Cierra solo si se hace clic en el overlay (fondo)
+            if (e.target.classList.contains('modal-ov')) closeM(id);
+        }
+    
+        function escListener(e) {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-ov.show').forEach(ov => closeM(ov.id.replace('m-', '')));
+                const visibleModal = document.querySelector('.modal-ov.show');
+                if (visibleModal) {
+                    const id = visibleModal.id.replace('m-', '');
+                    closeM(id);
+                }
             }
         }
+    
+        /**
+         * ANALÍTICA Y ACCESIBILIDAD DE TARJETAS
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            const interactiveElements = document.querySelectorAll('.card, .sum-chip');
+    
+            interactiveElements.forEach(el => {
+                // 1. Mejora de Accesibilidad: Navegación por teclado
+                el.setAttribute('tabindex', '0');
+                el.setAttribute('role', 'button');
+    
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        el.click();
+                    }
+                });
+    
+                // 2. Captura de Datos (Pro-Tracking)
+                el.addEventListener('click', (e) => {
+                    const target = e.currentTarget;
+                    
+                    // Buscamos el nombre de la sección de forma jerárquica
+                    const sectionTitle = target.querySelector('.card-name')?.innerText 
+                                       || target.querySelector('.sum-chip-text')?.innerText 
+                                       || target.getAttribute('title') 
+                                       || "Sección desconocida";
+    
+                    const logData = {
+                        recurso: "Escalas_sin_error",
+                        seccion: sectionTitle.replace(/\n/g, " ").trim(), // Limpiamos saltos de línea
+                        timestamp: new Date().toISOString(),
+                        viewport: `${window.innerWidth}x${window.innerHeight}`,
+                        url_params: Object.fromEntries(new URLSearchParams(window.location.search))
+                    };
+    
+                    // Prueba de captura en consola
+                    console.log("%c📊 Tracking Event:", "color: #1d8ea0; font-weight: bold;", logData);
+    
+                    // Aquí podrías disparar el fetch hacia tu API de RumiTrack
+                    /*
+                    fetch('TU_API_ENDPOINT', {
+                        method: 'POST',
+                        body: JSON.stringify(logData),
+                        headers: { 'Content-Type': 'application/json' }
+                    }).catch(err => console.error("Error en tracking:", err));
+                    */
+                });
+            });
+        });
     </script>
 </body>
 
