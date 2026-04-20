@@ -1122,324 +1122,430 @@
 
 
     <script>
-/**
- * ============================================
- * SISTEMA DE TRACKING - VERSIÓN CORREGIDA
- * ============================================
- */
-
- const urlParams = new URLSearchParams(window.location.search);
-
-// 1. DETECTAR SI CANVAS SUSTITUYÓ LAS VARIABLES
-function isCanvasVar(value) {
-    return !value || 
-           value === 'undefined' || 
-           value === 'null' ||
-           (typeof value === 'string' && (
-               value.includes('$Canvas') || 
-               value.includes('${Canvas') ||
-               (value.startsWith('$') && value.includes('.'))
-           ));
-}
-
-// 2. EXTRAER PARÁMETROS CON FALLBACKS
-function getUserId() {
-    let id = urlParams.get('user_id');
-    if (!isCanvasVar(id)) return id;
-    
-    id = localStorage.getItem('tracking_user_id');
-    if (id) return id;
-    
-    id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('tracking_user_id', id);
-    return id;
-}
-
-function getCourseId() {
-    let id = urlParams.get('course_id');
-    if (!isCanvasVar(id)) return id;
-    
-    const pathMatch = window.location.pathname.match(/\/courses\/(\d+)/);
-    if (pathMatch) return 'course_' + pathMatch[1];
-    
-    return 'course_' + (window.location.hostname.replace(/\./g, '_'));
-}
-
-// 3. DATOS DE SESIÓN
-const canvasData = {
-    user_id: getUserId(),
-    course_id: getCourseId(),
-    resource_id: 'S1_Guion_1_Escalas_sin_error',
-    session_start: new Date().toISOString(),
-    session_id: 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-    is_authenticated: !isCanvasVar(urlParams.get('user_id')),
-    has_canvas_data: !isCanvasVar(urlParams.get('user_id')) && !isCanvasVar(urlParams.get('course_id')),
-    source: 'canvas_lms'
-};
-
-// 4. ESTADO DE LA SESIÓN
-const sessionState = {
-    sectionsViewed: new Set(),
-    timeSpent: {},
-    currentSection: null,
-    sectionStartTime: null,
-    totalInteractions: 0,
-    startTime: Date.now()
-};
-
-// 5. CONFIGURACIÓN DE ENDPOINT
-const TRACKING_CONFIG = {
-    endpoint: 'https://TU-SERVIDOR.com/api/track', // REEMPLAZAR
-    batchSize: 3,
-    flushInterval: 20000,
-    maxRetries: 3
-};
-
-let eventBuffer = [];
-let flushTimer = null;
-
-/**
- * FUNCIÓN PRINCIPAL DE TRACKING
- */
-function trackEvent(eventType, details = {}) {
-    const event = {
-        ...canvasData,
-        event_type: eventType,
-        timestamp: new Date().toISOString(),
-        session_duration_sec: Math.floor((Date.now() - sessionState.startTime) / 1000),
+        /**
+         * ============================================
+         * SISTEMA DE TRACKING - MODO DEMO (SOLO CONSOLE)
+         * ============================================
+         * Para presentación: Abrir consola (F12) y mostrar
+         * datos capturados en tiempo real.
+         */
         
-        section_id: details.sectionId || sessionState.currentSection || 'general',
-        section_name: details.sectionName || 'unknown',
-        action: details.action || 'view',
+        const urlParams = new URLSearchParams(window.location.search);
         
-        metrics: {
-            total_sections_viewed: sessionState.sectionsViewed.size,
-            sections_list: Array.from(sessionState.sectionsViewed),
-            completion_percentage: calculateCompletion(),
-            total_interactions: ++sessionState.totalInteractions
-        },
-        
-        technical: {
-            viewport: `${window.innerWidth}x${window.innerHeight}`,
-            user_agent: navigator.userAgent.substring(0, 100)
+        // 1. DETECTAR SI CANVAS SUSTITUYÓ LAS VARIABLES
+        function isCanvasVar(value) {
+            return !value || 
+                   value === 'undefined' || 
+                   value === 'null' ||
+                   (typeof value === 'string' && (
+                       value.includes('$Canvas') || 
+                       value.includes('${Canvas') ||
+                       (value.startsWith('$') && value.includes('.'))
+                   ));
         }
-    };
-
-    eventBuffer.push(event);
-    console.log(`📊 [${eventType}]`, event.section_name || 'general', 
-                `| Progreso: ${event.metrics.completion_percentage}%`);
-
-    if (eventBuffer.length >= TRACKING_CONFIG.batchSize) {
-        flushEvents();
-    }
-    resetFlushTimer();
-}
-
-function calculateCompletion() {
-    const totalSections = 8;
-    return Math.min(100, Math.round((sessionState.sectionsViewed.size / totalSections) * 100));
-}
-
-/**
- * ENVÍO DE DATOS
- */
-async function flushEvents() {
-    if (eventBuffer.length === 0) return;
-
-    const payload = {
-        batch_id: 'batch_' + Date.now(),
-        session_data: canvasData,
-        events: [...eventBuffer],
-        meta: {
-            sent_at: new Date().toISOString(),
-            event_count: eventBuffer.length
-        }
-    };
-
-    const eventsToSend = eventBuffer;
-    eventBuffer = [];
-
-    try {
-        const response = await fetch(TRACKING_CONFIG.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            keepalive: true
-        });
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        console.log('✅ Enviados', eventsToSend.length, 'eventos');
         
-    } catch (error) {
-        console.error('❌ Error:', error.message);
-        saveFailedEvents(eventsToSend);
-    }
-}
-
-function saveFailedEvents(events) {
-    const failed = JSON.parse(localStorage.getItem('failed_events') || '[]');
-    failed.push(...events);
-    localStorage.setItem('failed_events', JSON.stringify(failed.slice(-20)));
-}
-
-function resetFlushTimer() {
-    if (flushTimer) clearTimeout(flushTimer);
-    flushTimer = setTimeout(flushEvents, TRACKING_CONFIG.flushInterval);
-}
-
-/**
- * NOMBRES DE SECCIONES
- */
-const sectionNames = {
-    'gen': 'Generalidades',
-    'e1': 'Ejercicio 1 - Identificación',
-    'e2': 'Ejercicio 2 - Reducción',
-    'e3': 'Ejercicio 3 - Aumento',
-    'e4': 'Ejercicio 4 - Cambio reducciones',
-    'e5': 'Ejercicio 5 - Escala mayor',
-    'e6': 'Ejercicio 6 - Formatos',
-    'res': 'Resumen'
-};
-
-/**
- * FUNCIÓN ORIGINAL DE MODALES (PRESERVADA)
- */
-function openM(id) {
-    const ov = document.getElementById('m-' + id);
-    if (!ov) return;
-
-    // === TRACKING: Registrar apertura de sección ===
-    // Cerrar sección anterior si existe
-    if (sessionState.currentSection && sessionState.sectionStartTime) {
-        const duration = Date.now() - sessionState.sectionStartTime;
-        sessionState.timeSpent[sessionState.currentSection] = 
-            (sessionState.timeSpent[sessionState.currentSection] || 0) + duration;
-    }
-
-    // Registrar nueva sección
-    sessionState.currentSection = id;
-    sessionState.sectionStartTime = Date.now();
-    sessionState.sectionsViewed.add(id);
-
-    trackEvent('section_open', {
-        sectionId: id,
-        sectionName: sectionNames[id] || id
-    });
-
-    updateProgressUI();
-
-    // === FUNCIONALIDAD ORIGINAL DEL MODAL ===
-    ov.classList.add('show');
-    document.body.style.overflow = 'hidden';
-
-    setTimeout(() => {
-        const closeBtn = ov.querySelector('.m-close');
-        if (closeBtn) closeBtn.focus();
-    }, 100);
-
-    document.addEventListener('keydown', escListener);
-}
-
-function closeM(id) {
-    const ov = document.getElementById('m-' + id);
-    if (!ov) return;
-
-    // === TRACKING: Registrar cierre ===
-    if (sessionState.currentSection === id && sessionState.sectionStartTime) {
-        const duration = Date.now() - sessionState.sectionStartTime;
-        trackEvent('section_close', {
-            sectionId: id,
-            durationMs: duration
-        });
-    }
-
-    sessionState.currentSection = null;
-    sessionState.sectionStartTime = null;
-
-    // === FUNCIONALIDAD ORIGINAL ===
-    ov.classList.remove('show');
-    document.body.style.overflow = 'auto';
-    document.removeEventListener('keydown', escListener);
-}
-
-function closeIf(e, id) {
-    if (e.target.classList.contains('modal-ov')) closeM(id);
-}
-
-function escListener(e) {
-    if (e.key === 'Escape') {
-        const visibleModal = document.querySelector('.modal-ov.show');
-        if (visibleModal) {
-            const id = visibleModal.id.replace('m-', '');
-            closeM(id);
+        // 2. EXTRAER PARÁMETROS CON FALLBACKS
+        function getUserId() {
+            let id = urlParams.get('user_id');
+            if (!isCanvasVar(id)) return id;
+            
+            id = localStorage.getItem('tracking_user_id');
+            if (id) return id;
+            
+            id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('tracking_user_id', id);
+            return id;
         }
-    }
-}
-
-/**
- * UI DE PROGRESO
- */
-function updateProgressUI() {
-    let el = document.getElementById('tracking-progress');
-    if (!el) {
-        el = document.createElement('div');
-        el.id = 'tracking-progress';
-        el.style.cssText = `
-            position: fixed;
-            bottom: 12px;
-            right: 12px;
-            background: linear-gradient(135deg, #1a3a6b, #1d6a8e);
-            color: white;
-            padding: 10px 16px;
-            border-radius: 24px;
-            font-size: 13px;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(26,58,107,0.3);
-        `;
-        document.body.appendChild(el);
-    }
-    
-    const progress = calculateCompletion();
-    const viewed = sessionState.sectionsViewed.size;
-    el.innerHTML = `📊 ${progress}% (${viewed}/8)`;
-}
-
-/**
- * INICIALIZACIÓN
- */
-document.addEventListener('DOMContentLoaded', () => {
-    // Solo mejorar accesibilidad, NO añadir tracking de hover
-    document.querySelectorAll('.card, .sum-chip').forEach(el => {
-        el.setAttribute('tabindex', '0');
-        el.setAttribute('role', 'button');
         
-        el.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                el.click();
+        function getCourseId() {
+            let id = urlParams.get('course_id');
+            if (!isCanvasVar(id)) return id;
+            
+            const pathMatch = window.location.pathname.match(/\/courses\/(\d+)/);
+            if (pathMatch) return 'course_' + pathMatch[1];
+            
+            return 'course_' + (window.location.hostname.replace(/\./g, '_'));
+        }
+        
+        // 3. DATOS DE SESIÓN
+        const canvasData = {
+            user_id: getUserId(),
+            course_id: getCourseId(),
+            resource_id: 'S1_Guion_1_Escalas_sin_error',
+            resource_name: 'Escalas sin error - Guía de ejercicios',
+            session_start: new Date().toISOString(),
+            session_id: 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            is_authenticated: !isCanvasVar(urlParams.get('user_id')),
+            source: 'canvas_lms'
+        };
+        
+        // 4. ESTADO DE LA SESIÓN
+        const sessionState = {
+            sectionsViewed: new Set(),
+            timeSpent: {},
+            currentSection: null,
+            sectionStartTime: null,
+            totalInteractions: 0,
+            startTime: Date.now(),
+            events: [] // Acumular todos los eventos para exportar
+        };
+        
+        // 5. CONFIGURACIÓN MODO DEMO
+        const TRACKING_CONFIG = {
+            mode: 'DEMO', // 'DEMO' = solo console, 'PROD' = enviar a servidor
+            endpoint: 'https://TU-SERVIDOR.com/api/track', // Para cuando cambien a PROD
+            batchSize: 999, // En demo, nunca auto-enviar
+            flushInterval: 999999 // En demo, casi nunca
+        };
+        
+        let eventBuffer = [];
+        let flushTimer = null;
+        
+        /**
+         * FUNCIÓN PRINCIPAL DE TRACKING - MODO DEMO
+         */
+        function trackEvent(eventType, details = {}) {
+            const now = Date.now();
+            const sessionDuration = Math.floor((now - sessionState.startTime) / 1000);
+            
+            const event = {
+                ...canvasData,
+                event_type: eventType,
+                timestamp: new Date().toISOString(),
+                session_duration_sec: sessionDuration,
+                
+                section_id: details.sectionId || sessionState.currentSection || 'general',
+                section_name: details.sectionName || 'unknown',
+                action: details.action || 'view',
+                
+                metrics: {
+                    total_sections_viewed: sessionState.sectionsViewed.size,
+                    sections_list: Array.from(sessionState.sectionsViewed),
+                    completion_percentage: calculateCompletion(),
+                    total_interactions: ++sessionState.totalInteractions
+                },
+                
+                technical: {
+                    viewport: `${window.innerWidth}x${window.innerHeight}`,
+                    user_agent: navigator.userAgent.substring(0, 100)
+                },
+                
+                // Datos extra para demo
+                demo: {
+                    time_on_section: details.durationMs ? Math.floor(details.durationMs / 1000) + 's' : 'N/A',
+                    local_time: new Date().toLocaleTimeString()
+                }
+            };
+        
+            // GUARDAR en memoria para exportar
+            sessionState.events.push(event);
+            
+            // GUARDAR en localStorage para persistencia entre recargas
+            saveToLocalStorage(event);
+            
+            // MOSTRAR en consola con formato visual
+            printToConsole(event);
+            
+            // Actualizar UI
+            updateProgressUI();
+        }
+        
+        function calculateCompletion() {
+            const totalSections = 8;
+            return Math.min(100, Math.round((sessionState.sectionsViewed.size / totalSections) * 100));
+        }
+        
+        /**
+         * IMPRESIÓN EN CONSOLA - FORMATO DEMO
+         */
+        function printToConsole(event) {
+            const colors = {
+                session_start: '#2e7d32',
+                session_end: '#c62828',
+                section_open: '#1565c0',
+                section_close: '#6a1b9a',
+                page_visible: '#00695c',
+                page_hidden: '#ef6c00'
+            };
+            
+            const color = colors[event.event_type] || '#1a3a6b';
+            const emoji = {
+                session_start: '🚀',
+                session_end: '🛑',
+                section_open: '📖',
+                section_close: '✅',
+                page_visible: '👁️',
+                page_hidden: '💤'
+            }[event.event_type] || '📊';
+        
+            console.log(
+                `%c${emoji} [${event.event_type.toUpperCase()}] %c${event.section_name} %c| Progreso: ${event.metrics.completion_percentage}% | Tiempo sesión: ${event.session_duration_sec}s`,
+                `color: ${color}; font-weight: bold; font-size: 12px;`,
+                `color: #333; font-weight: 600;`,
+                `color: #666; font-style: italic;`
+            );
+            
+            // Log detallado colapsable
+            console.groupCollapsed(`📋 Detalles completos - ${event.timestamp.split('T')[1].split('.')[0]}`);
+            console.log('Usuario:', event.user_id.substring(0, 20) + '...');
+            console.log('Curso:', event.course_id);
+            console.log('Recurso:', event.resource_name);
+            console.log('Sección:', event.section_id);
+            console.log('Progreso:', event.metrics.completion_percentage + '%');
+            console.log('Secciones vistas:', event.metrics.sections_list.join(', ') || 'Ninguna');
+            console.log('Interacciones totales:', event.metrics.total_interactions);
+            console.log('Duración sesión:', event.session_duration_sec + ' segundos');
+            console.log('Viewport:', event.technical.viewport);
+            console.groupEnd();
+        }
+        
+        /**
+         * GUARDAR EN LOCALSTORAGE (para demo persistente)
+         */
+        function saveToLocalStorage(event) {
+            try {
+                const key = `tracking_demo_${canvasData.session_id}`;
+                const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                existing.push(event);
+                localStorage.setItem(key, JSON.stringify(existing.slice(-100))); // últimos 100
+            } catch (e) {
+                // Ignorar errores de storage lleno
             }
-        });
+        }
         
-        // REMOVIDO: el tracking de hover que causaba el problema
-    });
-
-    // Eventos de sesión
-    trackEvent('session_start');
-    
-    window.addEventListener('beforeunload', () => {
-        trackEvent('session_end', {
-            final_completion: calculateCompletion(),
-            total_time: Math.floor((Date.now() - sessionState.startTime) / 1000)
+        /**
+         * EXPORTAR DATOS DE DEMO (para mostrar en Excel/JSON)
+         */
+        function exportDemoData() {
+            const key = `tracking_demo_${canvasData.session_id}`;
+            const data = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            const exportObj = {
+                meta: {
+                    export_time: new Date().toISOString(),
+                    session_id: canvasData.session_id,
+                    total_events: data.length,
+                    user_id: canvasData.user_id,
+                    course_id: canvasData.course_id
+                },
+                summary: {
+                    sections_viewed: Array.from(sessionState.sectionsViewed),
+                    completion_percentage: calculateCompletion(),
+                    total_time_sec: Math.floor((Date.now() - sessionState.startTime) / 1000),
+                    total_interactions: sessionState.totalInteractions
+                },
+                events: data
+            };
+            
+            console.log('%c📦 DATOS EXPORTABLES (copiar y pegar):', 'color: #2e7d32; font-size: 14px; font-weight: bold;');
+            console.log(JSON.stringify(exportObj, null, 2));
+            
+            // También crear blob para descarga
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tracking_demo_${canvasData.session_id}.json`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            return exportObj;
+        }
+        
+        /**
+         * MOSTRAR RESUMEN EN CONSOLA
+         */
+        function showSummary() {
+            const duration = Math.floor((Date.now() - sessionState.startTime) / 1000);
+            
+            console.clear();
+            console.log('%c📊 RESUMEN DE SESIÓN', 'color: #1a3a6b; font-size: 16px; font-weight: bold;');
+            console.log('═══════════════════════════════════════');
+            console.log('👤 Usuario:', canvasData.user_id.substring(0, 25) + '...');
+            console.log('📚 Curso:', canvasData.course_id);
+            console.log('📐 Recurso:', canvasData.resource_name);
+            console.log('⏱️  Tiempo total:', duration + ' segundos');
+            console.log('📈 Progreso:', calculateCompletion() + '%');
+            console.log('📑 Secciones vistas:', sessionState.sectionsViewed.size, 'de 8');
+            console.log('🔢 Interacciones:', sessionState.totalInteractions);
+            console.log('═══════════════════════════════════════');
+            console.log('%c💡 Tip: Ejecuta exportDemoData() para descargar JSON', 'color: #666; font-style: italic;');
+        }
+        
+        /**
+         * NOMBRES DE SECCIONES
+         */
+        const sectionNames = {
+            'gen': 'Generalidades',
+            'e1': 'Ejercicio 1 - Identificación',
+            'e2': 'Ejercicio 2 - Reducción',
+            'e3': 'Ejercicio 3 - Aumento',
+            'e4': 'Ejercicio 4 - Cambio reducciones',
+            'e5': 'Ejercicio 5 - Escala mayor',
+            'e6': 'Ejercicio 6 - Formatos',
+            'res': 'Resumen'
+        };
+        
+        /**
+         * FUNCIÓN ORIGINAL DE MODALES (PRESERVADA)
+         */
+        function openM(id) {
+            const ov = document.getElementById('m-' + id);
+            if (!ov) return;
+        
+            // === TRACKING: Registrar apertura de sección ===
+            if (sessionState.currentSection && sessionState.sectionStartTime) {
+                const duration = Date.now() - sessionState.sectionStartTime;
+                sessionState.timeSpent[sessionState.currentSection] = 
+                    (sessionState.timeSpent[sessionState.currentSection] || 0) + duration;
+            }
+        
+            sessionState.currentSection = id;
+            sessionState.sectionStartTime = Date.now();
+            sessionState.sectionsViewed.add(id);
+        
+            trackEvent('section_open', {
+                sectionId: id,
+                sectionName: sectionNames[id] || id
+            });
+        
+            // === FUNCIONALIDAD ORIGINAL DEL MODAL ===
+            ov.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        
+            setTimeout(() => {
+                const closeBtn = ov.querySelector('.m-close');
+                if (closeBtn) closeBtn.focus();
+            }, 100);
+        
+            document.addEventListener('keydown', escListener);
+        }
+        
+        function closeM(id) {
+            const ov = document.getElementById('m-' + id);
+            if (!ov) return;
+        
+            // === TRACKING: Registrar cierre ===
+            if (sessionState.currentSection === id && sessionState.sectionStartTime) {
+                const duration = Date.now() - sessionState.sectionStartTime;
+                trackEvent('section_close', {
+                    sectionId: id,
+                    durationMs: duration
+                });
+            }
+        
+            sessionState.currentSection = null;
+            sessionState.sectionStartTime = null;
+        
+            // === FUNCIONALIDAD ORIGINAL ===
+            ov.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            document.removeEventListener('keydown', escListener);
+        }
+        
+        function closeIf(e, id) {
+            if (e.target.classList.contains('modal-ov')) closeM(id);
+        }
+        
+        function escListener(e) {
+            if (e.key === 'Escape') {
+                const visibleModal = document.querySelector('.modal-ov.show');
+                if (visibleModal) {
+                    const id = visibleModal.id.replace('m-', '');
+                    closeM(id);
+                }
+            }
+        }
+        
+        /**
+         * UI DE PROGRESO
+         */
+        function updateProgressUI() {
+            let el = document.getElementById('tracking-progress');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'tracking-progress';
+                el.style.cssText = `
+                    position: fixed;
+                    bottom: 12px;
+                    right: 12px;
+                    background: linear-gradient(135deg, #1a3a6b, #1d6a8e);
+                    color: white;
+                    padding: 10px 16px;
+                    border-radius: 24px;
+                    font-size: 13px;
+                    font-family: 'Segoe UI', system-ui, sans-serif;
+                    z-index: 9999;
+                    box-shadow: 0 4px 12px rgba(26,58,107,0.3);
+                    cursor: pointer;
+                `;
+                el.title = 'Click para exportar datos';
+                el.onclick = exportDemoData;
+                document.body.appendChild(el);
+            }
+            
+            const progress = calculateCompletion();
+            const viewed = sessionState.sectionsViewed.size;
+            el.innerHTML = `📊 ${progress}% (${viewed}/8) 💾`;
+        }
+        
+        /**
+         * INICIALIZACIÓN
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mejorar accesibilidad
+            document.querySelectorAll('.card, .sum-chip').forEach(el => {
+                el.setAttribute('tabindex', '0');
+                el.setAttribute('role', 'button');
+                
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        el.click();
+                    }
+                });
+            });
+        
+            // Eventos de sesión
+            trackEvent('session_start');
+            
+            // Comandos disponibles en consola
+            window.tracking = {
+                showSummary: showSummary,
+                exportData: exportDemoData,
+                getEvents: () => sessionState.events,
+                getState: () => ({
+                    ...sessionState,
+                    sectionsViewed: Array.from(sessionState.sectionsViewed)
+                })
+            };
+            
+            console.log('%c🎯 SISTEMA DE TRACKING (MODO DEMO)', 'color: #1a3a6b; font-size: 14px; font-weight: bold;');
+            console.log('%cComandos disponibles:', 'color: #666;');
+            console.log('  tracking.showSummary() - Ver resumen de sesión');
+            console.log('  tracking.exportData() - Exportar JSON descargable');
+            console.log('  tracking.getEvents() - Ver todos los eventos');
+            console.log('  tracking.getState() - Ver estado actual');
+            
+            window.addEventListener('beforeunload', () => {
+                trackEvent('session_end', {
+                    final_completion: calculateCompletion(),
+                    total_time: Math.floor((Date.now() - sessionState.startTime) / 1000)
+                });
+            });
+        
+            document.addEventListener('visibilitychange', () => {
+                trackEvent(document.hidden ? 'page_hidden' : 'page_visible');
+            });
+            
+            console.log('✅ Tracking listo. Usuario:', canvasData.user_id.substring(0, 15) + '...');
         });
-        flushEvents();
-    });
-
-    resetFlushTimer();
-    
-    console.log('✅ Tracking listo. Usuario:', canvasData.user_id.substring(0, 15));
-});
-    </script>
+        </script>
 </body>
 
 </html>
