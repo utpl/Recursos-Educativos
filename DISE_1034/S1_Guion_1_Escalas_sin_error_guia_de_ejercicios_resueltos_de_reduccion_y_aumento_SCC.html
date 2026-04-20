@@ -883,7 +883,7 @@
                     <div class="concl">Si el primer número es menor que el segundo, hay reducción; si es mayor, hay
                         aumento.</div>
                 </div>
-           
+
             </div>
         </div>
     </div>
@@ -1120,14 +1120,14 @@
         </div>
     </div>
 
- 
+
     <script>
         /**
          * ============================================
          * SISTEMA DE TRACKING PARA CANVAS LMS
          * ============================================
          */
-        
+
         // 1. CAPTURAR PARÁMETROS DE CANVAS DESDE LA URL
         const urlParams = new URLSearchParams(window.location.search);
         const canvasData = {
@@ -1157,13 +1157,13 @@
         const TRACKING_CONFIG = {
             // Opción A: Si tienes un backend propio (recomendado)
             endpoint: 'https://TU-SERVIDOR-DE-TRACKING.com/api/track',
-            
+
             // Opción B: Usar Canvas API (requiere token de desarrollador)
             // endpoint: `/api/v1/courses/${canvasData.course_id}/custom_gradebook_columns`,
-            
+
             // Opción C: Google Sheets / Airtable / Supabase (para pruebas)
             // endpoint: 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec',
-            
+
             batchSize: 5,        // Enviar cada 5 interacciones
             flushInterval: 30000, // O cada 30 segundos
             retryAttempts: 3
@@ -1180,17 +1180,17 @@
             const event = {
                 // Datos de Canvas (identificación)
                 ...canvasData,
-                
+
                 // Datos del evento
                 event_type: eventType,      // 'section_open', 'section_close', 'time_spent', 'completion'
                 timestamp: new Date().toISOString(),
                 time_on_page: getTimeOnPage(),
-                
+
                 // Datos específicos del recurso
                 section_id: details.sectionId || sessionState.currentSection,
                 section_name: details.sectionName || 'unknown',
                 action: details.action || 'view',
-                
+
                 // Métricas acumuladas
                 metrics: {
                     total_sections_viewed: sessionState.sectionsViewed.size,
@@ -1198,7 +1198,7 @@
                     completion_percentage: calculateCompletion(),
                     total_interactions: ++sessionState.totalInteractions
                 },
-                
+
                 // Contexto técnico
                 viewport: `${window.innerWidth}x${window.innerHeight}`,
                 user_agent: navigator.userAgent.substring(0, 100)
@@ -1266,12 +1266,12 @@
                 });
 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 console.log('✅ Datos enviados correctamente:', await response.json());
 
             } catch (error) {
                 console.error('❌ Error enviando datos:', error);
-                
+
                 // Reintentar o guardar localmente
                 if (eventsToSend.length > 0) {
                     saveFailedEvents(eventsToSend);
@@ -1296,14 +1296,14 @@
             if (failed.length === 0) return;
 
             console.log(`🔄 Reintentando ${failed.length} eventos fallidos...`);
-            
+
             try {
                 await fetch(TRACKING_CONFIG.endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ batch_id: 'retry_' + Date.now(), events: failed })
                 });
-                
+
                 localStorage.removeItem('failed_tracking_events');
                 console.log('✅ Eventos fallidos enviados correctamente');
             } catch (e) {
@@ -1327,7 +1327,7 @@
 
         // Sobrescribir función openM original para añadir tracking
         const originalOpenM = window.openM;
-        window.openM = function(id) {
+        window.openM = function (id) {
             const sectionNames = {
                 'gen': 'Generalidades',
                 'e1': 'Ejercicio 1 - Identificación',
@@ -1342,9 +1342,9 @@
             // Registrar tiempo en sección anterior si existe
             if (sessionState.currentSection && sessionState.sectionStartTime) {
                 const timeSpent = Date.now() - sessionState.sectionStartTime;
-                sessionState.timeSpent[sessionState.currentSection] = 
+                sessionState.timeSpent[sessionState.currentSection] =
                     (sessionState.timeSpent[sessionState.currentSection] || 0) + timeSpent;
-                
+
                 trackEvent('section_close', {
                     sectionId: sessionState.currentSection,
                     sectionName: sectionNames[sessionState.currentSection],
@@ -1365,14 +1365,14 @@
 
             // Llamar a función original
             if (originalOpenM) originalOpenM(id);
-            
+
             // Actualizar UI de progreso si existe
             updateProgressUI();
         };
 
         // Sobrescribir closeM para tracking de cierre
         const originalCloseM = window.closeM;
-        window.closeM = function(id) {
+        window.closeM = function (id) {
             if (sessionState.currentSection === id && sessionState.sectionStartTime) {
                 const timeSpent = Date.now() - sessionState.sectionStartTime;
                 trackEvent('section_close', {
@@ -1380,10 +1380,10 @@
                     timeSpentMs: timeSpent
                 });
             }
-            
+
             sessionState.currentSection = null;
             sessionState.sectionStartTime = null;
-            
+
             if (originalCloseM) originalCloseM(id);
         };
 
@@ -1392,7 +1392,7 @@
          */
         function updateProgressUI() {
             const progress = calculateCompletion();
-            
+
             // Crear o actualizar indicador de progreso
             let progressEl = document.getElementById('tracking-progress');
             if (!progressEl) {
@@ -1412,7 +1412,7 @@
                 `;
                 document.body.appendChild(progressEl);
             }
-            
+
             progressEl.innerHTML = `📊 Progreso: ${progress}% (${sessionState.sectionsViewed.size}/8 secciones)`;
         }
 
@@ -1453,7 +1453,7 @@
             interactiveElements.forEach(el => {
                 el.setAttribute('tabindex', '0');
                 el.setAttribute('role', 'button');
-                
+
                 el.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
@@ -1471,6 +1471,16 @@
             });
 
             console.log('✅ Sistema de tracking inicializado para usuario:', canvasData.user_id);
+        });
+
+
+        // DEBUG COMPLETO
+        console.table({
+            'URL completa': window.location.href,
+            'User ID raw': urlParams.get('user_id'),
+            'Course ID raw': urlParams.get('course_id'),
+            'Referrer': document.referrer,
+            'En iframe': window !== window.parent
         });
 
         // Iniciar timer de flush
