@@ -1120,100 +1120,361 @@
         </div>
     </div>
 
+ 
     <script>
         /**
-         * GESTIÓN DE MODALES
+         * ============================================
+         * SISTEMA DE TRACKING PARA CANVAS LMS
+         * ============================================
          */
-        function openM(id) {
-            const ov = document.getElementById('m-' + id);
-            if (!ov) return;
-    
-            ov.classList.add('show');
-            document.body.style.overflow = 'hidden'; // Evita scroll de fondo
-    
-            // Accesibilidad: Foco automático al botón de cerrar
-            setTimeout(() => {
-                const closeBtn = ov.querySelector('.m-close');
-                if (closeBtn) closeBtn.focus();
-            }, 100);
-    
-            document.addEventListener('keydown', escListener);
+        
+        // 1. CAPTURAR PARÁMETROS DE CANVAS DESDE LA URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const canvasData = {
+            user_id: urlParams.get('user_id') || 'anonymous',
+            course_id: urlParams.get('course_id') || 'unknown',
+            resource_id: 'S1_Guion_1_Escalas_sin_error',
+            session_start: new Date().toISOString(),
+            session_id: generateSessionId()
+        };
+
+        // Generar ID único de sesión
+        function generateSessionId() {
+            return 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
-    
-        function closeM(id) {
-            const ov = document.getElementById('m-' + id);
-            if (!ov) return;
-    
-            ov.classList.remove('show');
-            document.body.style.overflow = 'auto';
-            document.removeEventListener('keydown', escListener);
+
+        // 2. ESTADO DE LA SESIÓN (se actualiza en tiempo real)
+        const sessionState = {
+            sectionsViewed: new Set(),
+            timeSpent: {},
+            currentSection: null,
+            sectionStartTime: null,
+            totalInteractions: 0,
+            completionPercentage: 0
+        };
+
+        // 3. CONFIGURACIÓN DEL ENDPOINT (AJUSTA ESTO)
+        const TRACKING_CONFIG = {
+            // Opción A: Si tienes un backend propio (recomendado)
+            endpoint: 'https://TU-SERVIDOR-DE-TRACKING.com/api/track',
+            
+            // Opción B: Usar Canvas API (requiere token de desarrollador)
+            // endpoint: `/api/v1/courses/${canvasData.course_id}/custom_gradebook_columns`,
+            
+            // Opción C: Google Sheets / Airtable / Supabase (para pruebas)
+            // endpoint: 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec',
+            
+            batchSize: 5,        // Enviar cada 5 interacciones
+            flushInterval: 30000, // O cada 30 segundos
+            retryAttempts: 3
+        };
+
+        // Buffer de eventos para envío eficiente
+        let eventBuffer = [];
+        let flushTimer = null;
+
+        /**
+         * FUNCIÓN PRINCIPAL: Registrar evento de interacción
+         */
+        function trackEvent(eventType, details = {}) {
+            const event = {
+                // Datos de Canvas (identificación)
+                ...canvasData,
+                
+                // Datos del evento
+                event_type: eventType,      // 'section_open', 'section_close', 'time_spent', 'completion'
+                timestamp: new Date().toISOString(),
+                time_on_page: getTimeOnPage(),
+                
+                // Datos específicos del recurso
+                section_id: details.sectionId || sessionState.currentSection,
+                section_name: details.sectionName || 'unknown',
+                action: details.action || 'view',
+                
+                // Métricas acumuladas
+                metrics: {
+                    total_sections_viewed: sessionState.sectionsViewed.size,
+                    sections_list: Array.from(sessionState.sectionsViewed),
+                    completion_percentage: calculateCompletion(),
+                    total_interactions: ++sessionState.totalInteractions
+                },
+                
+                // Contexto técnico
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                user_agent: navigator.userAgent.substring(0, 100)
+            };
+
+            // Añadir al buffer
+            eventBuffer.push(event);
+            console.log('📊 Evento registrado:', event);
+
+            // Enviar si alcanzamos el tamaño del lote
+            if (eventBuffer.length >= TRACKING_CONFIG.batchSize) {
+                flushEvents();
+            }
+
+            // Reiniciar timer de flush
+            resetFlushTimer();
         }
-    
-        function closeIf(e, id) {
-            // Cierra solo si se hace clic en el overlay (fondo)
-            if (e.target.classList.contains('modal-ov')) closeM(id);
+
+        /**
+         * CALCULAR TIEMPO EN PÁGINA
+         */
+        let pageLoadTime = Date.now();
+        function getTimeOnPage() {
+            return Math.floor((Date.now() - pageLoadTime) / 1000);
         }
-    
-        function escListener(e) {
-            if (e.key === 'Escape') {
-                const visibleModal = document.querySelector('.modal-ov.show');
-                if (visibleModal) {
-                    const id = visibleModal.id.replace('m-', '');
-                    closeM(id);
+
+        /**
+         * CALCULAR PORCENTAJE DE COMPLETITUD
+         */
+        function calculateCompletion() {
+            const totalSections = 8; // Generalidades + 6 ejercicios + Resumen
+            const viewed = sessionState.sectionsViewed.size;
+            return Math.min(100, Math.round((viewed / totalSections) * 100));
+        }
+
+        /**
+         * ENVIAR DATOS AL SERVIDOR
+         */
+        async function flushEvents() {
+            if (eventBuffer.length === 0) return;
+
+            const payload = {
+                batch_id: generateSessionId(),
+                events: [...eventBuffer],
+                summary: {
+                    session_duration: getTimeOnPage(),
+                    total_events: eventBuffer.length
+                }
+            };
+
+            // Limpiar buffer inmediatamente para evitar duplicados
+            const eventsToSend = eventBuffer;
+            eventBuffer = [];
+
+            try {
+                // OPCIÓN 1: Fetch a tu endpoint (recomendado)
+                const response = await fetch(TRACKING_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Canvas-Resource': canvasData.resource_id
+                    },
+                    body: JSON.stringify(payload),
+                    keepalive: true // Importante para envío cuando el usuario cierra la página
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                console.log('✅ Datos enviados correctamente:', await response.json());
+
+            } catch (error) {
+                console.error('❌ Error enviando datos:', error);
+                
+                // Reintentar o guardar localmente
+                if (eventsToSend.length > 0) {
+                    saveFailedEvents(eventsToSend);
                 }
             }
         }
-    
+
         /**
-         * ANALÍTICA Y ACCESIBILIDAD DE TARJETAS
+         * GUARDAR EVENTOS FALLIDOS EN LOCALSTORAGE (recuperación)
+         */
+        function saveFailedEvents(events) {
+            const failed = JSON.parse(localStorage.getItem('failed_tracking_events') || '[]');
+            failed.push(...events);
+            localStorage.setItem('failed_tracking_events', JSON.stringify(failed.slice(-50))); // Mantener últimos 50
+        }
+
+        /**
+         * REINTENTAR ENVÍO DE EVENTOS FALLIDOS
+         */
+        async function retryFailedEvents() {
+            const failed = JSON.parse(localStorage.getItem('failed_tracking_events') || '[]');
+            if (failed.length === 0) return;
+
+            console.log(`🔄 Reintentando ${failed.length} eventos fallidos...`);
+            
+            try {
+                await fetch(TRACKING_CONFIG.endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ batch_id: 'retry_' + Date.now(), events: failed })
+                });
+                
+                localStorage.removeItem('failed_tracking_events');
+                console.log('✅ Eventos fallidos enviados correctamente');
+            } catch (e) {
+                console.log('❌ No se pudieron reenviar eventos fallidos');
+            }
+        }
+
+        /**
+         * TIMER PARA ENVÍO PERIÓDICO
+         */
+        function resetFlushTimer() {
+            if (flushTimer) clearTimeout(flushTimer);
+            flushTimer = setTimeout(() => flushEvents(), TRACKING_CONFIG.flushInterval);
+        }
+
+        /**
+         * ============================================
+         * INTEGRACIÓN CON TU INTERFAZ EXISTENTE
+         * ============================================
+         */
+
+        // Sobrescribir función openM original para añadir tracking
+        const originalOpenM = window.openM;
+        window.openM = function(id) {
+            const sectionNames = {
+                'gen': 'Generalidades',
+                'e1': 'Ejercicio 1 - Identificación',
+                'e2': 'Ejercicio 2 - Reducción directa',
+                'e3': 'Ejercicio 3 - Aumento directo',
+                'e4': 'Ejercicio 4 - Cambio entre reducciones',
+                'e5': 'Ejercicio 5 - Cambio a escala mayor',
+                'e6': 'Ejercicio 6 - Aplicación a formatos',
+                'res': 'Resumen'
+            };
+
+            // Registrar tiempo en sección anterior si existe
+            if (sessionState.currentSection && sessionState.sectionStartTime) {
+                const timeSpent = Date.now() - sessionState.sectionStartTime;
+                sessionState.timeSpent[sessionState.currentSection] = 
+                    (sessionState.timeSpent[sessionState.currentSection] || 0) + timeSpent;
+                
+                trackEvent('section_close', {
+                    sectionId: sessionState.currentSection,
+                    sectionName: sectionNames[sessionState.currentSection],
+                    timeSpentMs: timeSpent
+                });
+            }
+
+            // Registrar nueva sección
+            sessionState.currentSection = id;
+            sessionState.sectionStartTime = Date.now();
+            sessionState.sectionsViewed.add(id);
+
+            trackEvent('section_open', {
+                sectionId: id,
+                sectionName: sectionNames[id] || id,
+                action: 'modal_open'
+            });
+
+            // Llamar a función original
+            if (originalOpenM) originalOpenM(id);
+            
+            // Actualizar UI de progreso si existe
+            updateProgressUI();
+        };
+
+        // Sobrescribir closeM para tracking de cierre
+        const originalCloseM = window.closeM;
+        window.closeM = function(id) {
+            if (sessionState.currentSection === id && sessionState.sectionStartTime) {
+                const timeSpent = Date.now() - sessionState.sectionStartTime;
+                trackEvent('section_close', {
+                    sectionId: id,
+                    timeSpentMs: timeSpent
+                });
+            }
+            
+            sessionState.currentSection = null;
+            sessionState.sectionStartTime = null;
+            
+            if (originalCloseM) originalCloseM(id);
+        };
+
+        /**
+         * ACTUALIZAR UI DE PROGRESO (opcional)
+         */
+        function updateProgressUI() {
+            const progress = calculateCompletion();
+            
+            // Crear o actualizar indicador de progreso
+            let progressEl = document.getElementById('tracking-progress');
+            if (!progressEl) {
+                progressEl = document.createElement('div');
+                progressEl.id = 'tracking-progress';
+                progressEl.style.cssText = `
+                    position: fixed;
+                    bottom: 10px;
+                    right: 10px;
+                    background: #1a3a6b;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    font-family: 'Segoe UI', sans-serif;
+                `;
+                document.body.appendChild(progressEl);
+            }
+            
+            progressEl.innerHTML = `📊 Progreso: ${progress}% (${sessionState.sectionsViewed.size}/8 secciones)`;
+        }
+
+        /**
+         * INICIALIZACIÓN
          */
         document.addEventListener('DOMContentLoaded', () => {
+            // Reintentar eventos fallidos de sesiones anteriores
+            retryFailedEvents();
+
+            // Evento de inicio de sesión
+            trackEvent('session_start', {
+                url: window.location.href,
+                referrer: document.referrer
+            });
+
+            // Tracking de cierre de página (best effort)
+            window.addEventListener('beforeunload', () => {
+                trackEvent('session_end', {
+                    total_time: getTimeOnPage(),
+                    final_completion: calculateCompletion()
+                });
+                flushEvents(); // Forzar envío inmediato
+            });
+
+            // Tracking de visibilidad de página (cuando el usuario cambia de pestaña)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    trackEvent('page_hidden', { time_on_page: getTimeOnPage() });
+                } else {
+                    trackEvent('page_visible');
+                    pageLoadTime = Date.now(); // Resetear tiempo visible
+                }
+            });
+
+            // Mejorar accesibilidad de tarjetas (tu código existente mejorado)
             const interactiveElements = document.querySelectorAll('.card, .sum-chip');
-    
             interactiveElements.forEach(el => {
-                // 1. Mejora de Accesibilidad: Navegación por teclado
                 el.setAttribute('tabindex', '0');
                 el.setAttribute('role', 'button');
-    
+                
                 el.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         el.click();
                     }
                 });
-    
-                // 2. Captura de Datos (Pro-Tracking)
-                el.addEventListener('click', (e) => {
-                    const target = e.currentTarget;
-                    
-                    // Buscamos el nombre de la sección de forma jerárquica
-                    const sectionTitle = target.querySelector('.card-name')?.innerText 
-                                       || target.querySelector('.sum-chip-text')?.innerText 
-                                       || target.getAttribute('title') 
-                                       || "Sección desconocida";
-    
-                    const logData = {
-                        recurso: "Escalas_sin_error",
-                        seccion: sectionTitle.replace(/\n/g, " ").trim(), // Limpiamos saltos de línea
-                        timestamp: new Date().toISOString(),
-                        viewport: `${window.innerWidth}x${window.innerHeight}`,
-                        url_params: Object.fromEntries(new URLSearchParams(window.location.search))
-                    };
-    
-                    // Prueba de captura en consola
-                    console.log("%c📊 Tracking Event:", "color: #1d8ea0; font-weight: bold;", logData);
-    
-                    // Aquí podrías disparar el fetch hacia tu API de RumiTrack
-                    /*
-                    fetch('TU_API_ENDPOINT', {
-                        method: 'POST',
-                        body: JSON.stringify(logData),
-                        headers: { 'Content-Type': 'application/json' }
-                    }).catch(err => console.error("Error en tracking:", err));
-                    */
+
+                // Tracking de hover/focus para análisis de atención
+                el.addEventListener('mouseenter', () => {
+                    trackEvent('element_hover', {
+                        element: el.classList.contains('card') ? 'card' : 'chip',
+                        section: el.querySelector('.card-name')?.innerText || 'unknown'
+                    });
                 });
             });
+
+            console.log('✅ Sistema de tracking inicializado para usuario:', canvasData.user_id);
         });
+
+        // Iniciar timer de flush
+        resetFlushTimer();
     </script>
 </body>
 
