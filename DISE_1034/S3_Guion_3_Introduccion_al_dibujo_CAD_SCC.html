@@ -1,1425 +1,1321 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Introducción al Dibujo CAD - Recurso Interactivo</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        :root {
-            --primary: #2563eb;
-            --primary-light: #3b82f6;
-            --primary-dark: #1d4ed8;
-            --accent: #06b6d4;
-            --accent-light: #22d3ee;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --radius: 12px;
-            --radius-lg: 16px;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            max-width: 800px;
-            max-height: 800px;
-            overflow: hidden;
-        }
-        
-        .app-container {
-            width: 100%;
-            height: 800px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow);
-            z-index: 100;
-        }
-        
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .header-icon {
-            font-size: 28px;
-        }
-        
-        .header h1 {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        
-        .header-subtitle {
-            font-size: 11px;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-        
-        .progress-indicator {
-            display: flex;
-            gap: 6px;
-        }
-        
-        .progress-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .progress-dot.active {
-            background: white;
-            transform: scale(1.2);
-        }
-        
-        /* Main Content Area */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            position: relative;
-        }
-        
-        .slides-container {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            height: 100%;
-        }
-        
-        .slide {
-            min-width: 100%;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow-y: auto;
-        }
-        
-        /* Cards */
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--border);
-        }
-        
-        .card-number {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-        
-        .card-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1.3;
-        }
-        
-        /* Activity Cards */
-        .activity-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .activity-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-        
-        .activity-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .activity-card:hover {
-            border-color: var(--primary-light);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .activity-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        
-        .activity-icon {
-            font-size: 24px;
-        }
-        
-        .activity-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        
-        .activity-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-        
-        /* Images */
-        .image-container {
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            margin: 12px 0;
-            background: white;
-            border: 1px solid var(--border);
-        }
-        
-        .image-container img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-        
-        .image-container:hover img {
-            transform: scale(1.02);
-        }
-        
-        .image-caption {
-            padding: 8px 12px;
-            background: var(--bg);
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-align: center;
-            font-style: italic;
-        }
-        
-        /* Interactive Elements */
-        .interactive-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 12px;
-        }
-        
-        .interactive-item {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .interactive-item:hover {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            transform: scale(1.02);
-        }
-        
-        .interactive-item .icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-            display: block;
-        }
-        
-        .interactive-item .label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            outline: none;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.23);
-        }
-        
-        .btn-secondary {
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-        
-        .btn-secondary:hover {
-            background: var(--primary);
-            color: white;
-        }
-        
-        /* Navigation */
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            background: white;
-            border-top: 1px solid var(--border);
-            gap: 12px;
-        }
-        
-        .nav-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            background: var(--bg);
-            color: var(--text-primary);
-        }
-        
-        .nav-btn:hover:not(:disabled) {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .nav-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        
-        .nav-btn.next {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-        }
-        
-        .slide-counter {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            padding: 20px;
-        }
-        
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal {
-            background: white;
-            border-radius: var(--radius-lg);
-            max-width: 700px;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            transform: scale(0.9) translateY(20px);
-            transition: all 0.3s ease;
-        }
-        
-        .modal-overlay.active .modal {
-            transform: scale(1) translateY(0);
-        }
-        
-        .modal-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .modal-close {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-close:hover {
-            background: rgba(255,255,255,0.3);
-            transform: rotate(90deg);
-        }
-        
-        .modal-body {
-            padding: 24px;
-        }
-        
-        .modal-section {
-            margin-bottom: 20px;
-        }
-        
-        .modal-section:last-child {
-            margin-bottom: 0;
-        }
-        
-        .modal-section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .modal-text {
-            font-size: 14px;
-            line-height: 1.7;
-            color: var(--text-primary);
-        }
-        
-        .answer-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .answer-list li {
-            padding: 10px 14px;
-            background: var(--bg);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            border-left: 3px solid var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .answer-list li::before {
-            content: '✓';
-            width: 20px;
-            height: 20px;
-            background: var(--success);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-        
-        /* Word Fill Activity */
-        .word-fill {
-            background: #f1f5f9;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: 700;
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        .word-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-        }
-        
-        .word-chip {
-            padding: 6px 12px;
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        /* Info Cards Grid */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-        
-        .info-item {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .info-item:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-        
-        .info-item .number {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--primary);
-            display: block;
-            margin-bottom: 4px;
-        }
-        
-        .info-item .text {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        /* Quiz Options */
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 16px;
-        }
-        
-        .quiz-option {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 14px;
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .quiz-option:hover {
-            border-color: var(--primary-light);
-            background: #eff6ff;
-        }
-        
-        .quiz-option .letter {
-            width: 28px;
-            height: 28px;
-            background: var(--bg);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--text-primary);
-            flex-shrink: 0;
-        }
-        
-        .quiz-option .text {
-            font-size: 13px;
-            line-height: 1.5;
-            color: var(--text-primary);
-        }
-        
-        /* Retroalimentación */
-        .feedback-box {
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-            border: 2px solid var(--success);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-top: 16px;
-        }
-        
-        .feedback-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--success);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .feedback-text {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-primary);
-        }
-        
-        /* Matching Activity */
-        .matching-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-top: 16px;
-        }
-        
-        .matching-column {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .matching-item {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px;
-            font-size: 12px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .matching-item:hover {
-            border-color: var(--accent);
-            background: #ecfeff;
-        }
-        
-        .matching-image {
-            width: 100%;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 8px;
-            border-radius: 6px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 600px) {
-            .interactive-grid,
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .matching-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .card {
-                padding: 16px;
-            }
-            
-            .slide {
-                padding: 12px;
-            }
-            
-            .header h1 {
-                font-size: 16px;
-            }
-            
-            .modal {
-                max-height: 90vh;
-            }
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        /* Welcome Screen */
-        .welcome-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px 20px;
-            height: 100%;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        }
-        
-        .welcome-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .welcome-title {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .welcome-subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            max-width: 400px;
-            line-height: 1.6;
-            margin-bottom: 32px;
-        }
-        
-        .start-btn {
-            padding: 16px 48px;
-            font-size: 16px;
-            border-radius: 30px;
-        }
-        
-        /* ISO Standards List */
-        .iso-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .iso-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: white;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-        }
-        
-        .iso-badge {
-            padding: 4px 10px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            color: white;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-        
-        .iso-text {
-            font-size: 13px;
-            color: var(--text-primary);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introducción al Dibujo CAD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap');
+
+  :root {
+    --blue-deep: #0a1628;
+    --blue-mid: #1a3a6e;
+    --blue-bright: #1e6fc4;
+    --blue-light: #3b9eff;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --green: #22c55e;
+    --red: #ef4444;
+    --bg: #f0f5ff;
+    --surface: #ffffff;
+    --surface2: #eaf2ff;
+    --text: #0f1e3d;
+    --text-muted: #5a7aaa;
+    --border: #c5d9f5;
+    --shadow: 0 4px 24px rgba(30,111,196,0.13);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    width: 800px;
+    max-width: 800px;
+    min-height: 800px;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-mid) 60%, var(--blue-bright) 100%);
+    padding: 18px 28px 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .app-header::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(0,212,255,0.10);
+  }
+  .app-header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 40%;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(59,158,255,0.10);
+  }
+  .header-icon {
+    width: 50px; height: 50px;
+    background: rgba(0,212,255,0.18);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .header-icon svg { width: 28px; height: 28px; }
+  .header-text h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+  }
+  .header-text p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+  }
+  .badge {
+    margin-left: auto;
+    background: rgba(0,212,255,0.18);
+    border: 1px solid rgba(0,212,255,0.5);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    z-index: 1;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: var(--blue-deep);
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--blue-light));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    width: 16.6%;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  /* ── NAV DOTS ── */
+  .nav-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .nav-dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.25);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    color: rgba(255,255,255,0.4);
+    transition: all 0.25s;
+  }
+  .nav-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--blue-deep);
+  }
+  .nav-dot.completed {
+    background: rgba(34,197,94,0.3);
+    border-color: #22c55e;
+    color: #22c55e;
+  }
+  .nav-dot:hover:not(.active) {
+    border-color: rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    padding: 20px 24px;
+    min-height: 640px;
+  }
+
+  .question-section { display: none; }
+  .question-section.active { display: block; animation: fadeSlide 0.35s ease; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .q-header {
+    background: linear-gradient(90deg, var(--blue-mid), var(--blue-bright));
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .q-number {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .q-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .q-body {
+    padding: 16px 18px;
+  }
+  .q-instruction {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+    background: var(--surface2);
+    border-left: 3px solid var(--blue-light);
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* ── DRAG & DROP ITEMS ── */
+  .sortable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .drag-item {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: grab;
+    transition: all 0.2s;
+    user-select: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .drag-item:hover { border-color: var(--blue-light); background: #deeeff; transform: translateX(2px); }
+  .drag-item.dragging { opacity: 0.5; cursor: grabbing; }
+  .drag-item.drag-over { border-color: var(--accent); background: #cdf0ff; }
+  .drag-handle {
+    display: flex; flex-direction: column; gap: 3px; flex-shrink: 0;
+  }
+  .drag-handle span {
+    display: block; width: 16px; height: 2px; background: var(--text-muted); border-radius: 2px;
+  }
+  .drag-num {
+    width: 22px; height: 22px;
+    background: var(--blue-bright);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    flex-shrink: 0;
+  }
+
+  /* ── FILL IN THE BLANKS ── */
+  .fill-text {
+    font-size: 13px;
+    line-height: 2;
+    color: var(--text);
+  }
+  .blank-input {
+    border: none;
+    border-bottom: 2px solid var(--blue-light);
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue-bright);
+    width: 120px;
+    text-align: center;
+    outline: none;
+    padding: 2px 4px;
+    transition: border-color 0.2s;
+  }
+  .blank-input:focus { border-color: var(--accent); }
+  .blank-input.correct { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.08); border-radius: 4px 4px 0 0; }
+  .blank-input.incorrect { border-color: var(--red); color: var(--red); background: rgba(239,68,68,0.08); border-radius: 4px 4px 0 0; }
+
+  .word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px;
+    background: var(--surface2);
+    border-radius: 10px;
+    border: 1px dashed var(--border);
+  }
+  .word-chip {
+    background: var(--surface);
+    border: 1.5px solid var(--blue-light);
+    color: var(--blue-bright);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .word-chip:hover { background: var(--blue-bright); color: #fff; }
+  .word-chip.used { opacity: 0.4; pointer-events: none; text-decoration: line-through; }
+
+  /* ── MULTIPLE CHOICE ── */
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .option-item {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .option-item:hover { border-color: var(--blue-light); background: #deeeff; }
+  .option-item.selected { border-color: var(--blue-bright); background: #d0e8ff; }
+  .option-item.correct-ans { border-color: var(--green); background: rgba(34,197,94,0.1); }
+  .option-item.wrong-ans { border-color: var(--red); background: rgba(239,68,68,0.1); }
+  .option-letter {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--blue-mid);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+
+  /* ── MATCHING (Q4) ── */
+  .match-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .match-col h4 {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+  .match-items { display: flex; flex-direction: column; gap: 6px; }
+  .match-item {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .match-item:hover { border-color: var(--blue-light); }
+  .match-item.selected { border-color: var(--accent); background: #d0f5ff; }
+  .match-item.matched { border-color: var(--green); background: rgba(34,197,94,0.1); cursor: default; }
+  .match-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* ── SCHEMA IMAGE ── */
+  .schema-wrap {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+  }
+  .schema-img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+  }
+
+  /* ── BUTTONS ── */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 9px 22px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue-bright), var(--blue-light));
+    color: #fff;
+    box-shadow: 0 3px 14px rgba(30,111,196,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(30,111,196,0.45); }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--blue-mid);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { background: #deeeff; border-color: var(--blue-light); }
+  .btn-success {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: #fff;
+    box-shadow: 0 3px 14px rgba(34,197,94,0.3);
+  }
+
+  /* ── FEEDBACK BANNER ── */
+  .feedback-banner {
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .feedback-banner.show { display: flex; gap: 10px; align-items: flex-start; }
+  .feedback-banner.success {
+    background: rgba(34,197,94,0.12);
+    border: 1.5px solid #22c55e;
+    color: #166534;
+  }
+  .feedback-banner.error {
+    background: rgba(239,68,68,0.10);
+    border: 1.5px solid #ef4444;
+    color: #991b1b;
+  }
+  .feedback-banner.info {
+    background: rgba(30,111,196,0.10);
+    border: 1.5px solid var(--blue-bright);
+    color: var(--blue-mid);
+  }
+  .feedback-icon { font-size: 18px; flex-shrink: 0; margin-top: -1px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,22,40,0.75);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.25s ease; }
+  .modal-box {
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(10,22,40,0.4);
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border: 1.5px solid var(--border);
+    animation: modalIn 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header {
+    background: linear-gradient(135deg, var(--blue-deep), var(--blue-mid));
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 16px 16px 0 0;
+    position: sticky; top: 0; z-index: 1;
+  }
+  .modal-header h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    flex: 1;
+  }
+  .modal-close {
+    background: rgba(255,255,255,0.15);
+    border: none; cursor: pointer;
+    color: #fff;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.3); }
+  .modal-body {
+    padding: 20px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .modal-body p { margin-bottom: 10px; }
+  .modal-body strong { color: var(--blue-bright); }
+  .modal-body .answer-row {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 6px 0;
+    border-left: 3px solid var(--blue-light);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .answer-row .step-num {
+    background: var(--blue-bright);
+    color: #fff;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  /* ── RESULTS SECTION ── */
+  .results-section { display: none; }
+  .results-section.active { display: block; animation: fadeSlide 0.4s ease; }
+  .score-card {
+    background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-mid) 100%);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .score-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(0,212,255,0.08);
+  }
+  .score-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .score-label { color: rgba(255,255,255,0.65); font-size: 14px; margin-top: 4px; }
+  .score-stars { font-size: 28px; margin: 12px 0 4px; }
+
+  .result-items { display: flex; flex-direction: column; gap: 8px; }
+  .result-item {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 8px rgba(30,111,196,0.07);
+  }
+  .result-item.ok { border-left: 4px solid var(--green); }
+  .result-item.fail { border-left: 4px solid var(--red); }
+  .result-icon { font-size: 18px; flex-shrink: 0; }
+  .result-text { font-size: 13px; flex: 1; }
+  .result-text strong { display: block; font-weight: 700; color: var(--text); }
+  .result-text span { color: var(--text-muted); font-size: 12px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    body { width: 100%; }
+    .main { padding: 14px 12px; }
+    .app-header { padding: 14px 16px; }
+    .progress-wrap { padding: 7px 16px; }
+    .match-container { grid-template-columns: 1fr; }
+    .fill-text { font-size: 12px; }
+    .blank-input { width: 90px; }
+  }
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-title">
-                <span class="header-icon">📐</span>
-                <div>
-                    <h1>Introducción al Dibujo CAD</h1>
-                    <div class="header-subtitle">Recurso Educativo Interactivo</div>
-                </div>
-            </div>
-            <div class="progress-indicator" id="progressIndicator">
-                <div class="progress-dot active"></div>
-                <div class="progress-dot"></div>
-                <div class="progress-dot"></div>
-                <div class="progress-dot"></div>
-                <div class="progress-dot"></div>
-                <div class="progress-dot"></div>
-                <div class="progress-dot"></div>
-            </div>
-        </header>
-        
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="slides-container" id="slidesContainer">
-                
-                <!-- Slide 0: Welcome -->
-                <div class="slide">
-                    <div class="welcome-screen">
-                        <div class="welcome-icon">🎮</div>
-                        <h2 class="welcome-title">¡Bienvenido al Juego!</h2>
-                        <p class="welcome-subtitle">
-                            Explora el fascinante mundo del dibujo técnico asistido por computadora. 
-                            Completa las 6 actividades interactivas y demuestra tus conocimientos sobre CAD.
-                        </p>
-                        <button class="btn btn-primary start-btn" onclick="nextSlide()">
-                            Comenzar Aventura 🚀
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Slide 1: Tipos de Línea -->
-                <div class="slide">
-                    <div class="activity-card" onclick="openModal('modal1')">
-                        <div class="activity-header">
-                            <span class="activity-icon">📏</span>
-                            <span class="activity-title">Actividad 1: Tipos de Línea</span>
-                        </div>
-                        <p class="activity-desc">
-                            Ordene las respuestas acordes al tipo de línea o relleno del gráfico.
-                        </p>
-                        <div class="image-container">
-                            <img src="media/Imagen 1.jpg" alt="Tipos de línea en dibujo técnico">
-                        </div>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="number">4</span>
-                            <span class="text">Línea gruesa</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="number">3</span>
-                            <span class="text">Línea oblicua de relleno</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="number">2</span>
-                            <span class="text">Fina de trazos y doble punto</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="number">1</span>
-                            <span class="text">Fina de trazos y puntos</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Slide 2: Doblaje A1 -->
-                <div class="slide">
-                    <div class="activity-card" onclick="openModal('modal2')">
-                        <div class="activity-header">
-                            <span class="activity-icon">📄</span>
-                            <span class="activity-title">Actividad 2: Doblaje de Plano A1</span>
-                        </div>
-                        <p class="activity-desc">
-                            Ordena los pasos correctos para el proceso de doblar un plano A1.
-                        </p>
-                        <div class="image-container">
-                            <img src="media/Imagen 2.jpg" alt="Proceso de doblaje de plano A1">
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-number">✓</div>
-                            <div class="card-title">Orden Correcto</div>
-                        </div>
-                        <ol class="answer-list">
-                            <li>Doblaje de la lámina A1 al lado mayor.</li>
-                            <li>Doblaje a la mitad del lado inferior.</li>
-                            <li>Considerando la medida A4, se dobla para formar un acordeón o zigzag.</li>
-                            <li>En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.</li>
-                        </ol>
-                    </div>
-                </div>
-                
-                <!-- Slide 3: Historia AutoCAD -->
-                <div class="slide">
-                    <div class="activity-card" onclick="openModal('modal3')">
-                        <div class="activity-header">
-                            <span class="activity-icon">💻</span>
-                            <span class="activity-title">Actividad 3: Inicios de AutoCAD</span>
-                        </div>
-                        <p class="activity-desc">
-                            Completa las frases arrastrando las palabras correctas sobre los inicios de AutoCAD.
-                        </p>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-number">📝</div>
-                            <div class="card-title">Texto Completado</div>
-                        </div>
-                        <div class="modal-text" style="line-height: 1.8;">
-                            El software de <span class="word-fill">AutoCAD versión 1.0</span> tenía un procesador 286 en el sistema <span class="word-fill">DOS</span>. En la figura 19 de la guía indica que AutoCAD Draw y <span class="word-fill">Modify</span> como barras de herramientas verticales a la izquierda. Además, se denotaba una flecha cruzada en forma de "L" denominada en inglés <span class="word-fill">Coordinate Axis</span>, alusiva al sistema de coordenadas.
-                            <br><br>
-                            <span class="word-fill">CAD</span> son las siglas para denominar a Computer Aided Design, que evoluciona a procesos de fabricación, 3D, simulación y análisis, llamándose <span class="word-fill">CAE/CAM</span>.
-                        </div>
-                        <div class="word-options">
-                            <span class="word-chip">CAD</span>
-                            <span class="word-chip">AutoCAD versión 1.0</span>
-                            <span class="word-chip">DOS</span>
-                            <span class="word-chip">CAE/CAM</span>
-                            <span class="word-chip">Modify</span>
-                            <span class="word-chip">Coordinate Axis</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Slide 4: Zonas del Plano -->
-                <div class="slide">
-                    <div class="activity-card" onclick="openModal('modal4')">
-                        <div class="activity-header">
-                            <span class="activity-icon">🎯</span>
-                            <span class="activity-title">Actividad 4: Zonas del Plano</span>
-                        </div>
-                        <p class="activity-desc">
-                            Arrastre cada elemento con su descripción correspondiente.
-                        </p>
-                    </div>
-                    
-                    <div class="interactive-grid">
-                        <div class="interactive-item" onclick="showImageDetail('Imagen 3.jpg', 'Área superior derecha')">
-                            <span class="icon">↗️</span>
-                            <span class="label">Área superior derecha</span>
-                        </div>
-                        <div class="interactive-item" onclick="showImageDetail('Imagen 4.jpg', 'Esquina superior derecha')">
-                            <span class="icon">⬆️</span>
-                            <span class="label">Esquina superior derecha</span>
-                        </div>
-                        <div class="interactive-item" onclick="showImageDetail('Imagen 5.jpg', 'Área central izquierda')">
-                            <span class="icon">⬅️</span>
-                            <span class="label">Área central izquierda</span>
-                        </div>
-                        <div class="interactive-item" onclick="showImageDetail('Imagen 6.jpg', 'Esquina inferior derecha')">
-                            <span class="icon">↘️</span>
-                            <span class="label">Esquina inferior derecha</span>
-                        </div>
-                        <div class="interactive-item" onclick="showImageDetail('Imagen 7.jpg', 'Área inferior izquierda')">
-                            <span class="icon">⬇️</span>
-                            <span class="label">Área inferior izquierda</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Slide 5: Normas ISO -->
-                <div class="slide">
-                    <div class="activity-card" onclick="openModal('modal5')">
-                        <div class="activity-header">
-                            <span class="activity-icon">📋</span>
-                            <span class="activity-title">Actividad 5: Normas para Aprobación de Planos</span>
-                        </div>
-                        <p class="activity-desc">
-                            Arrastra la palabra correcta para completar la información sobre normas ISO.
-                        </p>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-number">📊</div>
-                            <div class="card-title">Normas ISO Aplicadas</div>
-                        </div>
-                        <div class="iso-list">
-                            <div class="iso-item">
-                                <span class="iso-badge">ISO 128/5457</span>
-                                <span class="iso-text">Archivo de entrega: dwg/dxf</span>
-                            </div>
-                            <div class="iso-item">
-                                <span class="iso-badge">ISO 7200/9431</span>
-                                <span class="iso-text">Cajetín y formato de planos</span>
-                            </div>
-                            <div class="iso-item">
-                                <span class="iso-badge">ISO 128</span>
-                                <span class="iso-text">Líneas, vistas y cortes</span>
-                            </div>
-                            <div class="iso-item">
-                                <span class="iso-badge">ISO 129</span>
-                                <span class="iso-text">Acotaciones y dimensionamiento</span>
-                            </div>
-                            <div class="iso-item">
-                                <span class="iso-badge">ISO 3098</span>
-                                <span class="iso-text">Rotulación y escritura técnica</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Slide 6: Ubicación/Implantación -->
-                <div class="slide">
-                    <div class="activity-card" onclick="openModal('modal6')">
-                        <div class="activity-header">
-                            <span class="activity-icon">🗺️</span>
-                            <span class="activity-title">Actividad 6: Ubicación/Implantación</span>
-                        </div>
-                        <p class="activity-desc">
-                            ¿De qué trata la ubicación/implantación como información en un plano?
-                        </p>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-number">✓</div>
-                            <div class="card-title">Respuesta Correcta</div>
-                        </div>
-                        <div class="quiz-options">
-                            <div class="quiz-option" style="border-color: var(--success); background: #ecfdf5;">
-                                <span class="letter" style="background: var(--success); color: white;">a</span>
-                                <span class="text">Se trata de un croquis que describe las calles, dirección de un predio, complementado por un norte.</span>
-                            </div>
-                        </div>
-                        
-                        <div class="feedback-box">
-                            <div class="feedback-title">
-                                💡 Retroalimentación
-                            </div>
-                            <p class="feedback-text">
-                                La ubicación e implantación permiten situar el proyecto de manera <strong>inequívoca</strong> en su contexto urbano. Para que esta información sea técnicamente válida, debe incluir la identificación de las vías circundantes, la dirección exacta del predio y la orientación mediante el <strong>norte</strong>, eliminando cualquier ambigüedad o incertidumbre sobre la localización y disposición espacial de la obra.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </main>
-        
-        <!-- Navigation -->
-        <nav class="nav-buttons">
-            <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
-                ← Anterior
-            </button>
-            <span class="slide-counter" id="slideCounter">1 / 7</span>
-            <button class="nav-btn next" id="nextBtn" onclick="nextSlide()">
-                Siguiente →
-            </button>
-        </nav>
-    </div>
-    
-    <!-- Modals -->
-    
-    <!-- Modal 1: Tipos de Línea -->
-    <div class="modal-overlay" id="modal1">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">
-                    📏 Actividad 1: Tipos de Línea
-                </div>
-                <button class="modal-close" onclick="closeModal('modal1')">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-section">
-                    <div class="modal-section-title">📝 Instrucción</div>
-                    <p class="modal-text">
-                        Ordene las respuestas acordes al tipo de línea o relleno del gráfico.
-                    </p>
-                </div>
-                <div class="image-container">
-                    <img src="media/Imagen 1.jpg" alt="Tipos de línea">
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">✅ Respuesta Correcta</div>
-                    <ol class="answer-list">
-                        <li>Fina de trazos y puntos</li>
-                        <li>Fina de trazos y doble punto</li>
-                        <li>Línea oblicua de relleno</li>
-                        <li>Línea gruesa</li>
-                    </ol>
-                </div>
-            </div>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="header-icon">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="22" height="22" rx="3" stroke="#00d4ff" stroke-width="1.5"/>
+      <line x1="3" y1="9" x2="25" y2="9" stroke="#00d4ff" stroke-width="1"/>
+      <line x1="9" y1="9" x2="9" y2="25" stroke="#00d4ff" stroke-width="1"/>
+      <circle cx="14" cy="17" r="3.5" stroke="#3b9eff" stroke-width="1.5"/>
+      <line x1="14" y1="3" x2="14" y2="6" stroke="#00d4ff" stroke-width="1.5"/>
+      <line x1="22" y1="11" x2="25" y2="11" stroke="#3b9eff" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Introducción al Dibujo CAD</h1>
+    <p>Juego interactivo · Sesión 3</p>
+  </div>
+  <div class="badge">🎮 JUEGO</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="nav-dots" id="navDots"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">1 / 6</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Q1: ORDENAR TIPOS DE LÍNEA -->
+  <div class="question-section active" id="q1">
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-number">1</div>
+        <div class="q-title">Ordena los tipos de línea o relleno del gráfico</div>
+      </div>
+      <div class="q-body">
+        <div class="q-instruction">✏️ Arrastra las opciones para ordenarlas de acuerdo al tipo de línea o relleno del gráfico mostrado.</div>
+
+        <div style="text-align:center; margin-bottom:14px;">
+          <img src="media/Imagen 1.jpg" alt="Tipos de línea" style="max-width:100%; max-height:200px; border-radius:10px; border:2px solid var(--border);">
         </div>
-    </div>
-    
-    <!-- Modal 2: Doblaje A1 -->
-    <div class="modal-overlay" id="modal2">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">
-                    📄 Actividad 2: Doblaje de Plano A1
-                </div>
-                <button class="modal-close" onclick="closeModal('modal2')">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-section">
-                    <div class="modal-section-title">📝 Instrucción</div>
-                    <p class="modal-text">
-                        Ordena los pasos correctos, arrastrándolos de arriba hacia abajo, para el proceso de doblar un plano A1.
-                    </p>
-                </div>
-                <div class="image-container">
-                    <img src="media/Imagen 2.jpg" alt="Doblaje de plano A1">
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">✅ Orden Correcto</div>
-                    <ol class="answer-list">
-                        <li>Doblaje de la lámina A1 al lado mayor.</li>
-                        <li>Doblaje a la mitad del lado inferior.</li>
-                        <li>Considerando la medida A4, se dobla para formar un acordeón o zigzag.</li>
-                        <li>En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.</li>
-                    </ol>
-                </div>
-            </div>
+
+        <div class="sortable-list" id="sortQ1">
+          <div class="drag-item" draggable="true" data-val="Línea gruesa">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num" id="dn1-1">1</div>
+            <span>Línea gruesa</span>
+          </div>
+          <div class="drag-item" draggable="true" data-val="Línea oblicua de relleno">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num" id="dn1-2">2</div>
+            <span>Línea oblicua de relleno</span>
+          </div>
+          <div class="drag-item" draggable="true" data-val="Fina de trazos y doble punto">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num" id="dn1-3">3</div>
+            <span>Fina de trazos y doble punto</span>
+          </div>
+          <div class="drag-item" draggable="true" data-val="Fina de trazos y puntos">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num" id="dn1-4">4</div>
+            <span>Fina de trazos y puntos</span>
+          </div>
         </div>
-    </div>
-    
-    <!-- Modal 3: Historia AutoCAD -->
-    <div class="modal-overlay" id="modal3">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">
-                    💻 Actividad 3: Inicios de AutoCAD
-                </div>
-                <button class="modal-close" onclick="closeModal('modal3')">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-section">
-                    <div class="modal-section-title">📝 Instrucción</div>
-                    <p class="modal-text">
-                        Arrastre las palabras para dar sentido a las frases acerca de inicios de AutoCAD.
-                    </p>
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">🔤 Palabras Disponibles</div>
-                    <div class="word-options">
-                        <span class="word-chip">CAD</span>
-                        <span class="word-chip">AutoCAD versión 1.0</span>
-                        <span class="word-chip">DOS</span>
-                        <span class="word-chip">CAE/CAM</span>
-                        <span class="word-chip">Modify</span>
-                        <span class="word-chip">Coordinate Axis</span>
-                    </div>
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">✅ Texto Completado</div>
-                    <p class="modal-text" style="line-height: 2;">
-                        El software de <span class="word-fill">AutoCAD versión 1.0</span> tenía un procesador 286 en el sistema <span class="word-fill">DOS</span>. En la figura 19 de la guía indica que AutoCAD Draw y <span class="word-fill">Modify</span> como barras de herramientas verticales a la izquierda. Además, se denotaba una flecha cruzada en forma de "L" denominada en inglés <span class="word-fill">Coordinate Axis</span>, alusiva al sistema de coordenadas.
-                        <br><br>
-                        <span class="word-fill">CAD</span> son las siglas para denominar a Computer Aided Design, que evoluciona a procesos de fabricación, 3D, simulación y análisis, llamándose <span class="word-fill">CAE/CAM</span>.
-                    </p>
-                </div>
-            </div>
+
+        <div class="feedback-banner" id="fb1"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="openModal('modal-hint1')">💡 Ver pista</button>
+          <button class="btn btn-primary" onclick="checkQ1()">✔ Verificar</button>
+          <button class="btn btn-primary" onclick="nextQ(2)" id="btnNext1" style="display:none;">Siguiente →</button>
         </div>
+      </div>
     </div>
-    
-    <!-- Modal 4: Zonas del Plano -->
-    <div class="modal-overlay" id="modal4">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">
-                    🎯 Actividad 4: Zonas del Plano
-                </div>
-                <button class="modal-close" onclick="closeModal('modal4')">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-section">
-                    <div class="modal-section-title">📝 Instrucción</div>
-                    <p class="modal-text">
-                        Arrastre cada elemento con su descripción correspondiente.
-                    </p>
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">✅ Respuesta Correcta</div>
-                    <div class="matching-container">
-                        <div class="matching-column">
-                            <div class="matching-item">
-                                <strong>Área superior derecha</strong>
-                            </div>
-                            <div class="matching-item">
-                                <strong>Esquina superior derecha</strong>
-                            </div>
-                            <div class="matching-item">
-                                <strong>Área central izquierda</strong>
-                            </div>
-                            <div class="matching-item">
-                                <strong>Esquina inferior derecha</strong>
-                            </div>
-                            <div class="matching-item">
-                                <strong>Área inferior izquierda</strong>
-                            </div>
-                        </div>
-                        <div class="matching-column">
-                            <div class="matching-item">
-                                <img src="media/Imagen 3.jpg" class="matching-image" alt="Área superior derecha">
-                            </div>
-                            <div class="matching-item">
-                                <img src="media/Imagen 4.jpg" class="matching-image" alt="Esquina superior derecha">
-                            </div>
-                            <div class="matching-item">
-                                <img src="media/Imagen 5.jpg" class="matching-image" alt="Área central izquierda">
-                            </div>
-                            <div class="matching-item">
-                                <img src="media/Imagen 6.jpg" class="matching-image" alt="Esquina inferior derecha">
-                            </div>
-                            <div class="matching-item">
-                                <img src="media/Imagen 7.jpg" class="matching-image" alt="Área inferior izquierda">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  </div>
+
+  <!-- Q2: DOBLAR PLANO A1 -->
+  <div class="question-section" id="q2">
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-number">2</div>
+        <div class="q-title">Ordena los pasos para doblar un plano A1</div>
+      </div>
+      <div class="q-body">
+        <div class="q-instruction">📐 Arrastra los pasos de arriba hacia abajo en el orden correcto para el proceso de doblaje de un plano A1.</div>
+
+        <div style="text-align:center; margin-bottom:14px;">
+          <img src="media/Imagen 2.jpg" alt="Doblaje plano" style="max-width:100%; max-height:180px; border-radius:10px; border:2px solid var(--border);">
         </div>
-    </div>
-    
-    <!-- Modal 5: Normas ISO -->
-    <div class="modal-overlay" id="modal5">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">
-                    📋 Actividad 5: Normas para Aprobación de Planos
-                </div>
-                <button class="modal-close" onclick="closeModal('modal5')">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-section">
-                    <div class="modal-section-title">📝 Instrucción</div>
-                    <p class="modal-text">
-                        Arrastre la palabra correcta para completar la información sobre normas ISO.
-                    </p>
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">🔤 Palabras Disponibles</div>
-                    <div class="word-options">
-                        <span class="word-chip">dwg/dxf</span>
-                        <span class="word-chip">128/5457</span>
-                        <span class="word-chip">7200/9431</span>
-                        <span class="word-chip">128</span>
-                        <span class="word-chip">129</span>
-                        <span class="word-chip">3098</span>
-                    </div>
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">✅ Normas para Aprobación de Planos</div>
-                    <p class="modal-text" style="line-height: 2;">
-                        El archivo de entrega es <span class="word-fill">dwg/dxf</span> por medio de la norma ISO <span class="word-fill">128/5457</span>. El cajetín, de acuerdo con la norma ISO <span class="word-fill">7200/9431</span>. Para las líneas, vistas y cortes, la norma ISO <span class="word-fill">128</span>, ya que las acotaciones o dimensionamiento conforme a la norma ISO <span class="word-fill">129</span>, finalmente, la rotulación se basa en la norma ISO <span class="word-fill">3098</span>.
-                    </p>
-                </div>
-            </div>
+
+        <div class="sortable-list" id="sortQ2">
+          <div class="drag-item" draggable="true" data-val="En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num">1</div>
+            <span>En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.</span>
+          </div>
+          <div class="drag-item" draggable="true" data-val="Considerando la medida A4, se dobla para formar un acordeón o zigzag.">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num">2</div>
+            <span>Considerando la medida A4, se dobla para formar un acordeón o zigzag.</span>
+          </div>
+          <div class="drag-item" draggable="true" data-val="Doblaje a la mitad del lado inferior.">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num">3</div>
+            <span>Doblaje a la mitad del lado inferior.</span>
+          </div>
+          <div class="drag-item" draggable="true" data-val="Doblaje de la lámina A1 al lado mayor.">
+            <div class="drag-handle"><span></span><span></span><span></span></div>
+            <div class="drag-num">4</div>
+            <span>Doblaje de la lámina A1 al lado mayor.</span>
+          </div>
         </div>
-    </div>
-    
-    <!-- Modal 6: Ubicación/Implantación -->
-    <div class="modal-overlay" id="modal6">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">
-                    🗺️ Actividad 6: Ubicación/Implantación
-                </div>
-                <button class="modal-close" onclick="closeModal('modal6')">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="modal-section">
-                    <div class="modal-section-title">📝 Pregunta</div>
-                    <p class="modal-text">
-                        ¿De qué trata la ubicación/implantación como información en un plano?
-                    </p>
-                </div>
-                <div class="modal-section">
-                    <div class="modal-section-title">📝 Opciones</div>
-                    <div class="quiz-options">
-                        <div class="quiz-option" style="border-color: var(--success); background: #ecfdf5;">
-                            <span class="letter" style="background: var(--success); color: white;">a</span>
-                            <span class="text">Se trata de un croquis que describe las calles, dirección de un predio, complementado por un norte.</span>
-                        </div>
-                        <div class="quiz-option">
-                            <span class="letter">b</span>
-                            <span class="text">Solamente una brújula que indique el norte; desde ahí se consigue la dirección y calles.</span>
-                        </div>
-                        <div class="quiz-option">
-                            <span class="letter">c</span>
-                            <span class="text">Se trata de un croquis que describe las calles, cotas y niveles del predio, complementado por un Norte.</span>
-                        </div>
-                        <div class="quiz-option">
-                            <span class="letter">d</span>
-                            <span class="text">Se trata de un croquis que describe las calles, dirección de un predio; no necesita norte.</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="feedback-box">
-                    <div class="feedback-title">
-                        💡 Retroalimentación
-                    </div>
-                    <p class="feedback-text">
-                        La ubicación e implantación permiten situar el proyecto de manera <strong>inequívoca</strong> en su contexto urbano. Para que esta información sea técnicamente válida, debe incluir la identificación de las vías circundantes, la dirección exacta del predio y la orientación mediante el <strong>norte</strong>, eliminando cualquier ambigüedad o incertidumbre sobre la localización y disposición espacial de la obra.
-                    </p>
-                </div>
-            </div>
+
+        <div class="feedback-banner" id="fb2"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="openModal('modal-hint2')">💡 Ver pista</button>
+          <button class="btn btn-primary" onclick="checkQ2()">✔ Verificar</button>
+          <button class="btn btn-primary" onclick="nextQ(3)" id="btnNext2" style="display:none;">Siguiente →</button>
         </div>
+      </div>
     </div>
-    
-    <!-- Image Detail Modal -->
-    <div class="modal-overlay" id="imageModal">
-        <div class="modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <div class="modal-title" id="imageModalTitle">
-                    📷 Detalle de Imagen
-                </div>
-                <button class="modal-close" onclick="closeModal('imageModal')">×</button>
-            </div>
-            <div class="modal-body" style="padding: 0;">
-                <img id="imageModalImg" src="" alt="Detalle" style="width: 100%; display: block;">
-            </div>
+  </div>
+
+  <!-- Q3: COMPLETAR FRASES AutoCAD -->
+  <div class="question-section" id="q3">
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-number">3</div>
+        <div class="q-title">Completa las frases sobre los inicios de AutoCAD</div>
+      </div>
+      <div class="q-body">
+        <div class="q-instruction">🖥️ Haz clic en las palabras del banco y luego en el espacio donde quieres colocarlas para completar las frases.</div>
+
+        <div style="text-align:center; margin-bottom:12px;">
+          <img src="media/Imagen 3.jpg" alt="AutoCAD historia" style="max-width:100%; max-height:160px; border-radius:10px; border:2px solid var(--border);">
         </div>
+
+        <div class="fill-text" id="fillQ3">
+          En el <em>software</em> del <input class="blank-input" id="b3-1" placeholder="___" readonly onclick="placeWord('b3-1')"> tenía un procesador 286 en el sistema <input class="blank-input" id="b3-2" placeholder="___" readonly onclick="placeWord('b3-2')">.
+          <br><br>
+          En la figura 19 de la guía indica que AutoCAD Draw y <input class="blank-input" id="b3-3" placeholder="___" readonly onclick="placeWord('b3-3')"> como barra de herramientas vertical a la izquierda.
+          <br><br>
+          Además, se denotaba una flecha cruzada en forma de "L" denominada en inglés <input class="blank-input" id="b3-4" placeholder="___" readonly onclick="placeWord('b3-4')"> alusiva al sistema de coordenadas.
+          <br><br>
+          <input class="blank-input" id="b3-5" placeholder="___" readonly onclick="placeWord('b3-5')"> son las siglas para denominar a computer-aided design, que evoluciona a procesos de fabricación, 3D, simulación y análisis, llamándose <input class="blank-input" id="b3-6" placeholder="___" readonly onclick="placeWord('b3-6')">.
+        </div>
+
+        <div class="word-bank" id="wordBank3">
+          <div class="word-chip" onclick="selectWord(this, 'CAD')">CAD</div>
+          <div class="word-chip" onclick="selectWord(this, 'AutoCAD versión 1.0')">AutoCAD versión 1.0</div>
+          <div class="word-chip" onclick="selectWord(this, 'DOS')">DOS</div>
+          <div class="word-chip" onclick="selectWord(this, 'CAE/CAM')">CAE/CAM</div>
+          <div class="word-chip" onclick="selectWord(this, 'Modify')">Modify</div>
+          <div class="word-chip" onclick="selectWord(this, 'Coordinate Axis')">Coordinate Axis</div>
+        </div>
+
+        <div class="feedback-banner" id="fb3"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="resetQ3()">🔄 Reiniciar</button>
+          <button class="btn btn-primary" onclick="checkQ3()">✔ Verificar</button>
+          <button class="btn btn-primary" onclick="nextQ(4)" id="btnNext3" style="display:none;">Siguiente →</button>
+        </div>
+      </div>
     </div>
-    
-    <script>
-        let currentSlide = 0;
-        const totalSlides = 7;
-        
-        function updateSlide() {
-            const container = document.getElementById('slidesContainer');
-            container.style.transform = `translateX(-${currentSlide * 100}%)`;
-            
-            // Update progress dots
-            const dots = document.querySelectorAll('.progress-dot');
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
-            });
-            
-            // Update buttons
-            document.getElementById('prevBtn').disabled = currentSlide === 0;
-            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
-            
-            // Update counter
-            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
-            
-            // Update next button text for last slide
-            const nextBtn = document.getElementById('nextBtn');
-            if (currentSlide === totalSlides - 1) {
-                nextBtn.textContent = 'Fin ✓';
-            } else {
-                nextBtn.textContent = 'Siguiente →';
-            }
-        }
-        
-        function nextSlide() {
-            if (currentSlide < totalSlides - 1) {
-                currentSlide++;
-                updateSlide();
-            }
-        }
-        
-        function prevSlide() {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlide();
-            }
-        }
-        
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        
-        function showImageDetail(imageSrc, title) {
-            document.getElementById('imageModalImg').src = 'media/' + imageSrc;
-            document.getElementById('imageModalTitle').innerHTML = '📷 ' + title;
-            openModal('imageModal');
-        }
-        
-        // Close modals on overlay click
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            });
-        });
-        
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowRight') nextSlide();
-            if (e.key === 'ArrowLeft') prevSlide();
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
-                    modal.classList.remove('active');
-                });
-                document.body.style.overflow = '';
-            }
-        });
-        
-        // Initialize
-        updateSlide();
-    </script>
+  </div>
+
+  <!-- Q4: ESQUEMA - PARTES DEL CAJETÍN -->
+  <div class="question-section" id="q4">
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-number">4</div>
+        <div class="q-title">Relaciona cada elemento con su descripción correspondiente</div>
+      </div>
+      <div class="q-body">
+        <div class="q-instruction">🗂️ Haz clic en un elemento de la izquierda y luego en su descripción correcta de la derecha para emparejarlos.</div>
+
+        <div style="text-align:center; margin-bottom:12px;">
+          <img src="media/Imagen 4.jpg" alt="Esquema cajetín" style="max-width:100%; max-height:170px; border-radius:10px; border:2px solid var(--border);">
+        </div>
+
+        <div class="match-container">
+          <div class="match-col">
+            <h4>📌 Elementos</h4>
+            <div class="match-items" id="matchLeft">
+              <div class="match-item" onclick="selectLeft(this)" data-id="A">
+                <div class="match-dot" style="background:#3b9eff"></div>Esquina superior izquierda
+              </div>
+              <div class="match-item" onclick="selectLeft(this)" data-id="B">
+                <div class="match-dot" style="background:#ff6b35"></div>Área central izquierda
+              </div>
+              <div class="match-item" onclick="selectLeft(this)" data-id="C">
+                <div class="match-dot" style="background:#a855f7"></div>Área superior derecha
+              </div>
+              <div class="match-item" onclick="selectLeft(this)" data-id="D">
+                <div class="match-dot" style="background:#22c55e"></div>Área inferior izquierda
+              </div>
+              <div class="match-item" onclick="selectLeft(this)" data-id="E">
+                <div class="match-dot" style="background:#f59e0b"></div>Esquina inferior derecha
+              </div>
+            </div>
+          </div>
+          <div class="match-col">
+            <h4>🔗 Descripciones</h4>
+            <div class="match-items" id="matchRight">
+              <div class="match-item" onclick="selectRight(this)" data-id="C">
+                <div class="match-dot" style="background:#a855f7"></div>Área superior derecha
+              </div>
+              <div class="match-item" onclick="selectRight(this)" data-id="A">
+                <div class="match-dot" style="background:#3b9eff"></div>Esquina superior derecha
+              </div>
+              <div class="match-item" onclick="selectRight(this)" data-id="B">
+                <div class="match-dot" style="background:#ff6b35"></div>Área central izquierda
+              </div>
+              <div class="match-item" onclick="selectRight(this)" data-id="E">
+                <div class="match-dot" style="background:#f59e0b"></div>Esquina inferior derecha
+              </div>
+              <div class="match-item" onclick="selectRight(this)" data-id="D">
+                <div class="match-dot" style="background:#22c55e"></div>Área inferior izquierda
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feedback-banner" id="fb4"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="resetQ4()">🔄 Reiniciar</button>
+          <button class="btn btn-primary" onclick="checkQ4()">✔ Verificar</button>
+          <button class="btn btn-primary" onclick="nextQ(5)" id="btnNext4" style="display:none;">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5: NORMAS ISO -->
+  <div class="question-section" id="q5">
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-number">5</div>
+        <div class="q-title">Normas para aprobación de planos</div>
+      </div>
+      <div class="q-body">
+        <div class="q-instruction">📋 Haz clic en una palabra del banco y luego en el espacio donde colocarla para completar la información.</div>
+
+        <div style="text-align:center; margin-bottom:12px;">
+          <img src="media/Imagen 5.jpg" alt="Normas ISO" style="max-width:100%; max-height:160px; border-radius:10px; border:2px solid var(--border);">
+        </div>
+
+        <div class="fill-text" id="fillQ5">
+          El archivo de entrega es <input class="blank-input" id="b5-1" placeholder="___" readonly onclick="placeWord('b5-1')"> por medio de la norma ISO <input class="blank-input" id="b5-2" placeholder="___" readonly onclick="placeWord('b5-2')">.
+          <br><br>
+          El cajetín, de acuerdo con la norma ISO <input class="blank-input" id="b5-3" placeholder="___" readonly onclick="placeWord('b5-3')">.
+          <br><br>
+          Para las líneas, vistas y cortes, la norma ISO <input class="blank-input" id="b5-4" placeholder="___" readonly onclick="placeWord('b5-4')"> ya que las acotaciones o dimensionamiento conforme a la norma ISO <input class="blank-input" id="b5-5" placeholder="___" readonly onclick="placeWord('b5-5')"> finalmente, la rotulación se basa en la norma ISO <input class="blank-input" id="b5-6" placeholder="___" readonly onclick="placeWord('b5-6')">.
+        </div>
+
+        <div class="word-bank" id="wordBank5">
+          <div class="word-chip" onclick="selectWord5(this, 'Dwg/dxf')">Dwg/dxf</div>
+          <div class="word-chip" onclick="selectWord5(this, '128/5457')">128/5457</div>
+          <div class="word-chip" onclick="selectWord5(this, '7200/9431')">7200/9431</div>
+          <div class="word-chip" onclick="selectWord5(this, '128')">128</div>
+          <div class="word-chip" onclick="selectWord5(this, '129')">129</div>
+          <div class="word-chip" onclick="selectWord5(this, '3098')">3098</div>
+        </div>
+
+        <div class="feedback-banner" id="fb5"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="resetQ5()">🔄 Reiniciar</button>
+          <button class="btn btn-primary" onclick="checkQ5()">✔ Verificar</button>
+          <button class="btn btn-primary" onclick="nextQ(6)" id="btnNext5" style="display:none;">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q6: OPCIÓN MÚLTIPLE -->
+  <div class="question-section" id="q6">
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-number">6</div>
+        <div class="q-title">¿De qué trata la ubicación/implantación como información en un plano?</div>
+      </div>
+      <div class="q-body">
+        <div class="q-instruction">📍 Selecciona la respuesta correcta.</div>
+
+        <div style="text-align:center; margin-bottom:12px;">
+          <img src="media/Imagen 6.jpg" alt="Ubicación implantación" style="max-width:100%; max-height:160px; border-radius:10px; border:2px solid var(--border);">
+        </div>
+
+        <div class="options-list" id="optQ6">
+          <div class="option-item" onclick="selectOption(this,'a')" data-id="a">
+            <div class="option-letter">a</div>
+            <span>Se trata de un croquis que describe las calles, dirección de un predio, complementado por un norte.</span>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'b')" data-id="b">
+            <div class="option-letter">b</div>
+            <span>Solamente una brújula que indique el norte; desde ahí se consigue la dirección y calles.</span>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'c')" data-id="c">
+            <div class="option-letter">c</div>
+            <span>Se trata de un croquis que describe las calles, cotas y niveles del predio, complementado por un Norte.</span>
+          </div>
+          <div class="option-item" onclick="selectOption(this,'d')" data-id="d">
+            <div class="option-letter">d</div>
+            <span>Se trata de un croquis que describe las calles, dirección de un predio; no necesita norte.</span>
+          </div>
+        </div>
+
+        <div class="feedback-banner" id="fb6"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="checkQ6()">✔ Verificar</button>
+          <button class="btn btn-success" onclick="showResults()" id="btnFinish" style="display:none;">🏁 Ver resultados</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="resultsSection">
+    <div class="score-card">
+      <div class="score-stars" id="scoreStars">⭐⭐⭐</div>
+      <div class="score-num" id="scoreNum">0/6</div>
+      <div class="score-label">Preguntas correctas</div>
+    </div>
+    <div class="result-items" id="resultItems"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-secondary" onclick="restartGame()">🔄 Volver a intentar</button>
+      <button class="btn btn-primary" onclick="openModal('modal-retro')">📚 Ver retroalimentación</button>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- Hint Q1 -->
+<div class="modal-overlay" id="modal-hint1">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span style="font-size:20px;">💡</span>
+      <h3>Pista — Tipos de línea</h3>
+      <button class="modal-close" onclick="closeModal('modal-hint1')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Observa el gráfico con atención. El orden correcto de los tipos de línea o relleno es:</p>
+      <div class="answer-row"><div class="step-num">1</div><span><strong>Fina de trazos y puntos</strong></span></div>
+      <div class="answer-row"><div class="step-num">2</div><span><strong>Fina de trazos y doble punto</strong></span></div>
+      <div class="answer-row"><div class="step-num">3</div><span><strong>Línea oblicua de relleno</strong></span></div>
+      <div class="answer-row"><div class="step-num">4</div><span><strong>Línea gruesa</strong></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Hint Q2 -->
+<div class="modal-overlay" id="modal-hint2">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span style="font-size:20px;">💡</span>
+      <h3>Pista — Doblaje plano A1</h3>
+      <button class="modal-close" onclick="closeModal('modal-hint2')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>El proceso correcto para doblar un plano A1 es:</p>
+      <div class="answer-row"><div class="step-num">1</div><span>Doblaje de la lámina A1 al lado mayor.</span></div>
+      <div class="answer-row"><div class="step-num">2</div><span>Doblaje a la mitad del lado inferior.</span></div>
+      <div class="answer-row"><div class="step-num">3</div><span>Considerando la medida A4, se dobla para formar un acordeón o zigzag.</span></div>
+      <div class="answer-row"><div class="step-num">4</div><span>En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Retroalimentación Q6 -->
+<div class="modal-overlay" id="modal-retro">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span style="font-size:20px;">📚</span>
+      <h3>Retroalimentación — Ubicación/Implantación</h3>
+      <button class="modal-close" onclick="closeModal('modal-retro')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center; margin-bottom:14px;">
+        <img src="media/Imagen 7.jpg" alt="Retroalimentación" style="max-width:100%; border-radius:10px; border:2px solid var(--border);">
+      </div>
+      <p>La ubicación e implantación permiten situar el proyecto de manera <strong>inequívoca</strong> en su contexto urbano.</p>
+      <p>Para que esta información sea técnicamente válida, debe incluir la identificación de las vías circundantes, la dirección exacta del predio y la orientación mediante el <strong>norte</strong>, eliminando cualquier ambigüedad o incertidumbre sobre la localización y disposición espacial de la obra.</p>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+  // ── STATE ──
+  const scores = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
+  let selectedWord3 = null;
+  let selectedWord5 = null;
+  let matchLeftSel = null;
+  let matches4 = {};
+  let q6Selected = null;
+
+  // ── NAV SETUP ──
+  function buildNav() {
+    const wrap = document.getElementById('navDots');
+    wrap.innerHTML = '';
+    for (let i = 1; i <= 6; i++) {
+      const d = document.createElement('button');
+      d.className = 'nav-dot' + (i === 1 ? ' active' : '');
+      d.textContent = i;
+      d.onclick = () => goToQ(i);
+      d.id = 'dot' + i;
+      wrap.appendChild(d);
+    }
+  }
+  buildNav();
+
+  function updateProgress(current) {
+    document.getElementById('progressFill').style.width = (current / 6 * 100) + '%';
+    document.getElementById('progressLabel').textContent = current + ' / 6';
+    for (let i = 1; i <= 6; i++) {
+      const d = document.getElementById('dot' + i);
+      if (!d) continue;
+      d.className = 'nav-dot';
+      if (scores[i] !== null) d.classList.add('completed');
+      if (i === current) d.classList.add('active');
+    }
+  }
+
+  let currentQ = 1;
+  function goToQ(n) {
+    document.querySelectorAll('.question-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('resultsSection').classList.remove('active');
+    const el = document.getElementById('q' + n);
+    if (el) { el.classList.add('active'); currentQ = n; }
+    updateProgress(n);
+  }
+
+  function nextQ(n) {
+    if (n > 6) { showResults(); return; }
+    goToQ(n);
+  }
+
+  // ── DRAG & DROP ──
+  function initDrag(listId) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    let dragEl = null;
+    list.querySelectorAll('.drag-item').forEach(item => {
+      item.addEventListener('dragstart', e => { dragEl = item; item.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+      item.addEventListener('dragend', () => { dragEl = null; item.classList.remove('dragging'); list.querySelectorAll('.drag-item').forEach(i => i.classList.remove('drag-over')); updateDragNums(listId); });
+      item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); if (dragEl && dragEl !== item) { const allItems = [...list.querySelectorAll('.drag-item')]; const dragIdx = allItems.indexOf(dragEl); const overIdx = allItems.indexOf(item); if (dragIdx < overIdx) list.insertBefore(dragEl, item.nextSibling); else list.insertBefore(dragEl, item); } });
+      item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    });
+  }
+  function updateDragNums(listId) {
+    document.querySelectorAll('#' + listId + ' .drag-num').forEach((el, i) => el.textContent = i + 1);
+  }
+  initDrag('sortQ1');
+  initDrag('sortQ2');
+
+  // ── CHECK Q1 ──
+  const ansQ1 = ['Fina de trazos y puntos','Fina de trazos y doble punto','Línea oblicua de relleno','Línea gruesa'];
+  function checkQ1() {
+    const items = [...document.querySelectorAll('#sortQ1 .drag-item')].map(i => i.dataset.val);
+    const ok = JSON.stringify(items) === JSON.stringify(ansQ1);
+    scores[1] = ok ? 1 : 0;
+    showFeedback('fb1', ok, ok ? '¡Correcto! El orden de tipos de línea es el adecuado. ✅' : 'No es correcto. Revisa el gráfico e intenta de nuevo. 💡 Usa el botón "Ver pista" si necesitas ayuda.');
+    if (ok) { document.getElementById('btnNext1').style.display = ''; updateProgress(1); }
+  }
+
+  // ── CHECK Q2 ──
+  const ansQ2 = ['Doblaje de la lámina A1 al lado mayor.','Doblaje a la mitad del lado inferior.','Considerando la medida A4, se dobla para formar un acordeón o zigzag.','En la esquina inferior izquierda del plano ya plegado, realiza un pequeño doblez triangular.'];
+  function checkQ2() {
+    const items = [...document.querySelectorAll('#sortQ2 .drag-item')].map(i => i.dataset.val);
+    const ok = JSON.stringify(items) === JSON.stringify(ansQ2);
+    scores[2] = ok ? 1 : 0;
+    showFeedback('fb2', ok, ok ? '¡Excelente! Los pasos de doblaje están en el orden correcto. ✅' : 'El orden no es correcto. Recuerda: primero dobla al lado mayor, luego a la mitad, luego zigzag y por último el doblez triangular. 📐');
+    if (ok) { document.getElementById('btnNext2').style.display = ''; updateProgress(2); }
+  }
+
+  // ── Q3 FILL BLANKS ──
+  const ans3 = { 'b3-1': 'AutoCAD versión 1.0', 'b3-2': 'DOS', 'b3-3': 'Modify', 'b3-4': 'Coordinate Axis', 'b3-5': 'CAD', 'b3-6': 'CAE/CAM' };
+  let activeBlank3 = null;
+  function selectWord(chip, word) {
+    selectedWord3 = word;
+    document.querySelectorAll('#wordBank3 .word-chip').forEach(c => c.style.boxShadow = '');
+    chip.style.boxShadow = '0 0 0 3px var(--accent)';
+  }
+  function placeWord(blankId) {
+    if (!selectedWord3) return;
+    const inp = document.getElementById(blankId);
+    const prev = inp.value;
+    // return prev word to bank
+    if (prev) {
+      document.querySelectorAll('#wordBank3 .word-chip').forEach(c => { if (c.textContent === prev) c.classList.remove('used'); });
+    }
+    inp.value = selectedWord3;
+    // mark used
+    document.querySelectorAll('#wordBank3 .word-chip').forEach(c => { if (c.textContent === selectedWord3) { c.classList.add('used'); c.style.boxShadow = ''; } });
+    selectedWord3 = null;
+  }
+  function resetQ3() {
+    ['b3-1','b3-2','b3-3','b3-4','b3-5','b3-6'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).className = 'blank-input'; });
+    document.querySelectorAll('#wordBank3 .word-chip').forEach(c => { c.classList.remove('used'); c.style.boxShadow = ''; });
+    hideFeedback('fb3');
+    document.getElementById('btnNext3').style.display = 'none';
+    selectedWord3 = null;
+  }
+  function checkQ3() {
+    let ok = true;
+    Object.keys(ans3).forEach(id => {
+      const inp = document.getElementById(id);
+      const correct = inp.value === ans3[id];
+      inp.className = 'blank-input ' + (correct ? 'correct' : 'incorrect');
+      if (!correct) ok = false;
+    });
+    scores[3] = ok ? 1 : 0;
+    showFeedback('fb3', ok, ok ? '¡Perfecto! Todas las respuestas son correctas. ✅' : 'Algunas respuestas no son correctas. Los campos resaltados en rojo deben corregirse. 🔴');
+    if (ok) { document.getElementById('btnNext3').style.display = ''; updateProgress(3); }
+  }
+
+  // ── Q4 MATCHING ──
+  const correctMatches = { A: 'A', B: 'B', C: 'C', D: 'D', E: 'E' };
+  function selectLeft(el) {
+    if (el.classList.contains('matched')) return;
+    document.querySelectorAll('#matchLeft .match-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    matchLeftSel = el.dataset.id;
+  }
+  function selectRight(el) {
+    if (!matchLeftSel) return;
+    if (el.classList.contains('matched')) return;
+    const rightId = el.dataset.id;
+    // check if correct
+    if (matchLeftSel === rightId) {
+      // match!
+      const leftEl = document.querySelector('#matchLeft .match-item[data-id="' + matchLeftSel + '"]');
+      leftEl.classList.remove('selected');
+      leftEl.classList.add('matched');
+      el.classList.add('matched');
+      matches4[matchLeftSel] = rightId;
+    } else {
+      // wrong
+      const leftEl = document.querySelector('#matchLeft .match-item[data-id="' + matchLeftSel + '"]');
+      leftEl.classList.remove('selected');
+      leftEl.style.animation = 'shake 0.3s';
+      setTimeout(() => leftEl.style.animation = '', 400);
+    }
+    matchLeftSel = null;
+  }
+  function resetQ4() {
+    matches4 = {};
+    matchLeftSel = null;
+    document.querySelectorAll('#matchLeft .match-item, #matchRight .match-item').forEach(i => { i.classList.remove('matched', 'selected'); });
+    hideFeedback('fb4');
+    document.getElementById('btnNext4').style.display = 'none';
+  }
+  function checkQ4() {
+    const total = Object.keys(correctMatches).length;
+    const done = Object.keys(matches4).length;
+    const ok = done === total;
+    scores[4] = ok ? 1 : 0;
+    showFeedback('fb4', ok, ok ? '¡Excelente! Todos los elementos fueron emparejados correctamente. ✅' : `Has emparejado ${done} de ${total} elementos. Continúa emparejando los elementos restantes. 🔗`);
+    if (ok) { document.getElementById('btnNext4').style.display = ''; updateProgress(4); }
+  }
+
+  // ── Q5 FILL BLANKS ──
+  const ans5 = { 'b5-1': 'Dwg/dxf', 'b5-2': '128/5457', 'b5-3': '7200/9431', 'b5-4': '128', 'b5-5': '129', 'b5-6': '3098' };
+  let selectedWord5Val = null;
+  function selectWord5(chip, word) {
+    selectedWord5Val = word;
+    document.querySelectorAll('#wordBank5 .word-chip').forEach(c => c.style.boxShadow = '');
+    chip.style.boxShadow = '0 0 0 3px var(--accent)';
+  }
+  function placeWord(blankId) {
+    // decide which q
+    if (blankId.startsWith('b3-')) {
+      if (!selectedWord3) return;
+      const inp = document.getElementById(blankId);
+      const prev = inp.value;
+      if (prev) document.querySelectorAll('#wordBank3 .word-chip').forEach(c => { if (c.textContent === prev) c.classList.remove('used'); });
+      inp.value = selectedWord3;
+      document.querySelectorAll('#wordBank3 .word-chip').forEach(c => { if (c.textContent === selectedWord3) { c.classList.add('used'); c.style.boxShadow = ''; } });
+      selectedWord3 = null;
+    } else if (blankId.startsWith('b5-')) {
+      if (!selectedWord5Val) return;
+      const inp = document.getElementById(blankId);
+      const prev = inp.value;
+      if (prev) document.querySelectorAll('#wordBank5 .word-chip').forEach(c => { if (c.textContent === prev) c.classList.remove('used'); });
+      inp.value = selectedWord5Val;
+      document.querySelectorAll('#wordBank5 .word-chip').forEach(c => { if (c.textContent === selectedWord5Val) { c.classList.add('used'); c.style.boxShadow = ''; } });
+      selectedWord5Val = null;
+    }
+  }
+  function resetQ5() {
+    ['b5-1','b5-2','b5-3','b5-4','b5-5','b5-6'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).className = 'blank-input'; });
+    document.querySelectorAll('#wordBank5 .word-chip').forEach(c => { c.classList.remove('used'); c.style.boxShadow = ''; });
+    hideFeedback('fb5');
+    document.getElementById('btnNext5').style.display = 'none';
+    selectedWord5Val = null;
+  }
+  function checkQ5() {
+    let ok = true;
+    Object.keys(ans5).forEach(id => {
+      const inp = document.getElementById(id);
+      const correct = inp.value.toLowerCase().trim() === ans5[id].toLowerCase().trim();
+      inp.className = 'blank-input ' + (correct ? 'correct' : 'incorrect');
+      if (!correct) ok = false;
+    });
+    scores[5] = ok ? 1 : 0;
+    showFeedback('fb5', ok, ok ? '¡Correcto! Todas las normas están correctamente asignadas. ✅' : 'Algunas normas no coinciden. Los campos en rojo necesitan corrección. 📋');
+    if (ok) { document.getElementById('btnNext5').style.display = ''; updateProgress(5); }
+  }
+
+  // ── Q6 MULTIPLE CHOICE ──
+  function selectOption(el, id) {
+    document.querySelectorAll('#optQ6 .option-item').forEach(i => i.classList.remove('selected', 'correct-ans', 'wrong-ans'));
+    el.classList.add('selected');
+    q6Selected = id;
+  }
+  function checkQ6() {
+    if (!q6Selected) { showFeedback('fb6', false, 'Selecciona una respuesta antes de verificar. 👆', 'info'); return; }
+    const ok = q6Selected === 'a';
+    scores[6] = ok ? 1 : 0;
+    document.querySelectorAll('#optQ6 .option-item').forEach(i => {
+      if (i.dataset.id === 'a') i.classList.add('correct-ans');
+      else if (i.dataset.id === q6Selected && !ok) i.classList.add('wrong-ans');
+      i.onclick = null;
+    });
+    showFeedback('fb6', ok, ok ? '¡Correcto! La ubicación/implantación es un croquis que describe calles, dirección y el norte. ✅' : 'Respuesta incorrecta. La opción correcta es la (a). La ubicación/implantación describe las calles, dirección del predio y es complementada por un norte. 📍');
+    document.getElementById('btnFinish').style.display = '';
+    updateProgress(6);
+  }
+
+  // ── RESULTS ──
+  function showResults() {
+    document.querySelectorAll('.question-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('resultsSection').classList.add('active');
+    const total = Object.values(scores).filter(s => s === 1).length;
+    document.getElementById('scoreNum').textContent = total + ' / 6';
+    const stars = total <= 2 ? '⭐' : total <= 4 ? '⭐⭐' : '⭐⭐⭐';
+    document.getElementById('scoreStars').textContent = stars;
+    const labels = {
+      1: 'Ordena los tipos de línea o relleno',
+      2: 'Ordena los pasos para doblar un plano A1',
+      3: 'Completa las frases sobre AutoCAD',
+      4: 'Relaciona elementos del esquema',
+      5: 'Normas para aprobación de planos',
+      6: 'Ubicación/implantación en un plano'
+    };
+    const wrap = document.getElementById('resultItems');
+    wrap.innerHTML = '';
+    for (let i = 1; i <= 6; i++) {
+      const ok = scores[i] === 1;
+      const div = document.createElement('div');
+      div.className = 'result-item ' + (ok ? 'ok' : 'fail');
+      div.innerHTML = `<div class="result-icon">${ok ? '✅' : '❌'}</div><div class="result-text"><strong>Pregunta ${i}</strong><span>${labels[i]}</span></div>`;
+      wrap.appendChild(div);
+    }
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressLabel').textContent = '✓ Completado';
+  }
+
+  function restartGame() {
+    for (let k in scores) scores[k] = null;
+    q6Selected = null; matchLeftSel = null; matches4 = {}; selectedWord3 = null; selectedWord5Val = null;
+    // reset Q3
+    ['b3-1','b3-2','b3-3','b3-4','b3-5','b3-6'].forEach(id => { const el = document.getElementById(id); if(el){el.value=''; el.className='blank-input';} });
+    document.querySelectorAll('#wordBank3 .word-chip').forEach(c => { c.classList.remove('used'); c.style.boxShadow=''; });
+    // reset Q5
+    ['b5-1','b5-2','b5-3','b5-4','b5-5','b5-6'].forEach(id => { const el = document.getElementById(id); if(el){el.value=''; el.className='blank-input';} });
+    document.querySelectorAll('#wordBank5 .word-chip').forEach(c => { c.classList.remove('used'); c.style.boxShadow=''; });
+    // reset Q4
+    document.querySelectorAll('#matchLeft .match-item, #matchRight .match-item').forEach(i => i.classList.remove('matched','selected'));
+    // reset Q6
+    document.querySelectorAll('#optQ6 .option-item').forEach(i => { i.classList.remove('selected','correct-ans','wrong-ans'); i.onclick = function() { selectOption(this, this.dataset.id); }; });
+    // reset sort Q1 & Q2
+    initDrag('sortQ1'); initDrag('sortQ2');
+    // reset all feedbacks
+    [1,2,3,4,5,6].forEach(n => { hideFeedback('fb'+n); const btn = document.getElementById('btnNext'+n); if(btn) btn.style.display='none'; });
+    document.getElementById('btnFinish').style.display='none';
+    document.getElementById('resultsSection').classList.remove('active');
+    buildNav();
+    goToQ(1);
+  }
+
+  // ── FEEDBACK HELPERS ──
+  function showFeedback(id, ok, msg, type) {
+    const el = document.getElementById(id);
+    const t = type || (ok ? 'success' : 'error');
+    el.className = 'feedback-banner show ' + t;
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    el.innerHTML = `<span class="feedback-icon">${icons[t]}</span><span>${msg}</span>`;
+  }
+  function hideFeedback(id) {
+    const el = document.getElementById(id);
+    if (el) el.className = 'feedback-banner';
+  }
+
+  // ── MODAL ──
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  });
+
+  // ── SHAKE ANIMATION ──
+  const style = document.createElement('style');
+  style.textContent = '@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }';
+  document.head.appendChild(style);
+</script>
 </body>
 </html>

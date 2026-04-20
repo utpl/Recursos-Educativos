@@ -1,1119 +1,684 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Esquemas de energía - Rompecabezas</title>
-<style>
-/* =========================================================
-   RESET Y BASE
-========================================================= */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #ecfdf5 100%);
-  color: #1e293b;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-.container {
-  max-width: 800px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 14px;
-  min-height: 100vh;
-}
-
-/* =========================================================
-   HEADER MODERNO
-========================================================= */
-.hero {
-  position: relative;
-  background: linear-gradient(135deg, #ea580c 0%, #f59e0b 45%, #10b981 100%);
-  border-radius: 22px;
-  padding: 20px 18px;
-  color: #fff;
-  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.28);
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -50px; right: -40px;
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(255,255,255,0.22), transparent 70%);
-  border-radius: 50%;
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: -40px; left: -30px;
-  width: 160px; height: 160px;
-  background: radial-gradient(circle, rgba(255,255,255,0.13), transparent 70%);
-  border-radius: 50%;
-}
-
-.hero-inner {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.hero-icon {
-  width: 58px; height: 58px;
-  background: rgba(255,255,255,0.22);
-  backdrop-filter: blur(8px);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.3);
-  animation: pulse 2.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-}
-
-.hero-icon svg { width: 32px; height: 32px; stroke: #fff; }
-
-.hero h1 {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-  line-height: 1.15;
-}
-
-.hero p {
-  font-size: 12.5px;
-  opacity: 0.95;
-  margin-top: 3px;
-}
-
-/* =========================================================
-   INSTRUCCIONES
-========================================================= */
-.instructions {
-  background: linear-gradient(135deg, #fef3c7, #fed7aa);
-  border-radius: 14px;
-  padding: 12px 14px;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #fdba74;
-}
-
-.instructions .ins-icon {
-  width: 38px; height: 38px;
-  background: #fff;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.15);
-}
-
-.instructions .ins-icon svg { width: 20px; height: 20px; stroke: #ea580c; }
-
-.instructions .ins-text {
-  font-size: 12.8px;
-  color: #0f172a;
-  line-height: 1.4;
-}
-
-.instructions .ins-text strong { color: #ea580c; }
-
-/* =========================================================
-   PESTAÑAS ROMPECABEZAS
-========================================================= */
-.tabs {
-  display: flex;
-  gap: 8px;
-  background: #fff;
-  padding: 6px;
-  border-radius: 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-}
-
-.tab {
-  flex: 1;
-  padding: 10px 8px;
-  border: none;
-  background: transparent;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  color: #64748b;
-  transition: all 0.25s ease;
-  font-family: inherit;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  line-height: 1.2;
-}
-
-.tab .tab-num {
-  font-size: 11px;
-  font-weight: 800;
-  color: #94a3b8;
-}
-
-.tab:hover:not(.active) { background: #fef3c7; color: #ea580c; }
-.tab:hover:not(.active) .tab-num { color: #ea580c; }
-
-.tab.active {
-  background: linear-gradient(135deg, #ea580c, #f59e0b);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
-}
-
-.tab.active .tab-num { color: rgba(255,255,255,0.8); }
-
-.tab.complete {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff;
-}
-
-.tab.complete .tab-num { color: rgba(255,255,255,0.8); }
-
-/* =========================================================
-   PANEL DE JUEGO
-========================================================= */
-.game-panel {
-  background: #fff;
-  border-radius: 18px;
-  padding: 14px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
-  margin-bottom: 14px;
-}
-
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #fef3c7;
-}
-
-.game-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #0f172a;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.game-title .num-badge {
-  background: linear-gradient(135deg, #ea580c, #f59e0b);
-  color: #fff;
-  width: 26px; height: 26px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.game-actions { display: flex; gap: 6px; }
-
-.action-btn {
-  background: #f1f5f9;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #475569;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.action-btn:hover { background: #e2e8f0; }
-
-.action-btn.preview {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  color: #fff;
-}
-
-.action-btn.preview:hover { box-shadow: 0 3px 10px rgba(14, 165, 233, 0.3); }
-
-.action-btn svg { width: 13px; height: 13px; }
-
-.progress-info {
-  font-size: 11.5px;
-  color: #64748b;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.progress-info .pieces-badge {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-weight: 800;
-  margin-left: 4px;
-}
-
-/* =========================================================
-   ROMPECABEZAS (grid de piezas)
-========================================================= */
-.puzzle-area {
-  position: relative;
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 10px;
-  border: 2px dashed #cbd5e1;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-}
-
-.puzzle-grid {
-  display: grid;
-  gap: 2px;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.puzzle-cell {
-  background: #fff;
-  border: 1.5px dashed #cbd5e1;
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s;
-}
-
-.puzzle-cell.drag-over {
-  border-color: #ea580c;
-  background: #ffedd5;
-  transform: scale(1.03);
-}
-
-.puzzle-cell.correct {
-  border: none;
-}
-
-.piece {
-  position: absolute;
-  inset: 0;
-  cursor: grab;
-  background-size: var(--bg-w) var(--bg-h);
-  background-position: var(--bg-x) var(--bg-y);
-  background-image: var(--bg-img);
-  background-repeat: no-repeat;
-  transition: all 0.25s ease;
-  border: 1.5px solid #fff;
-  touch-action: none;
-  user-select: none;
-}
-
-.piece.locked {
-  cursor: default;
-  border: none;
-  z-index: 1;
-}
-
-.piece.dragging {
-  opacity: 0.75;
-  cursor: grabbing;
-  z-index: 100;
-  transform: scale(1.05);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-  border-color: #ea580c;
-}
-
-.piece:hover:not(.locked):not(.dragging) {
-  transform: scale(1.03);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  border-color: #f59e0b;
-  z-index: 5;
-}
-
-/* Pool de piezas desordenadas (abajo) */
-.pieces-pool {
-  margin-top: 14px;
-  background: #fff;
-  border-radius: 14px;
-  padding: 10px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-  border-top: 3px solid #f59e0b;
-}
-
-.pool-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #92400e;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.pool-grid {
-  display: grid;
-  gap: 6px;
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 6px;
-  min-height: 80px;
-}
-
-.pool-slot {
-  aspect-ratio: 1 / 1;
-  background: #fff;
-  border: 1.5px dashed #cbd5e1;
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s;
-}
-
-.pool-slot.drag-over {
-  border-color: #ea580c;
-  background: #ffedd5;
-}
-
-.pool-slot .piece {
-  position: absolute;
-  inset: 0;
-}
-
-/* =========================================================
-   MODAL
-========================================================= */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(6px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-  animation: fadeIn 0.25s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.modal-overlay.active { display: flex; }
-
-.modal {
-  background: #fff;
-  border-radius: 20px;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: translateY(30px) scale(0.9); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.modal-header {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff;
-  padding: 18px 20px;
-  border-radius: 20px 20px 0 0;
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.modal-header.preview-header {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-}
-
-.modal-header .m-icon {
-  width: 44px; height: 44px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.modal-header .m-icon svg { width: 26px; height: 26px; stroke: #fff; }
-
-.modal-header h2 {
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.modal-header .m-sub {
-  font-size: 12px;
-  opacity: 0.9;
-  margin-top: 2px;
-}
-
-.modal-close {
-  position: absolute;
-  top: 12px; right: 12px;
-  background: rgba(255,255,255,0.22);
-  border: none;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.modal-close:hover { background: rgba(255,255,255,0.4); transform: rotate(90deg); }
-
-.modal-body { padding: 18px 20px; }
-
-.fb-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.fb-text {
-  font-size: 12.8px;
-  color: #334155;
-  line-height: 1.6;
-  background: linear-gradient(135deg, #f0fdf4, #d1fae5);
-  padding: 12px;
-  border-radius: 10px;
-  border-left: 3px solid #10b981;
-}
-
-.modal-body .preview-img {
-  width: 100%;
-  border-radius: 10px;
-  display: block;
-  border: 1px solid #e2e8f0;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.modal-btn {
-  flex: 1;
-  background: linear-gradient(135deg, #ea580c, #f59e0b);
-  color: #fff;
-  border: none;
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.modal-btn:hover { box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3); }
-
-.modal-btn.secondary {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.modal-btn.secondary:hover { background: #e2e8f0; box-shadow: none; }
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-@media (max-width: 600px) {
-  .container { padding: 10px; }
-  
-  .hero { padding: 16px 14px; }
-  .hero h1 { font-size: 17px; }
-  .hero p { font-size: 11.5px; }
-  .hero-icon { width: 46px; height: 46px; }
-  .hero-icon svg { width: 26px; height: 26px; }
-  
-  .tab { font-size: 11px; padding: 8px 4px; }
-  
-  .game-panel { padding: 10px; }
-  .game-title { font-size: 12.5px; }
-  
-  .modal-header h2 { font-size: 16px; }
-  .modal-body { padding: 14px; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esquemas de Energía - Rompecabezas</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --success: #059669;
+            --success-light: #d1fae5;
+            --accent: #7c3aed;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+            --tile-size: 175px;
+            --grid-gap: 4px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #main-container {
+            width: 800px;
+            height: 800px;
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-radius: 0;
+            overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        header {
+            padding: 14px 24px 10px;
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #7c3aed 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .header-left h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .header-left p {
+            font-size: 0.75rem;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        /* Puzzle switcher tabs */
+        .puzzle-tabs {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.4);
+            background: transparent;
+            color: white;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: white;
+            color: var(--primary);
+            border-color: white;
+        }
+
+        /* ── GAME AREA ── */
+        .game-area {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            padding: 10px 16px 12px;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        .game-area.active { display: flex; }
+
+        .game-instruction {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-align: center;
+            background: var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .game-content {
+            flex: 1;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        /* Warehouse */
+        .pieces-warehouse {
+            width: 170px;
+            flex-shrink: 0;
+            height: 560px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 12px;
+            background: rgba(248,250,252,0.95);
+            border-radius: var(--radius);
+            border: 2px dashed #cbd5e1;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        .warehouse-label {
+            grid-column: 1 / -1;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            text-align: center;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Puzzle board */
+        .puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(3, var(--tile-size));
+            grid-template-rows: repeat(3, var(--tile-size));
+            gap: var(--grid-gap);
+            background: #94a3b8;
+            padding: var(--grid-gap);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            flex-shrink: 0;
+        }
+
+        .drop-zone {
+            width: var(--tile-size);
+            height: var(--tile-size);
+            background: rgba(255,255,255,0.35);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .drop-zone.hover { background: rgba(37,99,235,0.25); }
+
+        .drop-zone.correct-placed { outline: 3px solid var(--success); outline-offset: -3px; }
+
+        /* Tiles */
+        .tile {
+            width: var(--tile-size);
+            height: var(--tile-size);
+            background-size: calc(var(--tile-size) * 3) calc(var(--tile-size) * 3);
+            cursor: grab;
+            border-radius: 4px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            touch-action: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+            user-select: none;
+        }
+
+        .tile:active { cursor: grabbing; transform: scale(1.04); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+
+        /* Mini tiles in warehouse */
+        .pieces-warehouse .tile {
+            width: 66px;
+            height: 66px;
+            background-size: calc(66px * 3) calc(66px * 3);
+        }
+
+        /* ── STATUS BAR ── */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+
+        .progress-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .progress-track {
+            width: 120px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 99px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .btn-reset {
+            font-size: 0.72rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: white;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ── MODALS ── */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.96);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 32px;
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+        .modal-emoji { font-size: 3.5rem; line-height: 1; margin-bottom: 12px; }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .modal-feedback {
+            font-size: 0.88rem;
+            line-height: 1.65;
+            color: var(--text);
+            max-width: 500px;
+            background: var(--success-light);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--success);
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+        .btn-modal {
+            padding: 10px 24px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
+
+        .btn-secondary { background: var(--accent); color: white; }
+        .btn-secondary:hover { background: #6d28d9; transform: translateY(-1px); }
+
+        .btn-outline { background: white; color: var(--text); border: 2px solid var(--border); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 600px) {
+            body { align-items: flex-start; overflow-y: auto; }
+            #main-container { width: 100%; height: auto; min-height: 100vh; border-radius: 0; }
+            .game-content { flex-direction: column; align-items: center; }
+            .pieces-warehouse { width: 95%; height: auto; grid-template-columns: repeat(5, 1fr); }
+            .puzzle-board { transform: scale(0.55); transform-origin: top center; margin-bottom: -200px; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
+<div id="main-container">
 
-  <!-- HEADER -->
-  <div class="hero">
-    <div class="hero-inner">
-      <div class="hero-icon">
-        <!-- Icono puzzle -->
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/>
-        </svg>
-      </div>
-      <div>
-        <h1>Esquemas de energía</h1>
-        <p>🧩 Rompecabezas interactivo · Arma cada esquema</p>
-      </div>
-    </div>
-  </div>
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <h1>⚡ Esquemas de Energía</h1>
+            <p>Resuelva los rompecabezas arrastrando cada pieza a su lugar</p>
+        </div>
+        <div class="puzzle-tabs">
+            <button class="tab-btn active" onclick="switchPuzzle(0)">🔌 1</button>
+            <button class="tab-btn" onclick="switchPuzzle(1)">📡 2</button>
+            <button class="tab-btn" onclick="switchPuzzle(2)">💧 3</button>
+        </div>
+    </header>
 
-  <!-- INSTRUCCIONES -->
-  <div class="instructions">
-    <div class="ins-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M12 16v-4M12 8h.01"/>
-      </svg>
-    </div>
-    <div class="ins-text">
-      <strong>Instrucciones:</strong> Resuelva los siguientes rompecabezas arrastrando cada pieza a su lugar correspondiente para armar el tipo de esquema correspondiente.
-    </div>
-  </div>
-
-  <!-- PESTAÑAS -->
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-puzzle="0">
-      <span class="tab-num">Rompecabezas 1</span>
-      <span>☀️ Fotovoltaico</span>
-    </button>
-    <button class="tab" data-puzzle="1">
-      <span class="tab-num">Rompecabezas 2</span>
-      <span>📡 Transceiver</span>
-    </button>
-    <button class="tab" data-puzzle="2">
-      <span class="tab-num">Rompecabezas 3</span>
-      <span>💧 Control nivel</span>
-    </button>
-  </div>
-
-  <!-- PANEL DE JUEGO -->
-  <div class="game-panel">
-    <div class="game-header">
-      <div class="game-title">
-        <div class="num-badge" id="currentNum">1</div>
-        <span id="currentTitle">Rompecabezas 1 · Esquema</span>
-      </div>
-      <div class="game-actions">
-        <button class="action-btn preview" id="previewBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-          Ver imagen
-        </button>
-        <button class="action-btn" id="resetBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-          </svg>
-          Reiniciar
-        </button>
-      </div>
+    <!-- ═══════════ PUZZLE 1 ═══════════ -->
+    <div class="game-area active" id="game-0">
+        <div class="game-instruction">
+            🧩 <strong>Rompecabezas 1 — Sistema Fotovoltaico:</strong> Ordena las piezas para armar el esquema de flujo energético.
+        </div>
+        <div class="game-content">
+            <div class="pieces-warehouse" id="warehouse-0"
+                 ondrop="drop(event,0)" ondragover="allowDrop(event)">
+                <div class="warehouse-label">Piezas</div>
+            </div>
+            <div class="puzzle-board" id="board-0">
+                <!-- 9 drop zones -->
+                <div class="drop-zone" data-pos="0" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="1" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="2" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="3" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="4" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="5" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="6" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="7" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="8" data-puzzle="0" ondrop="drop(event,0)" ondragover="allowDrop(event)"></div>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="progress-wrap">
+                <span>Progreso:</span>
+                <div class="progress-track"><div class="progress-fill" id="progress-0"></div></div>
+                <span id="progress-label-0">0/9</span>
+            </div>
+            <button class="btn-reset" onclick="resetPuzzle(0)">↺ Reiniciar</button>
+        </div>
     </div>
 
-    <div class="progress-info">
-      Piezas colocadas correctamente:
-      <span class="pieces-badge" id="piecesBadge">0 / 0</span>
+    <!-- ═══════════ PUZZLE 2 ═══════════ -->
+    <div class="game-area" id="game-1">
+        <div class="game-instruction">
+            🧩 <strong>Rompecabezas 2 — Procesamiento de Señales:</strong> Ordena las piezas para formar el diagrama de conversión de frecuencia.
+        </div>
+        <div class="game-content">
+            <div class="pieces-warehouse" id="warehouse-1"
+                 ondrop="drop(event,1)" ondragover="allowDrop(event)">
+                <div class="warehouse-label">Piezas</div>
+            </div>
+            <div class="puzzle-board" id="board-1">
+                <div class="drop-zone" data-pos="0" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="1" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="2" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="3" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="4" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="5" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="6" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="7" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="8" data-puzzle="1" ondrop="drop(event,1)" ondragover="allowDrop(event)"></div>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="progress-wrap">
+                <span>Progreso:</span>
+                <div class="progress-track"><div class="progress-fill" id="progress-1"></div></div>
+                <span id="progress-label-1">0/9</span>
+            </div>
+            <button class="btn-reset" onclick="resetPuzzle(1)">↺ Reiniciar</button>
+        </div>
     </div>
 
-    <!-- Tablero del rompecabezas -->
-    <div class="puzzle-area">
-      <div class="puzzle-grid" id="puzzleGrid"></div>
+    <!-- ═══════════ PUZZLE 3 ═══════════ -->
+    <div class="game-area" id="game-2">
+        <div class="game-instruction">
+            🧩 <strong>Rompecabezas 3 — Control de Nivel:</strong> Ordena las piezas para estructurar el lazo de control industrial.
+        </div>
+        <div class="game-content">
+            <div class="pieces-warehouse" id="warehouse-2"
+                 ondrop="drop(event,2)" ondragover="allowDrop(event)">
+                <div class="warehouse-label">Piezas</div>
+            </div>
+            <div class="puzzle-board" id="board-2">
+                <div class="drop-zone" data-pos="0" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="1" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="2" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="3" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="4" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="5" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="6" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="7" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+                <div class="drop-zone" data-pos="8" data-puzzle="2" ondrop="drop(event,2)" ondragover="allowDrop(event)"></div>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="progress-wrap">
+                <span>Progreso:</span>
+                <div class="progress-track"><div class="progress-fill" id="progress-2"></div></div>
+                <span id="progress-label-2">0/9</span>
+            </div>
+            <button class="btn-reset" onclick="resetPuzzle(2)">↺ Reiniciar</button>
+        </div>
     </div>
 
-    <!-- Pool de piezas -->
-    <div class="pieces-pool">
-      <div class="pool-title">🧩 Piezas disponibles — arrastra cada una al lugar correcto</div>
-      <div class="pool-grid" id="poolGrid"></div>
+    <!-- ═══════════ SUCCESS MODALS ═══════════ -->
+
+    <!-- Modal Puzzle 1 -->
+    <div class="modal-overlay" id="modal-0">
+        <div class="modal-emoji">🎯</div>
+        <div class="modal-title">¡Excelente!</div>
+        <div class="modal-feedback">
+            Ha demostrado su comprensión del flujo energético en sistemas fotovoltaicos, logrando alinear correctamente la generación, conversión y almacenamiento. El esquema destaca la importancia crítica de la comunicación entre componentes (puerto "com") y la protección eléctrica final para la seguridad del sistema. Mantener la precisión en la continuidad de las líneas es vital para evitar errores de interpretación en planos industriales normados.
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal btn-outline" onclick="resetPuzzle(0); closeModal(0)">↺ Reintentar</button>
+            <button class="btn-modal btn-secondary" onclick="closeModal(0); switchPuzzle(1)">Siguiente rompecabezas →</button>
+        </div>
     </div>
 
-  </div>
+    <!-- Modal Puzzle 2 -->
+    <div class="modal-overlay" id="modal-1">
+        <div class="modal-emoji">⭐</div>
+        <div class="modal-title">¡Buen trabajo!</div>
+        <div class="modal-feedback">
+            El diagrama refleja una comprensión clara de la conversión de frecuencia y el procesamiento de señales en banda base. La disposición del multiplicador (X2) y el acoplamiento hacia el mezclador de cuadratura garantizan una sincronización precisa para la obtención de los componentes I y Q. Además, el uso del circulador para aislar el puerto del transceptor es un acierto técnico que asegura la integridad del flujo bidireccional sin interferencias internas.
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal btn-outline" onclick="resetPuzzle(1); closeModal(1)">↺ Reintentar</button>
+            <button class="btn-modal btn-secondary" onclick="closeModal(1); switchPuzzle(2)">Siguiente rompecabezas →</button>
+        </div>
+    </div>
 
-</div>
+    <!-- Modal Puzzle 3 -->
+    <div class="modal-overlay" id="modal-2">
+        <div class="modal-emoji">🏆</div>
+        <div class="modal-title">¡Logro alcanzado!</div>
+        <div class="modal-feedback">
+            Has estructurado correctamente un lazo de control de nivel, identificando con precisión la interacción entre el sensor (sonda) y el actuador (bomba). La representación lógica del flujo, desde la detección de los límites máximo y mínimo hasta la respuesta del circuito de control, demuestra un entendimiento sólido de los sistemas de automatización industrial. Este esquema es fundamental para garantizar la eficiencia operativa y prevenir desbordamientos o cavitación en la bomba.
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal btn-outline" onclick="resetPuzzle(2); closeModal(2)">↺ Reintentar</button>
+            <button class="btn-modal btn-primary" onclick="closeModal(2); switchPuzzle(0)">🔄 Volver al inicio</button>
+        </div>
+    </div>
 
-<!-- MODAL RETROALIMENTACIÓN -->
-<div class="modal-overlay" id="feedbackModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="m-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <div>
-        <h2 id="fbTitle">¡Rompecabezas resuelto!</h2>
-        <div class="m-sub" id="fbSub">Retroalimentación</div>
-      </div>
-      <button class="modal-close" id="fbClose">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="fb-title">📚 Retroalimentación</div>
-      <div class="fb-text" id="fbText"></div>
-      <div class="modal-actions">
-        <button class="modal-btn secondary" id="fbReplay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-          </svg>
-          Repetir
-        </button>
-        <button class="modal-btn" id="fbNext">
-          Siguiente
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL VISTA PREVIA -->
-<div class="modal-overlay" id="previewModal">
-  <div class="modal">
-    <div class="modal-header preview-header">
-      <div class="m-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-      </div>
-      <div>
-        <h2>Vista previa</h2>
-        <div class="m-sub">Referencia del esquema completo</div>
-      </div>
-      <button class="modal-close" id="previewClose">×</button>
-    </div>
-    <div class="modal-body">
-      <img id="previewImg" class="preview-img" src="" alt="Vista previa">
-    </div>
-  </div>
-</div>
+</div><!-- end #main-container -->
 
 <script>
-/* =========================================================
-   DATOS: 3 ROMPECABEZAS
-========================================================= */
-const puzzles = [
-  {
-    title: "Rompecabezas 1 · Esquema fotovoltaico",
-    image: "media/Imagen 112.png",
-    cols: 3,
-    rows: 3,
-    feedback: "¡Excelente! Ha demostrado su comprensión del flujo energético en sistemas fotovoltaicos, logrando alinear correctamente la generación, conversión y almacenamiento. El esquema destaca la importancia crítica de la comunicación entre componentes (puerto \"com\") y la protección eléctrica final para la seguridad del sistema. Mantener la precisión en la continuidad de las líneas es vital para evitar errores de interpretación en planos industriales normados."
-  },
-  {
-    title: "Rompecabezas 2 · Transceiver 38 GHz",
-    image: "media/Imagen 113.jpg",
-    cols: 4,
-    rows: 3,
-    feedback: "¡Buen trabajo! El diagrama refleja una comprensión clara de la conversión de frecuencia y el procesamiento de señales en banda base. La disposición del multiplicador (X2) y el acoplamiento hacia el mezclador de cuadratura garantizan una sincronización precisa para la obtención de los componentes I y Q. Además, el uso del circulador para aislar el puerto del transceptor es un acierto técnico que asegura la integridad del flujo bidireccional sin interferencias internas."
-  },
-  {
-    title: "Rompecabezas 3 · Control de nivel",
-    image: "media/Imagen 114.png",
-    cols: 4,
-    rows: 3,
-    feedback: "¡Logro alcanzado! Has estructurado correctamente un lazo de control de nivel, identificando con precisión la interacción entre el sensor (sonda) y el actuador (bomba). La representación lógica del flujo, desde la detección de los límites máximo y mínimo hasta la respuesta del circuito de control, demuestra un entendimiento sólido de los sistemas de automatización industrial. Este esquema es fundamental para garantizar la eficiencia operativa y prevenir desbordamientos o cavitación en la bomba."
-  }
-];
+    // ── CONFIG ──────────────────────────────────────────────
+    const PUZZLES = [
+        { image: 'media/Imagen 127.png', warehouse: 'warehouse-0', board: 'board-0', modal: 'modal-0', progress: 'progress-0', progressLabel: 'progress-label-0' },
+        { image: 'media/Imagen 128.jpg', warehouse: 'warehouse-1', board: 'board-1', modal: 'modal-1', progress: 'progress-1', progressLabel: 'progress-label-1' },
+        { image: 'media/Imagen 129.png', warehouse: 'warehouse-2', board: 'board-2', modal: 'modal-2', progress: 'progress-2', progressLabel: 'progress-label-2' },
+    ];
 
-/* =========================================================
-   ESTADO
-========================================================= */
-let currentPuzzle = 0;
-let totalPieces = 0;
-let correctPieces = 0;
-let draggedPiece = null;
-let touchOffset = { x: 0, y: 0 };
-let touchClone = null;
+    const TOTAL = 9;
+    let currentPuzzle = 0;
 
-/* =========================================================
-   UTILS
-========================================================= */
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-/* =========================================================
-   INICIALIZAR ROMPECABEZAS
-========================================================= */
-function initPuzzle(index) {
-  currentPuzzle = index;
-  const p = puzzles[index];
-  
-  // Actualizar header
-  document.getElementById('currentNum').textContent = (index + 1).toString();
-  document.getElementById('currentTitle').textContent = p.title;
-  
-  // Actualizar tabs
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', i === index);
-  });
-  
-  totalPieces = p.cols * p.rows;
-  correctPieces = 0;
-  updateBadge();
-  
-  const grid = document.getElementById('puzzleGrid');
-  const pool = document.getElementById('poolGrid');
-  
-  // Configurar grid del tablero
-  grid.style.gridTemplateColumns = `repeat(${p.cols}, 1fr)`;
-  grid.style.gridTemplateRows = `repeat(${p.rows}, 1fr)`;
-  grid.innerHTML = '';
-  
-  // Configurar grid del pool
-  pool.style.gridTemplateColumns = `repeat(${p.cols}, 1fr)`;
-  pool.innerHTML = '';
-  
-  // Crear celdas del tablero (los slots correctos)
-  for (let r = 0; r < p.rows; r++) {
-    for (let c = 0; c < p.cols; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'puzzle-cell';
-      cell.dataset.row = r;
-      cell.dataset.col = c;
-      cell.dataset.correctId = `${r}-${c}`;
-      cell.dataset.zone = 'board';
-      attachDropZone(cell);
-      grid.appendChild(cell);
+    // ── INIT ALL PUZZLES ────────────────────────────────────
+    function initAll() {
+        PUZZLES.forEach((cfg, idx) => initPuzzle(idx));
     }
-  }
-  
-  // Crear slots del pool y piezas (barajadas)
-  const positions = [];
-  for (let r = 0; r < p.rows; r++) {
-    for (let c = 0; c < p.cols; c++) {
-      positions.push({ r, c });
+
+    function initPuzzle(idx) {
+        const cfg = PUZZLES[idx];
+        const warehouse = document.getElementById(cfg.warehouse);
+
+        // Remove existing tiles (but keep label)
+        const label = warehouse.querySelector('.warehouse-label');
+        warehouse.innerHTML = '';
+        warehouse.appendChild(label);
+
+        // Clear board zones
+        document.querySelectorAll(`#${cfg.board} .drop-zone`).forEach(z => {
+            z.innerHTML = '';
+            z.classList.remove('correct-placed', 'hover');
+        });
+
+        // Reset progress
+        updateProgress(idx, 0);
+
+        // Build shuffled piece ids
+        const ids = [...Array(TOTAL).keys()];
+        ids.sort(() => Math.random() - 0.5);
+
+        ids.forEach(id => {
+            const tile = createTile(id, idx, cfg.image, 'full');
+            warehouse.appendChild(tile);
+        });
     }
-  }
-  const shuffled = shuffle(positions);
-  
-  shuffled.forEach((pos, idx) => {
-    const slot = document.createElement('div');
-    slot.className = 'pool-slot';
-    slot.dataset.zone = 'pool';
-    slot.dataset.slotIdx = idx;
-    attachDropZone(slot);
-    pool.appendChild(slot);
-    
-    // Crear pieza
-    const piece = document.createElement('div');
-    piece.className = 'piece';
-    piece.draggable = true;
-    piece.dataset.id = `${pos.r}-${pos.c}`;
-    piece.dataset.row = pos.r;
-    piece.dataset.col = pos.c;
-    
-    // Calcular el background para mostrar la parte correcta de la imagen
-    const bgW = p.cols * 100;
-    const bgH = p.rows * 100;
-    const bgX = -(pos.c * 100);
-    const bgY = -(pos.r * 100);
-    piece.style.setProperty('--bg-img', `url("${p.image}")`);
-    piece.style.setProperty('--bg-w', `${bgW}%`);
-    piece.style.setProperty('--bg-h', `${bgH}%`);
-    piece.style.setProperty('--bg-x', `${bgX}%`);
-    piece.style.setProperty('--bg-y', `${bgY}%`);
-    
-    attachDragEvents(piece);
-    slot.appendChild(piece);
-  });
-}
 
-function updateBadge() {
-  document.getElementById('piecesBadge').textContent = `${correctPieces} / ${totalPieces}`;
-}
+    function createTile(id, puzzleIdx, imageSrc, size) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.id = `piece-${puzzleIdx}-${id}`;
+        tile.draggable = true;
+        tile.setAttribute('data-id', id);
+        tile.setAttribute('data-puzzle', puzzleIdx);
 
-/* =========================================================
-   DRAG & DROP (Desktop)
-========================================================= */
-function attachDragEvents(piece) {
-  // Desktop drag
-  piece.addEventListener('dragstart', e => {
-    if (piece.classList.contains('locked')) { e.preventDefault(); return; }
-    draggedPiece = piece;
-    piece.classList.add('dragging');
-    try { e.dataTransfer.setData('text/plain', piece.dataset.id); } catch(err){}
-    e.dataTransfer.effectAllowed = 'move';
-  });
-  
-  piece.addEventListener('dragend', () => {
-    piece.classList.remove('dragging');
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    draggedPiece = null;
-  });
-  
-  // Touch support
-  piece.addEventListener('touchstart', e => {
-    if (piece.classList.contains('locked')) return;
-    const touch = e.touches[0];
-    const rect = piece.getBoundingClientRect();
-    touchOffset.x = touch.clientX - rect.left;
-    touchOffset.y = touch.clientY - rect.top;
-    draggedPiece = piece;
-    
-    // Crear clon visual que sigue al dedo
-    touchClone = piece.cloneNode(true);
-    touchClone.style.position = 'fixed';
-    touchClone.style.left = `${touch.clientX - touchOffset.x}px`;
-    touchClone.style.top = `${touch.clientY - touchOffset.y}px`;
-    touchClone.style.width = `${rect.width}px`;
-    touchClone.style.height = `${rect.height}px`;
-    touchClone.style.zIndex = '9999';
-    touchClone.style.pointerEvents = 'none';
-    touchClone.style.opacity = '0.85';
-    touchClone.style.border = '2px solid #ea580c';
-    touchClone.style.borderRadius = '6px';
-    touchClone.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
-    document.body.appendChild(touchClone);
-    piece.style.opacity = '0.3';
-  }, {passive: true});
-  
-  piece.addEventListener('touchmove', e => {
-    if (!draggedPiece || !touchClone) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    touchClone.style.left = `${touch.clientX - touchOffset.x}px`;
-    touchClone.style.top = `${touch.clientY - touchOffset.y}px`;
-    
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    const underEl = document.elementFromPoint(touch.clientX, touch.clientY);
-    const zone = underEl ? underEl.closest('.puzzle-cell, .pool-slot') : null;
-    if (zone) zone.classList.add('drag-over');
-  }, {passive: false});
-  
-  piece.addEventListener('touchend', e => {
-    if (!draggedPiece) return;
-    const touch = e.changedTouches[0];
-    const underEl = document.elementFromPoint(touch.clientX, touch.clientY);
-    const zone = underEl ? underEl.closest('.puzzle-cell, .pool-slot') : null;
-    
-    if (touchClone) { touchClone.remove(); touchClone = null; }
-    piece.style.opacity = '';
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    
-    if (zone) handleDrop(zone, piece);
-    draggedPiece = null;
-  });
-}
+        const row = Math.floor(id / 3);
+        const col = id % 3;
+        const posX = col * 50;   // 0, 50, 100
+        const posY = row * 50;   // 0, 50, 100
 
-function attachDropZone(zone) {
-  zone.addEventListener('dragover', e => {
-    e.preventDefault();
-    zone.classList.add('drag-over');
-  });
-  zone.addEventListener('dragleave', () => {
-    zone.classList.remove('drag-over');
-  });
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('drag-over');
-    if (draggedPiece) handleDrop(zone, draggedPiece);
-  });
-}
+        tile.style.backgroundImage = `url('${imageSrc}')`;
+        tile.style.backgroundPosition = `${posX}% ${posY}%`;
 
-/* =========================================================
-   LÓGICA DE SOLTAR
-========================================================= */
-function handleDrop(zone, piece) {
-  if (piece.classList.contains('locked')) return;
-  
-  // Si la celda tiene ya una pieza, intercambiar
-  const existingPiece = zone.querySelector('.piece');
-  
-  if (zone.dataset.zone === 'board') {
-    // Soltando en el tablero
-    const zoneId = zone.dataset.correctId;
-    const pieceId = piece.dataset.id;
-    
-    if (existingPiece && existingPiece !== piece) {
-      // Intercambio: mover pieza existente al origen
-      const originSlot = piece.parentElement;
-      if (originSlot) {
-        originSlot.appendChild(existingPiece);
-        if (existingPiece.classList.contains('locked')) {
-          existingPiece.classList.remove('locked');
-          existingPiece.draggable = true;
+        tile.ondragstart = drag;
+        return tile;
+    }
+
+    // ── DRAG & DROP ─────────────────────────────────────────
+    function allowDrop(ev) {
+        ev.preventDefault();
+        const el = ev.currentTarget || ev.target;
+        if (el.classList.contains('drop-zone')) el.classList.add('hover');
+    }
+
+    document.addEventListener('dragleave', (ev) => {
+        if (ev.target.classList.contains('drop-zone')) ev.target.classList.remove('hover');
+    });
+
+    function drag(ev) {
+        ev.dataTransfer.setData('pieceId', ev.target.id);
+        ev.dataTransfer.setData('puzzleIdx', ev.target.getAttribute('data-puzzle'));
+    }
+
+    function drop(ev, puzzleIdx) {
+        ev.preventDefault();
+        const pieceId = ev.dataTransfer.getData('pieceId');
+        const fromPuzzle = parseInt(ev.dataTransfer.getData('puzzleIdx'));
+
+        // Only allow drops within same puzzle
+        if (fromPuzzle !== puzzleIdx) return;
+
+        const tile = document.getElementById(pieceId);
+        if (!tile) return;
+
+        const dropZone = ev.currentTarget;
+        dropZone.classList.remove('hover');
+
+        if (dropZone.classList.contains('drop-zone') && dropZone.children.length === 0) {
+            dropZone.appendChild(tile);
+            // Resize tile to full for board
+            tile.style.width = '';
+            tile.style.height = '';
+            tile.style.backgroundSize = '';
+            checkCorrect(dropZone, puzzleIdx);
+            checkWin(puzzleIdx);
+        } else if (dropZone.id === PUZZLES[puzzleIdx].warehouse ||
+                   dropZone.closest('#' + PUZZLES[puzzleIdx].warehouse)) {
+            returnToWarehouse(tile, puzzleIdx);
         }
-      }
-    } else if (existingPiece === piece) {
-      return;
     }
-    
-    zone.appendChild(piece);
-    
-    // Verificar si es la posición correcta
-    if (zoneId === pieceId) {
-      piece.classList.add('locked');
-      piece.draggable = false;
-      zone.classList.add('correct');
-      // Recalcular aciertos
-      recountCorrect();
-      
-      if (correctPieces === totalPieces) {
-        setTimeout(showFeedback, 500);
-      }
-    } else {
-      // Posición incorrecta - permitir seguir moviendo
-      if (piece.classList.contains('locked')) {
-        piece.classList.remove('locked');
-        piece.draggable = true;
-      }
-      recountCorrect();
+
+    function returnToWarehouse(tile, puzzleIdx) {
+        const warehouse = document.getElementById(PUZZLES[puzzleIdx].warehouse);
+        // Remove correct-placed from old zone
+        const oldZone = tile.closest('.drop-zone');
+        if (oldZone) oldZone.classList.remove('correct-placed');
+        warehouse.appendChild(tile);
+        updateProgress(puzzleIdx, countCorrect(puzzleIdx));
     }
-  } else if (zone.dataset.zone === 'pool') {
-    // Soltando en el pool
-    if (existingPiece && existingPiece !== piece) {
-      const originSlot = piece.parentElement;
-      if (originSlot) originSlot.appendChild(existingPiece);
-    } else if (existingPiece === piece) {
-      return;
+
+    // ── VALIDATION ──────────────────────────────────────────
+    function checkCorrect(zone, puzzleIdx) {
+        const tile = zone.firstChild;
+        if (!tile) return;
+        const tileId = tile.getAttribute('data-id');
+        const zonePos = zone.getAttribute('data-pos');
+        if (tileId === zonePos) zone.classList.add('correct-placed');
+        else zone.classList.remove('correct-placed');
     }
-    if (piece.classList.contains('locked')) {
-      piece.classList.remove('locked');
-      piece.draggable = true;
+
+    function countCorrect(puzzleIdx) {
+        const zones = document.querySelectorAll(`#${PUZZLES[puzzleIdx].board} .drop-zone`);
+        let correct = 0;
+        zones.forEach(zone => {
+            if (zone.children.length > 0) {
+                if (zone.firstChild.getAttribute('data-id') === zone.getAttribute('data-pos')) correct++;
+            }
+        });
+        return correct;
     }
-    // Remover "correct" de la celda de origen si venía del tablero
-    const origin = piece.parentElement;
-    if (origin && origin.classList.contains('puzzle-cell')) {
-      origin.classList.remove('correct');
+
+    function checkWin(puzzleIdx) {
+        const correct = countCorrect(puzzleIdx);
+        updateProgress(puzzleIdx, correct);
+        if (correct === TOTAL) {
+            setTimeout(() => openModal(puzzleIdx), 500);
+        }
     }
-    zone.appendChild(piece);
-    recountCorrect();
-  }
-}
 
-function recountCorrect() {
-  correctPieces = 0;
-  document.querySelectorAll('.puzzle-cell').forEach(cell => {
-    const p = cell.querySelector('.piece');
-    if (p && cell.dataset.correctId === p.dataset.id) {
-      correctPieces++;
-      cell.classList.add('correct');
-      p.classList.add('locked');
-      p.draggable = false;
-    } else {
-      cell.classList.remove('correct');
+    // ── PROGRESS ────────────────────────────────────────────
+    function updateProgress(puzzleIdx, count) {
+        const pct = (count / TOTAL) * 100;
+        document.getElementById(PUZZLES[puzzleIdx].progress).style.width = pct + '%';
+        document.getElementById(PUZZLES[puzzleIdx].progressLabel).textContent = `${count}/${TOTAL}`;
     }
-  });
-  updateBadge();
-}
 
-/* =========================================================
-   MOSTRAR RETROALIMENTACIÓN
-========================================================= */
-function showFeedback() {
-  const p = puzzles[currentPuzzle];
-  document.getElementById('fbTitle').textContent = '¡Rompecabezas ' + (currentPuzzle + 1) + ' resuelto!';
-  document.getElementById('fbSub').textContent = p.title;
-  document.getElementById('fbText').textContent = p.feedback;
-  
-  // Marcar pestaña como completada
-  document.querySelectorAll('.tab')[currentPuzzle].classList.add('complete');
-  
-  // Si es el último, ocultar botón siguiente
-  const nextBtn = document.getElementById('fbNext');
-  if (currentPuzzle === puzzles.length - 1) {
-    nextBtn.style.display = 'none';
-  } else {
-    nextBtn.style.display = 'flex';
-  }
-  
-  document.getElementById('feedbackModal').classList.add('active');
-}
+    // ── MODAL ───────────────────────────────────────────────
+    function openModal(idx) {
+        document.getElementById(PUZZLES[idx].modal).classList.add('open');
+    }
 
-/* =========================================================
-   EVENT LISTENERS
-========================================================= */
-document.querySelectorAll('.tab').forEach((tab, i) => {
-  tab.addEventListener('click', () => initPuzzle(i));
-});
+    function closeModal(idx) {
+        document.getElementById(PUZZLES[idx].modal).classList.remove('open');
+    }
 
-document.getElementById('resetBtn').addEventListener('click', () => initPuzzle(currentPuzzle));
+    // ── NAVIGATION ──────────────────────────────────────────
+    function switchPuzzle(idx) {
+        currentPuzzle = idx;
+        document.querySelectorAll('.game-area').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
+        });
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', i === idx);
+        });
+    }
 
-document.getElementById('previewBtn').addEventListener('click', () => {
-  document.getElementById('previewImg').src = puzzles[currentPuzzle].image;
-  document.getElementById('previewModal').classList.add('active');
-});
+    function resetPuzzle(idx) {
+        closeModal(idx);
+        initPuzzle(idx);
+    }
 
-document.getElementById('previewClose').addEventListener('click', () => {
-  document.getElementById('previewModal').classList.remove('active');
-});
-
-document.getElementById('previewModal').addEventListener('click', e => {
-  if (e.target.id === 'previewModal') e.target.classList.remove('active');
-});
-
-document.getElementById('fbClose').addEventListener('click', () => {
-  document.getElementById('feedbackModal').classList.remove('active');
-});
-
-document.getElementById('feedbackModal').addEventListener('click', e => {
-  if (e.target.id === 'feedbackModal') e.target.classList.remove('active');
-});
-
-document.getElementById('fbReplay').addEventListener('click', () => {
-  document.getElementById('feedbackModal').classList.remove('active');
-  initPuzzle(currentPuzzle);
-});
-
-document.getElementById('fbNext').addEventListener('click', () => {
-  document.getElementById('feedbackModal').classList.remove('active');
-  if (currentPuzzle < puzzles.length - 1) {
-    initPuzzle(currentPuzzle + 1);
-  }
-});
-
-/* Inicializar */
-initPuzzle(0);
+    // ── BOARD → WAREHOUSE re-drop ────────────────────────────
+    // Allow dropping back to warehouse from board zones
+    document.addEventListener('DOMContentLoaded', () => {
+        PUZZLES.forEach((cfg, idx) => {
+            const wh = document.getElementById(cfg.warehouse);
+            wh.addEventListener('drop', (ev) => {
+                ev.preventDefault();
+                const pieceId = ev.dataTransfer.getData('pieceId');
+                const fromPuzzle = parseInt(ev.dataTransfer.getData('puzzleIdx'));
+                if (fromPuzzle !== idx) return;
+                const tile = document.getElementById(pieceId);
+                if (!tile) return;
+                const oldZone = tile.closest('.drop-zone');
+                if (oldZone) oldZone.classList.remove('correct-placed');
+                wh.appendChild(tile);
+                updateProgress(idx, countCorrect(idx));
+            });
+            wh.addEventListener('dragover', allowDrop);
+        });
+        initAll();
+    });
 </script>
+
 </body>
 </html>

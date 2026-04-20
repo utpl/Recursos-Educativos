@@ -8,7 +8,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
   --primary:#6366f1; --primary-dark:#4f46e5; --primary-light:#818cf8; --accent:#06b6d4;
-  --energy:#f59e0b; --success:#10b981; --bg:#f8fafc; --card-bg:#ffffff;
+  --energy:#f59e0b; --success:#10b981; --error:#ef4444; --bg:#f8fafc; --card-bg:#ffffff;
   --text-primary:#1e293b; --text-secondary:#64748b; --border:#e2e8f0;
   --shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -59,20 +59,62 @@ body {
 .thumbnail { min-width:60px; height:60px; border-radius:8px; overflow:hidden; border:2px solid transparent; cursor:pointer; transition:all 0.3s ease; opacity:0.6; }
 .thumbnail:hover,.thumbnail.active { border-color:var(--primary); opacity:1; transform:scale(1.05); }
 .thumbnail img { width:100%; height:100%; object-fit:cover; }
-.pairs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-.pair-card { background:white; border:2px solid var(--border); border-radius:var(--radius); padding:10px; text-align:center; cursor:pointer; transition:all 0.3s ease; }
-.pair-card:hover { border-color:var(--primary-light); transform:translateY(-2px); box-shadow:var(--shadow); }
-.pair-card img { max-width:100%; max-height:60px; margin-bottom:6px; }
-.pair-label { font-size:11px; font-weight:600; color:var(--text-primary); }
 .projection-tabs { display:flex; gap:8px; margin-bottom:12px; }
 .proj-tab { flex:1; padding:10px; background:white; border:2px solid var(--border); border-radius:var(--radius); text-align:center; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.3s ease; }
 .proj-tab:hover,.proj-tab.active { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; border-color:var(--primary); }
 .projection-content { display:none; }
 .projection-content.active { display:block; }
-.word-fill-text { font-size:14px; line-height:1.8; color:var(--text-primary); background:white; padding:16px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow); }
-.word-fill { background:#e0e7ff; padding:2px 8px; border-radius:4px; font-weight:700; color:var(--primary-dark); border-bottom:2px solid var(--primary); }
+
+/* ===== ACTIVIDAD: COMPLETAR PALABRAS (MICRORRED) ===== */
+.fill-sentence { font-size:14px; line-height:2.2; color:var(--text-primary); background:white; padding:16px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow); }
+.blank { display:inline-block; min-width:110px; height:28px; border-bottom:2.5px solid var(--primary); background:#e0e7ff; border-radius:4px 4px 0 0; cursor:pointer; vertical-align:middle; text-align:center; padding:0 8px; font-weight:700; font-size:13px; color:var(--primary-dark); transition:background 0.15s; }
+.blank:hover { background:#c7d2fe; }
+.blank.filled { color:var(--primary-dark); }
+.blank.correct-blank { border-color:var(--success); background:#d1fae5; color:#065f46; }
+.blank.wrong-blank { border-color:var(--error); background:#fee2e2; color:#991b1b; }
 .word-options { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-.word-chip { padding:6px 14px; background:white; border:2px solid var(--border); border-radius:20px; font-size:12px; font-weight:600; color:var(--text-primary); box-shadow:var(--shadow); }
+.word-chip { padding:8px 16px; background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; border:none; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s ease; box-shadow:var(--shadow); user-select:none; }
+.word-chip:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(99,102,241,0.35); }
+.word-chip.used { opacity:0.35; cursor:default; transform:none; }
+.word-chip.dragging { opacity:0.7; }
+.feedback-box { display:none; margin-top:12px; border-radius:10px; padding:12px 14px; font-size:13px; line-height:1.55; animation:fadeUp 0.3s ease; }
+.feedback-box.show { display:block; }
+.feedback-box.success { background:#ecfdf5; border:1.5px solid var(--success); color:#065f46; }
+.feedback-box.fail { background:#fef2f2; border:1.5px solid var(--error); color:#991b1b; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.action-btns { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:flex-end; }
+.btn { padding:9px 20px; border-radius:9px; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.18s; display:flex; align-items:center; gap:6px; }
+.btn-primary { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; box-shadow:0 3px 12px rgba(99,102,241,0.25); }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(99,102,241,0.35); }
+.btn-primary:disabled { opacity:0.5; cursor:default; transform:none; }
+.btn-secondary { background:#f1f5f9; color:var(--text-primary); border:1.5px solid var(--border); }
+.btn-secondary:hover { background:#e2e8f0; }
+
+/* ===== ACTIVIDAD: EMPAREJAR ÍCONOS Y COMANDOS ===== */
+.pairs-container { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.pair-row { display:flex; align-items:center; gap:10px; background:white; border-radius:var(--radius); padding:10px 12px; border:1.5px solid var(--border); box-shadow:var(--shadow); }
+.pair-cmd { display:flex; align-items:center; gap:10px; flex:1; }
+.pair-cmd img { max-height:50px; max-width:100px; border-radius:6px; }
+.pair-cmd-label { font-size:12px; font-weight:700; color:var(--text-primary); }
+.drop-zone {
+  width:90px; height:60px; border-radius:10px; border:2px dashed var(--primary-light);
+  background:#f5f3ff; display:flex; align-items:center; justify-content:center;
+  font-size:12px; color:var(--text-secondary); transition:all 0.2s ease; flex-shrink:0;
+}
+.drop-zone.filled { border-style:solid; background:#e0e7ff; }
+.drop-zone.correct-drop { border-color:var(--success); background:#d1fae5; }
+.drop-zone.wrong-drop { border-color:var(--error); background:#fee2e2; }
+.drop-zone img { max-width:80px; max-height:50px; border-radius:6px; }
+.draggable-icons { display:flex; flex-wrap:wrap; gap:10px; padding:12px; background:#f5f3ff; border-radius:var(--radius); border:1.5px solid var(--border); margin-top:8px; justify-content:center; }
+.drag-icon {
+  width:90px; height:60px; border-radius:10px; background:white;
+  border:2px solid var(--primary-light); display:flex; align-items:center; justify-content:center;
+  cursor:grab; user-select:none; transition:all 0.2s ease; box-shadow:var(--shadow);
+}
+.drag-icon img { max-width:80px; max-height:50px; border-radius:6px; pointer-events:none; }
+.drag-icon.placed { opacity:0.3; cursor:default; pointer-events:none; filter:grayscale(0.3); }
+.drag-icon:hover:not(.placed) { transform:translateY(-2px); box-shadow:0 6px 16px rgba(99,102,241,0.2); }
+
 .welcome-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px 20px; height:100%; background:linear-gradient(135deg,#f5f3ff 0%,#e0e7ff 50%,#f0f9ff 100%); }
 .welcome-icon { font-size:72px; margin-bottom:16px; animation:float 3s ease-in-out infinite; filter:drop-shadow(0 10px 20px rgba(99,102,241,0.3)); }
 @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
@@ -98,12 +140,13 @@ body {
 .modal-text { font-size:14px; line-height:1.7; color:var(--text-primary); }
 @media(max-width:600px){
   .slide { padding:12px 14px; gap:10px; }
-  .pairs-grid { grid-template-columns:repeat(2,1fr); }
   .header h1 { font-size:14px; }
-  .thumbnail { min-width:50px; height:50px; }
+  .pair-row { flex-direction:column; align-items:flex-start; }
+  .drop-zone { width:100%; height:50px; }
   .modal { max-height:90vh; }
 }
 </style>
+<base target="_blank">
 </head>
 <body>
 <div class="app-container">
@@ -136,14 +179,14 @@ body {
         <div class="instruction-box"><strong>Instrucción:</strong> Desde la parte superior puede navegar para observar el proceso de despliegue de una caja (objeto) para diferenciar los nombres de las caras.</div>
         <div class="internal-slider" id="deploySlider">
           <div class="internal-slides" id="deploySlides">
-            <div class="internal-slide"><img src="media/Imagen 32.jpg" alt="Objeto en vista de planta"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Objeto en vista de planta</div></div>
-            <div class="internal-slide"><img src="media/Imagen 33.jpg" alt="Objeto en vista isométrica"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Objeto en vista isométrica</div></div>
-            <div class="internal-slide"><img src="media/Imagen 34.jpg" alt="Despliegue de cara frontal"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara frontal</div></div>
-            <div class="internal-slide"><img src="media/Imagen 35.jpg" alt="Despliegue de cara lateral izquierda"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara lateral izquierda</div></div>
-            <div class="internal-slide"><img src="media/Imagen 36.jpg" alt="Despliegue de cara lateral derecha"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara lateral derecha</div></div>
-            <div class="internal-slide"><img src="media/Imagen 37.jpg" alt="Despliegue de cara superior"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara superior</div></div>
-            <div class="internal-slide"><img src="media/Imagen 38.jpg" alt="Despliegue de cara posterior"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara posterior</div></div>
-            <div class="internal-slide"><img src="media/Imagen 39.jpg" alt="Despliegue total del objeto (vista plana)"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue total del objeto (vista plana)</div></div>
+            <div class="internal-slide"><img src="media/Imagen 32.jpg" alt="Objeto en vista de planta" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Objeto en vista de planta</div></div>
+            <div class="internal-slide"><img src="media/Imagen 33.jpg" alt="Objeto en vista isométrica" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Objeto en vista isométrica</div></div>
+            <div class="internal-slide"><img src="media/Imagen 34.jpg" alt="Despliegue de cara frontal" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara frontal</div></div>
+            <div class="internal-slide"><img src="media/Imagen 35.jpg" alt="Despliegue de cara lateral izquierda" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara lateral izquierda</div></div>
+            <div class="internal-slide"><img src="media/Imagen 36.jpg" alt="Despliegue de cara lateral derecha" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara lateral derecha</div></div>
+            <div class="internal-slide"><img src="media/Imagen 37.jpg" alt="Despliegue de cara superior" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara superior</div></div>
+            <div class="internal-slide"><img src="media/Imagen 38.jpg" alt="Despliegue de cara posterior" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue de cara posterior</div></div>
+            <div class="internal-slide"><img src="media/Imagen 39.jpg" alt="Despliegue total del objeto (vista plana)" onerror="this.style.display='none'"><div style="margin-top:8px;font-weight:700;font-size:13px;color:var(--primary-dark);">Despliegue total del objeto (vista plana)</div></div>
           </div>
           <div class="thumbnails-strip" id="deployThumbs">
             <div class="thumbnail active" onclick="goToDeploy(0)"><img src="media/Imagen 32.jpg" alt=""></div>
@@ -166,26 +209,20 @@ body {
         </div>
       </div>
 
-      <!-- Slide 2: Actividad iconos y comandos -->
+      <!-- Slide 2: Actividad ARRASTRAR ÍCONOS AL COMANDO -->
       <div class="slide">
         <div class="instruction-box"><strong>Instrucción:</strong> Arrastre cada ícono al comando que corresponde.</div>
-        <div class="image-frame" style="margin-bottom:8px;"><img src="media/Imagen 40.png" alt="Esquema comando e ícono" style="max-height:160px;"><div class="image-caption">Esquema de referencia: Comandos e íconos</div></div>
-        <div class="pairs-grid" id="pairsGrid">
-          <div class="pair-card" onclick="showPairModal(1)"><img src="media/Imagen 41.png" alt="Comando"><div class="pair-label">Comando 1</div></div>
-          <div class="pair-card" onclick="showPairModal(2)"><img src="media/Imagen 42.png" alt="Ícono"><div class="pair-label">Ícono 1</div></div>
-          <div class="pair-card" onclick="showPairModal(3)"><img src="media/Imagen 43.png" alt="Comando"><div class="pair-label">Comando 2</div></div>
-          <div class="pair-card" onclick="showPairModal(4)"><img src="media/Imagen 44.png" alt="Ícono"><div class="pair-label">Ícono 2</div></div>
-          <div class="pair-card" onclick="showPairModal(5)"><img src="media/Imagen 45.png" alt="Comando"><div class="pair-label">Comando 3</div></div>
-          <div class="pair-card" onclick="showPairModal(6)"><img src="media/Imagen 46.png" alt="Ícono"><div class="pair-label">Ícono 3</div></div>
-          <div class="pair-card" onclick="showPairModal(7)"><img src="media/Imagen 47.png" alt="Comando"><div class="pair-label">Comando 4</div></div>
-          <div class="pair-card" onclick="showPairModal(8)"><img src="media/Imagen 48.png" alt="Ícono"><div class="pair-label">Ícono 4</div></div>
-          <div class="pair-card" onclick="showPairModal(9)"><img src="media/Imagen 49.png" alt="Comando"><div class="pair-label">Comando 5</div></div>
-          <div class="pair-card" onclick="showPairModal(10)"><img src="media/Imagen 50.png" alt="Ícono"><div class="pair-label">Ícono 5</div></div>
-          <div class="pair-card" onclick="showPairModal(11)"><img src="media/Imagen 51.png" alt="Comando"><div class="pair-label">Comando 6</div></div>
-          <div class="pair-card" onclick="showPairModal(12)"><img src="media/Imagen 52.png" alt="Ícono"><div class="pair-label">Ícono 6</div></div>
+        <div class="pairs-container" id="pairsContainer">
+          <!-- Se genera por JS -->
         </div>
-        <div style="text-align:center; margin-top:8px;">
-          <button class="start-btn" style="padding:10px 24px; font-size:13px; border-radius:8px;" onclick="openModal('modal_respuestas_pares')">Ver emparejamiento correcto</button>
+        <div class="draggable-icons" id="draggableIcons">
+          <!-- Se genera por JS -->
+        </div>
+        <div class="feedback-box" id="fb-pairs"></div>
+        <div class="action-btns">
+          <button class="btn btn-secondary" onclick="resetPairs()">🔄 Reiniciar</button>
+          <button class="btn btn-primary" id="btn-check-pairs" onclick="checkPairs()">✅ Verificar</button>
+          <button class="btn btn-secondary" onclick="openModal('modal_respuestas_pares')">👁️ Ver respuesta</button>
         </div>
       </div>
 
@@ -198,13 +235,13 @@ body {
             <div class="proj-tab" onclick="switchProj('americano',this)">Modelo Americano</div>
           </div>
           <div class="projection-content active" id="proj-europeo">
-            <div class="image-frame"><img src="media/Imagen 53.gif" alt="Modelo Europeo - despliegue"><div class="image-caption">Se despliega desde la parte posterior</div></div>
+            <div class="image-frame"><img src="media/Imagen 53.gif" alt="Modelo Europeo - despliegue" onerror="this.style.display='none'"><div class="image-caption">Se despliega desde la parte posterior</div></div>
             <p class="modal-text" style="margin-top:10px; font-size:13px;">En este modelo hay que distinguir que los nombres cambian, pues la cara posterior es ahora la vista FRONTAL. Y las demás caras giran en función de sus aristas.</p>
-            <div class="image-frame" style="margin-top:10px;"><img src="media/Imagen 54.gif" alt="Objeto original modelo europeo"><div class="image-caption">Objeto original - fijarse en los colores de las caras vistas</div></div>
+            <div class="image-frame" style="margin-top:10px;"><img src="media/Imagen 54.gif" alt="Objeto original modelo europeo" onerror="this.style.display='none'"><div class="image-caption">Objeto original - fijarse en los colores de las caras vistas</div></div>
             <p class="modal-text" style="margin-top:10px; font-size:13px;">El objeto original te da la información del objeto armado para comparar con el despliegue posterior.</p>
           </div>
           <div class="projection-content" id="proj-americano">
-            <div class="image-frame"><img src="media/Imagen 55.gif" alt="Modelo Americano - despliegue"><div class="image-caption">Se despliega desde la parte frontal</div></div>
+            <div class="image-frame"><img src="media/Imagen 55.gif" alt="Modelo Americano - despliegue" onerror="this.style.display='none'"><div class="image-caption">Se despliega desde la parte frontal</div></div>
             <p class="modal-text" style="margin-top:10px; font-size:13px;">En el modelo americano, la cara frontal sigue siendo la vista FRONTAL en el plano. Las demás caras giran en función de sus aristas.</p>
           </div>
         </div>
@@ -213,20 +250,29 @@ body {
       <!-- Slide 4: Pieza industrial - Vistas -->
       <div class="slide">
         <div class="instruction-box"><strong>Instrucción:</strong> Observa una pieza industrial, en la cual se deben reconocer las VISTAS O CARAS. Compare la pieza original con giros; de la pieza completa y también recortada. ¡Mírelo las veces que desee!</div>
-        <div class="image-frame"><img src="media/Imagen 56.jpg" alt="Pieza industrial original"><div class="image-caption">Pieza industrial - Vista original</div></div>
-        <div class="image-frame"><img src="media/Imagen 57.gif" alt="Pieza completa con giros"><div class="image-caption">Pieza completa con giros</div></div>
-        <div class="image-frame"><img src="media/Imagen 58.gif" alt="Pieza recortada con giros"><div class="image-caption">Pieza recortada con giros</div></div>
+        <div class="image-frame"><img src="media/Imagen 56.jpg" alt="Pieza industrial original" onerror="this.style.display='none'"><div class="image-caption">Pieza industrial - Vista original</div></div>
+        <div class="image-frame"><img src="media/Imagen 57.gif" alt="Pieza completa con giros" onerror="this.style.display='none'"><div class="image-caption">Pieza completa con giros</div></div>
+        <div class="image-frame"><img src="media/Imagen 58.gif" alt="Pieza recortada con giros" onerror="this.style.display='none'"><div class="image-caption">Pieza recortada con giros</div></div>
       </div>
 
-      <!-- Slide 5: Completar microrred -->
+      <!-- Slide 5: ACTIVIDAD COMPLETAR MICRORRED -->
       <div class="slide">
         <div class="instruction-box"><strong>Instrucción:</strong> Arrastre las palabras para completar la información.</div>
-        <div class="word-fill-text">
-          En una microrred se debe ubicar <span class="word-fill">el equipo a usar</span> sin olvidar colocar su <span class="word-fill">orientación</span> por medio de <span class="word-fill">flechas,</span> además de elementos de <span class="word-fill">interconexión</span> y <span class="word-fill">accesibilidad</span>. Verificar, ubicar alzados, <span class="word-fill">secciones y detalles</span> con la escala de dibujo, acotaciones y simbología.
+        <div class="fill-sentence" id="fillSentence">
+          En una microrred se debe ubicar <span class="blank" data-blank="0" data-answer="el equipo a usar" onclick="clearBlank(this)">_____</span> sin olvidar colocar su <span class="blank" data-blank="1" data-answer="orientación" onclick="clearBlank(this)">_____</span> por medio de <span class="blank" data-blank="2" data-answer="flechas" onclick="clearBlank(this)">_____</span>, además de elementos de <span class="blank" data-blank="3" data-answer="interconexión" onclick="clearBlank(this)">_____</span> y <span class="blank" data-blank="4" data-answer="accesibilidad" onclick="clearBlank(this)">_____</span>. Verificar, ubicar alzados, <span class="blank" data-blank="5" data-answer="secciones y detalles" onclick="clearBlank(this)">_____</span> con la escala de dibujo, acotaciones y simbología.
         </div>
-        <div class="word-options">
-          <span class="word-chip">Flechas</span><span class="word-chip">Interconexión</span><span class="word-chip">Secciones y detalles</span>
-          <span class="word-chip">Accesibilidad</span><span class="word-chip">Orientación</span><span class="word-chip">El equipo a usar</span>
+        <div class="word-options" id="wordOptions">
+          <span class="word-chip" data-val="flechas" onclick="placeChip(this)">Flechas</span>
+          <span class="word-chip" data-val="interconexión" onclick="placeChip(this)">Interconexión</span>
+          <span class="word-chip" data-val="secciones y detalles" onclick="placeChip(this)">Secciones y detalles</span>
+          <span class="word-chip" data-val="accesibilidad" onclick="placeChip(this)">Accesibilidad</span>
+          <span class="word-chip" data-val="orientación" onclick="placeChip(this)">Orientación</span>
+          <span class="word-chip" data-val="el equipo a usar" onclick="placeChip(this)">El equipo a usar</span>
+        </div>
+        <div class="feedback-box" id="fb-microrred"></div>
+        <div class="action-btns">
+          <button class="btn btn-secondary" onclick="resetMicrorred()">🔄 Reiniciar</button>
+          <button class="btn btn-primary" id="btn-check-microrred" onclick="checkMicrorred()">✅ Verificar</button>
         </div>
       </div>
 
@@ -246,32 +292,25 @@ body {
     <div class="modal-header"><div class="modal-title">✅ Emparejamiento correcto</div><button class="modal-close" onclick="closeModal('modal_respuestas_pares')">×</button></div>
     <div class="modal-body">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; text-align:center;">
-        <div><img src="media/Imagen 41.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
-        <div><img src="media/Imagen 42.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
-        <div><img src="media/Imagen 43.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
-        <div><img src="media/Imagen 44.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
-        <div><img src="media/Imagen 45.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
-        <div><img src="media/Imagen 46.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
-        <div><img src="media/Imagen 47.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
-        <div><img src="media/Imagen 48.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
-        <div><img src="media/Imagen 49.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
-        <div><img src="media/Imagen 50.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
-        <div><img src="media/Imagen 51.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando</div></div>
-        <div><img src="media/Imagen 52.png" style="max-height:80px;"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono</div></div>
+        <div><img src="media/Image 13.jpg" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando 1</div></div>
+        <div><img src="media/image14.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono 1</div></div>
+        <div><img src="media/image15.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando 2</div></div>
+        <div><img src="media/image16.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono 2</div></div>
+        <div><img src="media/image17.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando 3</div></div>
+        <div><img src="media/image18.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono 3</div></div>
+        <div><img src="media/image19.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando 4</div></div>
+        <div><img src="media/image20.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono 4</div></div>
+        <div><img src="media/image21.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando 5</div></div>
+        <div><img src="media/image22.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono 5</div></div>
+        <div><img src="media/image23.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Comando 6</div></div>
+        <div><img src="media/image24.png" style="max-height:80px;" onerror="this.style.display='none'"><div style="font-size:12px;font-weight:700;margin-top:4px;">Ícono 6</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal: Generic pair modal -->
-<div class="modal-overlay" id="pairModal">
-  <div class="modal">
-    <div class="modal-header"><div class="modal-title" id="pairModalTitle">💡 Información</div><button class="modal-close" onclick="closeModal('pairModal')">×</button></div>
-    <div class="modal-body"><div id="pairModalContent"></div></div>
-  </div>
-</div>
-
 <script>
+/* ===== NAVEGACIÓN SLIDES ===== */
 let currentSlide=0;
 const totalSlides=6;
 let deployIndex=0;
@@ -307,22 +346,211 @@ function switchProj(id,el){
 
 function openModal(id){document.getElementById(id).classList.add('active');}
 function closeModal(id){document.getElementById(id).classList.remove('active');}
-function showPairModal(n){
-  const titles=['','Comando 1 + Ícono 1','Comando 2 + Ícono 2','Comando 3 + Ícono 3','Comando 4 + Ícono 4','Comando 5 + Ícono 5','Comando 6 + Ícono 6'];
-  document.getElementById('pairModalTitle').innerHTML='💡 '+titles[Math.ceil(n/2)]||'Elemento '+n;
-  let imgs='';
-  if(n%2===1){imgs='<div style="text-align:center;"><img src="media/Imagen '+('4'+(n))+'" style="max-height:120px;"><div style="margin-top:8px;font-weight:700;">Comando</div></div>';}
-  else{imgs='<div style="text-align:center;"><img src="media/Imagen '+('4'+(n))+'" style="max-height:120px;"><div style="margin-top:8px;font-weight:700;">Ícono</div></div>';}
-  document.getElementById('pairModalContent').innerHTML=imgs;
-  openModal('pairModal');
+
+/* ===== ACTIVIDAD: EMPAREJAR ÍCONOS Y COMANDOS ===== */
+const pairData = [
+  { cmdImg: 'media/Imagen 41.png', cmdLabel: 'Comando 1', iconImg: 'media/Imagen 42.png', iconLabel: 'Ícono 1' },
+  { cmdImg: 'media/Imagen 43.png', cmdLabel: 'Comando 2', iconImg: 'media/Imagen 44.png', iconLabel: 'Ícono 2' },
+  { cmdImg: 'media/Imagen 45.png', cmdLabel: 'Comando 3', iconImg: 'media/Imagen 46.png', iconLabel: 'Ícono 3' },
+  { cmdImg: 'media/Imagen 47.png', cmdLabel: 'Comando 4', iconImg: 'media/Imagen 48.png', iconLabel: 'Ícono 4' },
+  { cmdImg: 'media/Imagen 49.png', cmdLabel: 'Comando 5', iconImg: 'media/Imagen 50.png', iconLabel: 'Ícono 5' },
+  { cmdImg: 'media/Imagen 51.png', cmdLabel: 'Comando 6', iconImg: 'media/Imagen 52.png', iconLabel: 'Ícono 6' }
+];
+let pairState = {}; // { idx: iconImg }
+let selectedIcon = null; 
+
+function buildPairs() {
+  const container = document.getElementById('pairsContainer');
+  container.innerHTML = '';
+  pairData.forEach((row, i) => {
+    const div = document.createElement('div'); div.className = 'pair-row';
+    div.innerHTML = `
+      <div class="pair-cmd">
+        <img src="${row.cmdImg}" alt="${row.cmdLabel}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span class="pair-cmd-label" style="display:none;align-items:center;height:50px;">${row.cmdLabel}</span>
+        <span class="pair-cmd-label">${row.cmdLabel}</span>
+      </div>
+      <div class="drop-zone" id="pair-drop-${i}" onclick="tapPairDrop(${i})">Soltar ícono aquí</div>
+    `;
+    container.appendChild(div);
+  });
+
+  const iconCont = document.getElementById('draggableIcons');
+  iconCont.innerHTML = '';
+  const shuffled = [...pairData].sort(() => Math.random() - 0.5);
+  shuffled.forEach((row) => {
+    const div = document.createElement('div'); div.className = 'drag-icon'; div.draggable = true; div.dataset.icon = row.iconImg;
+    div.innerHTML = `<img src="${row.iconImg}" alt="${row.iconLabel}" onerror="this.parentElement.textContent='${row.iconLabel}'">`;
+    div.ondragstart = (e) => { e.dataTransfer.setData('icon', row.iconImg); div.classList.add('dragging'); };
+    div.ondragend = () => div.classList.remove('dragging');
+    div.onclick = () => tapPairIcon(div, row.iconImg);
+    iconCont.appendChild(div);
+  });
+  pairState = {};
 }
 
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');}));
-document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowRight') nextSlide();
-  if(e.key==='ArrowLeft') prevSlide();
-  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+function tapPairIcon(el, icon) {
+  if (el.classList.contains('placed')) return;
+  selectedIcon = icon;
+  document.querySelectorAll('.drag-icon').forEach(d => d.style.outline = '');
+  el.style.outline = '3px solid var(--primary)';
+}
+
+function tapPairDrop(idx) {
+  if (selectedIcon) {
+    // Si el ícono ya estaba en otra zona, quitarlo de ahí
+    for (let k in pairState) {
+      if (pairState[k] === selectedIcon && parseInt(k) !== idx) {
+        delete pairState[k];
+        document.getElementById(`pair-drop-${k}`).innerHTML = 'Soltar ícono aquí';
+        document.getElementById(`pair-drop-${k}`).classList.remove('filled');
+      }
+    }
+    pairState[idx] = selectedIcon;
+    const zone = document.getElementById(`pair-drop-${idx}`);
+    zone.innerHTML = `<img src="${selectedIcon}" style="max-width:80px;max-height:50px;">`;
+    zone.classList.add('filled');
+    selectedIcon = null;
+    document.querySelectorAll('.drag-icon').forEach(d => d.style.outline = '');
+    updatePairPlaced();
+  }
+}
+
+function updatePairPlaced() {
+  document.querySelectorAll('.drag-icon').forEach(d => {
+    d.classList.toggle('placed', Object.values(pairState).includes(d.dataset.icon));
+  });
+}
+
+// Drag & drop nativo
+function allowDrop(e) { e.preventDefault(); }
+function dropPair(e, idx) {
+  e.preventDefault();
+  const icon = e.dataTransfer.getData('icon');
+  if (!icon) return;
+  for (let k in pairState) {
+    if (pairState[k] === icon && parseInt(k) !== idx) {
+      delete pairState[k];
+      document.getElementById(`pair-drop-${k}`).innerHTML = 'Soltar ícono aquí';
+      document.getElementById(`pair-drop-${k}`).classList.remove('filled');
+    }
+  }
+  pairState[idx] = icon;
+  const zone = document.getElementById(`pair-drop-${idx}`);
+  zone.innerHTML = `<img src="${icon}" style="max-width:80px;max-height:50px;">`;
+  zone.classList.add('filled');
+  updatePairPlaced();
+}
+
+function resetPairs() {
+  pairState = {};
+  selectedIcon = null;
+  document.querySelectorAll('.drop-zone').forEach(z => {
+    z.innerHTML = 'Soltar ícono aquí'; z.className = 'drop-zone';
+  });
+  document.querySelectorAll('.drag-icon').forEach(d => {
+    d.classList.remove('placed'); d.style.outline = '';
+  });
+  const fb = document.getElementById('fb-pairs');
+  fb.className = 'feedback-box'; fb.innerHTML = '';
+  document.getElementById('btn-check-pairs').disabled = false;
+}
+
+function checkPairs() {
+  if (Object.keys(pairState).length < pairData.length) {
+    alert('⚠️ Coloca todos los íconos en sus comandos correspondientes.'); return;
+  }
+  let allOk = true;
+  pairData.forEach((row, i) => {
+    const zone = document.getElementById(`pair-drop-${i}`);
+    if (pairState[i] === row.iconImg) {
+      zone.classList.add('correct-drop');
+    } else {
+      zone.classList.add('wrong-drop'); allOk = false;
+    }
+  });
+  const fb = document.getElementById('fb-pairs');
+  if (allOk) {
+    fb.className = 'feedback-box success show';
+    fb.innerHTML = '✅ ¡Excelente! Todos los íconos están en el comando correcto.';
+  } else {
+    fb.className = 'feedback-box fail show';
+    fb.innerHTML = '❌ Algunos emparejamientos son incorrectos. Las zonas en rojo indican el error. Puedes reiniciar e intentar de nuevo.';
+  }
+  document.getElementById('btn-check-pairs').disabled = true;
+}
+
+/* ===== ACTIVIDAD: COMPLETAR MICRORRED ===== */
+let microrredState = {};
+
+function placeChip(chip) {
+  if (chip.classList.contains('used')) return;
+  const blanks = document.querySelectorAll('#fillSentence .blank:not(.filled)');
+  if (blanks.length === 0) return;
+  const target = blanks[0];
+  target.textContent = chip.dataset.val;
+  target.classList.add('filled');
+  microrredState[target.dataset.blank] = chip.dataset.val;
+  chip.classList.add('used');
+}
+
+function clearBlank(blank) {
+  if (blank.classList.contains('correct-blank') || blank.classList.contains('wrong-blank')) return;
+  if (!blank.classList.contains('filled')) return;
+  const val = blank.textContent.trim().toLowerCase();
+  document.querySelectorAll('#wordOptions .word-chip').forEach(c => {
+    if (c.dataset.val.toLowerCase() === val) c.classList.remove('used');
+  });
+  delete microrredState[blank.dataset.blank];
+  blank.textContent = '_____';
+  blank.classList.remove('filled');
+}
+
+function resetMicrorred() {
+  microrredState = {};
+  document.querySelectorAll('#fillSentence .blank').forEach(b => {
+    b.textContent = '_____'; b.className = 'blank';
+  });
+  document.querySelectorAll('#wordOptions .word-chip').forEach(c => c.classList.remove('used'));
+  const fb = document.getElementById('fb-microrred');
+  fb.className = 'feedback-box'; fb.innerHTML = '';
+  document.getElementById('btn-check-microrred').disabled = false;
+}
+
+function checkMicrorred() {
+  const blanks = document.querySelectorAll('#fillSentence .blank');
+  let allFilled = true;
+  blanks.forEach(b => { if (!b.classList.contains('filled')) allFilled = false; });
+  if (!allFilled) { alert('⚠️ Completa todos los espacios en blanco.'); return; }
+
+  let allOk = true;
+  blanks.forEach(b => {
+    const userVal = (b.textContent || '').trim().toLowerCase();
+    const correctVal = b.dataset.answer.toLowerCase();
+    if (userVal === correctVal) b.classList.add('correct-blank');
+    else { b.classList.add('wrong-blank'); allOk = false; }
+  });
+
+  const fb = document.getElementById('fb-microrred');
+  if (allOk) {
+    fb.className = 'feedback-box success show';
+    fb.innerHTML = '✅ ¡Perfecto! Has completado correctamente la información de la microrred.';
+  } else {
+    fb.className = 'feedback-box fail show';
+    fb.innerHTML = '❌ Algunos espacios son incorrectos. Revisa las marcas en rojo y corrige.';
+  }
+  document.getElementById('btn-check-microrred').disabled = true;
+}
+
+/* ===== INICIALIZAR ===== */
+buildPairs();
+
+// Agregar eventos dragover a las drop zones después de construirlas
+document.querySelectorAll('.drop-zone').forEach((zone, idx) => {
+  zone.ondragover = allowDrop;
+  zone.ondrop = (e) => dropPair(e, idx);
 });
+
 updateSlide();
 </script>
 </body>
