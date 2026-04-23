@@ -1,910 +1,1057 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proyecciones en CAD</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --blue:#1565c0;--blue2:#1e88e5;--cyan:#00acc1;--amber:#f59e0b;
-  --green:#22c55e;--red:#ef4444;--purple:#7c3aed;
-  --bg:#f0f5ff;--card:#fff;--text:#1e293b;--muted:#64748b;
-  --radius:14px;--sh:0 4px 20px rgba(21,101,192,.10);--sh2:0 8px 30px rgba(21,101,192,.18);
-}
-body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);
-  width:800px;max-width:800px;min-height:800px;overflow-x:hidden;font-size:13px;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyecciones en CAD — Juegos Interactivos</title>
+  <style>
+    :root {
+      --blue: #1a56db;
+      --blue-lt: #e8f0fe;
+      --blue-md: #3b82f6;
+      --teal: #0d9488;
+      --teal-lt: #ccfbf1;
+      --amber: #d97706;
+      --amber-lt: #fef3c7;
+      --red: #dc2626;
+      --green: #16a34a;
+      --green-lt: #dcfce7;
+      --white: #ffffff;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,.10);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,.15);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gray-50);color:var(--gray-900);width:800px;max-width:800px;overflow-x:hidden;}
 
-/* HEADER */
-.hdr{background:linear-gradient(135deg,#1565c0 0%,#00acc1 55%,#1e3a8a 100%);
-  color:#fff;padding:20px 26px 15px;display:flex;align-items:center;gap:14px;
-  position:relative;overflow:hidden;}
-.hdr::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;
-  border-radius:50%;background:rgba(255,255,255,.07);}
-.hdr::after{content:'';position:absolute;bottom:-30px;left:80px;width:130px;height:130px;
-  border-radius:50%;background:rgba(255,255,255,.05);}
-.hdr-icon{width:54px;height:54px;background:rgba(255,255,255,.18);border-radius:14px;
-  display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
-.hdr h1{font-size:21px;font-weight:800;letter-spacing:.4px;}
-.hdr p{font-size:11.5px;opacity:.85;margin-top:3px;}
+    /* INTRO */
+    #intro-screen{width:800px;height:800px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#0f172a 0%,#1e3a5f 50%,#0d9488 100%);position:relative;overflow:hidden;}
+    #intro-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(59,130,246,.25) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(13,148,136,.25) 0%,transparent 50%);pointer-events:none;}
+    #intro-screen::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+    .intro-badge{background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.4);color:#93c5fd;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:6px 18px;border-radius:99px;margin-bottom:20px;position:relative;z-index:1;}
+    .intro-icon{font-size:64px;margin-bottom:16px;position:relative;z-index:1;animation:float 3s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    .intro-title{font-size:36px;font-weight:800;color:#fff;text-align:center;line-height:1.15;margin-bottom:10px;position:relative;z-index:1;}
+    .intro-title span{color:#5eead4;}
+    .intro-sub{font-size:15px;color:rgba(255,255,255,.65);text-align:center;max-width:480px;line-height:1.6;margin-bottom:36px;position:relative;z-index:1;}
+    .games-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:680px;position:relative;z-index:1;margin-bottom:32px;}
+    .game-card-mini{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--radius);padding:14px 10px;text-align:center;cursor:pointer;transition:all .25s ease;backdrop-filter:blur(8px);}
+    .game-card-mini:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+    .game-card-mini .num{font-size:22px;font-weight:800;color:#5eead4;}
+    .game-card-mini .label{font-size:11px;color:rgba(255,255,255,.7);margin-top:4px;line-height:1.3;}
+    .btn-start{background:linear-gradient(135deg,var(--blue-md),var(--teal));color:#fff;border:none;padding:16px 48px;border-radius:99px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 20px rgba(59,130,246,.4);transition:all .25s ease;position:relative;z-index:1;}
+    .btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.5);}
 
-/* TABS */
-.tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;padding:0 14px;gap:2px;overflow-x:auto;}
-.tab{padding:10px 16px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;
-  border:none;border-bottom:3px solid transparent;background:none;outline:none;
-  white-space:nowrap;transition:all .22s;display:flex;align-items:center;gap:5px;}
-.tab:hover{color:var(--blue);}
-.tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+    /* GAMES WRAPPER */
+    #games-wrapper{display:none;width:800px;height:800px;flex-direction:column;overflow:hidden;}
+    .top-bar{background:#fff;border-bottom:2px solid var(--gray-200);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .top-bar .game-title{font-size:14px;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:8px;}
+    .top-bar .score-pill{background:var(--blue-lt);color:var(--blue);font-size:13px;font-weight:700;padding:5px 14px;border-radius:99px;}
+    .progress-dots{display:flex;gap:6px;align-items:center;}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--gray-300);transition:background .3s;cursor:pointer;}
+    .dot.active{background:var(--blue);}
+    .dot.done{background:var(--green);}
 
-/* VIEWS */
-.view{display:none;padding:18px 18px 14px;animation:fadeIn .3s ease;}
-.view.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    /* SLIDER */
+    .slider-container{flex:1;overflow:hidden;position:relative;}
+    .slides-track{display:flex;width:calc(800px * 6);height:100%;transition:transform .45s cubic-bezier(.77,0,.18,1);}
+    .slide{width:800px;height:100%;flex-shrink:0;overflow-y:auto;padding:20px 24px 16px;background:var(--gray-50);}
 
-/* SECTION HEADER */
-.sh{background:linear-gradient(90deg,var(--blue) 0%,var(--cyan) 100%);
-  border-radius:12px 12px 0 0;color:#fff;padding:11px 18px;font-size:13.5px;
-  font-weight:700;display:flex;align-items:center;gap:8px;}
-.sb{background:#fff;border-radius:0 0 12px 12px;padding:16px 18px;
-  border:1.5px solid #e2e8f0;border-top:none;}
+    /* SLIDE HEADER */
+    .slide-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+    .slide-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+    .slide-icon.blue{background:var(--blue-lt);}
+    .slide-icon.teal{background:var(--teal-lt);}
+    .slide-icon.amber{background:var(--amber-lt);}
+    .slide-meta{flex:1;}
+    .slide-num{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:2px;}
+    .slide-name{font-size:16px;font-weight:800;color:var(--gray-900);line-height:1.2;}
+    .instruction-box{background:linear-gradient(135deg,#e8f0fe,#dbeafe);border-left:4px solid var(--blue);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--gray-700);line-height:1.5;margin-bottom:16px;}
 
-/* CARDS GRID */
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
-.card{background:#fff;border-radius:var(--radius);padding:16px 13px 12px;
-  border:1.5px solid #e8eeff;box-shadow:var(--sh);cursor:pointer;
-  transition:transform .22s,box-shadow .22s,border-color .22s;
-  display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
-.card:hover{transform:translateY(-4px);box-shadow:var(--sh2);border-color:var(--blue);}
-.ci{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;
-  justify-content:center;font-size:22px;margin-bottom:2px;}
-.card h3{font-size:12.5px;font-weight:700;}
-.card p{font-size:11px;color:var(--muted);line-height:1.5;}
-.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;
-  background:var(--bg);color:var(--blue);margin-top:4px;}
+    /* JUEGO 1: D&D */
+    .dnd-layout{display:grid;grid-template-columns:2fr 1fr;gap:14px;}
+    .dnd-images-pool{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .drag-item{background:#fff;border:2px dashed var(--gray-300);border-radius:8px;padding:6px;cursor:grab;transition:all .2s;user-select:none;}
+    .drag-item:hover{border-color:var(--blue-md);box-shadow:0 2px 12px rgba(59,130,246,.2);}
+    .drag-item.dragging{opacity:.5;cursor:grabbing;}
+    .drag-item img{width:100%;height:auto;object-fit:contain;border-radius:4px;}
+    .drag-item .img-label{font-size:10px;text-align:center;color:var(--gray-600);margin-top:4px;}
+    .drop-zones{display:flex;flex-direction:column;gap:8px;}
+    .drop-zone{background:#fff;border:2px dashed var(--gray-300);border-radius:8px;min-height:72px;padding:8px;transition:all .2s;position:relative;}
+    .drop-zone.dragover{border-color:var(--blue);background:var(--blue-lt);}
+    .drop-zone.correct{border-color:var(--green);background:var(--green-lt);}
+    .drop-zone.incorrect{border-color:var(--red);background:#fee2e2;}
+    .drop-zone-label{font-size:11px;font-weight:700;color:var(--gray-600);margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px;}
+    .drop-zone .dropped-imgs{display:flex;gap:4px;flex-wrap:wrap;}
+    .drop-zone .dropped-imgs img{width:50px;height:40px;object-fit:contain;border-radius:4px;}
 
-/* IMAGE CARD */
-.img-card{background:#fff;border-radius:var(--radius);border:1.5px solid #e8eeff;
-  box-shadow:var(--sh);cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s;}
-.img-card:hover{transform:translateY(-4px);box-shadow:var(--sh2);border-color:var(--blue);}
-.img-card img{width:100%;height:120px;object-fit:cover;display:block;}
-.img-card .ic-label{padding:8px 10px;font-size:11.5px;font-weight:700;color:var(--text);
-  border-top:1px solid #e2e8f0;display:flex;align-items:center;gap:6px;}
+    /* JUEGO 2: FLASHCARDS */
+    .flashcards-grid{display:grid;gap:12px;}
+    .flashcard{perspective:800px;height:180px;cursor:pointer;}
+    .flashcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);}
+    .flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+    .flashcard-front,.flashcard-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:var(--shadow);}
+    .flashcard-front{background:linear-gradient(135deg,var(--blue),#1d4ed8);color:#fff;}
+    .flashcard-front .fc-icon{font-size:28px;margin-bottom:6px;}
+    .flashcard-front .fc-title{font-size:13px;font-weight:700;}
+    .flashcard-front .fc-sub{font-size:11px;opacity:.8;margin-top:3px;}
+    .flashcard-back{background:#fff;border:2px solid var(--blue-lt);transform:rotateY(180deg);}
+    .flashcard-back p{font-size:12px;line-height:1.5;color:var(--gray-700);}
 
-/* INFO BOX */
-.info{background:#e8f4fd;border-left:4px solid var(--cyan);border-radius:0 10px 10px 0;
-  padding:11px 14px;margin:12px 0;font-size:12.5px;line-height:1.6;color:#0d5e8c;}
-.warn{background:#fff8e1;border-left:4px solid var(--amber);border-radius:0 10px 10px 0;
-  padding:11px 14px;margin:12px 0;font-size:12.5px;line-height:1.6;}
-.warn strong{color:var(--amber);}
+    /* JUEGO 3: SECCIONES - NUEVO DISEÑO */
+    .section-question-block {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .section-question-block .sq-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .section-question-block .sq-img {
+      width: 100%;
+      max-height: 120px;
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid var(--gray-200);
+      margin-bottom: 10px;
+      display: block;
+    }
+    .section-question-block .sq-options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sq-opt-btn {
+      background: #fff;
+      border: 2px solid var(--gray-200);
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sq-opt-btn:hover:not(.disabled) { border-color: var(--blue-md); background: var(--blue-lt); }
+    .sq-opt-btn.correct { border-color: var(--green); background: var(--green-lt); color: var(--green); font-weight: 700; pointer-events: none; }
+    .sq-opt-btn.incorrect { border-color: var(--red); background: #fee2e2; color: var(--red); pointer-events: none; }
+    .sq-opt-btn.disabled { pointer-events: none; opacity: .5; }
+    .sq-opt-btn .opt-letter {
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--gray-300);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .sq-feedback {
+      font-size: 12px;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 8px;
+      display: none;
+      line-height: 1.5;
+    }
+    .sq-feedback.show { display: block; }
+    .sq-feedback.success { background: var(--green-lt); border-left: 3px solid var(--green); color: var(--green); }
+    .sq-feedback.error { background: #fee2e2; border-left: 3px solid var(--red); color: var(--red); }
 
-/* HATCH CARDS */
-.hatch-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px;}
-.hcard{background:#fff;border-radius:var(--radius);border:1.5px solid #e8eeff;
-  box-shadow:var(--sh);cursor:pointer;overflow:hidden;
-  transition:transform .22s,box-shadow .22s,border-color .22s;}
-.hcard:hover{transform:translateY(-4px);box-shadow:var(--sh2);border-color:var(--blue);}
-.hcard-head{padding:10px 12px;color:#fff;font-weight:700;font-size:12px;
-  display:flex;align-items:center;gap:7px;}
-.hcard-body{padding:10px 12px;font-size:11.5px;color:var(--muted);line-height:1.5;}
+    /* Opciones normales */
+    .options-list{display:flex;flex-direction:column;gap:8px;}
+    .option-btn{background:#fff;border:2px solid var(--gray-200);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;gap:10px;}
+    .option-btn:hover{border-color:var(--blue-md);background:var(--blue-lt);}
+    .option-btn.correct{border-color:var(--green);background:var(--green-lt);color:var(--green);font-weight:700;}
+    .option-btn.incorrect{border-color:var(--red);background:#fee2e2;color:var(--red);}
+    .option-btn.disabled{pointer-events:none;opacity:.6;}
+    .option-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--gray-300);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;}
 
-/* DRAG & DROP */
-.inst-box{background:linear-gradient(90deg,#e8f4fd,#d0eafc);border-radius:10px;
-  padding:11px 15px;font-size:12.5px;color:#0d5e8c;font-weight:600;
-  display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-.bank{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;
-  background:#f8faff;border-radius:10px;border:1.5px dashed #c7d2fe;
-  min-height:48px;margin-bottom:12px;}
-.chip{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;
-  padding:5px 13px;border-radius:20px;font-size:11.5px;font-weight:700;
-  cursor:grab;transition:transform .15s,box-shadow .15s,opacity .2s;
-  user-select:none;box-shadow:0 2px 8px rgba(21,101,192,.2);}
-.chip:hover{transform:scale(1.05);box-shadow:0 4px 14px rgba(21,101,192,.3);}
-.chip.dragging{opacity:.35;}
-.chip.used{display:none;}
-.sentence{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;
-  padding:14px 16px;font-size:13px;line-height:2.3;color:var(--text);}
-.dz{display:inline-block;min-width:110px;border-bottom:2.5px dashed var(--blue);
-  padding:2px 7px;border-radius:4px;background:#f0f5ff;cursor:pointer;
-  font-weight:700;color:var(--blue);transition:background .2s;
-  vertical-align:middle;min-height:22px;font-size:12px;}
-.dz.filled{background:#e0f7fa;border-bottom-color:var(--cyan);color:#007c91;border-bottom-style:solid;}
-.dz.correct{background:#e6ffed;border-bottom-color:var(--green);color:#166534;}
-.dz.wrong{background:#fff0f0;border-bottom-color:var(--red);color:#991b1b;}
-.dz.drag-over{background:#dbeafe;}
+    /* JUEGO 4: FILL BLANKS */
+    .word-bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+    .word-chip{background:var(--blue);color:#fff;border-radius:99px;padding:5px 14px;font-size:13px;cursor:grab;user-select:none;transition:all .2s;box-shadow:0 2px 8px rgba(26,86,219,.3);}
+    .word-chip:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(26,86,219,.4);}
+    .word-chip.used{opacity:.4;cursor:default;pointer-events:none;}
+    .blank-text{font-size:14px;line-height:2.2;color:var(--gray-700);background:#fff;border-radius:10px;padding:14px;border:1px solid var(--gray-200);}
+    .blank{display:inline-block;min-width:120px;height:26px;border-bottom:2px solid var(--blue);background:var(--blue-lt);border-radius:4px;vertical-align:middle;margin:0 4px;padding:0 8px;font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;transition:all .2s;position:relative;}
+    .blank.filled{background:#d1fae5;border-color:var(--green);color:var(--green);}
+    .blank.wrong{background:#fee2e2;border-color:var(--red);color:var(--red);}
 
-/* QUIZ */
-.quiz-block{background:#fff;border-radius:var(--radius);border:1.5px solid #e8eeff;
-  box-shadow:var(--sh);margin-bottom:14px;overflow:hidden;}
-.qb-head{background:linear-gradient(90deg,var(--blue),var(--cyan));color:#fff;
-  padding:10px 16px;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px;}
-.qb-body{padding:14px 16px;}
-.option{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;
-  cursor:pointer;transition:background .18s;margin:4px 0;font-size:12.5px;}
-.option:hover{background:#f0f5ff;}
-.option input{accent-color:var(--blue);width:15px;height:15px;}
-.option.correct{background:#e6ffed;color:#166534;}
-.option.wrong{background:#fff0f0;color:#991b1b;}
+    /* JUEGO 5 & 6: MULTI SELECT */
+    .checkbox-option{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--gray-200);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .2s;margin-bottom:8px;font-size:13px;}
+    .checkbox-option:hover{border-color:var(--blue-md);background:var(--blue-lt);}
+    .checkbox-option.selected{border-color:var(--blue);background:var(--blue-lt);}
+    .checkbox-option.correct{border-color:var(--green);background:var(--green-lt);}
+    .checkbox-option.incorrect{border-color:var(--red);background:#fee2e2;}
+    .cb-box{width:20px;height:20px;border-radius:5px;border:2px solid var(--gray-300);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;}
+    .checkbox-option.selected .cb-box{background:var(--blue);border-color:var(--blue);color:#fff;}
+    .checkbox-option.correct .cb-box{background:var(--green);border-color:var(--green);color:#fff;}
 
-/* BTNS */
-.actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
-.btn{padding:9px 20px;border-radius:25px;border:none;cursor:pointer;
-  font-size:12.5px;font-weight:700;transition:all .2s;outline:none;
-  display:flex;align-items:center;gap:6px;}
-.btn-p{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;
-  box-shadow:0 3px 12px rgba(21,101,192,.25);}
-.btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(21,101,192,.3);}
-.btn-s{background:#f1f5f9;color:var(--muted);}
-.btn-s:hover{background:#e2e8f0;color:var(--text);}
+    /* NAV */
+    .nav-bar{background:#fff;border-top:2px solid var(--gray-200);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .nav-btn{background:var(--gray-100);border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--gray-700);display:flex;align-items:center;gap:6px;}
+    .nav-btn:hover{background:var(--gray-200);}
+    .nav-btn.primary{background:var(--blue);color:#fff;box-shadow:0 2px 10px rgba(26,86,219,.3);}
+    .nav-btn.primary:hover{background:#1d4ed8;box-shadow:0 4px 16px rgba(26,86,219,.4);}
+    .nav-btn:disabled{opacity:.4;pointer-events:none;}
 
-/* FEEDBACK */
-.fb{padding:11px 15px;border-radius:10px;font-size:12.5px;font-weight:600;
-  margin-top:10px;display:none;align-items:center;gap:8px;}
-.fb.show{display:flex;}
-.fb.ok{background:#e6ffed;color:#166534;border:1.5px solid #86efac;}
-.fb.err{background:#fff0f0;color:#991b1b;border:1.5px solid #fca5a5;}
-.fb-detail{background:#f0f5ff;border-radius:10px;padding:12px 15px;
-  font-size:12px;line-height:1.7;margin-top:10px;border:1.5px solid #c7d2fe;display:none;}
-.fb-detail.show{display:block;}
+    /* FEEDBACK */
+    .feedback-banner{border-radius:8px;padding:10px 14px;font-size:13px;line-height:1.5;margin-top:12px;display:none;}
+    .feedback-banner.show{display:block;}
+    .feedback-banner.success{background:var(--green-lt);border-left:4px solid var(--green);color:var(--green);}
+    .feedback-banner.error{background:#fee2e2;border-left:4px solid var(--red);color:var(--red);}
+    .feedback-banner.info{background:var(--amber-lt);border-left:4px solid var(--amber);color:var(--amber);}
 
-/* MODAL */
-.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);
-  z-index:1000;align-items:center;justify-content:center;}
-.overlay.open{display:flex;}
-.modal{background:#fff;border-radius:20px;width:min(600px,94vw);
-  max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);
-  animation:slideUp .28s cubic-bezier(.22,1,.36,1);position:relative;}
-@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
-.modal-hdr{background:linear-gradient(135deg,var(--blue) 0%,var(--cyan) 100%);
-  color:#fff;padding:18px 22px;border-radius:20px 20px 0 0;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.modal-hdr h2{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
-.mcl{background:rgba(255,255,255,.2);border:none;cursor:pointer;color:#fff;
-  font-size:17px;width:30px;height:30px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0;}
-.mcl:hover{background:rgba(255,255,255,.35);}
-.modal-body{padding:20px;font-size:13px;line-height:1.7;color:var(--text);}
-.modal-body img{width:100%;border-radius:10px;margin:10px 0;box-shadow:var(--sh);}
-.modal-body p{margin-bottom:9px;}
-.modal-body ul{padding-left:18px;}
-.modal-body ul li{margin-bottom:6px;}
-.hl{background:#e8f4fd;border-radius:8px;padding:10px 13px;
-  margin:9px 0;border-left:3px solid var(--cyan);}
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;}
+    .modal-overlay.open{opacity:1;pointer-events:all;}
+    .modal-box{background:#fff;border-radius:16px;width:680px;max-height:760px;overflow-y:auto;padding:32px;box-shadow:var(--shadow-lg);transform:scale(.9) translateY(20px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+    .modal-overlay.open .modal-box{transform:scale(1) translateY(0);}
+    .modal-title{font-size:22px;font-weight:800;color:var(--gray-900);margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+    .modal-body{font-size:14px;line-height:1.7;color:var(--gray-700);}
+    .modal-body img{max-width:100%;border-radius:8px;margin:10px 0;}
+    .modal-close{float:right;background:var(--gray-100);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;}
+    .modal-close:hover{background:var(--gray-200);}
 
-/* PROJ IMAGE GRID */
-.proj-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;}
-.proj-item{background:#fff;border-radius:10px;border:1.5px solid #e8eeff;
-  overflow:hidden;cursor:pointer;box-shadow:var(--sh);
-  transition:transform .2s,box-shadow .2s,border-color .2s;}
-.proj-item:hover{transform:translateY(-3px);box-shadow:var(--sh2);border-color:var(--blue);}
-.proj-item img{width:100%;height:100px;object-fit:cover;display:block;}
-.proj-lbl{padding:7px 9px;font-size:11.5px;font-weight:700;
-  border-top:1px solid #e2e8f0;display:flex;align-items:center;gap:5px;}
+    /* RESULT */
+    #result-screen{display:none;width:800px;height:800px;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#0f172a 0%,#1e3a5f 60%,#0d9488 100%);position:relative;overflow:hidden;}
+    #result-screen::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+    .result-emoji{font-size:72px;margin-bottom:16px;position:relative;z-index:1;animation:float 3s ease-in-out infinite;}
+    .result-title{font-size:32px;font-weight:800;color:#fff;text-align:center;position:relative;z-index:1;margin-bottom:8px;}
+    .result-score-big{font-size:64px;font-weight:900;color:#5eead4;position:relative;z-index:1;line-height:1;margin-bottom:4px;}
+    .result-score-label{font-size:14px;color:rgba(255,255,255,.6);position:relative;z-index:1;margin-bottom:24px;}
+    .result-feedback-card{background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:20px 28px;max-width:600px;width:100%;position:relative;z-index:1;margin-bottom:24px;}
+    .result-feedback-card h3{color:#5eead4;font-size:14px;font-weight:700;margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;}
+    .result-feedback-card p{color:rgba(255,255,255,.8);font-size:13px;line-height:1.6;}
 
-/* REF */
-.ref{background:#f8faff;border:1.5px solid #e2e8f0;border-radius:10px;
-  padding:11px 14px;margin-top:12px;font-size:11.5px;color:var(--muted);line-height:1.7;}
-.ref strong{color:var(--blue);}
+    /* Score breakdown */
+    .score-breakdown {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      padding: 14px 20px;
+      max-width: 600px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 20px;
+    }
+    .score-breakdown h4 {
+      color: rgba(255,255,255,.7);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+    }
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: rgba(255,255,255,.65);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .score-row:last-child { border-bottom: none; }
+    .score-row .pts {
+      font-weight: 700;
+      color: #5eead4;
+    }
 
-@media(max-width:600px){
-  body{width:100%;}
-  .grid,.grid2,.hatch-grid,.proj-grid{grid-template-columns:1fr 1fr;}
-  .hdr h1{font-size:17px;}
-  .tab{padding:8px 10px;font-size:11px;}
-}
-</style>
+    .btn-retry{background:linear-gradient(135deg,var(--blue-md),var(--teal));color:#fff;border:none;padding:14px 40px;border-radius:99px;font-size:15px;font-weight:700;cursor:pointer;position:relative;z-index:1;box-shadow:0 4px 20px rgba(59,130,246,.4);transition:all .25s;}
+    .btn-retry:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(59,130,246,.5);}
+
+    /* CHECK BTN */
+    .check-btn{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:12px;}
+    .check-btn:hover{background:#0f766e;}
+
+    @media(max-width:600px){
+      body,#intro-screen,#games-wrapper,#result-screen{width:100%;}
+      .games-grid{width:95%;grid-template-columns:repeat(2,1fr);}
+      .dnd-layout{grid-template-columns:1fr;}
+      .flashcards-grid{grid-template-columns:repeat(2,1fr);}
+      .modal-box{width:95%;padding:20px;}
+      .slides-track{width:calc(100vw * 6);}
+      .slide{width:100vw;}
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- HEADER -->
-<div class="hdr">
-  <div class="hdr-icon">📐</div>
-  <div>
-    <h1>Proyecciones en CAD</h1>
-    <p>Domina las vistas, secciones y proyecciones axonométricas 🖊️</p>
-  </div>
-</div>
-
-<!-- TABS -->
-<div class="tabs">
-  <button class="tab active" onclick="goTab('t1',this)">🏠 Inicio</button>
-  <button class="tab" onclick="goTab('t2',this)">📦 Proyecciones</button>
-  <button class="tab" onclick="goTab('t3',this)">✂️ Secciones</button>
-  <button class="tab" onclick="goTab('t4',this)">🔲 Hatch</button>
-  <button class="tab" onclick="goTab('t5',this)">✏️ Actividades</button>
-</div>
-
-<!-- ═══════════════════════════════════════
-     TAB 1 — INICIO
-═══════════════════════════════════════ -->
-<div class="view active" id="t1">
-  <div class="sh">🎯 ¿Qué aprenderás hoy?</div>
-  <div class="sb">
-    <p style="color:var(--muted);font-size:12.5px;line-height:1.6;">Haz clic en cada tarjeta para explorar los conceptos de <strong>Proyecciones en CAD</strong>.</p>
+  <!-- PANTALLA INICIAL -->
+  <div id="intro-screen">
+    <div class="intro-badge">📐 Sesión 6 · Guión 7</div>
+    <div class="intro-icon">🎮</div>
+    <div class="intro-title">Proyecciones en <span>CAD</span></div>
+    <p class="intro-sub">Pon a prueba tus conocimientos sobre proyecciones axonométricas, secciones y comandos CAD con estos 6 juegos interactivos.</p>
+    <div class="games-grid">
+      <div class="game-card-mini"><div class="num">01</div><div class="label">Arrastra las proyecciones</div></div>
+      <div class="game-card-mini"><div class="num">02</div><div class="label">Flashcards HATCH</div></div>
+      <div class="game-card-mini"><div class="num">03</div><div class="label">Tipo de sección</div></div>
+      <div class="game-card-mini"><div class="num">04</div><div class="label">Completa el texto</div></div>
+      <div class="game-card-mini"><div class="num">05</div><div class="label">Atajos CAD</div></div>
+      <div class="game-card-mini"><div class="num">06</div><div class="label">Vistas en ingeniería</div></div>
+    </div>
+    <button class="btn-start" onclick="startGames()">¡Comenzar juegos! 🚀</button>
   </div>
 
-  <div class="grid" style="margin-top:14px;">
-    <div class="card" onclick="openM('m-iso')">
-      <div class="ci" style="background:#e8f4fd;">📦</div>
-      <h3>Proyecciones Axonométricas</h3>
-      <p>Isometría, dimetría y trimetría según norma ISO.</p>
-      <span class="badge">Explorar →</span>
-    </div>
-    <div class="card" onclick="openM('m-vistas')">
-      <div class="ci" style="background:#f0fdf4;">🔭</div>
-      <h3>Vistas en Ingeniería</h3>
-      <p>Frontal, lateral, posterior, planta y volumetría.</p>
-      <span class="badge">Ver más →</span>
-    </div>
-    <div class="card" onclick="openM('m-secciones')">
-      <div class="ci" style="background:#fff8e1;">✂️</div>
-      <h3>Secciones y Cortes</h3>
-      <p>Sección transversal, longitudinal y plano de corte.</p>
-      <span class="badge">Ver más →</span>
-    </div>
-    <div class="card" onclick="openM('m-hatch')">
-      <div class="ci" style="background:#fce4ec;">🔲</div>
-      <h3>Hatch / Rellenos</h3>
-      <p>Comandos H y HE para sombreados y texturas en CAD.</p>
-      <span class="badge">Conocer →</span>
-    </div>
-    <div class="card" onclick="goTab('t5', document.querySelectorAll('.tab')[4])">
-      <div class="ci" style="background:#f3e8ff;">🧩</div>
-      <h3>Actividades Interactivas</h3>
-      <p>Arrastra, selecciona y completa los ejercicios.</p>
-      <span class="badge">¡Practicar! →</span>
-    </div>
-    <div class="card" onclick="openM('m-atajos')">
-      <div class="ci" style="background:#e0f2fe;">⌨️</div>
-      <h3>Atajos CAD</h3>
-      <p>Comandos rápidos para hatch, edición y proyecciones.</p>
-      <span class="badge">Ver atajos →</span>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════
-     TAB 2 — PROYECCIONES
-═══════════════════════════════════════ -->
-<div class="view" id="t2">
-  <div class="sh">📦 Tipos de Proyecciones Axonométricas</div>
-  <div class="sb">
-    <p style="font-size:12.5px;color:var(--muted);line-height:1.6;">
-      Las proyecciones axonométricas se dividen según la relación entre sus ejes. Haz clic en cada imagen para ampliar.
-    </p>
-    <div class="info">📐 Las proyecciones axonométricas bajo norma ISO dividen el espacio en <strong>360° / 3 = 120°</strong> entre los tres ejes principales (X, Y, Z), garantizando que las dimensiones se representen en la misma escala.</div>
-  </div>
-
-  <div class="proj-grid">
-    <div class="proj-item" onclick="openM('m-img59')">
-      <img src="media/Imagen 59.png" alt="Isometría" onerror="this.style.cssText='height:100px;background:#e8f4fd;display:flex;align-items:center;justify-content:center;font-size:28px;'">
-      <div class="proj-lbl">📦 Isometría</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img60')">
-      <img src="media/Imagen 60.jpg" alt="Isometría #1" onerror="this.style.cssText='height:100px;background:#e8f4fd;'">
-      <div class="proj-lbl">📦 Isometría #1</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img61')">
-      <img src="media/Imagen 61.jpg" alt="Dimetría #1" onerror="this.style.cssText='height:100px;background:#fff8e1;'">
-      <div class="proj-lbl">📐 Dimetría #1</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img62')">
-      <img src="media/Imagen 62.jpg" alt="Dimetría #2" onerror="this.style.cssText='height:100px;background:#fff8e1;'">
-      <div class="proj-lbl">📐 Dimetría #2</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img63')">
-      <img src="media/Imagen 63.jpg" alt="Trimetría #1" onerror="this.style.cssText='height:100px;background:#f0fdf4;'">
-      <div class="proj-lbl">🔺 Trimetría #1</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img64')">
-      <img src="media/Imagen 64.jpg" alt="Trimetría #2" onerror="this.style.cssText='height:100px;background:#f0fdf4;'">
-      <div class="proj-lbl">🔺 Trimetría #2</div>
-    </div>
-  </div>
-
-  <div class="sh" style="margin-top:16px;">🔭 Vistas en un plano de ingeniería</div>
-  <div class="sb">
-    <p style="font-size:12.5px;line-height:1.6;color:var(--muted);">En ingeniería, el número de vistas depende de la complejidad de la pieza. Un plano técnico profesional suele incluir:</p>
-    <div class="grid2" style="margin-top:12px;">
-      <div class="card" onclick="openM('m-vistas')">
-        <div class="ci" style="background:#e8f4fd;">📋</div>
-        <h3>Sistema de vistas diédricas</h3>
-        <p>Elevación frontal, Lateral, Posterior, Planta.</p>
-        <span class="badge">Ver detalle →</span>
+  <!-- ZONA DE JUEGOS -->
+  <div id="games-wrapper">
+    <div class="top-bar">
+      <div class="game-title">
+        <span id="current-game-icon">🎯</span>
+        <span id="current-game-title">Juego 1</span>
       </div>
-      <div class="card" onclick="openM('m-vistas2')">
-        <div class="ci" style="background:#f0fdf4;">🎲</div>
-        <h3>Vistas + Volumetría</h3>
-        <p>Dos alzados + planta + Volumetría tridimensional.</p>
-        <span class="badge">Ver detalle →</span>
-      </div>
+      <div class="progress-dots" id="progress-dots"></div>
+      <div class="score-pill">⭐ <span id="score-display">0</span> pts</div>
+    </div>
+
+    <div class="slider-container">
+      <div class="slides-track" id="slides-track">
+
+        <!-- ─── JUEGO 1: DRAG & DROP ─────────────────── -->
+        <div class="slide" id="slide-0">
+          <div class="slide-header">
+            <div class="slide-icon blue">📐</div>
+            <div class="slide-meta">
+              <div class="slide-num">Juego 01 de 06</div>
+              <div class="slide-name">Arrastra las proyecciones</div>
+            </div>
+          </div>
+          <div class="instruction-box">🖱️ <strong>Instrucción:</strong> Arrastre cada representación gráfica y colóquela en el tipo de proyección que corresponda.</div>
+          <div class="dnd-layout">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--gray-600);margin-bottom:8px;">REPRESENTACIONES GRÁFICAS</div>
+              <div class="dnd-images-pool" id="dnd-pool">
+                <div class="drag-item" draggable="true" data-id="iso1" ondragstart="dragStart(event)">
+                  <img src="media/Imagen 60.jpg" alt="Isometría 1"><div class="img-label">Figura A</div>
+                </div>
+                <div class="drag-item" draggable="true" data-id="dim1" ondragstart="dragStart(event)">
+                  <img src="media/Imagen 61.jpg" alt="Dimetría 1"><div class="img-label">Figura B</div>
+                </div>
+                <div class="drag-item" draggable="true" data-id="dim2" ondragstart="dragStart(event)">
+                  <img src="media/Imagen 62.jpg" alt="Dimetría 2"><div class="img-label">Figura C</div>
+                </div>
+                <div class="drag-item" draggable="true" data-id="tri1" ondragstart="dragStart(event)">
+                  <img src="media/Imagen 63.jpg" alt="Trimetría 1"><div class="img-label">Figura D</div>
+                </div>
+                <div class="drag-item" draggable="true" data-id="iso2" ondragstart="dragStart(event)">
+                  <img src="media/Imagen 64.jpg" alt="Isometría 2"><div class="img-label">Figura E</div>
+                </div>
+                <div class="drag-item" draggable="true" data-id="tri2" ondragstart="dragStart(event)">
+                  <img src="media/Imagen 65.jpg" alt="Trimetría 2"><div class="img-label">Figura F</div>
+                </div>
+              </div>
+            </div>
+            <div class="drop-zones">
+              <div class="drop-zone" id="zone-isometria" data-accepts="iso1,iso2"
+                ondragover="event.preventDefault();this.classList.add('dragover')"
+                ondragleave="this.classList.remove('dragover')" ondrop="dropItem(event,'zone-isometria')">
+                <div class="drop-zone-label">📊 Isometría</div>
+                <div class="dropped-imgs" id="zone-isometria-imgs"></div>
+              </div>
+              <div class="drop-zone" id="zone-dimetria" data-accepts="dim1,dim2"
+                ondragover="event.preventDefault();this.classList.add('dragover')"
+                ondragleave="this.classList.remove('dragover')" ondrop="dropItem(event,'zone-dimetria')">
+                <div class="drop-zone-label">📊 Dimetría</div>
+                <div class="dropped-imgs" id="zone-dimetria-imgs"></div>
+              </div>
+              <div class="drop-zone" id="zone-trimetria" data-accepts="tri1,tri2"
+                ondragover="event.preventDefault();this.classList.add('dragover')"
+                ondragleave="this.classList.remove('dragover')" ondrop="dropItem(event,'zone-trimetria')">
+                <div class="drop-zone-label">📊 Trimetría</div>
+                <div class="dropped-imgs" id="zone-trimetria-imgs"></div>
+              </div>
+            </div>
+          </div>
+          <button class="check-btn" onclick="checkDnD()">✅ Verificar respuestas</button>
+          <div class="feedback-banner" id="fb-dnd"></div>
+        </div>
+
+        <!-- ─── JUEGO 2: FLASHCARDS ───────────────────── -->
+        <div class="slide" id="slide-1">
+          <div class="slide-header">
+            <div class="slide-icon teal">🃏</div>
+            <div class="slide-meta">
+              <div class="slide-num">Juego 02 de 06</div>
+              <div class="slide-name">Flashcards — Comandos HATCH</div>
+            </div>
+          </div>
+          <div class="instruction-box">👆 <strong>Instrucción:</strong> Revise las siguientes tarjetas acerca de HATCH. Haga clic en cada tarjeta para revelar su descripción.</div>
+          <div class="flashcards-grid">
+            <div class="flashcard" onclick="flipCard(this)">
+              <div class="flashcard-inner">
+                <div class="flashcard-front">
+                  <div class="fc-icon">🎨</div>
+                  <div class="fc-title">Rellenos / Selección</div>
+                  <div class="fc-sub">Boundaries / pattern</div>
+                </div>
+                <div class="flashcard-back">
+                  <p>Grupo de comandos con acciones de inserción por cliqueo de puntos internos, selección de objetos y tipos de rellenos.</p>
+                  <div style="margin-bottom:12px;">
+                    <img src="media/Imagen 66.jpg" alt="HATCH referencia" style="width:100%;max-height:140px;object-fit:contain;border-radius:8px;border:1px solid var(--gray-200);">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flashcard" onclick="flipCard(this)">
+              <div class="flashcard-inner">
+                <div class="flashcard-front" style="background:linear-gradient(135deg,var(--teal),#059669)">
+                  <div class="fc-icon">⚙️</div>
+                  <div class="fc-title">Propiedades</div>
+                  <div class="fc-sub">Grupo de comandos / properties</div>
+                </div>
+                <div class="flashcard-back">
+                  <p>Grupo de comandos que editan propiedades como escala, transparencia, ángulos y color.</p>
+                  <div style="margin-bottom:12px;">
+                    <img src="media/Imagen 67.jpg" alt="HATCH referencia" style="width:100%;max-height:140px;object-fit:contain;border-radius:8px;border:1px solid var(--gray-200);">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flashcard" onclick="flipCard(this)">
+              <div class="flashcard-inner">
+                <div class="flashcard-front" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">
+                  <div class="fc-icon">🔧</div>
+                  <div class="fc-title">Edición avanzada</div>
+                  <div class="fc-sub">Options / origin / close</div>
+                </div>
+                <div class="flashcard-back">
+                  <p>Grupo de comandos con acciones de selección de punto de origen, copia de propiedades y anotaciones con información dimensional.</p>
+                  <div style="margin-bottom:12px;">
+                    <img src="media/Imagen 68.jpg" alt="HATCH referencia" style="width:100%;max-height:140px;object-fit:contain;border-radius:8px;border:1px solid var(--gray-200);">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="feedback-banner show info" style="margin-top:14px;">
+            💡 Haz clic en cada tarjeta para girarla y leer la descripción completa de cada grupo de comandos HATCH.
+          </div>
+        </div>
+
+        <!-- ─── JUEGO 3: TIPO DE SECCIÓN (REDISEÑADO) ── -->
+        <div class="slide" id="slide-2">
+          <div class="slide-header">
+            <div class="slide-icon blue">🔍</div>
+            <div class="slide-meta">
+              <div class="slide-num">Juego 03 de 06</div>
+              <div class="slide-name">Identifica el tipo de sección</div>
+            </div>
+          </div>
+          <div class="instruction-box">🖱️ <strong>Instrucción:</strong> Para cada imagen, seleccione la opción que describe correctamente el tipo de sección ilustrada.</div>
+
+          <!-- Pregunta 3.1 -->
+          <div class="section-question-block" id="sq1-block">
+            <div class="sq-title">📷 Imagen 1 — ¿Qué tipo de sección se muestra?</div>
+            <img src="media/Imagen 69.jpg" alt="Sección 1" class="sq-img">
+            <div class="sq-options" id="sq1-opts">
+              <button class="sq-opt-btn" data-correct="false" onclick="answerSection(this,'sq1','❌ Incorrecto. Esta imagen muestra una sección transversal, donde el plano de corte es perpendicular al eje longitudinal de la pieza.')">
+                <span class="opt-letter">a</span> Sección longitudinal
+              </button>
+              <button class="sq-opt-btn" data-correct="true" onclick="answerSection(this,'sq1','✅ ¡Correcto! El plano de corte es perpendicular al eje de mayor longitud de la pieza, mostrando su sección interna más estrecha.')">
+                <span class="opt-letter">b</span> Sección transversal
+              </button>
+              <button class="sq-opt-btn" data-correct="false" onclick="answerSection(this,'sq1','❌ Incorrecto. La sección integral no existe como categoría estándar. Esta imagen muestra una sección transversal.')">
+                <span class="opt-letter">c</span> Sección integral
+              </button>
+            </div>
+            <div class="sq-feedback" id="sq1-fb"></div>
+          </div>
+
+          <!-- Pregunta 3.2 -->
+          <div class="section-question-block" id="sq2-block">
+            <div class="sq-title">📷 Imagen 2 — ¿Qué tipo de sección se muestra?</div>
+            <img src="media/Imagen 70.jpg" alt="Sección 2" class="sq-img">
+            <div class="sq-options" id="sq2-opts">
+              <button class="sq-opt-btn" data-correct="true" onclick="answerSection(this,'sq2','✅ ¡Correcto! El plano de corte es paralelo al eje de mayor longitud de la pieza, permitiendo visualizar la disposición interna a lo largo de toda su extensión.')">
+                <span class="opt-letter">a</span> Sección longitudinal
+              </button>
+              <button class="sq-opt-btn" data-correct="false" onclick="answerSection(this,'sq2','❌ Incorrecto. La sección transversal tiene un corte perpendicular al eje. Esta imagen muestra una sección longitudinal.')">
+                <span class="opt-letter">b</span> Sección transversal
+              </button>
+              <button class="sq-opt-btn" data-correct="false" onclick="answerSection(this,'sq2','❌ Incorrecto. La sección oblicua tiene un corte en ángulo. Esta imagen muestra una sección longitudinal.')">
+                <span class="opt-letter">c</span> Sección oblicua
+              </button>
+            </div>
+            <div class="sq-feedback" id="sq2-fb"></div>
+          </div>
+
+          <!-- Pregunta 3.3 -->
+          <div class="section-question-block" id="sq3-block">
+            <div class="sq-title">📷 Imagen 3 — ¿Qué característica tiene esta sección?</div>
+            <img src="media/Imagen 71.jpg" alt="Sección 3" class="sq-img">
+            <div class="sq-options" id="sq3-opts">
+              <button class="sq-opt-btn" data-correct="false" onclick="answerSection(this,'sq3','❌ Incorrecto. Los elementos ocultos se representan con línea entrecortada fina, no con línea continua.')">
+                <span class="opt-letter">a</span> Usa línea continua para objetos ocultos
+              </button>
+              <button class="sq-opt-btn" data-correct="false" onclick="answerSection(this,'sq3','❌ Incorrecto. El sombreado de corte utiliza líneas paralelas con ángulo de 45°, no perpendiculares.')">
+                <span class="opt-letter">b</span> El sombreado es perpendicular a 90°
+              </button>
+              <button class="sq-opt-btn" data-correct="true" onclick="answerSection(this,'sq3','✅ ¡Correcto! Las áreas cortadas se identifican con líneas de sombreado (HATCH) a 45°, y los elementos ocultos se representan con línea entrecortada fina (pluma 0.1).')">
+                <span class="opt-letter">c</span> Sombreado a 45° y líneas entrecortadas para ocultos
+              </button>
+            </div>
+            <div class="sq-feedback" id="sq3-fb"></div>
+          </div>
+
+          <div class="feedback-banner" id="fb-q3-global" style="margin-top:4px;"></div>
+        </div>
+
+        <!-- ─── JUEGO 4: COMPLETA EL TEXTO ───────────── -->
+        <div class="slide" id="slide-3">
+          <div class="slide-header">
+            <div class="slide-icon amber">✍️</div>
+            <div class="slide-meta">
+              <div class="slide-num">Juego 04 de 06</div>
+              <div class="slide-name">Completa el texto</div>
+            </div>
+          </div>
+          <div class="instruction-box">🖱️ <strong>Instrucción:</strong> Arrastre cada palabra a su lugar correcto para completar la información.</div>
+          <img src="media/Imagen 72.jpg" alt="Sección referencia" style="width:100%;max-height:110px;object-fit:contain;border-radius:8px;border:1px solid var(--gray-200);margin-bottom:12px;">
+          <div class="word-bank" id="word-bank">
+            <div class="word-chip" draggable="true" data-word="0.1" ondragstart="dragWord(event)">0.1</div>
+            <div class="word-chip" draggable="true" data-word="Línea entrecortada fina" ondragstart="dragWord(event)">Línea entrecortada fina</div>
+            <div class="word-chip" draggable="true" data-word="Líneas con sucesión paralela" ondragstart="dragWord(event)">Líneas con sucesión paralela</div>
+            <div class="word-chip" draggable="true" data-word="Flechas" ondragstart="dragWord(event)">Flechas</div>
+            <div class="word-chip" draggable="true" data-word="Plano de corte" ondragstart="dragWord(event)">Plano de corte</div>
+          </div>
+          <div class="blank-text">
+            Para indicar la sección cortada se usa un
+            <span class="blank" id="blank1" data-answer="Plano de corte" ondragover="event.preventDefault()" ondrop="dropWord(event,'blank1')">___</span>
+            que debe contener símbolos o figuras de
+            <span class="blank" id="blank2" data-answer="Flechas" ondragover="event.preventDefault()" ondrop="dropWord(event,'blank2')">___</span>
+            sobre una línea entrecortada de
+            <span class="blank" id="blank3" data-answer="Líneas con sucesión paralela" ondragover="event.preventDefault()" ondrop="dropWord(event,'blank3')">___</span>,
+            es decir, que se alejan en los bordes curvos. Se verifica si existen agujeros u objetos ocultos, pues se representan con
+            <span class="blank" id="blank4" data-answer="Línea entrecortada fina" ondragover="event.preventDefault()" ondrop="dropWord(event,'blank4')">___</span>
+            con plumas o rapidografos
+            <span class="blank" id="blank5" data-answer="0.1" ondragover="event.preventDefault()" ondrop="dropWord(event,'blank5')">___</span>.
+          </div>
+          <button class="check-btn" onclick="checkBlanks()">✅ Verificar</button>
+          <div class="feedback-banner" id="fb-blanks"></div>
+        </div>
+
+        <!-- ─── JUEGO 5: ATAJOS CAD ───────────────────── -->
+        <div class="slide" id="slide-4">
+          <div class="slide-header">
+            <div class="slide-icon teal">⌨️</div>
+            <div class="slide-meta">
+              <div class="slide-num">Juego 05 de 06</div>
+              <div class="slide-name">Atajos CAD — Hatch & Ángulos</div>
+            </div>
+          </div>
+          <div class="instruction-box">🖱️ <strong>Instrucción:</strong> Seleccione las respuestas correctas para cada pregunta.</div>
+          <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:8px;">🔑 Escoja los dos atajos para relleno y edición (hatch / edit):</div>
+          <div id="q5a-opts">
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5a')" data-val="a"><div class="cb-box">✓</div>EDIT H.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5a')" data-val="b" data-correct="true"><div class="cb-box">✓</div>HE.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5a')" data-val="c"><div class="cb-box">✓</div>HACH.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5a')" data-val="d" data-correct="true"><div class="cb-box">✓</div>H.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5a')" data-val="e"><div class="cb-box">✓</div>HACH EDIT.</div>
+          </div>
+          <button class="check-btn" onclick="checkMultiSelect('q5a','fb-q5a','En el entorno CAD, el comando H activa la función Hatch para crear sombreados o rellenos de texturas en áreas cerradas. Por otro lado, el comando HE (Hatch Edit) permite modificar un sombreado ya existente sin necesidad de borrarlo y recrearlo, optimizando el flujo de trabajo técnico.')">✅ Verificar atajos</button>
+          <div class="feedback-banner" id="fb-q5a"></div>
+          <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin:14px 0 8px;">📐 Seleccione las dos opciones de ángulos usados en proyecciones axonométricas (Norma ISO):</div>
+          <div id="q5b-opts">
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5b')" data-val="a"><div class="cb-box">✓</div>105°, 120° y 135°.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5b')" data-val="b"><div class="cb-box">✓</div>131°, 131° y 97°.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5b')" data-val="c" data-correct="true"><div class="cb-box">✓</div>360° / 3.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5b')" data-val="d"><div class="cb-box">✓</div>Dos ángulos iguales.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q5b')" data-val="e" data-correct="true"><div class="cb-box">✓</div>120°, 120°, 120°.</div>
+          </div>
+          <button class="check-btn" onclick="checkMultiSelect('q5b','fb-q5b','La proyección isométrica (parte de las axonométricas bajo norma ISO) se basa en la división equitativa del espacio visual. Al dividir el círculo completo de 360° entre 3, obtenemos los 120° que separan a los tres ejes principales (X, Y, Z). Esta disposición garantiza que las dimensiones se representen en una misma escala sobre los tres ejes.')">✅ Verificar ángulos</button>
+          <div class="feedback-banner" id="fb-q5b"></div>
+        </div>
+
+        <!-- ─── JUEGO 6: VISTAS EN INGENIERÍA ─────────── -->
+        <div class="slide" id="slide-5">
+          <div class="slide-header">
+            <div class="slide-icon blue">🏗️</div>
+            <div class="slide-meta">
+              <div class="slide-num">Juego 06 de 06</div>
+              <div class="slide-name">Vistas en planos de ingeniería</div>
+            </div>
+          </div>
+          <div class="instruction-box">🖱️ <strong>Instrucción:</strong> ¿Cuántas vistas se presentan en un plano para piezas dentro de la ingeniería? Puedes seleccionar más de una respuesta.</div>
+          <div id="q6-opts">
+            <div class="checkbox-option" onclick="toggleCheck(this,'q6')" data-val="a"><div class="cb-box">✓</div>Frontal, posterior y planta.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q6')" data-val="b"><div class="cb-box">✓</div>Alzado + Planta + Corte.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q6')" data-val="c"><div class="cb-box">✓</div>Elevación frontal, Lateral, Posterior, Planta.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q6')" data-val="d" data-correct="true"><div class="cb-box">✓</div>Elevación frontal, Lateral, Posterior, Planta.</div>
+            <div class="checkbox-option" onclick="toggleCheck(this,'q6')" data-val="e" data-correct="true"><div class="cb-box">✓</div>Dos alzados + planta + Volumetría.</div>
+          </div>
+          <button class="check-btn" onclick="checkMultiSelect('q6','fb-q6','En la ingeniería, el número de vistas depende de la complejidad de la pieza. Un plano técnico profesional suele incluir el sistema de vistas principales (diédricas) para definir la geometría exacta. Además, es común integrar una volumetría o perspectiva para facilitar la visualización tridimensional del objeto a partir de sus proyecciones planas.',true)">✅ Verificar y finalizar</button>
+          <div class="feedback-banner" id="fb-q6"></div>
+        </div>
+
+      </div><!-- /slides-track -->
+    </div><!-- /slider-container -->
+
+    <div class="nav-bar">
+      <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+      <span style="font-size:12px;color:var(--gray-600);" id="slide-counter">1 / 6</span>
+      <button class="nav-btn primary" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+    </div>
+  </div><!-- /games-wrapper -->
+
+  <!-- PANTALLA FINAL -->
+  <div id="result-screen">
+    <div class="result-emoji" id="result-emoji">🏆</div>
+    <div class="result-title" id="result-title">¡Juegos completados!</div>
+    <div class="result-score-big" id="result-score-big">0</div>
+    <div class="result-score-label">puntos obtenidos de <span id="max-score-display">0</span> posibles</div>
+
+    <div class="score-breakdown">
+      <h4>Desglose por juego</h4>
+      <div id="score-breakdown-rows"></div>
+    </div>
+
+    <div class="result-feedback-card">
+      <h3>📋 Retroalimentación</h3>
+      <p id="result-feedback-text"></p>
+    </div>
+    <button class="btn-retry" onclick="retryGames()">🔄 Volver a intentar</button>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <div class="modal-title" id="modal-title">Título</div>
+      <div class="modal-body" id="modal-body">Contenido</div>
     </div>
   </div>
-</div>
 
-<!-- ═══════════════════════════════════════
-     TAB 3 — SECCIONES
-═══════════════════════════════════════ -->
-<div class="view" id="t3">
-  <div class="sh">✂️ Secciones y Cortes</div>
-  <div class="sb">
-    <p style="font-size:12.5px;color:var(--muted);line-height:1.6;">Haz clic en cada tarjeta para conocer los tipos de sección.</p>
-  </div>
+  <script>
+    /* ── Estado global ─────────────────────────────────── */
+    let currentSlide = 0;
+    const TOTAL_SLIDES = 6;
+    let score = 0;
+    let slideScores = new Array(TOTAL_SLIDES).fill(0);
+    let slideAnswered = new Array(TOTAL_SLIDES).fill(false);
 
-  <div class="grid2" style="margin-top:14px;">
-    <div class="card" onclick="openM('m-transversal')">
-      <div class="ci" style="background:#e8f4fd;">↔️</div>
-      <h3>Sección Transversal</h3>
-      <p>Plano de corte perpendicular al eje de mayor longitud. Muestra la sección interna más estrecha.</p>
-      <span class="badge">Ver más →</span>
-    </div>
-    <div class="card" onclick="openM('m-longitudinal')">
-      <div class="ci" style="background:#f0fdf4;">↕️</div>
-      <h3>Sección Longitudinal</h3>
-      <p>Plano de corte paralelo al eje de mayor longitud. Fundamental para analizar la disposición interna.</p>
-      <span class="badge">Ver más →</span>
-    </div>
-  </div>
+    // Puntos máximos por juego (dinámico)
+    // J1:100, J2:100, J3: 3 sub-preguntas × ~33pts = 99, J4:100, J5: 2 sub × 50pts = 100, J6:100
+    // Definimos máximos reales por juego
+    const MAX_PER_SLIDE = [100, 100, 100, 100, 100, 100]; // J3 = 3×33
+    const GAME_NAMES = [
+      'Arrastra las proyecciones',
+      'Flashcards HATCH',
+      'Tipo de sección',
+      'Completa el texto',
+      'Atajos CAD',
+      'Vistas en ingeniería'
+    ];
 
-  <!-- Imágenes de secciones -->
-  <div class="proj-grid" style="margin-top:14px;">
-    <div class="proj-item" onclick="openM('m-img65')">
-      <img src="media/Imagen 65.jpg" alt="Sección" onerror="this.style.cssText='height:100px;background:#e8f4fd;'">
-      <div class="proj-lbl">✂️ Sección</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img66')">
-      <img src="media/Imagen 66.jpg" alt="Corte" onerror="this.style.cssText='height:100px;background:#fff8e1;'">
-      <div class="proj-lbl">✂️ Corte</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img67')">
-      <img src="media/Imagen 67.jpg" alt="Plano de corte" onerror="this.style.cssText='height:100px;background:#f0fdf4;'">
-      <div class="proj-lbl">📏 Plano de corte</div>
-    </div>
-  </div>
+    /* Juego 3: sub-preguntas */
+    // Cada sub-pregunta vale ~33 pts. Definir por separado.
+    const sq_answered = { sq1: false, sq2: false, sq3: false };
+    const SQ_PTS = 33; // ~33 pts cada una = 99 total juego 3
 
-  <div class="warn">
-    <strong>💡 Recuerda: </strong>Para indicar la sección cortada se usa un <strong>plano de corte</strong> que debe contener símbolos o figuras de <strong>flechas</strong> sobre una línea entrecortada de <strong>líneas con sucesión paralela</strong>, es decir, que se alejan en los bordes curvos. Se verifica si existen agujeros u objetos ocultos, pues se representan con <strong>línea entrecortada fina</strong> con plumas o rapidografos <strong>0.1</strong>.
-  </div>
-</div>
+    /* Drag-n-drop */
+    let draggedId = null;
+    let draggedImg = null;
+    let draggedWordEl = null;
+    let currentDragWord = null;
 
-<!-- ═══════════════════════════════════════
-     TAB 4 — HATCH
-═══════════════════════════════════════ -->
-<div class="view" id="t4">
-  <div class="sh">🔲 Hatch — Rellenos en CAD</div>
-  <div class="sb">
-    <p style="font-size:12.5px;color:var(--muted);line-height:1.6;">Haz clic en cada grupo de comandos para conocer sus funciones.</p>
-  </div>
+    /* ── INICIO ────────────────────────────────────────── */
+    function startGames() {
+      document.getElementById('intro-screen').style.display = 'none';
+      const gw = document.getElementById('games-wrapper');
+      gw.style.display = 'flex';
+      buildDots();
+      updateUI();
+    }
 
-  <div class="hatch-grid">
-    <div class="hcard" onclick="openM('m-hatch-rel')">
-      <div class="hcard-head" style="background:linear-gradient(135deg,var(--blue),var(--cyan));">
-        🖌️ Rellenos / Selección
-      </div>
-      <div class="hcard-body">
-        <strong style="color:var(--text);">Boundaries / pattern</strong><br>
-        Grupo de comandos con acciones de inserción por cliqueo de puntos internos, selección de objetos y tipos de rellenos.
-      </div>
-    </div>
-    <div class="hcard" onclick="openM('m-hatch-prop')">
-      <div class="hcard-head" style="background:linear-gradient(135deg,var(--purple),#a78bfa);">
-        ⚙️ Propiedades
-      </div>
-      <div class="hcard-body">
-        <strong style="color:var(--text);">Grupo de comandos / properties</strong><br>
-        Editan propiedades como escala, transparencia, ángulos y color.
-      </div>
-    </div>
-    <div class="hcard" onclick="openM('m-hatch-edit')">
-      <div class="hcard-head" style="background:linear-gradient(135deg,#0f766e,#14b8a6);">
-        🔧 Edición avanzada
-      </div>
-      <div class="hcard-body">
-        <strong style="color:var(--text);">Options / origin / close</strong><br>
-        Acciones de selección de punto de origen, copia de propiedades y anotaciones con información dimensional.
-      </div>
-    </div>
-  </div>
+    /* ── DOTS ──────────────────────────────────────────── */
+    function buildDots() {
+      const container = document.getElementById('progress-dots');
+      container.innerHTML = '';
+      for (let i = 0; i < TOTAL_SLIDES; i++) {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.onclick = () => goToSlide(i);
+        container.appendChild(d);
+      }
+    }
+    function updateDots() {
+      document.querySelectorAll('.dot').forEach((d, i) => {
+        d.className = 'dot';
+        if (slideAnswered[i]) d.classList.add('done');
+        if (i === currentSlide) d.classList.add('active');
+      });
+    }
 
-  <!-- imágenes hatch -->
-  <div class="grid2" style="margin-top:14px;">
-    <div class="proj-item" onclick="openM('m-img68')">
-      <img src="media/Imagen 68.jpg" alt="Hatch 1" onerror="this.style.cssText='height:100px;background:#e8f4fd;'">
-      <div class="proj-lbl">🔲 Hatch ejemplo 1</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img69')">
-      <img src="media/Imagen 69.jpg" alt="Hatch 2" onerror="this.style.cssText='height:100px;background:#f3e8ff;'">
-      <div class="proj-lbl">🔲 Hatch ejemplo 2</div>
-    </div>
-  </div>
+    /* ── NAVEGACIÓN ────────────────────────────────────── */
+    function navigate(dir) {
+      const next = currentSlide + dir;
+      if (next < 0 || next >= TOTAL_SLIDES) return;
+      goToSlide(next);
+    }
+    function goToSlide(idx) {
+      currentSlide = idx;
+      document.getElementById('slides-track').style.transform = `translateX(${-800 * idx}px)`;
+      updateUI();
+    }
+    function updateUI() {
+      document.getElementById('btn-prev').disabled = currentSlide === 0;
+      document.getElementById('btn-next').disabled = currentSlide === TOTAL_SLIDES - 1;
+      document.getElementById('slide-counter').textContent = `${currentSlide + 1} / ${TOTAL_SLIDES}`;
+      document.getElementById('score-display').textContent = score;
+      updateDots();
+      const icons = ['📐','🃏','🔍','✍️','⌨️','🏗️'];
+      const titles = ['Arrastra las proyecciones','Flashcards HATCH','Tipo de sección','Completa el texto','Atajos CAD','Vistas en ingeniería'];
+      document.getElementById('current-game-icon').textContent = icons[currentSlide];
+      document.getElementById('current-game-title').textContent = `Juego ${currentSlide + 1}: ${titles[currentSlide]}`;
+    }
 
-  <div class="info" style="margin-top:14px;">
-    ⌨️ <strong>Atajos rápidos:</strong> Usa <strong>H</strong> para activar Hatch y <strong>HE</strong> (Hatch Edit) para modificar un sombreado ya existente sin borrarlo y recrearlo.
-  </div>
+    function addScore(pts, slideIdx) {
+      score += pts;
+      slideScores[slideIdx] += pts;
+      document.getElementById('score-display').textContent = score;
+    }
 
-  <!-- imágenes adicionales -->
-  <div class="proj-grid" style="margin-top:10px;">
-    <div class="proj-item" onclick="openM('m-img70')">
-      <img src="media/Imagen 70.jpg" alt="Hatch 3" onerror="this.style.cssText='height:100px;background:#fff8e1;'">
-      <div class="proj-lbl">🖌️ Relleno 3</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img71')">
-      <img src="media/Imagen 71.jpg" alt="Hatch 4" onerror="this.style.cssText='height:100px;background:#f0fdf4;'">
-      <div class="proj-lbl">🖌️ Relleno 4</div>
-    </div>
-    <div class="proj-item" onclick="openM('m-img72')">
-      <img src="media/Imagen 72.jpg" alt="Hatch 5" onerror="this.style.cssText='height:100px;background:#fce4ec;'">
-      <div class="proj-lbl">🖌️ Relleno 5</div>
-    </div>
-  </div>
-</div>
+    /* ── MODAL ─────────────────────────────────────────── */
+    function openModal(title, body) {
+      document.getElementById('modal-title').innerHTML = title;
+      document.getElementById('modal-body').innerHTML = body;
+      document.getElementById('modal').classList.add('open');
+    }
+    function closeModal(e) {
+      if (e.target === document.getElementById('modal')) closeModalDirect();
+    }
+    function closeModalDirect() {
+      document.getElementById('modal').classList.remove('open');
+    }
 
-<!-- ═══════════════════════════════════════
-     TAB 5 — ACTIVIDADES
-═══════════════════════════════════════ -->
-<div class="view" id="t5">
+    /* ── JUEGO 1: DRAG & DROP ─────────────────────────── */
+    const dndAnswers = {
+      'zone-isometria': ['iso1','iso2'],
+      'zone-dimetria': ['dim1','dim2'],
+      'zone-trimetria': ['tri1','tri2']
+    };
+    const droppedItems = { 'zone-isometria':[], 'zone-dimetria':[], 'zone-trimetria':[] };
+    const imgSrcs = {
+      iso1:'media/Imagen 60.jpg', dim1:'media/Imagen 61.jpg',
+      dim2:'media/Imagen 62.jpg', tri1:'media/Imagen 63.jpg',
+      iso2:'media/Imagen 64.jpg', tri2:'media/Imagen 65.jpg'
+    };
 
-  <!-- ACT 1: DRAG & DROP proyecciones -->
-  <div class="sh">🧩 Actividad 1: Arrastra la representación gráfica</div>
-  <div class="sb">
-    <div class="inst-box">🖱️ Arrastre cada representación gráfica y colóquela en el tipo de proyección que corresponda.</div>
+    function dragStart(e) {
+      draggedId = e.target.closest('.drag-item').dataset.id;
+      draggedImg = e.target.closest('.drag-item');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+    function dropItem(e, zoneId) {
+      e.preventDefault();
+      const zone = document.getElementById(zoneId);
+      zone.classList.remove('dragover');
+      if (!draggedId) return;
+      for (let z in droppedItems) {
+        const idx = droppedItems[z].indexOf(draggedId);
+        if (idx > -1) {
+          droppedItems[z].splice(idx, 1);
+          document.getElementById(z + '-imgs').innerHTML = renderDroppedImgs(z);
+        }
+      }
+      droppedItems[zoneId].push(draggedId);
+      if (draggedImg) draggedImg.style.display = 'none';
+      document.getElementById(zoneId + '-imgs').innerHTML = renderDroppedImgs(zoneId);
+      draggedId = null; draggedImg = null;
+    }
+    function renderDroppedImgs(zoneId) {
+      return droppedItems[zoneId].map(id => `<img src="${imgSrcs[id]}" title="${id}">`).join('');
+    }
+    function checkDnD() {
+      if (slideAnswered[0]) return;
+      let correct = 0;
+      for (let zone in dndAnswers) {
+        const expected = dndAnswers[zone].sort().join(',');
+        const actual = [...droppedItems[zone]].sort().join(',');
+        const el = document.getElementById(zone);
+        if (expected === actual) { el.classList.add('correct'); correct++; }
+        else { el.classList.add('incorrect'); }
+      }
+      const fb = document.getElementById('fb-dnd');
+      fb.classList.add('show');
+      const pts = correct === 3 ? 100 : correct * 30;
+      if (correct === 3) {
+        fb.className = 'feedback-banner show success';
+        fb.innerHTML = '✅ ¡Perfecto! Clasificaste correctamente todas las proyecciones axonométricas: Isometría, Dimetría y Trimetría. <img src="media/Imagen 59.png" style="display:block;margin:auto;width:70%;" />';
+      } else {
+        fb.className = 'feedback-banner show error';
+        fb.innerHTML = `⚠️ ${correct} de 3 zonas correctas. Recuerda: Figuras A y E → Isometría, B y C → Dimetría, D y F → Trimetría.
+        <img src="media/Imagen 59.png" style="display:block;margin:auto;width:70%;" />`;
+      }
+      addScore(pts, 0);
+      slideAnswered[0] = true;
+    }
 
-    <div class="bank" id="bank1">
-      <div class="chip" draggable="true" data-word="Isometría #1" id="ch1a">Isometría #1</div>
-      <div class="chip" draggable="true" data-word="Dimetría #1" id="ch1b">Dimetría #1</div>
-      <div class="chip" draggable="true" data-word="Dimetría #2" id="ch1c">Dimetría #2</div>
-      <div class="chip" draggable="true" data-word="Trimetría #1" id="ch1d">Trimetría #1</div>
-      <div class="chip" draggable="true" data-word="Trimetría #2" id="ch1e">Trimetría #2</div>
-    </div>
+    /* ── JUEGO 2: FLASHCARDS ──────────────────────────── */
+    function flipCard(el) {
+      el.classList.toggle('flipped');
+      if (!slideAnswered[1]) {
+        addScore(100, 1);
+        slideAnswered[1] = true;
+      }
+    }
 
-    <div class="sentence">
-      <strong>Tipo de proyección</strong> → <strong>Representación gráfica</strong><br><br>
-      Isometría #
-      <span class="dz" data-answer="Isometría #1" id="dz1a" onclick="zClick(this)">__________</span>
-      &nbsp;|&nbsp;
-      Dimetría →
-      <span class="dz" data-answer="Dimetría #1" id="dz1b" onclick="zClick(this)">__________</span>
-      y
-      <span class="dz" data-answer="Dimetría #2" id="dz1c" onclick="zClick(this)">__________</span>
-      &nbsp;|&nbsp;
-      Trimetría →
-      <span class="dz" data-answer="Trimetría #1" id="dz1d" onclick="zClick(this)">__________</span>
-      y
-      <span class="dz" data-answer="Trimetría #2" id="dz1e" onclick="zClick(this)">__________</span>
-    </div>
-    <div class="actions">
-      <button class="btn btn-p" onclick="checkDrag('a1')">✅ Verificar</button>
-      <button class="btn btn-s" onclick="resetDrag('a1')">🔄 Reiniciar</button>
-    </div>
-    <div class="fb" id="fb1a"></div>
-  </div>
+    /* ── JUEGO 3: SECCIÓN — SUB-PREGUNTAS ─────────────── */
+    function answerSection(btn, sqId, message) {
+      if (sq_answered[sqId]) return;
+      const opts = btn.closest('.sq-options').querySelectorAll('.sq-opt-btn');
+      const isCorrect = btn.dataset.correct === 'true';
 
-  <!-- ACT 2: DRAG & DROP plano de corte -->
-  <div class="sh" style="margin-top:14px;">🧩 Actividad 2: Completa sobre el plano de corte</div>
-  <div class="sb">
-    <div class="inst-box">🖱️ Arrastre cada palabra a su lugar correcto para completar la información.</div>
+      // Disable all options for this sub-question
+      opts.forEach(o => o.classList.add('disabled'));
 
-    <div class="bank" id="bank2">
-      <div class="chip" draggable="true" data-word="plano de corte" id="ch2a">plano de corte</div>
-      <div class="chip" draggable="true" data-word="flechas" id="ch2b">flechas</div>
-      <div class="chip" draggable="true" data-word="líneas con sucesión paralela" id="ch2c">líneas con sucesión paralela</div>
-      <div class="chip" draggable="true" data-word="línea entrecortada fina" id="ch2d">línea entrecortada fina</div>
-      <div class="chip" draggable="true" data-word="0.1" id="ch2e">0.1</div>
-    </div>
+      if (isCorrect) {
+        btn.classList.add('correct');
+        btn.classList.remove('disabled');
+      } else {
+        btn.classList.add('incorrect');
+        // Highlight the correct one
+        opts.forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); });
+      }
 
-    <div class="sentence">
-      Para indicar la sección cortada se usa un
-      <span class="dz" data-answer="plano de corte" id="dz2a" onclick="zClick(this)">__________</span>
-      que debe contener símbolos o figuras de
-      <span class="dz" data-answer="flechas" id="dz2b" onclick="zClick(this)">________</span>
-      sobre una línea entrecortada de
-      <span class="dz" data-answer="líneas con sucesión paralela" id="dz2c" onclick="zClick(this)">___________</span>
-      es decir, que se alejan en los bordes curvos. Se verifica si existen agujeros u objetos ocultos, pues se representan con
-      <span class="dz" data-answer="línea entrecortada fina" id="dz2d" onclick="zClick(this)">___________</span>
-      con plumas o rapidografos
-      <span class="dz" data-answer="0.1" id="dz2e" onclick="zClick(this)">___</span>.
-    </div>
-    <div class="actions">
-      <button class="btn btn-p" onclick="checkDrag('a2')">✅ Verificar</button>
-      <button class="btn btn-s" onclick="resetDrag('a2')">🔄 Reiniciar</button>
-    </div>
-    <div class="fb" id="fb2a"></div>
-  </div>
+      const fb = document.getElementById(sqId + '-fb');
+      fb.classList.add('show');
+      fb.className = 'sq-feedback show ' + (isCorrect ? 'success' : 'error');
+      fb.textContent = message;
 
-  <!-- ACT 3: QUIZ múltiple -->
-  <div class="sh" style="margin-top:14px;">🧩 Actividad 3: Selección múltiple</div>
-  <div class="sb">
+      sq_answered[sqId] = true;
 
-    <!-- Q1 -->
-    <div class="quiz-block">
-      <div class="qb-head">❓ ¿Cuáles son los dos atajos para relleno y edición (hatch / edit)?</div>
-      <div class="qb-body" id="q1">
-        <label class="option"><input type="checkbox" value="EDIT H"> EDIT H.</label>
-        <label class="option"><input type="checkbox" value="HE"> HE.</label>
-        <label class="option"><input type="checkbox" value="HACH"> HACH.</label>
-        <label class="option"><input type="checkbox" value="H"> H.</label>
-        <label class="option"><input type="checkbox" value="HACH EDIT"> HACH EDIT.</label>
-      </div>
-    </div>
+      // Add score for this sub-question
+      if (isCorrect) addScore(SQ_PTS, 2);
+      // else: 0 pts for wrong answer
 
-    <!-- Q2 -->
-    <div class="quiz-block">
-      <div class="qb-head">❓ Seleccione las dos opciones de ángulos usados en proyecciones axonométricas (Norma ISO):</div>
-      <div class="qb-body" id="q2">
-        <label class="option"><input type="checkbox" value="105"> 105°, 120° y 135°.</label>
-        <label class="option"><input type="checkbox" value="131"> 131°, 131° y 97°.</label>
-        <label class="option"><input type="checkbox" value="360"> 360° / 3.</label>
-        <label class="option"><input type="checkbox" value="dos"> Dos ángulos iguales.</label>
-        <label class="option"><input type="checkbox" value="120"> 120°, 120°, 120°.</label>
-      </div>
-    </div>
+      // Check if all 3 sub-questions answered → mark slide done
+      if (sq_answered.sq1 && sq_answered.sq2 && sq_answered.sq3) {
+        if (!slideAnswered[2]) {
+          slideAnswered[2] = true;
+          updateDots();
+          const gb = document.getElementById('fb-q3-global');
+          gb.className = 'feedback-banner show info';
+          gb.innerHTML = `🎯 Has respondido las 3 preguntas. Puntaje obtenido: <strong>${slideScores[2]} / 99 pts</strong>`;
+        }
+      }
+    }
 
-    <!-- Q3 -->
-    <div class="quiz-block">
-      <div class="qb-head">❓ ¿Cuántas vistas se presentan en un plano para piezas en ingeniería?</div>
-      <div class="qb-body" id="q3">
-        <label class="option"><input type="checkbox" value="fp"> Frontal, posterior y planta.</label>
-        <label class="option"><input type="checkbox" value="alz"> Alzado+Planta+Corte.</label>
-        <label class="option"><input type="checkbox" value="4v"> Elevación frontal, Lateral, Posterior, Planta.</label>
-        <label class="option"><input type="checkbox" value="vol"> Dos alzados + planta + Volumetría.</label>
-      </div>
-    </div>
+    /* ── JUEGO 4: FILL IN THE BLANKS ─────────────────── */
+    function dragWord(e) {
+      currentDragWord = e.target.dataset.word;
+      draggedWordEl = e.target;
+    }
+    function dropWord(e, blankId) {
+      e.preventDefault();
+      const blank = document.getElementById(blankId);
+      blank.textContent = currentDragWord;
+      blank.dataset.filled = currentDragWord;
+      blank.classList.add('filled');
+      if (draggedWordEl) draggedWordEl.classList.add('used');
+    }
+    function checkBlanks() {
+      if (slideAnswered[3]) return;
+      const blanks = ['blank1','blank2','blank3','blank4','blank5'];
+      let correct = 0;
+      blanks.forEach(id => {
+        const el = document.getElementById(id);
+        const answer = el.dataset.answer;
+        const filled = el.dataset.filled || '';
+        if (filled === answer) { el.classList.add('filled'); el.classList.remove('wrong'); correct++; }
+        else { el.classList.add('wrong'); el.classList.remove('filled'); el.textContent = el.dataset.answer; }
+      });
+      const fb = document.getElementById('fb-blanks');
+      fb.classList.add('show');
+      const pts = correct === 5 ? 100 : correct * 18;
+      if (correct === 5) {
+        fb.className = 'feedback-banner show success';
+        fb.innerHTML = '✅ ¡Excelente! Completaste correctamente todos los espacios: <em>Plano de corte → Flechas → Líneas con sucesión paralela → Línea entrecortada fina → 0.1</em>';
+      } else {
+        fb.className = 'feedback-banner show error';
+        fb.innerHTML = `⚠️ ${correct}/5 correctas. Respuesta: <strong>plano de corte → flechas → líneas con sucesión paralela → línea entrecortada fina → 0.1</strong>`;
+      }
+      addScore(pts, 3);
+      slideAnswered[3] = true;
+    }
 
-    <!-- Q4 Sección tipo -->
-    <div class="quiz-block">
-      <div class="qb-head">❓ Seleccione el enunciado que describa correctamente el tipo de sección ilustrada:</div>
-      <div class="qb-body" id="q4">
-        <label class="option"><input type="radio" name="q4" value="integral"> a. Sección integral</label>
-        <label class="option"><input type="radio" name="q4" value="transversal"> b. Sección transversal</label>
-        <label class="option"><input type="radio" name="q4" value="longitudinal"> c. Sección longitudinal</label>
-      </div>
-    </div>
+    /* ── JUEGO 5 & 6: MULTIPLE SELECT ────────────────── */
+    function toggleCheck(el, group) {
+      if (el.classList.contains('correct') || el.classList.contains('incorrect')) return;
+      el.classList.toggle('selected');
+    }
 
-    <div class="actions">
-      <button class="btn btn-p" onclick="checkQuiz()">✅ Verificar todo</button>
-      <button class="btn btn-s" onclick="resetQuiz()">🔄 Reiniciar</button>
-    </div>
-    <div class="fb" id="fbq"></div>
-    <div class="fb-detail" id="fbqd"></div>
-  </div>
-</div>
+    function checkMultiSelect(group, fbId, retroText, isFinal = false) {
+      const slideMap = { q5a: 4, q5b: 4, q6: 5 };
+      const slideIdx = slideMap[group];
+      const opts = document.querySelectorAll(`#${group}-opts .checkbox-option`);
+      const selected = [];
+      const correct = [];
+      opts.forEach(o => {
+        if (o.dataset.correct) correct.push(o.dataset.val);
+        if (o.classList.contains('selected')) selected.push(o.dataset.val);
+      });
+      const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(correct.sort());
 
-<!-- ═══════════════════════════════════════════════
-     MODALES
-═══════════════════════════════════════════════ -->
+      opts.forEach(o => {
+        o.onclick = null;
+        o.style.pointerEvents = 'none';
+        if (o.dataset.correct) o.classList.add('correct');
+        else if (o.classList.contains('selected')) o.classList.add('incorrect');
+      });
 
-<!-- Isometría general -->
-<div class="overlay" id="m-iso">
-  <div class="modal">
-    <div class="modal-hdr"><h2>📦 Proyecciones Axonométricas</h2><button class="mcl" onclick="closeM('m-iso')">✕</button></div>
-    <div class="modal-body">
-      <div class="hl">📐 Las proyecciones axonométricas se dividen en <strong>Isometría</strong>, <strong>Dimetría</strong> y <strong>Trimetría</strong> según la relación entre sus ejes y la norma ISO.</div>
-      <p><strong>Isometría:</strong> Los tres ejes forman ángulos iguales de 120° entre sí. Escala uniforme en todos los ejes.</p>
-      <p><strong>Dimetría:</strong> Dos ejes tienen la misma escala y el tercero es diferente.</p>
-      <p><strong>Trimetría:</strong> Los tres ejes poseen escalas diferentes entre sí.</p>
-      <img src="media/Imagen 59.png" alt="Proyección" onerror="this.style.display='none'">
-    </div>
-  </div>
-</div>
+      const fb = document.getElementById(fbId);
+      fb.classList.add('show');
+      const pts = isCorrect ? 50 : 20; // 50 pts per sub-question (J5 has 2 = 100 total, J6 = 50)
+      const ptsJ6 = isCorrect ? 100 : 40;
 
-<!-- Vistas diédricas -->
-<div class="overlay" id="m-vistas">
-  <div class="modal">
-    <div class="modal-hdr"><h2>📋 Vistas diédricas</h2><button class="mcl" onclick="closeM('m-vistas')">✕</button></div>
-    <div class="modal-body">
-      <p>En la ingeniería, el número de vistas depende de la complejidad de la pieza. Un plano técnico profesional suele incluir el sistema de vistas principales (diédricas):</p>
-      <div class="hl"><ul>
-        <li>🔹 <strong>Elevación frontal</strong></li>
-        <li>🔹 <strong>Lateral</strong></li>
-        <li>🔹 <strong>Posterior</strong></li>
-        <li>🔹 <strong>Planta</strong></li>
-      </ul></div>
-      <p>Estas vistas permiten definir la geometría exacta del objeto para su fabricación.</p>
-    </div>
-  </div>
-</div>
+      if (isCorrect) {
+        fb.className = 'feedback-banner show success';
+        fb.innerHTML = `✅ ¡Correcto! ${retroText}`;
+      } else {
+        fb.className = 'feedback-banner show error';
+        fb.innerHTML = `❌ Revisa tu selección. ${retroText}`;
+      }
 
-<!-- Vistas volumetría -->
-<div class="overlay" id="m-vistas2">
-  <div class="modal">
-    <div class="modal-hdr"><h2>🎲 Vistas + Volumetría</h2><button class="mcl" onclick="closeM('m-vistas2')">✕</button></div>
-    <div class="modal-body">
-      <p>Además del sistema diédrico, es común integrar una volumetría o perspectiva para facilitar la visualización tridimensional del objeto.</p>
-      <div class="hl"><ul>
-        <li>🔹 <strong>Dos alzados</strong></li>
-        <li>🔹 <strong>Planta</strong></li>
-        <li>🔹 <strong>Volumetría / perspectiva axonométrica</strong></li>
-      </ul></div>
-      <p>Esta combinación es habitual en planos técnicos de ingeniería y arquitectura.</p>
-    </div>
-  </div>
-</div>
+      // Score logic
+      if (group === 'q5a' && !slideAnswered[4]) {
+        addScore(isCorrect ? 50 : 20, 4);
+      } else if (group === 'q5b') {
+        // Check if q5a was already scored — add remaining for q5b
+        addScore(isCorrect ? 50 : 20, 4);
+        slideAnswered[4] = true;
+      } else if (group === 'q6' && !slideAnswered[5]) {
+        addScore(isCorrect ? 100 : 40, 5);
+        slideAnswered[5] = true;
+      }
 
-<!-- Secciones -->
-<div class="overlay" id="m-secciones">
-  <div class="modal">
-    <div class="modal-hdr"><h2>✂️ Secciones y Cortes</h2><button class="mcl" onclick="closeM('m-secciones')">✕</button></div>
-    <div class="modal-body">
-      <p><strong>Sección transversal:</strong> El plano de corte se sitúa de forma perpendicular al eje de mayor longitud de la pieza, permitiendo visualizar su sección interna más estrecha.</p>
-      <p><strong>Sección longitudinal:</strong> El plano de corte se orienta de forma paralela al eje de mayor longitud de la pieza. Esta vista es fundamental en ingeniería para analizar la disposición interna de los componentes a lo largo de toda su extensión estructural.</p>
-      <div class="hl">Para indicar la sección cortada se usa un <strong>plano de corte</strong> con <strong>flechas</strong>, <strong>líneas con sucesión paralela</strong> y los objetos ocultos con <strong>línea entrecortada fina 0.1</strong>.</div>
-    </div>
-  </div>
-</div>
+      if (isFinal) {
+        setTimeout(showResult, 1800);
+      }
+    }
 
-<!-- Transversal -->
-<div class="overlay" id="m-transversal">
-  <div class="modal">
-    <div class="modal-hdr"><h2>↔️ Sección Transversal</h2><button class="mcl" onclick="closeM('m-transversal')">✕</button></div>
-    <div class="modal-body">
-      <p>El plano de corte se sitúa de forma <strong>perpendicular al eje de mayor longitud</strong> de la pieza, permitiendo visualizar su sección interna más estrecha.</p>
-      <img src="media/Imagen 65.jpg" alt="Sección transversal" onerror="this.style.display='none'">
-    </div>
-  </div>
-</div>
+    /* ── PANTALLA FINAL ───────────────────────────────── */
+    function showResult() {
+      document.getElementById('games-wrapper').style.display = 'none';
+      const rs = document.getElementById('result-screen');
+      rs.style.display = 'flex';
 
-<!-- Longitudinal -->
-<div class="overlay" id="m-longitudinal">
-  <div class="modal">
-    <div class="modal-hdr"><h2>↕️ Sección Longitudinal</h2><button class="mcl" onclick="closeM('m-longitudinal')">✕</button></div>
-    <div class="modal-body">
-      <p>El plano de corte se orienta de forma <strong>paralela al eje de mayor longitud</strong> de la pieza. Esta vista es fundamental en ingeniería para analizar la disposición interna de los componentes a lo largo de toda su extensión estructural.</p>
-      <img src="media/Imagen 66.jpg" alt="Sección longitudinal" onerror="this.style.display='none'">
-    </div>
-  </div>
-</div>
+      // Calcular máximo real basado en preguntas respondidas
+      // Juego 1: 100, Juego 2: 100, Juego 3: 99 (3×33),
+      // Juego 4: 100, Juego 5: 100 (2×50), Juego 6: 100
+      const maxPossible = MAX_PER_SLIDE.reduce((a, b) => a + b, 0); // 599
+      const pct = Math.round((score / maxPossible) * 100);
 
-<!-- Hatch general -->
-<div class="overlay" id="m-hatch">
-  <div class="modal">
-    <div class="modal-hdr"><h2>🔲 Hatch / Rellenos</h2><button class="mcl" onclick="closeM('m-hatch')">✕</button></div>
-    <div class="modal-body">
-      <p>El comando <strong>H</strong> activa la función <em>Hatch</em> para crear sombreados o rellenos de texturas en áreas cerradas.</p>
-      <p>El comando <strong>HE</strong> (<em>Hatch Edit</em>) permite modificar un sombreado ya existente sin necesidad de borrarlo y recrearlo, optimizando el flujo de trabajo técnico.</p>
-      <div class="hl"><strong>Grupos de comandos:</strong><br>• <strong>Boundaries/pattern</strong> — Inserción y tipos de rellenos.<br>• <strong>Properties</strong> — Escala, transparencia, ángulos y color.<br>• <strong>Options/origin/close</strong> — Origen, copia de propiedades y anotaciones.</div>
-    </div>
-  </div>
-</div>
+      document.getElementById('result-score-big').textContent = score;
+      document.getElementById('max-score-display').textContent = maxPossible;
 
-<!-- Hatch rellenos -->
-<div class="overlay" id="m-hatch-rel">
-  <div class="modal">
-    <div class="modal-hdr"><h2>🖌️ Rellenos / Selección</h2><button class="mcl" onclick="closeM('m-hatch-rel')">✕</button></div>
-    <div class="modal-body">
-      <p><strong>Boundaries / pattern</strong></p>
-      <p>Grupo de comandos con acciones de inserción por cliqueo de puntos internos, selección de objetos y tipos de rellenos.</p>
-      <img src="media/Imagen 68.jpg" alt="Rellenos" onerror="this.style.display='none'">
-    </div>
-  </div>
-</div>
+      // Build breakdown
+      const breakdownEl = document.getElementById('score-breakdown-rows');
+      breakdownEl.innerHTML = '';
+      const icons2 = ['📐','🃏','🔍','✍️','⌨️','🏗️'];
+      GAME_NAMES.forEach((name, i) => {
+        const row = document.createElement('div');
+        row.className = 'score-row';
+        const answered = slideAnswered[i] || (i === 2 && (sq_answered.sq1 || sq_answered.sq2 || sq_answered.sq3));
+        row.innerHTML = `<span>${icons2[i]} Juego ${i+1}: ${name}</span><span class="pts">${slideScores[i]} / ${MAX_PER_SLIDE[i]}</span>`;
+        breakdownEl.appendChild(row);
+      });
 
-<!-- Hatch propiedades -->
-<div class="overlay" id="m-hatch-prop">
-  <div class="modal">
-    <div class="modal-hdr"><h2>⚙️ Propiedades</h2><button class="mcl" onclick="closeM('m-hatch-prop')">✕</button></div>
-    <div class="modal-body">
-      <p><strong>Grupo de comandos / properties</strong></p>
-      <p>Grupo de comandos que editan propiedades como escala, transparencia, ángulos y color.</p>
-      <img src="media/Imagen 69.jpg" alt="Propiedades" onerror="this.style.display='none'">
-    </div>
-  </div>
-</div>
+      let emoji = '⭐', title = '¡Buen intento!', feedback = '';
+      if (pct >= 90) {
+        emoji = '🏆'; title = '¡Excelente dominio!';
+        feedback = 'Demostraste un conocimiento sobresaliente de las proyecciones axonométricas, secciones y comandos CAD. ¡Estás listo para aplicar estos conceptos en proyectos de ingeniería reales!';
+      } else if (pct >= 70) {
+        emoji = '🎯'; title = '¡Muy bien!';
+        feedback = 'Tienes un buen manejo de los conceptos de proyecciones en CAD. Repasa las secciones donde tuviste dificultades, especialmente los tipos de proyección y los atajos de teclado.';
+      } else if (pct >= 50) {
+        emoji = '📚'; title = '¡Sigue practicando!';
+        feedback = 'Vas por buen camino. Te recomendamos repasar los conceptos de isometría, dimetría y trimetría, así como los comandos HATCH y las vistas en planos de ingeniería.';
+      } else {
+        emoji = '💪'; title = '¡No te rindas!';
+        feedback = 'Los conceptos de proyecciones CAD requieren práctica constante. Revisa el material de estudio y vuelve a intentarlo. ¡Cada intento te hace más fuerte!';
+      }
 
-<!-- Hatch edición -->
-<div class="overlay" id="m-hatch-edit">
-  <div class="modal">
-    <div class="modal-hdr"><h2>🔧 Edición avanzada</h2><button class="mcl" onclick="closeM('m-hatch-edit')">✕</button></div>
-    <div class="modal-body">
-      <p><strong>Options / origin / close</strong></p>
-      <p>Grupo de comandos con acciones de selección de punto de origen, copia de propiedades y anotaciones con información dimensional.</p>
-      <img src="media/Imagen 70.jpg" alt="Edición" onerror="this.style.display='none'">
-    </div>
-  </div>
-</div>
+      document.getElementById('result-emoji').textContent = emoji;
+      document.getElementById('result-title').textContent = title;
+      document.getElementById('result-feedback-text').textContent = feedback;
+    }
 
-<!-- Atajos -->
-<div class="overlay" id="m-atajos">
-  <div class="modal">
-    <div class="modal-hdr"><h2>⌨️ Atajos CAD</h2><button class="mcl" onclick="closeM('m-atajos')">✕</button></div>
-    <div class="modal-body">
-      <div class="hl">
-        <p>⌨️ <strong>H</strong> — Activa la función <em>Hatch</em> para crear sombreados o rellenos de texturas en áreas cerradas.</p>
-        <p>⌨️ <strong>HE</strong> — <em>Hatch Edit</em>: permite modificar un sombreado ya existente sin necesidad de borrarlo y recrearlo, optimizando el flujo de trabajo técnico.</p>
-      </div>
-      <p>En la proyección isométrica, al dividir el círculo completo de <strong>360° entre 3</strong>, obtenemos los <strong>120°</strong> que separan a los tres ejes principales (X, Y, Z). Esta disposición garantiza que las dimensiones se representen en una misma escala sobre los tres ejes, facilitando la interpretación volumétrica.</p>
-    </div>
-  </div>
-</div>
+    /* ── REINICIO ──────────────────────────────────────── */
+    function retryGames() {
+      score = 0; currentSlide = 0;
+      slideScores = new Array(TOTAL_SLIDES).fill(0);
+      slideAnswered = new Array(TOTAL_SLIDES).fill(false);
+      sq_answered.sq1 = false; sq_answered.sq2 = false; sq_answered.sq3 = false;
 
-<!-- Modales de imágenes individuales -->
-<script>
-const imgModals=[
-  {id:'m-img59',title:'📦 Isometría',src:'media/Imagen 59.png'},
-  {id:'m-img60',title:'📦 Isometría #1',src:'media/Imagen 60.jpg'},
-  {id:'m-img61',title:'📐 Dimetría #1',src:'media/Imagen 61.jpg'},
-  {id:'m-img62',title:'📐 Dimetría #2',src:'media/Imagen 62.jpg'},
-  {id:'m-img63',title:'🔺 Trimetría #1',src:'media/Imagen 63.jpg'},
-  {id:'m-img64',title:'🔺 Trimetría #2',src:'media/Imagen 64.jpg'},
-  {id:'m-img65',title:'✂️ Sección',src:'media/Imagen 65.jpg'},
-  {id:'m-img66',title:'✂️ Corte',src:'media/Imagen 66.jpg'},
-  {id:'m-img67',title:'📏 Plano de corte',src:'media/Imagen 67.jpg'},
-  {id:'m-img68',title:'🖌️ Hatch 1',src:'media/Imagen 68.jpg'},
-  {id:'m-img69',title:'🖌️ Hatch 2',src:'media/Imagen 69.jpg'},
-  {id:'m-img70',title:'🖌️ Relleno 3',src:'media/Imagen 70.jpg'},
-  {id:'m-img71',title:'🖌️ Relleno 4',src:'media/Imagen 71.jpg'},
-  {id:'m-img72',title:'🖌️ Relleno 5',src:'media/Imagen 72.jpg'},
-];
-imgModals.forEach(m=>{
-  const el=document.createElement('div');
-  el.className='overlay'; el.id=m.id;
-  el.innerHTML=`<div class="modal">
-    <div class="modal-hdr"><h2>${m.title}</h2><button class="mcl" onclick="closeM('${m.id}')">✕</button></div>
-    <div class="modal-body"><img src="${m.src}" alt="${m.title}" onerror="this.style.display='none'"></div>
-  </div>`;
-  document.body.appendChild(el);
-});
-</script>
+      // Reset DnD
+      for (let z in droppedItems) droppedItems[z] = [];
+      ['zone-isometria-imgs','zone-dimetria-imgs','zone-trimetria-imgs'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+      });
+      ['zone-isometria','zone-dimetria','zone-trimetria'].forEach(id => {
+        document.getElementById(id).classList.remove('correct','incorrect');
+      });
+      document.querySelectorAll('.drag-item').forEach(d => d.style.display = '');
+      document.getElementById('fb-dnd').className = 'feedback-banner';
 
-<script>
-// ── TABS ──
-function goTab(id,btn){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(btn) btn.classList.add('active');
-}
+      // Reset flashcards
+      document.querySelectorAll('.flashcard').forEach(fc => fc.classList.remove('flipped'));
 
-// ── MODAL ──
-function openM(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
-function closeM(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
-document.addEventListener('click',e=>{if(e.target.classList.contains('overlay'))closeM(e.target.id);});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(m=>closeM(m.id));});
+      // Reset juego 3
+      ['sq1','sq2','sq3'].forEach(sqId => {
+        const opts = document.querySelectorAll(`#${sqId}-opts .sq-opt-btn`);
+        opts.forEach(o => {
+          o.className = 'sq-opt-btn';
+          o.style.pointerEvents = '';
+        });
+        const fb = document.getElementById(sqId + '-fb');
+        fb.className = 'sq-feedback';
+      });
+      document.getElementById('fb-q3-global').className = 'feedback-banner';
 
-// ── DRAG & DROP ENGINE ──
-let draggedChip=null, selectedChip=null;
+      // Reset blanks
+      ['blank1','blank2','blank3','blank4','blank5'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '___'; el.dataset.filled = '';
+        el.className = 'blank';
+      });
+      document.querySelectorAll('.word-chip').forEach(c => c.classList.remove('used'));
+      document.getElementById('fb-blanks').className = 'feedback-banner';
 
-function initDrag(){
-  document.querySelectorAll('.chip').forEach(chip=>{
-    chip.addEventListener('dragstart',e=>{draggedChip=chip;setTimeout(()=>chip.classList.add('dragging'),0);});
-    chip.addEventListener('dragend',()=>{chip.classList.remove('dragging');draggedChip=null;});
-    chip.addEventListener('click',()=>{
-      if(selectedChip) selectedChip.style.outline='';
-      selectedChip=chip; chip.style.outline='3px solid #f59e0b';
-    });
-  });
-  document.querySelectorAll('.dz').forEach(zone=>{
-    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
-    zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
-    zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');if(draggedChip) placeWord(zone,draggedChip);});
-  });
-}
+      // Reset multi-select
+      ['q5a-opts','q5b-opts','q6-opts'].forEach(id => {
+        const grp = id.replace('-opts','');
+        document.querySelectorAll(`#${id} .checkbox-option`).forEach(o => {
+          o.className = 'checkbox-option';
+          o.style.pointerEvents = '';
+          o.onclick = () => toggleCheck(o, grp);
+        });
+      });
+      ['fb-q5a','fb-q5b','fb-q6'].forEach(id => {
+        document.getElementById(id).className = 'feedback-banner';
+      });
 
-function zClick(zone){
-  if(selectedChip&&!selectedChip.classList.contains('used')){
-    placeWord(zone,selectedChip);
-    selectedChip.style.outline=''; selectedChip=null;
-  }
-}
-
-function placeWord(zone,chip){
-  const prev=zone.getAttribute('data-placed');
-  if(prev){
-    const prevChip=document.querySelector(`.chip[data-word="${prev}"]`);
-    if(prevChip) prevChip.classList.remove('used');
-  }
-  zone.textContent=chip.getAttribute('data-word');
-  zone.setAttribute('data-placed',chip.getAttribute('data-word'));
-  zone.classList.add('filled'); zone.classList.remove('correct','wrong');
-  chip.classList.add('used');
-}
-
-function checkDrag(act){
-  const prefix=act==='a1'?'dz1':'dz2';
-  const suffix=act==='a1'?['a','b','c','d','e']:['a','b','c','d','e'];
-  let ok=true;
-  suffix.forEach(s=>{
-    const z=document.getElementById(prefix+s);
-    if(!z) return;
-    const placed=z.getAttribute('data-placed')||'';
-    const ans=z.getAttribute('data-answer');
-    if(placed===ans){z.classList.add('correct');z.classList.remove('wrong');}
-    else{z.classList.add('wrong');z.classList.remove('correct');ok=false;}
-  });
-  const fbId=act==='a1'?'fb1a':'fb2a';
-  const fb=document.getElementById(fbId);
-  fb.classList.add('show');
-  if(ok){fb.className='fb show ok';fb.innerHTML='🎉 ¡Excelente! Todas las respuestas son correctas.';}
-  else{fb.className='fb show err';fb.innerHTML='❌ Hay respuestas incorrectas. Revisa los espacios en rojo.';}
-}
-
-function resetDrag(act){
-  const prefix=act==='a1'?'dz1':'dz2';
-  const suffix=['a','b','c','d','e'];
-  suffix.forEach(s=>{
-    const z=document.getElementById(prefix+s);
-    if(!z) return;
-    z.textContent='__________'; z.removeAttribute('data-placed');
-    z.className='dz';
-  });
-  const bankId=act==='a1'?'bank1':'bank2';
-  document.querySelectorAll(`#${bankId} .chip`).forEach(c=>{c.classList.remove('used','dragging');c.style.outline='';});
-  const fbId=act==='a1'?'fb1a':'fb2a';
-  const fb=document.getElementById(fbId);
-  fb.className='fb'; fb.innerHTML='';
-  selectedChip=null;
-}
-
-// ── QUIZ ──
-const quizAnswers={
-  q1:['HE','H'],
-  q2:['360','120'],
-  q3:['4v','vol'],
-  q4:['transversal','longitudinal']
-};
-const quizRetro={
-  q1:'En el entorno CAD, el comando H activa la función Hatch para crear sombreados o rellenos de texturas en áreas cerradas. Por otro lado, el comando HE (Hatch Edit) permite modificar un sombreado ya existente sin necesidad de borrarlo y recrearlo, optimizando el flujo de trabajo técnico.',
-  q2:'La proyección isométrica (parte de las axonométricas bajo norma ISO) se basa en la división equitativa del espacio visual. Al dividir el círculo completo de 360° entre 3, obtenemos los 120° que separan a los tres ejes principales (X, Y, Z). Esta disposición garantiza que las dimensiones se representen en una misma escala sobre los tres ejes, facilitando la interpretación volumétrica.',
-  q3:'En la ingeniería, el número de vistas depende de la complejidad de la pieza. Un plano técnico profesional suele incluir el sistema de vistas principales (diédricas) para definir la geometría exacta. Además, es común integrar una volumetría o perspectiva para facilitar la visualización tridimensional del objeto a partir de sus proyecciones planas.',
-  q4:'b. Sección transversal: El plano de corte se sitúa de forma perpendicular al eje de mayor longitud. c. Sección longitudinal: El plano de corte se orienta de forma paralela al eje de mayor longitud. Esta vista es fundamental en ingeniería para analizar la disposición interna de los componentes.'
-};
-
-function checkQuiz(){
-  let allOk=true;
-  // q1, q2, q3 — checkboxes
-  ['q1','q2','q3'].forEach(qid=>{
-    const block=document.getElementById(qid);
-    const checked=[...block.querySelectorAll('input:checked')].map(i=>i.value);
-    const correct=quizAnswers[qid];
-    block.querySelectorAll('.option').forEach(opt=>{
-      opt.classList.remove('correct','wrong');
-      const val=opt.querySelector('input').value;
-      const isChecked=checked.includes(val);
-      const isCorrect=correct.includes(val);
-      if(isChecked&&isCorrect) opt.classList.add('correct');
-      else if(isChecked&&!isCorrect){opt.classList.add('wrong');allOk=false;}
-      else if(!isChecked&&isCorrect){opt.classList.add('correct');allOk=false;}
-    });
-  });
-  // q4 — radio: both b and c are correct
-  const q4block=document.getElementById('q4');
-  const q4checked=q4block.querySelector('input:checked');
-  const q4val=q4checked?q4checked.value:'';
-  const q4correct=['transversal','longitudinal'];
-  q4block.querySelectorAll('.option').forEach(opt=>{
-    opt.classList.remove('correct','wrong');
-    const val=opt.querySelector('input').value;
-    if(q4correct.includes(val)) opt.classList.add('correct');
-    else if(val===q4val&&!q4correct.includes(val)){opt.classList.add('wrong');allOk=false;}
-  });
-  const fb=document.getElementById('fbq');
-  const fbd=document.getElementById('fbqd');
-  fb.classList.add('show'); fbd.classList.add('show');
-  if(allOk){
-    fb.className='fb show ok'; fb.innerHTML='🎉 ¡Muy bien! Todas las respuestas son correctas.';
-  } else {
-    fb.className='fb show err'; fb.innerHTML='❌ Algunas respuestas no son correctas. Revisa la retroalimentación:';
-  }
-  fbd.innerHTML=`<strong>📚 Retroalimentación:</strong><br><br>
-    <strong>Atajos Hatch:</strong> ${quizRetro.q1}<br><br>
-    <strong>Ángulos ISO:</strong> ${quizRetro.q2}<br><br>
-    <strong>Vistas en ingeniería:</strong> ${quizRetro.q3}<br><br>
-    <strong>Tipos de sección:</strong> ${quizRetro.q4}`;
-}
-
-function resetQuiz(){
-  ['q1','q2','q3'].forEach(qid=>{
-    const block=document.getElementById(qid);
-    block.querySelectorAll('input').forEach(i=>i.checked=false);
-    block.querySelectorAll('.option').forEach(o=>o.classList.remove('correct','wrong'));
-  });
-  const q4=document.getElementById('q4');
-  q4.querySelectorAll('input').forEach(i=>i.checked=false);
-  q4.querySelectorAll('.option').forEach(o=>o.classList.remove('correct','wrong'));
-  document.getElementById('fbq').className='fb'; document.getElementById('fbq').innerHTML='';
-  document.getElementById('fbqd').className='fb-detail'; document.getElementById('fbqd').innerHTML='';
-}
-
-initDrag();
-</script>
+      document.getElementById('result-screen').style.display = 'none';
+      document.getElementById('games-wrapper').style.display = 'flex';
+      document.getElementById('slides-track').style.transform = 'translateX(0)';
+      buildDots(); updateUI();
+    }
+  </script>
 </body>
 </html>
